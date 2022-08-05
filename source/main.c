@@ -27,7 +27,6 @@
 /*!
  * @brief Main function
  */
-#include "input.h"
 #include "main.h"
 #include "rt_nonfinite.h"
 #include "sleepstagescorer.h"

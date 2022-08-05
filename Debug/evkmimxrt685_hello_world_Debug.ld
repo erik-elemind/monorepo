@@ -6,7 +6,7 @@
  * Generated linker script file for MIMXRT685S
  * Created from linkscript.ldt by FMCreateLinkLibraries
  * Using Freemarker v2.3.30
- * MCUXpresso IDE v11.5.1 [Build 7266] [2022-04-13] on Jul 20, 2022, 9:55:27 AM
+ * MCUXpresso IDE v11.5.1 [Build 7266] [2022-04-13] on Aug 5, 2022, 11:10:17 AM
  */
 
 INCLUDE "evkmimxrt685_hello_world_Debug_library.ld"
@@ -16,20 +16,7 @@ ENTRY(ResetISR)
 
 SECTIONS
 {
-     /* Image Vector Table and Boot Data for booting from external flash */
-    .boot_hdr : ALIGN(4)
-    {
-        FILL(0x00)
-        __boot_hdr_start__ = ABSOLUTE(.) ;
-        . = 0x400 ;
-        __flash_conf_hdr_start__ = ABSOLUTE(.) ;
-        KEEP(*(.flash_conf))
-        __flash_conf_hdr_end__ = ABSOLUTE(.) ;
-        . = 0x1000 ;
-         __boot_hdr_end__ = ABSOLUTE(.) ;
-    } >QSPI_FLASH
-
-    /* MAIN TEXT SECTION */
+     /* MAIN TEXT SECTION */
     .text : ALIGN(4)
     {
         FILL(0xff)
@@ -60,7 +47,7 @@ SECTIONS
        *(.text*)
        *(.rodata .rodata.* .constdata .constdata.*)
        . = ALIGN(4);
-    } > QSPI_FLASH
+    } > SRAM_ROM
  
     _etext = .;
         
@@ -86,7 +73,7 @@ SECTIONS
         . = ALIGN(4) ;
         PROVIDE(__end_data_RAM2 = .) ;
         PROVIDE(__end_data_USB_RAM = .) ;
-     } > USB_RAM AT>QSPI_FLASH
+     } > USB_RAM AT>SRAM_ROM
 
     /* MAIN DATA SECTION */
     .uninit_RESERVED (NOLOAD) : ALIGN(4)
@@ -95,15 +82,15 @@ SECTIONS
         KEEP(*(.bss.$RESERVED*))
        . = ALIGN(4) ;
         _end_uninit_RESERVED = .;
-    } > SRAM AT> SRAM
+    } > SRAM_ROM AT> SRAM_ROM
 
-    /* Main DATA section (SRAM) */
+    /* Main DATA section (SRAM_ROM) */
     .data : ALIGN(4)
     {
        FILL(0xff)
        _data = . ;
        PROVIDE(__start_data_RAM = .) ;
-       PROVIDE(__start_data_SRAM = .) ;
+       PROVIDE(__start_data_SRAM_ROM = .) ;
        *(vtable)
        *(.ramfunc*)
        KEEP(*(CodeQuickAccess))
@@ -113,8 +100,8 @@ SECTIONS
        . = ALIGN(4) ;
        _edata = . ;
        PROVIDE(__end_data_RAM = .) ;
-       PROVIDE(__end_data_SRAM = .) ;
-    } > SRAM AT>QSPI_FLASH
+       PROVIDE(__end_data_SRAM_ROM = .) ;
+    } > SRAM_ROM AT>SRAM_ROM
 
     /* BSS section for USB_RAM */
     .bss_RAM2 : ALIGN(4)
@@ -135,15 +122,15 @@ SECTIONS
     {
         _bss = .;
         PROVIDE(__start_bss_RAM = .) ;
-        PROVIDE(__start_bss_SRAM = .) ;
+        PROVIDE(__start_bss_SRAM_ROM = .) ;
         *(.bss*)
         *(COMMON)
         . = ALIGN(4) ;
         _ebss = .;
         PROVIDE(__end_bss_RAM = .) ;
-        PROVIDE(__end_bss_SRAM = .) ;
+        PROVIDE(__end_bss_SRAM_ROM = .) ;
         PROVIDE(end = .);
-    } > SRAM AT> SRAM
+    } > SRAM_ROM AT> SRAM_ROM
 
     /* NOINIT section for USB_RAM */
     .noinit_RAM2 (NOLOAD) : ALIGN(4)
@@ -164,13 +151,13 @@ SECTIONS
     {
         _noinit = .;
         PROVIDE(__start_noinit_RAM = .) ;
-        PROVIDE(__start_noinit_SRAM = .) ;
+        PROVIDE(__start_noinit_SRAM_ROM = .) ;
         *(.noinit*)
          . = ALIGN(4) ;
         _end_noinit = .;
        PROVIDE(__end_noinit_RAM = .) ;
-       PROVIDE(__end_noinit_SRAM = .) ;        
-    } > SRAM AT> SRAM
+       PROVIDE(__end_noinit_SRAM_ROM = .) ;        
+    } > SRAM_ROM AT> SRAM_ROM
 
     /*
      * for exception handling/unwind - some Newlib functions (in common
@@ -179,14 +166,14 @@ SECTIONS
     .ARM.extab : ALIGN(4)
     {
         *(.ARM.extab* .gnu.linkonce.armextab.*)
-    } > QSPI_FLASH
+    } > SRAM_ROM
 
     .ARM.exidx : ALIGN(4)
     {
         __exidx_start = .;
         *(.ARM.exidx* .gnu.linkonce.armexidx.*)
         __exidx_end = .;
-    } > QSPI_FLASH
+    } > SRAM_ROM
 
     /* Reserve and place Heap within memory map */
     _HeapSize = 0x1000;
@@ -196,21 +183,21 @@ SECTIONS
         . += _HeapSize;
         . = ALIGN(4);
         _pvHeapLimit = .;
-    } > SRAM
+    } > SRAM_ROM
 
      _StackSize = 0x1000;
      /* Reserve space in memory for Stack */
     .heap2stackfill  :
     {
         . += _StackSize;
-    } > SRAM
+    } > SRAM_ROM
     /* Locate actual Stack in memory map */
-    .stack ORIGIN(SRAM) + LENGTH(SRAM) - _StackSize - 0:  ALIGN(4)
+    .stack ORIGIN(SRAM_ROM) + LENGTH(SRAM_ROM) - _StackSize - 0:  ALIGN(4)
     {
         _vStackBase = .;
         . = ALIGN(4);
         _vStackTop = . + _StackSize;
-    } > SRAM
+    } > SRAM_ROM
 
     /* Provide basic symbols giving location and size of main text
      * block, including initial values of RW data sections. Note that

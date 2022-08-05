@@ -6,7 +6,7 @@
  * Generated linker script file for MIMXRT685S
  * Created from library.ldt by FMCreateLinkLibraries
  * Using Freemarker v2.3.30
- * MCUXpresso IDE v11.5.1 [Build 7266] [2022-04-13] on Jul 20, 2022, 9:55:27 AM
+ * MCUXpresso IDE v11.5.1 [Build 7266] [2022-04-13] on Aug 5, 2022, 11:10:17 AM
  */
 
 GROUP (
