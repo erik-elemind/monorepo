@@ -1,0 +1,17 @@
+/*
+ * config_tracealyzer.h
+ *
+ *  Created on: Jul 25, 2021
+ *      Author: DavidWang
+ */
+
+#ifndef CONFIG_CONFIG_TRACEALYZER_H_
+#define CONFIG_CONFIG_TRACEALYZER_H_
+
+#define ENABLE_TRACEALYZER (0U)
+#define ENABLE_TRACEALYZER_ISR_EEG (0U)
+#define ENABLE_TRACEALYZER_ISR_FLASH (0U)
+#define ENABLE_TRACEALYZER_ISR_AUDIO (0U)
+#define ENABLE_TRACEALYZER_ISR_OTHER (0U)
+
+#endif /* CONFIG_CONFIG_TRACEALYZER_H_ */

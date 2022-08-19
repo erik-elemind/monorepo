@@ -2,7 +2,7 @@
 #include "utils.h"
 #include "reset_reason.h"
 //#include "prebuild.h" //ToDo: port
-#include "../zmodem/zmodem.h"
+#include "zmodem.h"
 
 //static const char *TAG = "utils";  // Logging prefix for this module
 uint8_t rcv_byte[8192] = { '\0' };
