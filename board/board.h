@@ -18,21 +18,21 @@
  * Definitions
  ******************************************************************************/
 /*! @brief The board name */
-#define BOARD_NAME      "MIMXRT685-EVK"
+#define BOARD_NAME "MIMXRT685-EVK"
 #define BOARD_I3C_CODEC (1)
 
 /*! @brief The UART to use for debug messages. */
-#define BOARD_DEBUG_UART_TYPE     kSerialPort_Uart
+#define BOARD_DEBUG_UART_TYPE kSerialPort_Uart
 #define BOARD_DEBUG_UART_BASEADDR (uint32_t) USART0
 #define BOARD_DEBUG_UART_INSTANCE 0U
 #define BOARD_DEBUG_UART_CLK_FREQ CLOCK_GetFlexCommClkFreq(0U)
 #define BOARD_DEBUG_UART_FRG_CLK \
     (&(const clock_frg_clk_config_t){0, kCLOCK_FrgPllDiv, 255, 0}) /*!< Select FRG0 mux as frg_pll */
 #define BOARD_DEBUG_UART_CLK_ATTACH kFRG_to_FLEXCOMM0
-#define BOARD_DEBUG_UART_RST        kFC0_RST_SHIFT_RSTn
-#define BOARD_DEBUG_UART_CLKSRC     kCLOCK_Flexcomm0
-#define BOARD_UART_IRQ_HANDLER      FLEXCOMM0_IRQHandler
-#define BOARD_UART_IRQ              FLEXCOMM0_IRQn
+#define BOARD_DEBUG_UART_RST kFC0_RST_SHIFT_RSTn
+#define BOARD_DEBUG_UART_CLKSRC kCLOCK_Flexcomm0
+#define BOARD_UART_IRQ_HANDLER FLEXCOMM0_IRQHandler
+#define BOARD_UART_IRQ FLEXCOMM0_IRQn
 
 #ifndef BOARD_DEBUG_UART_BAUDRATE
 #define BOARD_DEBUG_UART_BAUDRATE 115200
@@ -44,24 +44,24 @@
 #endif
 
 #if BOARD_I3C_CODEC
-#define BOARD_CODEC_I2C_BASEADDR   I3C
+#define BOARD_CODEC_I2C_BASEADDR I3C
 #define BOARD_CODEC_I2C_CLOCK_FREQ CLOCK_GetI3cClkFreq()
-#define BOARD_CODEC_I2C_INSTANCE   0
+#define BOARD_CODEC_I2C_INSTANCE 0
 #else
-#define BOARD_CODEC_I2C_BASEADDR   I2C4
+#define BOARD_CODEC_I2C_BASEADDR I2C4
 #define BOARD_CODEC_I2C_CLOCK_FREQ CLOCK_GetFlexCommClkFreq(4U)
-#define BOARD_CODEC_I2C_INSTANCE   4
+#define BOARD_CODEC_I2C_INSTANCE 4
 #endif
 
-#define BOARD_PMIC_I2C_BASEADDR   I2C15
+#define BOARD_PMIC_I2C_BASEADDR I2C15
 #define BOARD_PMIC_I2C_CLOCK_FREQ CLOCK_GetFlexCommClkFreq(15U)
 
-#define BOARD_ACCEL_I2C_BASEADDR   I2C2
-#define BOARD_ACCEL_I2C_ADDR       0x1E
+#define BOARD_ACCEL_I2C_BASEADDR I2C2
+#define BOARD_ACCEL_I2C_ADDR 0x1E
 #define BOARD_ACCEL_I2C_CLOCK_FREQ CLOCK_GetFlexCommClkFreq(2U)
 
 /* Board led color mapping */
-#define LOGIC_LED_ON  1U
+#define LOGIC_LED_ON 1U
 #define LOGIC_LED_OFF 0U
 
 #ifndef BOARD_LED_RED_GPIO
@@ -85,21 +85,6 @@
 #define BOARD_LED_BLUE_GPIO_PORT 0U
 #ifndef BOARD_LED_BLUE_GPIO_PIN
 #define BOARD_LED_BLUE_GPIO_PIN 26U
-#endif
-
-#ifndef BOARD_FLASH_RESET_GPIO
-#define BOARD_FLASH_RESET_GPIO GPIO
-#endif
-#ifndef BOARD_FLASH_RESET_GPIO_PORT
-#define BOARD_FLASH_RESET_GPIO_PORT 2U
-#endif
-#ifndef BOARD_FLASH_RESET_GPIO_PIN
-#define BOARD_FLASH_RESET_GPIO_PIN 12U
-#endif
-
-/* Board microphone defines */
-#ifndef BOARD_DMIC_NUM
-#define BOARD_DMIC_NUM 2
 #endif
 
 #define LED_RED_INIT(output)                                                          \
@@ -159,23 +144,23 @@
 #endif
 
 /* USDHC configuration */
-#define BOARD_SD_SUPPORT_180V          (1)
-#define BOARD_USDHC_CD_GPIO_BASE       GPIO
-#define BOARD_USDHC_CD_GPIO_PORT       (2)
-#define BOARD_USDHC_CD_GPIO_PIN        (9)
-#define BOARD_SD_POWER_RESET_GPIO      (GPIO)
+#define BOARD_SD_SUPPORT_180V (1)
+#define BOARD_USDHC_CD_GPIO_BASE GPIO
+#define BOARD_USDHC_CD_GPIO_PORT (2)
+#define BOARD_USDHC_CD_GPIO_PIN (9)
+#define BOARD_SD_POWER_RESET_GPIO (GPIO)
 #define BOARD_SD_POWER_RESET_GPIO_PORT (2)
-#define BOARD_SD_POWER_RESET_GPIO_PIN  (10)
+#define BOARD_SD_POWER_RESET_GPIO_PIN (10)
 
 /* Card detect handled by uSDHC, no GPIO interrupt */
-#define BOARD_SD_DETECT_TYPE              kSDMMCHOST_DetectCardByHostCD
-#define BOARD_USDHC_CD_PORT_IRQ           USDHC0_IRQn
-#define BOARD_USDHC_CD_STATUS()           0
+#define BOARD_SD_DETECT_TYPE kSDMMCHOST_DetectCardByHostCD
+#define BOARD_USDHC_CD_PORT_IRQ USDHC0_IRQn
+#define BOARD_USDHC_CD_STATUS() 0
 #define BOARD_USDHC_CD_INTERRUPT_STATUS() 0
 #define BOARD_USDHC_CD_CLEAR_INTERRUPT(flag)
 #define BOARD_USDHC_CD_GPIO_INIT()
 
-#define BOARD_HAS_SDCARD                 (1U)
+#define BOARD_HAS_SDCARD (1U)
 #define BOARD_USDHC_CARD_INSERT_CD_LEVEL (0U)
 
 #define BOARD_USDHC_MMCCARD_POWER_CONTROL_INIT()
@@ -201,59 +186,38 @@
 
 #define BOARD_USDHC_SWITCH_VOLTAGE_FUNCTION 1U
 
+/* GT202 */
+#define BOARD_INITGT202SHIELD_PWRON_GPIO GPIO
+#define BOARD_INITGT202SHIELD_IRQ_GPIO GPIO
+#define BOARD_INITGT202SHIELD_PWRON_DIRECTION kGPIO_DigitalOutput
+#define BOARD_INITGT202SHIELD_IRQ_DIRECTION kGPIO_DigitalInput
+#define BOARD_INITGT202SHIELD_PWRON_PORT 1
+#define BOARD_INITGT202SHIELD_IRQ_PORT 1
+#define BOARD_INITGT202SHIELD_PWRON_GPIO_PIN 9
+#define BOARD_INITGT202SHIELD_IRQ_GPIO_PIN 8
+
+/* Silex2401 */
+#define BOARD_INITSILEX2401SHIELD_PWRON_GPIO GPIO
+#define BOARD_INITSILEX2401SHIELD_IRQ_GPIO GPIO
+#define BOARD_INITSILEX2401SHIELD_PWRON_DIRECTION kGPIO_DigitalOutput
+#define BOARD_INITSILEX2401SHIELD_IRQ_DIRECTION kGPIO_DigitalInput
+#define BOARD_INITSILEX2401SHIELD_PWRON_PORT 1
+#define BOARD_INITSILEX2401SHIELD_IRQ_PORT 0
+#define BOARD_INITSILEX2401SHIELD_PWRON_GPIO_PIN 0
+#define BOARD_INITSILEX2401SHIELD_IRQ_GPIO_PIN 28
+
 #define BOARD_SD_HOST_BASEADDR BOARD_USDHC0_BASEADDR
 #define BOARD_SD_HOST_CLK_FREQ BOARD_USDHC0_CLK_FREQ
-#define BOARD_SD_HOST_IRQ      USDHC0_IRQn
+#define BOARD_SD_HOST_IRQ USDHC0_IRQn
 
 #define BOARD_SD_Pin_Config(speed, strength)
 
 /* USB PHY condfiguration */
-#define BOARD_USB_PHY_D_CAL     (0x0CU)
+#define BOARD_USB_PHY_D_CAL (0x0CU)
 #define BOARD_USB_PHY_TXCAL45DP (0x06U)
 #define BOARD_USB_PHY_TXCAL45DM (0x06U)
 
 #define BOARD_FLASH_SIZE (0x4000000U)
-
-/* Display. */
-#define BOARD_LCD_DC_GPIO      GPIO
-#define BOARD_LCD_DC_GPIO_PORT 1U
-#define BOARD_LCD_DC_GPIO_PIN  7U
-
-#define BOARD_BT_UART_INSTANCE 4
-#define BOARD_BT_UART_BAUDRATE 3000000
-#define BOARD_BT_UART_CLK_FREQ CLOCK_GetFlexCommClkFreq(4U)
-#define BOARD_BT_UART_FRG_CLK \
-    (&(const clock_frg_clk_config_t){4, kCLOCK_FrgPllDiv, 255, 4}) /*!< Select FRG0 mux as frg_pll */
-#define BOARD_BT_UART_CLK_ATTACH  kFRG_to_FLEXCOMM4
-#define BOARD_BT_UART_RST         kFC4_RST_SHIFT_RSTn
-#define BOARD_BT_UART_IRQ         FLEXCOMM4_IRQn
-#define BOARD_BT_UART_IRQ_HANDLER FLEXCOMM4_IRQHandler
-#define BOARD_BT_UART_CLKSRC      kCLOCK_Flexcomm4
-
-/* ERPC SPI configuration */
-#define ERPC_BOARD_SPI_SLAVE_READY_USE_GPIO (1)
-#define ERPC_BOARD_SPI_BASEADDR             SPI14_BASE
-#define ERPC_BOARD_SPI_BAUDRATE             500000U
-#define ERPC_BOARD_SPI_CLKSRC               kCLOCK_Flexcomm14
-#define ERPC_BOARD_SPI_CLK_FREQ             CLOCK_GetFlexCommClkFreq(14)
-#define ERPC_BOARD_SPI_INT_GPIO             GPIO
-#define ERPC_BOARD_SPI_INT_PORT             1U
-#define ERPC_BOARD_SPI_INT_PIN              16U
-#define ERPC_BOARD_SPI_INT_PIN_IRQ          PIN_INT1_IRQn
-#define ERPC_BOARD_SPI_INT_PIN_IRQ_HANDLER  PIN_INT1_IRQHandler
-#define ERPC_BOARD_SPI_INT_GPIO_LPC         (1)
-
-/* ERPC I2C configuration */
-#define ERPC_BOARD_I2C_BASEADDR            I2C2_BASE
-#define ERPC_BOARD_I2C_BAUDRATE            100000U
-#define ERPC_BOARD_I2C_CLKSRC              kCLOCK_Flexcomm2
-#define ERPC_BOARD_I2C_CLK_FREQ            CLOCK_GetFlexCommClkFreq(2)
-#define ERPC_BOARD_I2C_INT_GPIO            GPIO
-#define ERPC_BOARD_I2C_INT_PORT            1U
-#define ERPC_BOARD_I2C_INT_PIN             16U
-#define ERPC_BOARD_I2C_INT_PIN_IRQ         PIN_INT1_IRQn
-#define ERPC_BOARD_I2C_INT_PIN_IRQ_HANDLER PIN_INT1_IRQHandler
-
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
@@ -268,10 +232,6 @@ void BOARD_FlexspiClockSafeConfig(void);
 AT_QUICKACCESS_SECTION_CODE(void BOARD_SetFlexspiClock(uint32_t src, uint32_t divider));
 AT_QUICKACCESS_SECTION_CODE(void BOARD_DeinitXip(FLEXSPI_Type *base));
 AT_QUICKACCESS_SECTION_CODE(void BOARD_InitXip(FLEXSPI_Type *base));
-AT_QUICKACCESS_SECTION_CODE(void BOARD_SetDeepSleepPinConfig(void));
-AT_QUICKACCESS_SECTION_CODE(void BOARD_RestoreDeepSleepPinConfig(void));
-AT_QUICKACCESS_SECTION_CODE(void BOARD_EnterDeepSleep(const uint32_t exclude_from_pd[4]));
-AT_QUICKACCESS_SECTION_CODE(void BOARD_EnterDeepPowerDown(const uint32_t exclude_from_pd[4]));
 #if defined(SDK_I2C_BASED_COMPONENT_USED) && SDK_I2C_BASED_COMPONENT_USED
 void BOARD_I2C_Init(I2C_Type *base, uint32_t clkSrc_Hz);
 status_t BOARD_I2C_Send(I2C_Type *base,

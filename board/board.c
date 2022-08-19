@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 NXP
+ * Copyright 2018 NXP
  * All rights reserved.
  *
  *
@@ -25,23 +25,15 @@
  * Definitions
  ******************************************************************************/
 #define BOARD_FLEXSPI_DLL_LOCK_RETRY (10)
-#if (__ARM_FEATURE_CMSE & 0x2) && defined(__ARMCC_VERSION)
-/* For the Trustzone examples built with ARM Compiler, the RAM targets will also run in flash(XIP) to do initialization
- * copy. */
-#define BOARD_IS_XIP_FLEXSPI() (true)
-#else
 #define BOARD_IS_XIP_FLEXSPI()                                                                                  \
     ((((uint32_t)BOARD_InitDebugConsole >= 0x08000000U) && ((uint32_t)BOARD_InitDebugConsole < 0x10000000U)) || \
      (((uint32_t)BOARD_InitDebugConsole >= 0x18000000U) && ((uint32_t)BOARD_InitDebugConsole < 0x20000000U)))
-#endif
 /*******************************************************************************
  * Variables
  ******************************************************************************/
 static status_t flexspi_hyper_ram_write_mcr(FLEXSPI_Type *base, uint8_t regAddr, uint32_t *mrVal);
 static status_t flexspi_hyper_ram_get_mcr(FLEXSPI_Type *base, uint8_t regAddr, uint32_t *mrVal);
 static status_t flexspi_hyper_ram_reset(FLEXSPI_Type *base);
-AT_QUICKACCESS_SECTION_DATA(static uint32_t s_ispPin[3]);
-AT_QUICKACCESS_SECTION_DATA(static uint32_t s_flexspiPin[10]);
 /*******************************************************************************
  * Code
  ******************************************************************************/
@@ -53,10 +45,6 @@ void BOARD_InitDebugConsole(void)
     /* attach FRG0 clock to FLEXCOMM0 (debug console) */
     CLOCK_SetFRGClock(BOARD_DEBUG_UART_FRG_CLK);
     CLOCK_AttachClk(BOARD_DEBUG_UART_CLK_ATTACH);
-
-    /* attach FRG0 clock to FLEXCOMM4*/
-    CLOCK_SetFRGClock(BOARD_BT_UART_FRG_CLK);
-    CLOCK_AttachClk(BOARD_BT_UART_CLK_ATTACH);
 
     uartClkSrcFreq = BOARD_DEBUG_UART_CLK_FREQ;
 
@@ -132,7 +120,7 @@ status_t BOARD_InitPsRam(void)
     flexspi_device_config_t deviceconfig = {
         .flexspiRootClk       = 396000000, /* 396MHZ SPI serial clock, DDR serial clock 198M */
         .isSck2Enabled        = false,
-        .flashSize            = 0x2000, /* 64Mb/KByte */
+        .flashSize            = 0x8000, /*64Mb/KByte*/
         .CSIntervalUnit       = kFLEXSPI_CsIntervalUnit1SckCycle,
         .CSInterval           = 5,
         .CSHoldTime           = 3,
@@ -204,7 +192,6 @@ status_t BOARD_InitPsRam(void)
     CACHE64_GetDefaultConfig(&cacheCfg);
     CACHE64_Init(CACHE64_POLSEL, &cacheCfg);
 #if BOARD_ENABLE_PSRAM_CACHE
-    CACHE64_EnableWriteBuffer(CACHE64, true);
     CACHE64_EnableCache(CACHE64);
 #endif
 
@@ -275,7 +262,7 @@ status_t BOARD_InitPsRam(void)
 
     /* Set LC code to 0x04(LC=7, maximum frequency 200M) - MR0. */
     mr0Val[0] = mr0mr1[0] & 0x00FFU;
-    mr0Val[0] = (mr0Val[0] & ~0x3CU) | (4U << 2U);
+    mr0Val[0] = (mr0Val[0] & ~0x3C) | (4 << 2U);
     status    = flexspi_hyper_ram_write_mcr(BOARD_FLEXSPI_PSRAM, 0x0, mr0Val);
     if (status != kStatus_Success)
     {
@@ -284,7 +271,7 @@ status_t BOARD_InitPsRam(void)
 
     /* Set WLC code to 0x01(WLC=7, maximum frequency 200M) - MR4. */
     mr4Val[0] = mr4mr8[0] & 0x00FFU;
-    mr4Val[0] = (mr4Val[0] & ~0xE0U) | (1U << 5U);
+    mr4Val[0] = (mr4Val[0] & ~0xE0) | (1 << 5U);
     status    = flexspi_hyper_ram_write_mcr(BOARD_FLEXSPI_PSRAM, 0x4, mr4Val);
     if (status != kStatus_Success)
     {
@@ -325,14 +312,14 @@ void BOARD_InitXip(FLEXSPI_Type *base)
         lastStatus = base->STS2;
         retry      = BOARD_FLEXSPI_DLL_LOCK_RETRY;
         /* Flash on port A */
-        if (((base->FLSHCR0[0] & FLEXSPI_FLSHCR0_FLSHSZ_MASK) > 0) ||
-            ((base->FLSHCR0[1] & FLEXSPI_FLSHCR0_FLSHSZ_MASK) > 0))
+        if ((base->FLSHCR0[0] & FLEXSPI_FLSHCR0_FLSHSZ_MASK) > 0 ||
+            (base->FLSHCR0[1] & FLEXSPI_FLSHCR0_FLSHSZ_MASK) > 0)
         {
             mask |= FLEXSPI_STS2_AREFLOCK_MASK | FLEXSPI_STS2_ASLVLOCK_MASK;
         }
         /* Flash on port B */
-        if (((base->FLSHCR0[2] & FLEXSPI_FLSHCR0_FLSHSZ_MASK) > 0) ||
-            ((base->FLSHCR0[3] & FLEXSPI_FLSHCR0_FLSHSZ_MASK) > 0))
+        if ((base->FLSHCR0[2] & FLEXSPI_FLSHCR0_FLSHSZ_MASK) > 0 ||
+            (base->FLSHCR0[3] & FLEXSPI_FLSHCR0_FLSHSZ_MASK) > 0)
         {
             mask |= FLEXSPI_STS2_BREFLOCK_MASK | FLEXSPI_STS2_BSLVLOCK_MASK;
         }
@@ -368,8 +355,8 @@ void BOARD_InitXip(FLEXSPI_Type *base)
 /* BOARD_SetFlexspiClock run in RAM used to configure FlexSPI clock source and divider when XIP. */
 void BOARD_SetFlexspiClock(uint32_t src, uint32_t divider)
 {
-    if ((CLKCTL0->FLEXSPIFCLKSEL != CLKCTL0_FLEXSPIFCLKSEL_SEL(src)) ||
-        ((CLKCTL0->FLEXSPIFCLKDIV & CLKCTL0_FLEXSPIFCLKDIV_DIV_MASK) != (divider - 1)))
+    if (CLKCTL0->FLEXSPIFCLKSEL != CLKCTL0_FLEXSPIFCLKSEL_SEL(src) ||
+        (CLKCTL0->FLEXSPIFCLKDIV & CLKCTL0_FLEXSPIFCLKDIV_DIV_MASK) != (divider - 1))
     {
         if (BOARD_IS_XIP_FLEXSPI())
         {
@@ -400,78 +387,7 @@ void BOARD_FlexspiClockSafeConfig(void)
     /* Move FLEXSPI clock source from main clock to FFRO to avoid instruction/data fetch issue in XIP when
      * updating PLL and main clock.
      */
-    BOARD_SetFlexspiClock(3U, 1U);
-}
-
-void BOARD_SetDeepSleepPinConfig(void)
-{
-    /* Backup Pin configuration. */
-    s_ispPin[0]     = IOPCTL->PIO[1][15];
-    s_ispPin[1]     = IOPCTL->PIO[1][16];
-    s_ispPin[2]     = IOPCTL->PIO[1][17];
-    s_flexspiPin[0] = IOPCTL->PIO[1][29];
-    s_flexspiPin[1] = IOPCTL->PIO[2][19];
-    s_flexspiPin[2] = IOPCTL->PIO[1][11];
-    s_flexspiPin[3] = IOPCTL->PIO[1][12];
-    s_flexspiPin[4] = IOPCTL->PIO[1][13];
-    s_flexspiPin[5] = IOPCTL->PIO[1][14];
-    s_flexspiPin[6] = IOPCTL->PIO[2][17];
-    s_flexspiPin[7] = IOPCTL->PIO[2][18];
-    s_flexspiPin[8] = IOPCTL->PIO[2][22];
-    s_flexspiPin[9] = IOPCTL->PIO[2][23];
-
-    /* Disable ISP Pin pull-ups and input buffers to avoid current leakage */
-    IOPCTL->PIO[1][15] = 0;
-    IOPCTL->PIO[1][16] = 0;
-    IOPCTL->PIO[1][17] = 0;
-
-    /* Disable unnecessary input buffers */
-    IOPCTL->PIO[1][29] &= ~IOPCTL_PIO_IBENA_MASK;
-    IOPCTL->PIO[2][19] &= ~IOPCTL_PIO_IBENA_MASK;
-
-    /* Enable pull-ups floating FlexSPI0 pins */
-    IOPCTL->PIO[1][11] |= IOPCTL_PIO_PUPDENA_MASK | IOPCTL_PIO_PUPDSEL_MASK;
-    IOPCTL->PIO[1][12] |= IOPCTL_PIO_PUPDENA_MASK | IOPCTL_PIO_PUPDSEL_MASK;
-    IOPCTL->PIO[1][13] |= IOPCTL_PIO_PUPDENA_MASK | IOPCTL_PIO_PUPDSEL_MASK;
-    IOPCTL->PIO[1][14] |= IOPCTL_PIO_PUPDENA_MASK | IOPCTL_PIO_PUPDSEL_MASK;
-    IOPCTL->PIO[2][17] |= IOPCTL_PIO_PUPDENA_MASK | IOPCTL_PIO_PUPDSEL_MASK;
-    IOPCTL->PIO[2][18] |= IOPCTL_PIO_PUPDENA_MASK | IOPCTL_PIO_PUPDSEL_MASK;
-    IOPCTL->PIO[2][22] |= IOPCTL_PIO_PUPDENA_MASK | IOPCTL_PIO_PUPDSEL_MASK;
-    IOPCTL->PIO[2][23] |= IOPCTL_PIO_PUPDENA_MASK | IOPCTL_PIO_PUPDSEL_MASK;
-}
-
-void BOARD_RestoreDeepSleepPinConfig(void)
-{
-    /* Restore the Pin configuration. */
-    IOPCTL->PIO[1][15] = s_ispPin[0];
-    IOPCTL->PIO[1][16] = s_ispPin[1];
-    IOPCTL->PIO[1][17] = s_ispPin[2];
-
-    IOPCTL->PIO[1][29] = s_flexspiPin[0];
-    IOPCTL->PIO[2][19] = s_flexspiPin[1];
-    IOPCTL->PIO[1][11] = s_flexspiPin[2];
-    IOPCTL->PIO[1][12] = s_flexspiPin[3];
-    IOPCTL->PIO[1][13] = s_flexspiPin[4];
-    IOPCTL->PIO[1][14] = s_flexspiPin[5];
-    IOPCTL->PIO[2][17] = s_flexspiPin[6];
-    IOPCTL->PIO[2][18] = s_flexspiPin[7];
-    IOPCTL->PIO[2][22] = s_flexspiPin[8];
-    IOPCTL->PIO[2][23] = s_flexspiPin[9];
-}
-
-void BOARD_EnterDeepSleep(const uint32_t exclude_from_pd[4])
-{
-    BOARD_SetDeepSleepPinConfig();
-    POWER_EnterDeepSleep(exclude_from_pd);
-    BOARD_RestoreDeepSleepPinConfig();
-}
-
-void BOARD_EnterDeepPowerDown(const uint32_t exclude_from_pd[4])
-{
-    BOARD_SetDeepSleepPinConfig();
-    POWER_EnterDeepPowerDown(exclude_from_pd);
-    /* After deep power down wakeup, the code will restart and cannot reach here. */
-    BOARD_RestoreDeepSleepPinConfig();
+    BOARD_SetFlexspiClock(3U, 1);
 }
 
 #if defined(SDK_I2C_BASED_COMPONENT_USED) && SDK_I2C_BASED_COMPONENT_USED

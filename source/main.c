@@ -33,52 +33,43 @@
 #include "sleepstagescorer_terminate.h"
 #include <stdio.h>
 
-/* Function Declarations */
-static void main_sleepstagescorer(void);
+static const char *TAG = "main";  // Logging prefix for this module
 
-/* Function Definitions */
-static void main_sleepstagescorer(void)
+static void system_boot_up(void);
+
+static void system_boot_up(void)
 {
-  float out[5] = {0};
-  char outbuff[50] = {0};
+	// Init board hardware
+	BOARD_InitBootPins();
+	BOARD_InitBootClocks();
+	BOARD_InitDebugConsole();
 
-  /* Call the entry-point 'sleepstagescorer'. */
-  sleepstagescorer(out);
-
-  for (int i = 0;i < (sizeof (out) /sizeof (out[0])); i++) {
-	  sprintf(outbuff, "out[%d]: %.11f\r\n",i, out[i]);
-	  PRINTF(outbuff);
-  }
 }
+
+
 
 int main(void)
 {
-    char ch;
+	TaskHandle_t task_handle;
 
-    /* Init board hardware. */
-    BOARD_InitBootPins();
-    BOARD_InitBootClocks();
-    BOARD_InitDebugConsole();
+	// Boot up MCU
+	system_boot_up();
 
-    PRINTF("Start Machine Learning\r\n");
+	//Fat FS Write Task
+	LOGV(TAG, "Launching fatfs_writer task...");
 
-    // Random classifier
-      /* The initialize function is being called automatically from your entry-point
-       * function. So, a call to initialize is not included here. */
-      /* Invoke the entry-point functions.
-    You can call entry-point functions multiple times. */
-      main_sleepstagescorer();
-      /* Terminate the application.
-    You do not need to do this more than one time. */
-      sleepstagescorer_terminate();
+	fatfs_writer_pretask_init();
 
-      PRINTF("Done!\r\n");
+	task_handle = xTaskCreateStatic(&fatfs_writer_task,
+		"fatfs_writer",
+		FATFS_WRITER_TASK_STACK_SIZE,
+		NULL,
+		FATFS_WRITER_TASK_PRIORITY,
+		fatfs_writer_task_array,
+		&fatfs_writer_task_struct);
 
-      while(1)
-      {
-    	  ch = GETCHAR();
-    	  PUTCHAR(ch);
-      }
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)FATFS_WRITER_TASK_STACK_SIZE );
 
-      return 0;
+
+	return 0;
 }
