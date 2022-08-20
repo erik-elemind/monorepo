@@ -11,7 +11,7 @@
 #include "config.h"
 
 
-#define APP_WDT_IRQn        WDT_BOD_IRQn
+#define APP_WDT_IRQn        WDT0_IRQn
 #define APP_WDT_IRQ_HANDLER WDT_BOD_IRQHandler
 #define WDT_CLK_FREQ        CLOCK_GetWdtClkFreq(0)
 

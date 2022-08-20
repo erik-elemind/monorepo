@@ -15,27 +15,11 @@
 #ifndef BOARD_CONFIG_H
 #define BOARD_CONFIG_H
 
-#include "prebuild.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// VARIANT_**** defines MUST be selected in makefile.defs
-#if defined(VARIANT_EVKS)
-  #include "board_evks.h"
-#elif defined(VARIANT_NFF1)
-  #include "board_nff1.h"
-#elif defined(VARIANT_FF1)
-  #include "board_ff1.h"
-#elif defined(VARIANT_FF2)
-  #include "board_ff2.h"
-#elif defined(VARIANT_FF3)
-  #include "board_ff3.h"
-#else
-  #error "Invalid variant"
-#endif
-
+#include "board_ff4.h"
 /** Set RGB LED to specified color.
 
     Sets LED color using three percentage values.

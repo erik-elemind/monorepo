@@ -53,6 +53,42 @@ component:
  * BOARD_InitPeripherals functional group
  **********************************************************************************************************************/
 /***********************************************************************************************************************
+ * DMA0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'DMA0'
+- type: 'lpc_dma'
+- mode: 'basic'
+- custom_name_enabled: 'false'
+- type_id: 'lpc_dma_c13ca997a68f2ca6c666916ba13db7d7'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'DMA0'
+- config_sets:
+  - fsl_dma:
+    - dma_table:
+      - 0: []
+      - 1: []
+      - 2: []
+      - 3: []
+    - dma_channels: []
+    - init_interrupt: 'false'
+    - dma_interrupt:
+      - IRQn: 'DMA0_IRQn'
+      - enable_interrrupt: 'enabled'
+      - enable_priority: 'false'
+      - priority: '0'
+      - enable_custom_name: 'false'
+    - quick_selection: 'default'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+
+/* Empty initialization function (commented out)
+static void DMA0_init(void) {
+} */
+
+/***********************************************************************************************************************
  * NVIC initialization code
  **********************************************************************************************************************/
 /* clang-format off */
@@ -67,7 +103,11 @@ instance:
 - peripheral: 'NVIC'
 - config_sets:
   - nvic:
-    - interrupt_table: []
+    - interrupt_table:
+      - 0: []
+      - 1: []
+      - 2: []
+      - 3: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -84,7 +124,7 @@ static void NVIC_init(void) {
 instance:
 - name: 'FLEXCOMM0_EEG_SPI'
 - type: 'flexcomm_spi'
-- mode: 'SPI_Polling'
+- mode: 'dma'
 - custom_name_enabled: 'true'
 - type_id: 'flexcomm_spi_481dadba00035f986f31ed9ac95af181'
 - functional_group: 'BOARD_InitPeripherals'
@@ -111,6 +151,26 @@ instance:
         - postDelay: '0'
         - frameDelay: '0'
         - transferDelay: '0'
+  - dmaCfg:
+    - dma_channels:
+      - enable_rx_dma_channel: 'true'
+      - dma_rx_channel:
+        - DMA_source: 'kDma0RequestFlexcomm0Rx'
+        - init_channel_priority: 'false'
+        - dma_priority: 'kDMA_ChannelPriority0'
+        - enable_custom_name: 'false'
+      - enable_tx_dma_channel: 'true'
+      - dma_tx_channel:
+        - DMA_source: 'kDma0RequestFlexcomm0Tx'
+        - init_channel_priority: 'false'
+        - dma_priority: 'kDMA_ChannelPriority0'
+        - enable_custom_name: 'false'
+    - spi_dma_handle:
+      - enable_custom_name: 'false'
+      - init_callback: 'false'
+      - callback_fcn: ''
+      - user_data: ''
+    - quick_selection: 'QuickSelection1'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 const spi_master_config_t FLEXCOMM0_EEG_SPI_config = {
@@ -132,10 +192,23 @@ const spi_master_config_t FLEXCOMM0_EEG_SPI_config = {
     .transferDelay = 0U
   }
 };
+dma_handle_t FLEXCOMM0_EEG_SPI_RX_Handle;
+dma_handle_t FLEXCOMM0_EEG_SPI_TX_Handle;
+spi_dma_handle_t FLEXCOMM0_EEG_SPI_DMA_Handle;
 
 static void FLEXCOMM0_EEG_SPI_init(void) {
   /* Initialization function */
   SPI_MasterInit(FLEXCOMM0_EEG_SPI_PERIPHERAL, &FLEXCOMM0_EEG_SPI_config, FLEXCOMM0_EEG_SPI_CLOCK_SOURCE);
+  /* Enable the DMA 0 channel in the DMA */
+  DMA_EnableChannel(FLEXCOMM0_EEG_SPI_RX_DMA_BASEADDR, FLEXCOMM0_EEG_SPI_RX_DMA_CHANNEL);
+  /* Create the DMA FLEXCOMM0_EEG_SPI_RX_Handle handle */
+  DMA_CreateHandle(&FLEXCOMM0_EEG_SPI_RX_Handle, FLEXCOMM0_EEG_SPI_RX_DMA_BASEADDR, FLEXCOMM0_EEG_SPI_RX_DMA_CHANNEL);
+  /* Enable the DMA 1 channel in the DMA */
+  DMA_EnableChannel(FLEXCOMM0_EEG_SPI_TX_DMA_BASEADDR, FLEXCOMM0_EEG_SPI_TX_DMA_CHANNEL);
+  /* Create the DMA FLEXCOMM0_EEG_SPI_TX_Handle handle */
+  DMA_CreateHandle(&FLEXCOMM0_EEG_SPI_TX_Handle, FLEXCOMM0_EEG_SPI_TX_DMA_BASEADDR, FLEXCOMM0_EEG_SPI_TX_DMA_CHANNEL);
+  /* Create the SPI DMA handle */
+  SPI_MasterTransferCreateHandleDMA(FLEXCOMM0_EEG_SPI_PERIPHERAL, &FLEXCOMM0_EEG_SPI_DMA_Handle, NULL, NULL, &FLEXCOMM0_EEG_SPI_TX_Handle, &FLEXCOMM0_EEG_SPI_RX_Handle);
 }
 
 /***********************************************************************************************************************
@@ -146,7 +219,7 @@ static void FLEXCOMM0_EEG_SPI_init(void) {
 instance:
 - name: 'FLEXSPI'
 - type: 'flexspi'
-- mode: 'general'
+- mode: 'dma'
 - custom_name_enabled: 'false'
 - type_id: 'flexspi_cc6da638fb0490ad15096647c2b8e52a'
 - functional_group: 'BOARD_InitPeripherals'
@@ -218,20 +291,30 @@ instance:
         - enableAHBCachable: 'false'
     - flexspiInterrupt:
       - interrupt_sel: ''
-      - interrupt_vectors:
-        - enableInterrupt: 'false'
-        - interrupt:
-          - IRQn: 'FLEXSPI_IRQn'
-          - enable_interrrupt: 'enabled'
-          - enable_priority: 'false'
-          - priority: '0'
-          - enable_custom_name: 'false'
     - enableCustomLUT: 'true'
     - lutConfig:
       - flash: 'customFlash'
       - lutName: 'defaultLUT'
       - lutSizeCustom: '64'
     - devices_configs: []
+    - dma_channels:
+      - enable_rx_dma_channel: 'true'
+      - dma_rx_channel:
+        - DMA_source: 'kDma0RequestNoDMARequest28'
+        - init_channel_priority: 'false'
+        - dma_priority: 'kDMA_ChannelPriority0'
+        - enable_custom_name: 'false'
+      - enable_tx_dma_channel: 'true'
+      - dma_tx_channel:
+        - DMA_source: 'kDma0RequestNoDMARequest29'
+        - init_channel_priority: 'false'
+        - dma_priority: 'kDMA_ChannelPriority0'
+        - enable_custom_name: 'false'
+    - spi_dma_handle:
+      - enable_custom_name: 'false'
+      - init_callback_dma: 'false'
+      - callback_fcn_dma: ''
+      - user_data_dma: ''
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 const flexspi_config_t FLEXSPI_config = {
@@ -306,12 +389,25 @@ const flexspi_config_t FLEXSPI_config = {
     .enableAHBCachable = false
   }
 };
+dma_handle_t FLEXSPI_TX_Handle;
+dma_handle_t FLEXSPI_RX_Handle;
+flexspi_dma_handle_t FLEXSPI_DMA_Handle;
 
 static void FLEXSPI_init(void) {
   /* FLEXSPI peripheral initialization */
   FLEXSPI_Init(FLEXSPI_PERIPHERAL, &FLEXSPI_config);
   /* Update LUT table. */
   FLEXSPI_UpdateLUT(FLEXSPI_PERIPHERAL, 0, FLEXSPI_LUT, FLEXSPI_LUT_LENGTH);
+  /* Enable the DMA 29 channel in the DMA */
+  DMA_EnableChannel(FLEXSPI_TX_DMA_BASEADDR, FLEXSPI_TX_DMA_CHANNEL);
+  /* Enable the DMA 28 channel in the DMA */
+  DMA_EnableChannel(FLEXSPI_RX_DMA_BASEADDR, FLEXSPI_RX_DMA_CHANNEL);
+  /* Create the DMA FLEXSPI_TX_Handle handle */
+  DMA_CreateHandle(&FLEXSPI_TX_Handle, FLEXSPI_TX_DMA_BASEADDR, FLEXSPI_TX_DMA_CHANNEL);
+  /* Create the DMA FLEXSPI_RX_Handle handle */
+  DMA_CreateHandle(&FLEXSPI_RX_Handle, FLEXSPI_RX_DMA_BASEADDR, FLEXSPI_RX_DMA_CHANNEL);
+  /* Initializes the FLEXSPI DMA handle which is used in transactional functions. */
+  FLEXSPI_TransferCreateHandleDMA(FLEXSPI_PERIPHERAL, &FLEXSPI_DMA_Handle, NULL, NULL, &FLEXSPI_TX_Handle, &FLEXSPI_RX_Handle);
 }
 
 /***********************************************************************************************************************
@@ -322,55 +418,44 @@ static void FLEXSPI_init(void) {
 instance:
 - name: 'FLEXCOMM1_BLE_UART'
 - type: 'flexcomm_usart'
-- mode: 'polling'
+- mode: 'freertos'
 - custom_name_enabled: 'true'
 - type_id: 'flexcomm_usart_ed63debb5f147199906723fc49ad2e72'
 - functional_group: 'BOARD_InitPeripherals'
 - peripheral: 'FLEXCOMM1'
 - config_sets:
-  - usartConfig_t:
-    - usartConfig:
+  - fsl_usart_freertos:
+    - usart_rtos_configuration:
       - clockSource: 'FXCOMFunctionClock'
       - clockSourceFreq: 'BOARD_BootClockRUN'
-      - baudRate_Bps: '115200'
-      - syncMode: 'kUSART_SyncModeDisabled'
-      - parityMode: 'kUSART_ParityDisabled'
-      - stopBitCount: 'kUSART_OneStopBit'
-      - bitCountPerChar: 'kUSART_8BitsPerChar'
-      - loopback: 'false'
-      - txWatermark: 'kUSART_TxFifo0'
-      - rxWatermark: 'kUSART_RxFifo1'
-      - enableMatchAddress: 'false'
-      - matchAddressConfig:
-        - matchAddress: '0'
-        - addressMode: 'automatic'
-      - enableRx: 'true'
-      - enableTx: 'true'
-      - enableHardwareFlowControl: 'true'
-      - enableRTS: 'true'
-      - clockPolarity: 'kUSART_RxSampleOnFallingEdge'
-      - enableContinuousSCLK: 'false'
+      - baudrate: '115200'
+      - parity: 'kUSART_ParityDisabled'
+      - stopbits: 'kUSART_OneStopBit'
+      - buffer_size: '1'
+    - interrupt_priority:
+      - IRQn: 'FLEXCOMM1_IRQn'
+      - enable_priority: 'false'
+      - priority: '0'
+    - quick_selection: 'QuickSelection1'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
-const usart_config_t FLEXCOMM1_BLE_UART_config = {
-  .baudRate_Bps = 115200UL,
-  .syncMode = kUSART_SyncModeDisabled,
-  .parityMode = kUSART_ParityDisabled,
-  .stopBitCount = kUSART_OneStopBit,
-  .bitCountPerChar = kUSART_8BitsPerChar,
-  .loopback = false,
-  .txWatermark = kUSART_TxFifo0,
-  .rxWatermark = kUSART_RxFifo1,
-  .enableRx = true,
-  .enableTx = true,
-  .enableHardwareFlowControl = true,
-  .enableMode32k = false,
-  .clockPolarity = kUSART_RxSampleOnFallingEdge,
-  .enableContinuousSCLK = false
+usart_rtos_handle_t FLEXCOMM1_BLE_UART_rtos_handle;
+usart_handle_t FLEXCOMM1_BLE_UART_usart_handle;
+uint8_t FLEXCOMM1_BLE_UART_background_buffer[FLEXCOMM1_BLE_UART_BACKGROUND_BUFFER_SIZE];
+struct rtos_usart_config FLEXCOMM1_BLE_UART_rtos_config = {
+  .base = FLEXCOMM1_BLE_UART_PERIPHERAL,
+  .baudrate = 115200UL,
+  .parity = kUSART_ParityDisabled,
+  .stopbits = kUSART_OneStopBit,
+  .buffer = FLEXCOMM1_BLE_UART_background_buffer,
+  .buffer_size = FLEXCOMM1_BLE_UART_BACKGROUND_BUFFER_SIZE
 };
 
 static void FLEXCOMM1_BLE_UART_init(void) {
-  USART_Init(FLEXCOMM1_BLE_UART_PERIPHERAL, &FLEXCOMM1_BLE_UART_config, FLEXCOMM1_BLE_UART_CLOCK_SOURCE);
+  /* USART clock source initialization */
+  FLEXCOMM1_BLE_UART_rtos_config.srcclk = FLEXCOMM1_BLE_UART_CLOCK_SOURCE;
+  /* USART rtos initialization */
+  USART_RTOS_Init(&FLEXCOMM1_BLE_UART_rtos_handle, &FLEXCOMM1_BLE_UART_usart_handle, &FLEXCOMM1_BLE_UART_rtos_config);
 }
 
 /***********************************************************************************************************************
@@ -381,7 +466,7 @@ static void FLEXCOMM1_BLE_UART_init(void) {
 instance:
 - name: 'FLEXCOMM2_BATT_I2C'
 - type: 'flexcomm_i2c'
-- mode: 'I2C_Polling'
+- mode: 'freertos'
 - custom_name_enabled: 'true'
 - type_id: 'flexcomm_i2c_c8597948f61bd571ab263ea4330b9dd6'
 - functional_group: 'BOARD_InitPeripherals'
@@ -391,14 +476,21 @@ instance:
     - i2c_mode: 'kI2C_Master'
     - clockSource: 'FXCOMFunctionClock'
     - clockSourceFreq: 'BOARD_BootClockRUN'
+    - rtos_handle:
+      - enable_custom_name: 'false'
     - i2c_master_config:
       - enableMaster: 'true'
       - baudRate_Bps: '100000'
       - enableTimeout: 'false'
       - timeout_Ms: '35'
+    - interrupt_priority:
+      - IRQn: 'FLEXCOMM2_IRQn'
+      - enable_priority: 'false'
+      - priority: '0'
     - quick_selection: 'QS_I2C_Master'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
+i2c_rtos_handle_t FLEXCOMM2_BATT_I2C_rtosHandle;
 const i2c_master_config_t FLEXCOMM2_BATT_I2C_config = {
   .enableMaster = true,
   .baudRate_Bps = 100000UL,
@@ -408,7 +500,7 @@ const i2c_master_config_t FLEXCOMM2_BATT_I2C_config = {
 
 static void FLEXCOMM2_BATT_I2C_init(void) {
   /* Initialization function */
-  I2C_MasterInit(FLEXCOMM2_BATT_I2C_PERIPHERAL, &FLEXCOMM2_BATT_I2C_config, FLEXCOMM2_BATT_I2C_CLOCK_SOURCE);
+  I2C_RTOS_Init(&FLEXCOMM2_BATT_I2C_rtosHandle, FLEXCOMM2_BATT_I2C_PERIPHERAL, &FLEXCOMM2_BATT_I2C_config, FLEXCOMM2_BATT_I2C_CLOCK_SOURCE);
 }
 
 /***********************************************************************************************************************
@@ -419,7 +511,7 @@ static void FLEXCOMM2_BATT_I2C_init(void) {
 instance:
 - name: 'FLEXCOMM3_SENSOR_I2C'
 - type: 'flexcomm_i2c'
-- mode: 'I2C_Polling'
+- mode: 'freertos'
 - custom_name_enabled: 'true'
 - type_id: 'flexcomm_i2c_c8597948f61bd571ab263ea4330b9dd6'
 - functional_group: 'BOARD_InitPeripherals'
@@ -429,14 +521,21 @@ instance:
     - i2c_mode: 'kI2C_Master'
     - clockSource: 'FXCOMFunctionClock'
     - clockSourceFreq: 'BOARD_BootClockRUN'
+    - rtos_handle:
+      - enable_custom_name: 'false'
     - i2c_master_config:
       - enableMaster: 'true'
       - baudRate_Bps: '100000'
       - enableTimeout: 'false'
       - timeout_Ms: '35'
+    - interrupt_priority:
+      - IRQn: 'FLEXCOMM3_IRQn'
+      - enable_priority: 'false'
+      - priority: '0'
     - quick_selection: 'QS_I2C_Master'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
+i2c_rtos_handle_t FLEXCOMM3_SENSOR_I2C_rtosHandle;
 const i2c_master_config_t FLEXCOMM3_SENSOR_I2C_config = {
   .enableMaster = true,
   .baudRate_Bps = 100000UL,
@@ -446,7 +545,7 @@ const i2c_master_config_t FLEXCOMM3_SENSOR_I2C_config = {
 
 static void FLEXCOMM3_SENSOR_I2C_init(void) {
   /* Initialization function */
-  I2C_MasterInit(FLEXCOMM3_SENSOR_I2C_PERIPHERAL, &FLEXCOMM3_SENSOR_I2C_config, FLEXCOMM3_SENSOR_I2C_CLOCK_SOURCE);
+  I2C_RTOS_Init(&FLEXCOMM3_SENSOR_I2C_rtosHandle, FLEXCOMM3_SENSOR_I2C_PERIPHERAL, &FLEXCOMM3_SENSOR_I2C_config, FLEXCOMM3_SENSOR_I2C_CLOCK_SOURCE);
 }
 
 /***********************************************************************************************************************
@@ -457,56 +556,44 @@ static void FLEXCOMM3_SENSOR_I2C_init(void) {
 instance:
 - name: 'FLEXCOMM5_DEBUG_UART'
 - type: 'flexcomm_usart'
-- mode: 'polling'
+- mode: 'freertos'
 - custom_name_enabled: 'true'
 - type_id: 'flexcomm_usart_ed63debb5f147199906723fc49ad2e72'
 - functional_group: 'BOARD_InitPeripherals'
 - peripheral: 'FLEXCOMM5'
 - config_sets:
-  - usartConfig_t:
-    - usartConfig:
+  - fsl_usart_freertos:
+    - usart_rtos_configuration:
       - clockSource: 'FXCOMFunctionClock'
       - clockSourceFreq: 'BOARD_BootClockRUN'
-      - baudRate_Bps: '115200'
-      - syncMode: 'kUSART_SyncModeDisabled'
-      - parityMode: 'kUSART_ParityDisabled'
-      - stopBitCount: 'kUSART_OneStopBit'
-      - bitCountPerChar: 'kUSART_8BitsPerChar'
-      - loopback: 'false'
-      - txWatermark: 'kUSART_TxFifo0'
-      - rxWatermark: 'kUSART_RxFifo1'
-      - enableMatchAddress: 'false'
-      - matchAddressConfig:
-        - matchAddress: '0'
-        - addressMode: 'automatic'
-      - enableRx: 'true'
-      - enableTx: 'true'
-      - enableHardwareFlowControl: 'false'
-      - enableRTS: 'false'
-      - clockPolarity: 'kUSART_RxSampleOnFallingEdge'
-      - enableContinuousSCLK: 'false'
+      - baudrate: '115200'
+      - parity: 'kUSART_ParityDisabled'
+      - stopbits: 'kUSART_OneStopBit'
+      - buffer_size: '1'
+    - interrupt_priority:
+      - IRQn: 'FLEXCOMM5_IRQn'
+      - enable_priority: 'false'
+      - priority: '0'
     - quick_selection: 'QuickSelection1'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
-const usart_config_t FLEXCOMM5_DEBUG_UART_config = {
-  .baudRate_Bps = 115200UL,
-  .syncMode = kUSART_SyncModeDisabled,
-  .parityMode = kUSART_ParityDisabled,
-  .stopBitCount = kUSART_OneStopBit,
-  .bitCountPerChar = kUSART_8BitsPerChar,
-  .loopback = false,
-  .txWatermark = kUSART_TxFifo0,
-  .rxWatermark = kUSART_RxFifo1,
-  .enableRx = true,
-  .enableTx = true,
-  .enableHardwareFlowControl = false,
-  .enableMode32k = false,
-  .clockPolarity = kUSART_RxSampleOnFallingEdge,
-  .enableContinuousSCLK = false
+usart_rtos_handle_t FLEXCOMM5_DEBUG_UART_rtos_handle;
+usart_handle_t FLEXCOMM5_DEBUG_UART_usart_handle;
+uint8_t FLEXCOMM5_DEBUG_UART_background_buffer[FLEXCOMM5_DEBUG_UART_BACKGROUND_BUFFER_SIZE];
+struct rtos_usart_config FLEXCOMM5_DEBUG_UART_rtos_config = {
+  .base = FLEXCOMM5_DEBUG_UART_PERIPHERAL,
+  .baudrate = 115200UL,
+  .parity = kUSART_ParityDisabled,
+  .stopbits = kUSART_OneStopBit,
+  .buffer = FLEXCOMM5_DEBUG_UART_background_buffer,
+  .buffer_size = FLEXCOMM5_DEBUG_UART_BACKGROUND_BUFFER_SIZE
 };
 
 static void FLEXCOMM5_DEBUG_UART_init(void) {
-  USART_Init(FLEXCOMM5_DEBUG_UART_PERIPHERAL, &FLEXCOMM5_DEBUG_UART_config, FLEXCOMM5_DEBUG_UART_CLOCK_SOURCE);
+  /* USART clock source initialization */
+  FLEXCOMM5_DEBUG_UART_rtos_config.srcclk = FLEXCOMM5_DEBUG_UART_CLOCK_SOURCE;
+  /* USART rtos initialization */
+  USART_RTOS_Init(&FLEXCOMM5_DEBUG_UART_rtos_handle, &FLEXCOMM5_DEBUG_UART_usart_handle, &FLEXCOMM5_DEBUG_UART_rtos_config);
 }
 
 /***********************************************************************************************************************
@@ -514,6 +601,9 @@ static void FLEXCOMM5_DEBUG_UART_init(void) {
  **********************************************************************************************************************/
 void BOARD_InitPeripherals(void)
 {
+  /* Global initialization */
+  DMA_Init(DMA0_DMA_BASEADDR);
+
   /* Initialize components */
   FLEXCOMM0_EEG_SPI_init();
   FLEXSPI_init();

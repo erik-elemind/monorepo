@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <math.h> // used for ceil, log10, pow
 
+#include "board_config.h"
+
 #include "fsl_power.h"
 
 #include "FreeRTOS.h"
