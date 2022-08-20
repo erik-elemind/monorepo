@@ -10,7 +10,6 @@
 #define __USB_DEVICE_CLASS_H__
 
 #include "usb_device.h"
-
 /*!
  * @addtogroup usb_device_class_driver
  * @{

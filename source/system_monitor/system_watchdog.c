@@ -13,26 +13,26 @@
 
 #define APP_WDT_IRQn        WDT_BOD_IRQn
 #define APP_WDT_IRQ_HANDLER WDT_BOD_IRQHandler
-#define WDT_CLK_FREQ        CLOCK_GetWdtClkFreq()
+#define WDT_CLK_FREQ        CLOCK_GetWdtClkFreq(0)
 
 
 void APP_WDT_IRQ_HANDLER(void)
 {
-    uint32_t wdtStatus = WWDT_GetStatusFlags(WWDT);
+    uint32_t wdtStatus = WWDT_GetStatusFlags(WWDT0);
 
 //    APP_LED_TOGGLE;
 
     /* The chip will reset before this happens */
     if (wdtStatus & kWWDT_TimeoutFlag)
     {
-        WWDT_ClearStatusFlags(WWDT, kWWDT_TimeoutFlag);
+        WWDT_ClearStatusFlags(WWDT0, kWWDT_TimeoutFlag);
     }
 
     /* Handle warning interrupt */
     if (wdtStatus & kWWDT_WarningFlag)
     {
         /* A watchdog feed didn't occur prior to warning timeout */
-        WWDT_ClearStatusFlags(WWDT, kWWDT_WarningFlag);
+        WWDT_ClearStatusFlags(WWDT0, kWWDT_WarningFlag);
         /* User code. User can do urgent case before timeout reset.
          * IE. user can backup the ram data or ram log to flash.
          * the period is set by config.warningValue, user need to
@@ -71,13 +71,13 @@ void system_watchdog_init(){
   config.enableWatchdogReset = true;
   /* Setup watchdog clock frequency(Hz). */
   config.clockFreq_Hz = WDT_CLK_FREQ;
-  WWDT_Init(WWDT, &config);
+  WWDT_Init(WWDT0, &config);
 
   NVIC_EnableIRQ(APP_WDT_IRQn);
 }
 
 void system_watchdog_feed(){
-  WWDT_Refresh(WWDT);
+  WWDT_Refresh(WWDT0);
 }
 
 

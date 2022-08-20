@@ -21,6 +21,7 @@
 
 #include "als.h"
 #include "data_log.h"
+#include "pin_mux.h"
 
 // Reduce log level for this module
 #define LOG_LEVEL_MODULE LOG_DEBUG

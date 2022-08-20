@@ -26,7 +26,7 @@ extern "C" {
  * Try that in case of build problems. Otherwise, remove the #error line below.
  *****************************************************************************/
 //#error "Trace Recorder: Please include your processor's header file here and remove this line."
-#include "LPC55S69_cm33_core0.h"
+#include "MIMXRT685S_cm33.h"
 
 /*******************************************************************************
  * Configuration Macro: TRC_CFG_HARDWARE_PORT
