@@ -13,10 +13,11 @@
 #include "fsl_reset.h"
 #include "fsl_gpio.h"
 
+#include "fsl_spi_dma.h"
+
 //
 // Board-specific Configuration Values (for build time)
 //
-#include "board.h"
 #include "clock_config.h"
 #include "peripherals.h"
 #include "pin_mux.h"
@@ -202,8 +203,8 @@ void BOARD_InitFlashSPI();
  * Battery Charger
  *****************************************************************************/
 
-#define BATTERY_CHARGER_ENABLE_PORT BOARD_INITPINS_BAT_CEn_PORT
-#define BATTERY_CHARGER_ENABLE_PIN BOARD_INITPINS_BAT_CEn_PIN
+#define BATTERY_CHARGER_ENABLE_PORT BOARD_INITPINS_BAT_CD_PORT
+#define BATTERY_CHARGER_ENABLE_PIN BOARD_INITPINS_BAT_CD_PIN
 
 #define BATTERY_CHARGER_STATUS_PORT BOARD_INITPINS_BAT_STATn_PORT
 #define BATTERY_CHARGER_STATUS_PIN BOARD_INITPINS_BAT_STATn_PIN
