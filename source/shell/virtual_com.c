@@ -16,7 +16,7 @@
 #include "fsl_debug_console.h"
 #include "pin_mux.h"
 #include "clock_config.h"
-#include "board.h"
+#include "board_ff4.h"
 
 #include "usb_device_config.h"
 #include "usb.h"
@@ -169,37 +169,37 @@ void USB1_IRQHandler(void)
 #define BOARD_USB_PHY_TXCAL45DM (0x0AU)
 void USB_DeviceClockInit(void)
 {
-#if defined(USB_DEVICE_CONFIG_LPCIP3511HS) && (USB_DEVICE_CONFIG_LPCIP3511HS > 0U)
-    usb_phy_config_struct_t phyConfig = {
-        BOARD_USB_PHY_D_CAL,
-        BOARD_USB_PHY_TXCAL45DP,
-        BOARD_USB_PHY_TXCAL45DM,
-    };
-#endif
-
-#if defined(USB_DEVICE_CONFIG_LPCIP3511FS) && (USB_DEVICE_CONFIG_LPCIP3511FS > 0U)
-    /* enable USB IP clock */
-    CLOCK_EnableUsbfs0DeviceClock(kCLOCK_UsbfsSrcFro, CLOCK_GetFroHfFreq());
-#if defined(FSL_FEATURE_USB_USB_RAM) && (FSL_FEATURE_USB_USB_RAM)
-    for (int i = 0; i < FSL_FEATURE_USB_USB_RAM; i++)
-    {
-        ((uint8_t *)FSL_FEATURE_USB_USB_RAM_BASE_ADDRESS)[i] = 0x00U;
-    }
-#endif
-
-#endif
-#if defined(USB_DEVICE_CONFIG_LPCIP3511HS) && (USB_DEVICE_CONFIG_LPCIP3511HS > 0U)
-    /* enable USB IP clock */
-    CLOCK_EnableUsbhs0PhyPllClock(kCLOCK_UsbPhySrcExt, BOARD_XTAL0_CLK_HZ);
-    CLOCK_EnableUsbhs0DeviceClock(kCLOCK_UsbSrcUnused, 0U);
-    USB_EhciPhyInit(CONTROLLER_ID, BOARD_XTAL0_CLK_HZ, &phyConfig);
-#if defined(FSL_FEATURE_USBHSD_USB_RAM) && (FSL_FEATURE_USBHSD_USB_RAM)
-    for (int i = 0; i < FSL_FEATURE_USBHSD_USB_RAM; i++)
-    {
-        ((uint8_t *)FSL_FEATURE_USBHSD_USB_RAM_BASE_ADDRESS)[i] = 0x00U;
-    }
-#endif
-#endif
+//#if defined(USB_DEVICE_CONFIG_LPCIP3511HS) && (USB_DEVICE_CONFIG_LPCIP3511HS > 0U)
+//    usb_phy_config_struct_t phyConfig = {
+//        BOARD_USB_PHY_D_CAL,
+//        BOARD_USB_PHY_TXCAL45DP,
+//        BOARD_USB_PHY_TXCAL45DM,
+//    };
+//#endif
+//
+//#if defined(USB_DEVICE_CONFIG_LPCIP3511FS) && (USB_DEVICE_CONFIG_LPCIP3511FS > 0U)
+//    /* enable USB IP clock */
+//    CLOCK_EnableUsbfs0DeviceClock(kCLOCK_UsbfsSrcFro, CLOCK_GetFroHfFreq());
+//#if defined(FSL_FEATURE_USB_USB_RAM) && (FSL_FEATURE_USB_USB_RAM)
+//    for (int i = 0; i < FSL_FEATURE_USB_USB_RAM; i++)
+//    {
+//        ((uint8_t *)FSL_FEATURE_USB_USB_RAM_BASE_ADDRESS)[i] = 0x00U;
+//    }
+//#endif
+//
+//#endif
+//#if defined(USB_DEVICE_CONFIG_LPCIP3511HS) && (USB_DEVICE_CONFIG_LPCIP3511HS > 0U)
+//    /* enable USB IP clock */
+//    CLOCK_EnableUsbhs0PhyPllClock(kCLOCK_UsbPhySrcExt, BOARD_XTAL0_CLK_HZ);
+//    CLOCK_EnableUsbhs0DeviceClock(kCLOCK_UsbSrcUnused, 0U);
+//    USB_EhciPhyInit(CONTROLLER_ID, BOARD_XTAL0_CLK_HZ, &phyConfig);
+//#if defined(FSL_FEATURE_USBHSD_USB_RAM) && (FSL_FEATURE_USBHSD_USB_RAM)
+//    for (int i = 0; i < FSL_FEATURE_USBHSD_USB_RAM; i++)
+//    {
+//        ((uint8_t *)FSL_FEATURE_USBHSD_USB_RAM_BASE_ADDRESS)[i] = 0x00U;
+//    }
+//#endif
+//#endif
 }
 void USB_DeviceIsrEnable(void)
 {
@@ -898,52 +898,52 @@ virtual_com_flush(){
 /* Initialize virtual serial port. */
 void virtual_com_init(void)
 {
-    NVIC_ClearPendingIRQ(USB0_IRQn);
-    NVIC_ClearPendingIRQ(USB0_NEEDCLK_IRQn);
-    NVIC_ClearPendingIRQ(USB1_IRQn);
-    NVIC_ClearPendingIRQ(USB1_NEEDCLK_IRQn);
-
-    POWER_DisablePD(kPDRUNCFG_PD_USB0_PHY); /*< Turn on USB0 Phy */
-    POWER_DisablePD(kPDRUNCFG_PD_USB1_PHY); /*< Turn on USB1 Phy */
-
-    /* reset the IP to make sure it's in reset state. */
-    RESET_PeripheralReset(kUSB0D_RST_SHIFT_RSTn);
-    RESET_PeripheralReset(kUSB0HSL_RST_SHIFT_RSTn);
-    RESET_PeripheralReset(kUSB0HMR_RST_SHIFT_RSTn);
-    RESET_PeripheralReset(kUSB1H_RST_SHIFT_RSTn);
-    RESET_PeripheralReset(kUSB1D_RST_SHIFT_RSTn);
-    RESET_PeripheralReset(kUSB1_RST_SHIFT_RSTn);
-    RESET_PeripheralReset(kUSB1RAM_RST_SHIFT_RSTn);
-
-#if defined(VARIANT_FF1) || defined(VARIANT_FF2) || defined(VARIANT_FF3)
-    // FF1 board uses USB1 HS (High Speed) interface
-    /* Enable usb1 host clock */
-    CLOCK_EnableClock(kCLOCK_Usbh1);
-    /* Put PHY powerdown under software control */
-    *((uint32_t *)(USBHSH_BASE + 0x50)) = USBHSH_PORTMODE_SW_PDCOM_MASK;
-      /* According to reference mannual, device mode setting has to be set by access usb host register */
-    *((uint32_t *)(USBHSH_BASE + 0x50)) |= USBHSH_PORTMODE_DEV_ENABLE_MASK;
-    /* Disable usb1 host clock */
-    CLOCK_DisableClock(kCLOCK_Usbh1);
-  
-#elif defined(VARIANT_NFF1)
-    // NFF1 board uses USB0 FS (Full Speed) interface
-
-    /* Turn on USB0 Phy (not sure why we do this twice, but it was in example). */
-    POWER_DisablePD(kPDRUNCFG_PD_USB0_PHY); /*< Turn on USB Phy */
-    /* Enable usb0 host clock */
-    CLOCK_SetClkDiv(kCLOCK_DivUsb0Clk, 1, false);
-    CLOCK_AttachClk(kFRO_HF_to_USB0_CLK);
-    CLOCK_EnableClock(kCLOCK_Usbhsl0);
-    /*According to reference manual, device mode setting has to be set by access usb host register */
-    *((uint32_t *)(USBFSH_BASE + 0x5C)) |= USBFSH_PORTMODE_DEV_ENABLE_MASK;
-    /* Disable usb0 host clock */
-    CLOCK_DisableClock(kCLOCK_Usbhsl0);
-#else
-#error "Unknown Morpheus variant--no USB initialization!"
-#endif
-	
-	virtual_com_init_helper();
+//    NVIC_ClearPendingIRQ(USB0_IRQn);
+//    NVIC_ClearPendingIRQ(USB0_NEEDCLK_IRQn);
+//    NVIC_ClearPendingIRQ(USB1_IRQn);
+//    NVIC_ClearPendingIRQ(USB1_NEEDCLK_IRQn);
+//
+//    POWER_DisablePD(kPDRUNCFG_PD_USB0_PHY); /*< Turn on USB0 Phy */
+//    POWER_DisablePD(kPDRUNCFG_PD_USB1_PHY); /*< Turn on USB1 Phy */
+//
+//    /* reset the IP to make sure it's in reset state. */
+//    RESET_PeripheralReset(kUSB0D_RST_SHIFT_RSTn);
+//    RESET_PeripheralReset(kUSB0HSL_RST_SHIFT_RSTn);
+//    RESET_PeripheralReset(kUSB0HMR_RST_SHIFT_RSTn);
+//    RESET_PeripheralReset(kUSB1H_RST_SHIFT_RSTn);
+//    RESET_PeripheralReset(kUSB1D_RST_SHIFT_RSTn);
+//    RESET_PeripheralReset(kUSB1_RST_SHIFT_RSTn);
+//    RESET_PeripheralReset(kUSB1RAM_RST_SHIFT_RSTn);
+//
+//#if defined(VARIANT_FF1) || defined(VARIANT_FF2) || defined(VARIANT_FF3)
+//    // FF1 board uses USB1 HS (High Speed) interface
+//    /* Enable usb1 host clock */
+//    CLOCK_EnableClock(kCLOCK_Usbh1);
+//    /* Put PHY powerdown under software control */
+//    *((uint32_t *)(USBHSH_BASE + 0x50)) = USBHSH_PORTMODE_SW_PDCOM_MASK;
+//      /* According to reference mannual, device mode setting has to be set by access usb host register */
+//    *((uint32_t *)(USBHSH_BASE + 0x50)) |= USBHSH_PORTMODE_DEV_ENABLE_MASK;
+//    /* Disable usb1 host clock */
+//    CLOCK_DisableClock(kCLOCK_Usbh1);
+//
+//#elif defined(VARIANT_NFF1)
+//    // NFF1 board uses USB0 FS (Full Speed) interface
+//
+//    /* Turn on USB0 Phy (not sure why we do this twice, but it was in example). */
+//    POWER_DisablePD(kPDRUNCFG_PD_USB0_PHY); /*< Turn on USB Phy */
+//    /* Enable usb0 host clock */
+//    CLOCK_SetClkDiv(kCLOCK_DivUsb0Clk, 1, false);
+//    CLOCK_AttachClk(kFRO_HF_to_USB0_CLK);
+//    CLOCK_EnableClock(kCLOCK_Usbhsl0);
+//    /*According to reference manual, device mode setting has to be set by access usb host register */
+//    *((uint32_t *)(USBFSH_BASE + 0x5C)) |= USBFSH_PORTMODE_DEV_ENABLE_MASK;
+//    /* Disable usb0 host clock */
+//    CLOCK_DisableClock(kCLOCK_Usbhsl0);
+//#else
+//#error "Unknown Morpheus variant--no USB initialization!"
+//#endif
+//
+//	virtual_com_init_helper();
 }
 
 

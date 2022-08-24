@@ -4,9 +4,10 @@
 // For HAL Driver Handles:
 #include "fsl_i2c.h"
 #include "fsl_i2c_freertos.h"
+#include "fsl_usart_freertos.h"
 
 #include "fsl_usart.h"
-#include "fsl_usart_freertos.h"
+
 
 #include "clock_config.h"
 #include "fsl_common.h"
@@ -62,11 +63,11 @@ int BOARD_InitBLE();
 /******************************************************************************
  * DEBUG UART
  *****************************************************************************/
-#define USART_DEBUG_RTOS_HANDLE    FC1_DEBUG_UART_rtos_handle  // Declared and init'd in peripherals.c
-#define USART_DEBUG_RST            kFC1_RST_SHIFT_RSTn    // Passed to RESET_ClearPeripheralReset()
+#define USART_DEBUG_RTOS_HANDLE    FLEXCOMM5_DEBUG_UART_rtos_handle  // Declared and init'd in peripherals.c
+#define USART_DEBUG_RST            kFC5_RST_SHIFT_RSTn    // Passed to RESET_ClearPeripheralReset()
 #define USART_DEBUG_NVIC_PRIORITY  3  // Interrupt priority: 1 is highest priority
-#define USART_DEBUG_IRQn           FLEXCOMM1_IRQn
-#define USART_DEBUG_BUFFER_SIZE    FLEXCOMM1_BACKGROUND_BUFFER_SIZE
+#define USART_DEBUG_IRQn           FLEXCOMM5_IRQn
+#define USART_DEBUG_BUFFER_SIZE    FLEXCOMM5_BACKGROUND_BUFFER_SIZE
 
 extern usart_rtos_handle_t         USART_DEBUG_RTOS_HANDLE;
 int BOARD_InitDebugConsole();

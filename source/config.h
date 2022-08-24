@@ -2,10 +2,9 @@
 #define CONFIG_H
 
 #include "version.h"
-//#include "board_config.h"  //ToDo port
-//#include "prebuild.h"
-//#include "config_tracealyzer.h"
-//#include "config_tracealyzer_isr.h"
+#include "../config/board_config.h"
+#include "config_tracealyzer.h"
+#include "config_tracealyzer_isr.h"
 
 #define BUILD_CONFIG_SLEEP_STUDY_3  (1U)
 #define BUILD_CONFIG_BETA_1 (2U)
@@ -34,7 +33,7 @@
 #define CONFIG_SHELL_FREERTOS 1
 
 // SHELL_WELCOME_STRING
-#define SHELL_WELCOME_STRING "\n**** " PROJECT_NAME " " FW_VERSION_GIT_STRING " ****\n\n"\
+#define SHELL_WELCOME_STRING "\n**** Morpheus FW ****\n\n"\
 " Type 'help' or '?' to see a list of shell commands.\n\n"
 
 // If using semihosting under Quick Settings > Set library/header type
@@ -43,14 +42,7 @@
 //#define CONFIG_USE_SEMIHOSTING 1
 
 // Shell output device (only define one)
-#if defined(VARIANT_NFF1)
-#define CONFIG_SHELL_UART
-//#define CONFIG_SHELL_USB
-#elif defined(VARIANT_FF1) ||  defined(VARIANT_FF2) ||  defined(VARIANT_FF3)
-// If using UART for sending files, increase Flexcomm 1 UART buffer size to 2048 bytes.
-//#define CONFIG_SHELL_UART
 #define CONFIG_SHELL_USB
-#endif
 
 // Enable the System Watchdog Timer
 // 0U - disable the timer
@@ -62,13 +54,7 @@
 // 0U - ignore temp sensor.
 // 1U - monitor temp sensor. (production default)
 // (Used in battery_charger.c)
-#if defined(VARIANT_FF3)
 #define ENABLE_CHARGER_TEMP_SENSOR (1U)
-#else
-// FF2 batteries may have the thermistor disconnected, so tell the charger
-// to ignore the temp sense input
-#define ENABLE_CHARGER_TEMP_SENSOR (0U)
-#endif
 
 // Enable USB plug/unplug events
 // 0U - ignore USB plug/unplug events
@@ -139,12 +125,8 @@
 // 1U - 12 sec delay before scheduler starts, external 32kHz
 // 2U - 12 sec delay after scheduler starts, external 32kHz
 // 3U - standard delay, use internal 32kHz
-#if defined(VARIANT_FF2)
-  #define USBC_XTAL32K_COMPATBILITY_OPTION (3U)
-// NOTE IF USING OPTION 3
-#elif defined(VARIANT_FF3)
-  #define USBC_XTAL32K_COMPATBILITY_OPTION (3U)
-#endif
+#define USBC_XTAL32K_COMPATBILITY_OPTION (3U)
+
 
 #if (defined(BUILD_CONFIG) && BUILD_CONFIG==BUILD_CONFIG_SLEEP_STUDY_3)
   #define CONFIG_DATALOG_USE_TIME_STRING (1U)
