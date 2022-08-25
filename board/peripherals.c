@@ -108,6 +108,7 @@ instance:
       - 1: []
       - 2: []
       - 3: []
+      - 4: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -613,36 +614,6 @@ instance:
   - general:
     - interrupt_array:
       - 0:
-        - interrupt_id: 'INT_0'
-        - interrupt_selection: 'PINT.0'
-        - interrupt_type: 'kPINT_PinIntEnableNone'
-        - callback_function: ''
-        - enable_callback: 'false'
-        - interrupt:
-          - IRQn: 'PIN_INT0_IRQn'
-          - enable_priority: 'false'
-          - priority: '0'
-      - 1:
-        - interrupt_id: 'INT_1'
-        - interrupt_selection: 'PINT.1'
-        - interrupt_type: 'kPINT_PinIntEnableNone'
-        - callback_function: ''
-        - enable_callback: 'false'
-        - interrupt:
-          - IRQn: 'PIN_INT1_IRQn'
-          - enable_priority: 'false'
-          - priority: '0'
-      - 2:
-        - interrupt_id: 'INT_2'
-        - interrupt_selection: 'PINT.2'
-        - interrupt_type: 'kPINT_PinIntEnableNone'
-        - callback_function: ''
-        - enable_callback: 'false'
-        - interrupt:
-          - IRQn: 'PIN_INT2_IRQn'
-          - enable_priority: 'false'
-          - priority: '0'
-      - 3:
         - interrupt_id: 'INT_3'
         - interrupt_selection: 'PINT.3'
         - interrupt_type: 'kPINT_PinIntEnableNone'
@@ -652,56 +623,108 @@ instance:
           - IRQn: 'PIN_INT3_IRQn'
           - enable_priority: 'false'
           - priority: '0'
-      - 4:
-        - interrupt_id: 'INT_4'
-        - interrupt_selection: 'PINT.4'
-        - interrupt_type: 'kPINT_PinIntEnableNone'
-        - callback_function: ''
-        - enable_callback: 'false'
-        - interrupt:
-          - IRQn: 'PIN_INT4_IRQn'
-          - enable_priority: 'false'
-          - priority: '0'
-      - 5:
-        - interrupt_id: 'INT_5'
-        - interrupt_selection: 'PINT.5'
-        - interrupt_type: 'kPINT_PinIntEnableNone'
-        - callback_function: ''
-        - enable_callback: 'false'
-        - interrupt:
-          - IRQn: 'PIN_INT5_IRQn'
-          - enable_priority: 'false'
-          - priority: '0'
-      - 6:
-        - interrupt_id: 'INT_6'
-        - interrupt_selection: 'PINT.6'
-        - interrupt_type: 'kPINT_PinIntEnableNone'
-        - callback_function: ''
-        - enable_callback: 'false'
-        - interrupt:
-          - IRQn: 'PIN_INT6_IRQn'
-          - enable_priority: 'false'
-          - priority: '0'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
 static void PINT_init(void) {
   /* PINT initiation  */
   PINT_Init(PINT_PERIPHERAL);
-  /* PINT PINT.0 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_0, kPINT_PinIntEnableNone, NULL);
-  /* PINT PINT.1 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_1, kPINT_PinIntEnableNone, NULL);
-  /* PINT PINT.2 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_2, kPINT_PinIntEnableNone, NULL);
   /* PINT PINT.3 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_3, kPINT_PinIntEnableNone, hrm_pint_isr);
-  /* PINT PINT.4 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_4, kPINT_PinIntEnableNone, NULL);
-  /* PINT PINT.5 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_5, kPINT_PinIntEnableNone, NULL);
-  /* PINT PINT.6 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_6, kPINT_PinIntEnableNone, NULL);
+}
+
+/***********************************************************************************************************************
+ * SCT0_LED initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'SCT0_LED'
+- type: 'sctimer'
+- mode: 'basic'
+- custom_name_enabled: 'true'
+- type_id: 'sctimer_7973000102117ff9c4fa4742aaf3ccb0'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'SCT0'
+- config_sets:
+  - main:
+    - config:
+      - clockMode: 'kSCTIMER_System_ClockMode'
+      - clockSource: 'SynchronousFunctionClock'
+      - clockSourceFreq: 'GetFreq'
+      - SCTInputClockSourceFreq: 'custom:0'
+      - clockSelect: 'kSCTIMER_Clock_On_Rise_Input_0'
+      - enableCounterUnify: 'true'
+      - enableBidirection_l: 'false'
+      - enableBidirection_h: 'false'
+      - prescale_l: '1'
+      - prescale_h: '1'
+      - outInitState: 'SCTIMER_OUTPUT_2_MASK SCTIMER_OUTPUT_6_MASK SCTIMER_OUTPUT_7_MASK'
+      - inputsync: ''
+    - enableIRQ: 'true'
+    - interrupt:
+      - IRQn: 'SCT0_IRQn'
+      - enable_interrrupt: 'enabled'
+      - enable_priority: 'true'
+      - priority: '5'
+      - enable_custom_name: 'false'
+    - enableLTimer: 'false'
+    - enableHTimer: 'false'
+    - pwms:
+      - 0:
+        - output: 'kSCTIMER_Out_2'
+        - level: 'kSCTIMER_HighTrue'
+        - dutyCyclePercent: '0'
+      - 1:
+        - output: 'kSCTIMER_Out_6'
+        - level: 'kSCTIMER_HighTrue'
+        - dutyCyclePercent: '0'
+      - 2:
+        - output: 'kSCTIMER_Out_7'
+        - level: 'kSCTIMER_HighTrue'
+        - dutyCyclePercent: '0'
+    - pwmMode: 'kSCTIMER_EdgeAlignedPwm'
+    - pwmFrequency: '25000'
+    - events: []
+    - states: []
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const sctimer_config_t SCT0_LED_initConfig = {
+  .enableCounterUnify = true,
+  .clockMode = kSCTIMER_System_ClockMode,
+  .clockSelect = kSCTIMER_Clock_On_Rise_Input_0,
+  .enableBidirection_l = false,
+  .enableBidirection_h = false,
+  .prescale_l = 0U,
+  .prescale_h = 0U,
+  .outInitState = (uint8_t)(SCT0_LED_OUTPUT_2 | SCT0_LED_OUTPUT_6 | SCT0_LED_OUTPUT_7),
+  .inputsync = 0U
+};
+const sctimer_pwm_signal_param_t SCT0_LED_pwmSignalsConfig[3] = {
+  {
+    .output = kSCTIMER_Out_2,
+    .level = kSCTIMER_HighTrue,
+    .dutyCyclePercent = 0U
+  },
+  {
+    .output = kSCTIMER_Out_6,
+    .level = kSCTIMER_HighTrue,
+    .dutyCyclePercent = 0U
+  },
+  {
+    .output = kSCTIMER_Out_7,
+    .level = kSCTIMER_HighTrue,
+    .dutyCyclePercent = 0U
+  }
+};
+uint32_t SCT0_LED_pwmEvent[3];
+
+static void SCT0_LED_init(void) {
+  SCTIMER_Init(SCT0_LED_PERIPHERAL, &SCT0_LED_initConfig);
+  /* Interrupt vector SCT0_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(SCT0_LED_IRQN, SCT0_LED_IRQ_PRIORITY);
+  /* Enable interrupt SCT0_IRQn request in the NVIC. */
+  EnableIRQ(SCT0_LED_IRQN);
 }
 
 /***********************************************************************************************************************
@@ -720,6 +743,7 @@ void BOARD_InitPeripherals(void)
   FLEXCOMM3_SENSOR_I2C_init();
   FLEXCOMM5_DEBUG_UART_init();
   PINT_init();
+  SCT0_LED_init();
 }
 
 /***********************************************************************************************************************

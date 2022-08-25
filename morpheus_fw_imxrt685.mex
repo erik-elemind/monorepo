@@ -393,6 +393,16 @@
                   <data type="Version">2.1.3</data>
                </feature>
             </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.sctimer" description="SCT Driver not found in the toolchain/IDE project. Project will not compile!" problem_level="2" source="Peripherals">
+               <feature name="enabled" evaluation="equal">
+                  <data type="Boolean">true</data>
+               </feature>
+            </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.sctimer" description="Unsupported version of the SCT Driver in the toolchain/IDE project. Required: ${required_value}, actual: ${actual_value}. Project might not compile correctly." problem_level="1" source="Peripherals">
+               <feature name="version" evaluation="greaterOrEqual">
+                  <data type="Version">2.4.0</data>
+               </feature>
+            </dependency>
          </dependencies>
          <generated_project_files>
             <file path="board/peripherals.c" update_enabled="true"/>
@@ -556,38 +566,28 @@
                         <data type="Frequency" unit="Hz">0</data>
                      </feature>
                   </dependency>
-                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="PINT.pint.0" description="Signal PINT, 0 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="routed" evaluation="">
-                        <data type="Boolean">true</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="PINT.pint.1" description="Signal PINT, 1 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="routed" evaluation="">
-                        <data type="Boolean">true</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="PINT.pint.2" description="Signal PINT, 2 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="routed" evaluation="">
-                        <data type="Boolean">true</data>
-                     </feature>
-                  </dependency>
                   <dependency resourceType="PeripheralUnifiedSignal" resourceId="PINT.pint.3" description="Signal PINT, 3 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
                      <feature name="routed" evaluation="">
                         <data type="Boolean">true</data>
                      </feature>
                   </dependency>
-                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="PINT.pint.4" description="Signal PINT, 4 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="routed" evaluation="">
+                  <dependency resourceType="ClockOutput" resourceId="System_clock" description="System clock is inactive." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="frequency" evaluation="greaterThan">
+                        <data type="Frequency" unit="Hz">0</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="SCT0.out.2" description="Signal output 2 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="equal">
                         <data type="Boolean">true</data>
                      </feature>
                   </dependency>
-                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="PINT.pint.5" description="Signal PINT, 5 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="routed" evaluation="">
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="SCT0.out.6" description="Signal output 6 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="equal">
                         <data type="Boolean">true</data>
                      </feature>
                   </dependency>
-                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="PINT.pint.6" description="Signal PINT, 6 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="routed" evaluation="">
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="SCT0.out.7" description="Signal output 7 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="equal">
                         <data type="Boolean">true</data>
                      </feature>
                   </dependency>
@@ -600,6 +600,7 @@
                            <struct name="1"/>
                            <struct name="2"/>
                            <struct name="3"/>
+                           <struct name="4"/>
                         </array>
                         <array name="interrupts"/>
                      </config_set>
@@ -867,42 +868,6 @@
                      <config_set name="general">
                         <array name="interrupt_array">
                            <struct name="0">
-                              <setting name="interrupt_id" value="INT_0"/>
-                              <setting name="interrupt_selection" value="PINT.0"/>
-                              <setting name="interrupt_type" value="kPINT_PinIntEnableNone"/>
-                              <setting name="callback_function" value=""/>
-                              <setting name="enable_callback" value="false"/>
-                              <struct name="interrupt">
-                                 <setting name="IRQn" value="PIN_INT0_IRQn"/>
-                                 <setting name="enable_priority" value="false"/>
-                                 <setting name="priority" value="0"/>
-                              </struct>
-                           </struct>
-                           <struct name="1">
-                              <setting name="interrupt_id" value="INT_1"/>
-                              <setting name="interrupt_selection" value="PINT.1"/>
-                              <setting name="interrupt_type" value="kPINT_PinIntEnableNone"/>
-                              <setting name="callback_function" value=""/>
-                              <setting name="enable_callback" value="false"/>
-                              <struct name="interrupt">
-                                 <setting name="IRQn" value="PIN_INT1_IRQn"/>
-                                 <setting name="enable_priority" value="false"/>
-                                 <setting name="priority" value="0"/>
-                              </struct>
-                           </struct>
-                           <struct name="2">
-                              <setting name="interrupt_id" value="INT_2"/>
-                              <setting name="interrupt_selection" value="PINT.2"/>
-                              <setting name="interrupt_type" value="kPINT_PinIntEnableNone"/>
-                              <setting name="callback_function" value=""/>
-                              <setting name="enable_callback" value="false"/>
-                              <struct name="interrupt">
-                                 <setting name="IRQn" value="PIN_INT2_IRQn"/>
-                                 <setting name="enable_priority" value="false"/>
-                                 <setting name="priority" value="0"/>
-                              </struct>
-                           </struct>
-                           <struct name="3">
                               <setting name="interrupt_id" value="INT_3"/>
                               <setting name="interrupt_selection" value="PINT.3"/>
                               <setting name="interrupt_type" value="kPINT_PinIntEnableNone"/>
@@ -914,43 +879,64 @@
                                  <setting name="priority" value="0"/>
                               </struct>
                            </struct>
-                           <struct name="4">
-                              <setting name="interrupt_id" value="INT_4"/>
-                              <setting name="interrupt_selection" value="PINT.4"/>
-                              <setting name="interrupt_type" value="kPINT_PinIntEnableNone"/>
-                              <setting name="callback_function" value=""/>
-                              <setting name="enable_callback" value="false"/>
-                              <struct name="interrupt">
-                                 <setting name="IRQn" value="PIN_INT4_IRQn"/>
-                                 <setting name="enable_priority" value="false"/>
-                                 <setting name="priority" value="0"/>
-                              </struct>
+                        </array>
+                     </config_set>
+                  </instance>
+                  <instance name="SCT0_LED" uuid="1a95bd51-b893-48aa-81d6-00ffa60b913f" type="sctimer" type_id="sctimer_7973000102117ff9c4fa4742aaf3ccb0" mode="basic" peripheral="SCT0" enabled="true" comment="" custom_name_enabled="true" editing_lock="false">
+                     <config_set name="main">
+                        <struct name="config">
+                           <setting name="clockMode" value="kSCTIMER_System_ClockMode"/>
+                           <setting name="clockSource" value="SynchronousFunctionClock"/>
+                           <setting name="clockSourceFreq" value="GetFreq"/>
+                           <setting name="SCTInputClockSourceFreq" value="custom:0"/>
+                           <setting name="clockSelect" value="kSCTIMER_Clock_On_Rise_Input_0"/>
+                           <setting name="enableCounterUnify" value="true"/>
+                           <setting name="enableBidirection_l" value="false"/>
+                           <setting name="enableBidirection_h" value="false"/>
+                           <setting name="prescale_l" value="1"/>
+                           <setting name="prescale_h" value="1"/>
+                           <set name="outInitState">
+                              <selected>
+                                 <id>SCTIMER_OUTPUT_2_MASK</id>
+                                 <id>SCTIMER_OUTPUT_6_MASK</id>
+                                 <id>SCTIMER_OUTPUT_7_MASK</id>
+                              </selected>
+                           </set>
+                           <set name="inputsync">
+                              <selected/>
+                           </set>
+                        </struct>
+                        <setting name="enableIRQ" value="true"/>
+                        <struct name="interrupt">
+                           <setting name="IRQn" value="SCT0_IRQn"/>
+                           <setting name="enable_interrrupt" value="enabled"/>
+                           <setting name="enable_priority" value="true"/>
+                           <setting name="priority" value="5"/>
+                           <setting name="enable_custom_name" value="false"/>
+                        </struct>
+                        <setting name="enableLTimer" value="false"/>
+                        <setting name="enableHTimer" value="false"/>
+                        <array name="pwms">
+                           <struct name="0">
+                              <setting name="output" value="kSCTIMER_Out_2"/>
+                              <setting name="level" value="kSCTIMER_HighTrue"/>
+                              <setting name="dutyCyclePercent" value="0"/>
                            </struct>
-                           <struct name="5">
-                              <setting name="interrupt_id" value="INT_5"/>
-                              <setting name="interrupt_selection" value="PINT.5"/>
-                              <setting name="interrupt_type" value="kPINT_PinIntEnableNone"/>
-                              <setting name="callback_function" value=""/>
-                              <setting name="enable_callback" value="false"/>
-                              <struct name="interrupt">
-                                 <setting name="IRQn" value="PIN_INT5_IRQn"/>
-                                 <setting name="enable_priority" value="false"/>
-                                 <setting name="priority" value="0"/>
-                              </struct>
+                           <struct name="1">
+                              <setting name="output" value="kSCTIMER_Out_6"/>
+                              <setting name="level" value="kSCTIMER_HighTrue"/>
+                              <setting name="dutyCyclePercent" value="0"/>
                            </struct>
-                           <struct name="6">
-                              <setting name="interrupt_id" value="INT_6"/>
-                              <setting name="interrupt_selection" value="PINT.6"/>
-                              <setting name="interrupt_type" value="kPINT_PinIntEnableNone"/>
-                              <setting name="callback_function" value=""/>
-                              <setting name="enable_callback" value="false"/>
-                              <struct name="interrupt">
-                                 <setting name="IRQn" value="PIN_INT6_IRQn"/>
-                                 <setting name="enable_priority" value="false"/>
-                                 <setting name="priority" value="0"/>
-                              </struct>
+                           <struct name="2">
+                              <setting name="output" value="kSCTIMER_Out_7"/>
+                              <setting name="level" value="kSCTIMER_HighTrue"/>
+                              <setting name="dutyCyclePercent" value="0"/>
                            </struct>
                         </array>
+                        <setting name="pwmMode" value="kSCTIMER_EdgeAlignedPwm"/>
+                        <setting name="pwmFrequency" value="25000"/>
+                        <array name="events"/>
+                        <array name="states"/>
                      </config_set>
                   </instance>
                </instances>

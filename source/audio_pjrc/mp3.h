@@ -4,8 +4,8 @@
 //#include "Arduino.h"
 #include "AudioStream.h"
 
-#include "helix/mp3dec.h"
-#include "helix/mp3common.h"
+#include "mp3dec.h"
+#include "mp3common.h"
 
 #include "FreeRTOS.h"
 #include "task.h"

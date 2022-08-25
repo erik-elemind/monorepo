@@ -51,7 +51,7 @@ typedef struct _gint_pint_param_t
   GPIO_Type              *gpio_base;  // GPIO
 //  GINT_Type              *gint_base;  // GINT0 or GINT1
 //  gint_cb_t              gint_irq_callback;
-  IRQn_Type              gint_irq_n;
+//  IRQn_Type              gint_irq_n;
   uint32_t               gint_irq_priority;
   gint_pint_pin_param_t  *monitored_pins;
   uint8_t                num_monitored_pins;

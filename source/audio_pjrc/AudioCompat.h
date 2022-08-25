@@ -9,14 +9,14 @@
 #define AUDIO_PJRC_AUDIOCOMPAT_H_
 
 #ifndef F_CPU
-#if defined(CPU_LPC55S69JBD100)
-#define F_CPU 150000000
+#if defined(CPU_MIMXRT685SFVKB)
+#define F_CPU 198000000
 //#define F_CPU 100000000
 #endif
 #endif
 
 #ifndef ARM_ARCH_8M_MAIN
-#if defined(CPU_LPC55S69JBD100)
+#if defined(CPU_MIMXRT685SFVKB)
 #define __ARM_ARCH_8M_MAIN__ 1
 #endif
 #endif

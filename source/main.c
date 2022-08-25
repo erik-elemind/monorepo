@@ -10,7 +10,7 @@
 #include "fsl_debug_console.h"
 #include "pin_mux.h"
 #include "clock_config.h"
-#include "board.h"
+#include "board_ff4.h"
 
 /*******************************************************************************
  * Definitions
@@ -31,6 +31,7 @@
 #include "rt_nonfinite.h"
 #include "sleepstagescorer.h"
 #include "sleepstagescorer_terminate.h"
+#include "fatfs_writer.h"
 #include <stdio.h>
 
 static const char *TAG = "main";  // Logging prefix for this module
@@ -58,17 +59,17 @@ int main(void)
 	//Fat FS Write Task
 	LOGV(TAG, "Launching fatfs_writer task...");
 
-	fatfs_writer_pretask_init();
-
-	task_handle = xTaskCreateStatic(&fatfs_writer_task,
-		"fatfs_writer",
-		FATFS_WRITER_TASK_STACK_SIZE,
-		NULL,
-		FATFS_WRITER_TASK_PRIORITY,
-		fatfs_writer_task_array,
-		&fatfs_writer_task_struct);
-
-	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)FATFS_WRITER_TASK_STACK_SIZE );
+//	fatfs_writer_pretask_init();
+//
+//	task_handle = xTaskCreateStatic(&fatfs_writer_task,
+//		"fatfs_writer",
+//		FATFS_WRITER_TASK_STACK_SIZE,
+//		NULL,
+//		FATFS_WRITER_TASK_PRIORITY,
+//		fatfs_writer_task_array,
+//		&fatfs_writer_task_struct);
+//
+//	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)FATFS_WRITER_TASK_STACK_SIZE );
 
 
 	return 0;

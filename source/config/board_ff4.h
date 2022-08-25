@@ -196,9 +196,9 @@ void BOARD_InitFlashSPI();
  * Audio Amplifier
  *****************************************************************************/
 
-#define AUDIO_I2S_BASE          FC3_AUDIO_I2S_PERIPHERAL
-#define AUDIO_I2S_TX_HANDLE     FC3_AUDIO_I2S_TX_Handle
-#define AUDIO_I2S_DMA_TX_HANDLE FC3_AUDIO_I2S_Tx_DMA_Handle
+#define AUDIO_I2S_BASE          0 // Todo: Port over
+#define AUDIO_I2S_TX_HANDLE     0
+#define AUDIO_I2S_DMA_TX_HANDLE 0
 
 /******************************************************************************
  * Battery Charger

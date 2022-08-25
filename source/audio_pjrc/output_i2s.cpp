@@ -98,25 +98,25 @@ void AudioOutputI2S::init(void)
 	s_TxTransfer1.dataSize = sizeof(i2s_tx_buffer)/2;
 	s_TxTransfer2.data     = (uint8_t*) &i2s_tx_buffer[AUDIO_BLOCK_SAMPLES/2];
 	s_TxTransfer2.dataSize = sizeof(i2s_tx_buffer)/2;
-
-	I2S_TxTransferCreateHandleDMA(
-		AUDIO_I2S_BASE, 
-		&AUDIO_I2S_DMA_TX_HANDLE, 
-		&AUDIO_I2S_TX_HANDLE, 
-		audio_i2s_isr, 
-		(void *)&toggle_i2s_transfer);
+// Todo: port
+//	I2S_TxTransferCreateHandleDMA(
+//		AUDIO_I2S_BASE,
+//		&AUDIO_I2S_DMA_TX_HANDLE,
+//		&AUDIO_I2S_TX_HANDLE,
+//		audio_i2s_isr,
+//		(void *)&toggle_i2s_transfer);
 }
 
 void AudioOutputI2S::begin(void)
 {
 	// Kick off transmission, which currently runs continuously until end().
-	I2S_TxTransferSendDMA(AUDIO_I2S_BASE, &AUDIO_I2S_DMA_TX_HANDLE, s_TxTransfer1);
-	I2S_TxTransferSendDMA(AUDIO_I2S_BASE, &AUDIO_I2S_DMA_TX_HANDLE, s_TxTransfer2);
+//	I2S_TxTransferSendDMA(AUDIO_I2S_BASE, &AUDIO_I2S_DMA_TX_HANDLE, s_TxTransfer1); Todo: port
+//	I2S_TxTransferSendDMA(AUDIO_I2S_BASE, &AUDIO_I2S_DMA_TX_HANDLE, s_TxTransfer2);
 }
 
 void AudioOutputI2S::end(void)
 {
-	I2S_TransferAbortDMA(AUDIO_I2S_BASE, &AUDIO_I2S_DMA_TX_HANDLE);
+//	I2S_TransferAbortDMA(AUDIO_I2S_BASE, &AUDIO_I2S_DMA_TX_HANDLE); Todo: port
 }
 
 void AudioOutputI2S::handle_audio_i2s_event()
@@ -216,10 +216,10 @@ void AudioOutputI2S::handle_audio_i2s_event()
 	status_t status;
 	if (toggle_i2s_transfer) {
 		// debug_uart_puts((char*)"audio_i2s_isr tx2");
-		status = I2S_TxTransferSendDMA(AUDIO_I2S_BASE, &AUDIO_I2S_DMA_TX_HANDLE, s_TxTransfer2);
+//		status = I2S_TxTransferSendDMA(AUDIO_I2S_BASE, &AUDIO_I2S_DMA_TX_HANDLE, s_TxTransfer2); Todo: port
 	} else {
 		// debug_uart_puts((char*)"audio_i2s_isr tx1");
-		status = I2S_TxTransferSendDMA(AUDIO_I2S_BASE, &AUDIO_I2S_DMA_TX_HANDLE, s_TxTransfer1);
+//		status = I2S_TxTransferSendDMA(AUDIO_I2S_BASE, &AUDIO_I2S_DMA_TX_HANDLE, s_TxTransfer1); Todo: port
 	}
 
 	taskEXIT_CRITICAL();

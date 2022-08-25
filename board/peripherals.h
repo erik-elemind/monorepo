@@ -21,6 +21,7 @@
 #include "fsl_i2c.h"
 #include "fsl_i2c_freertos.h"
 #include "fsl_pint.h"
+#include "fsl_sctimer.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -90,20 +91,25 @@ extern "C" {
 /* BOARD_InitPeripherals defines for PINT */
 /* Definition of peripheral ID */
 #define PINT_PERIPHERAL ((PINT_Type *) PINT_BASE)
-/* Definition of PINT interrupt ID for interrupt 0  */
-#define PINT_INT_0 kPINT_PinInt0
-/* Definition of PINT interrupt ID for interrupt 1  */
-#define PINT_INT_1 kPINT_PinInt1
-/* Definition of PINT interrupt ID for interrupt 2  */
-#define PINT_INT_2 kPINT_PinInt2
 /* Definition of PINT interrupt ID for interrupt 3  */
 #define PINT_INT_3 kPINT_PinInt3
-/* Definition of PINT interrupt ID for interrupt 4  */
-#define PINT_INT_4 kPINT_PinInt4
-/* Definition of PINT interrupt ID for interrupt 5  */
-#define PINT_INT_5 kPINT_PinInt5
-/* Definition of PINT interrupt ID for interrupt 6  */
-#define PINT_INT_6 kPINT_PinInt6
+/* BOARD_InitPeripherals defines for SCT0 */
+/* Definition of peripheral ID */
+#define SCT0_LED_PERIPHERAL SCT0
+/* Definition of clock source frequency */
+#define SCT0_LED_CLOCK_FREQ CLOCK_GetFreq(kCLOCK_BusClk)
+/* SCT0_LED interrupt vector ID (number). */
+#define SCT0_LED_IRQN SCT0_IRQn
+/* SCT0_LED interrupt vector priority. */
+#define SCT0_LED_IRQ_PRIORITY 5
+/* SCT0_LED interrupt handler identifier. */
+#define SCT0_LED_IRQHANDLER SCT0_IRQHandler
+/* SCTimer output 2 mask */
+#define SCT0_LED_OUTPUT_2 (1U <<  kSCTIMER_Out_2)
+/* SCTimer output 6 mask */
+#define SCT0_LED_OUTPUT_6 (1U <<  kSCTIMER_Out_6)
+/* SCTimer output 7 mask */
+#define SCT0_LED_OUTPUT_7 (1U <<  kSCTIMER_Out_7)
 
 /***********************************************************************************************************************
  * Global variables
@@ -127,6 +133,9 @@ extern const i2c_master_config_t FLEXCOMM3_SENSOR_I2C_config;
 extern usart_rtos_handle_t FLEXCOMM5_DEBUG_UART_rtos_handle;
 extern usart_handle_t FLEXCOMM5_DEBUG_UART_usart_handle;
 extern struct rtos_usart_config FLEXCOMM5_DEBUG_UART_rtos_config;
+extern const sctimer_config_t SCT0_LED_initConfig;
+extern const sctimer_pwm_signal_param_t SCT0_LED_pwmSignalsConfig[3];
+extern uint32_t SCT0_LED_pwmEvent[3];
 
 /***********************************************************************************************************************
  * Callback functions

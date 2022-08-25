@@ -19,7 +19,7 @@
  ******************************************************************************/
 
 #define CTIMER            CTIMER0
-#define CTIMER_CLK_SRC    NULL
+#define CTIMER_CLK_SRC    kSFRO_to_CTIMER0
 #define CTIMER_MATCH      kCTIMER_Match_0
 #define CTIMER_CLK_FREQ   (1000000U)
 #define CTIMER_IRQn       CTIMER0_IRQn

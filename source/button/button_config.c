@@ -152,10 +152,10 @@ static gint_pint_pin_param_t gint_pint_pin_user_button_array[] =
 static gint_pint_param_t gint_pint_user_buttons =
 {
     .gpio_base          = GPIO,
-    .gint_base          = GINT0_PERIPHERAL,
-    .gint_irq_callback  = gint0_isr,
-    .gint_irq_n         = GINT0_IRQn,
-    .gint_irq_priority  = GINT0_GINT_IRQ_PRIORITY,
+//    .gint_base          = NULL, //Todo: Need to port this to new MCU
+//    .gint_irq_callback  = NULL,
+//    .gint_irq_n         = NULL,
+    .gint_irq_priority  = NULL,
     .monitored_pins     = gint_pint_pin_user_button_array,
     .num_monitored_pins = sizeof(gint_pint_pin_user_button_array)/sizeof(gint_pint_pin_param_t)
 };

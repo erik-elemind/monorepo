@@ -441,7 +441,7 @@ const shell_command_t commands[] = {
 };
 
 // Check number of commands
-static_assert(ARRAY_SIZE(commands) <= MAX_COMMANDS,
+_Static_assert(ARRAY_SIZE(commands) <= MAX_COMMANDS,
   "Too many commands--increase MAX_COMMANDS");
 
 // Export the length of the array to other modules, especially shell.c:
