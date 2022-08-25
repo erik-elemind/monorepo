@@ -8,8 +8,8 @@
  *
  * Description: Morpheus board configuration.
  */
-#include "prebuild.h"
 #include "board_config.h"
+#include "fsl_sctimer.h"
 #include "fsl_debug_console.h"
 #include "syscalls.h"  // For Nanolib shell _read()/_write()
 

@@ -50,7 +50,7 @@ typedef struct nand_platform_handle {
 
 static nand_platform_handle_t g_nand_handle = {
   .base = SPI_FLASH_BASE,
-  .spi_handle = &SPI_FLASH_DMA_HANDLE
+  .spi_handle = NULL
 };
 
 #if !(defined(NAND_SPI_USE_SEMAPHORE) && (NAND_SPI_USE_SEMAPHORE > 0U))

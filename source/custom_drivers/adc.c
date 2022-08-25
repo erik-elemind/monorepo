@@ -1,4 +1,5 @@
 #include "config.h"
+#include "fsl_lpadc.h"
 
 // Match trigger + commandId with hardware adc channels
 typedef struct {
@@ -18,7 +19,7 @@ adc_init() {
 
    // Disable LDOGPADC power down
    // TODO: Sort out if this draws more power
-   POWER_DisablePD(kPDRUNCFG_PD_LDOGPADC);
+  // POWER_DisablePD(kPDRUNCFG_PD_LDOGPADC);
 
    for(int i = 0; i < (sizeof(channels) / sizeof(int)); i++) {
      // Configure a single set of conversion params
@@ -53,7 +54,7 @@ adc_read(int channel) {
 
   // Trigger command
   LPADC_DoSoftwareTrigger(ADC0, 1 << channel);
-  while(!LPADC_GetConvResult(ADC0, &result, 0));
+  while(!LPADC_GetConvResult(ADC0, &result));
   
   // result is already a q15.  Multiply by the reference voltage and return.
   return (result.convValue * reference_voltage) >> 15;

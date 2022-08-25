@@ -81,17 +81,17 @@ int BOARD_InitDebugConsole();
   extern spi_rtos_handle_t         SPI_EEG_RTOS_HANDLE;
 #endif
 
-#define SPI_EEG_BASE          FC2_EEG_SPI_PERIPHERAL // Declared and init'd in peripherals.c
-#define SPI_EEG_DMA_HANDLE    FC2_EEG_SPI_DMA_Handle // Declared and init'd in peripherals.c
+#define SPI_EEG_BASE          FLEXCOMM0_EEG_SPI_PERIPHERAL // Declared and init'd in peripherals.c
+#define SPI_EEG_DMA_HANDLE    FLEXCOMM0_EEG_SPI_DMA_Handle // Declared and init'd in peripherals.c
 extern spi_dma_handle_t SPI_EEG_DMA_HANDLE;
 void BOARD_InitEEGSPI();
 
 
 
-#define SPI_FLASH_BASE         FC8_FLASH_SPI_PERIPHERAL // Declared and init'd in peripherals.c
-#define SPI_FLASH_DMA_HANDLE   FC8_FLASH_SPI_DMA_Handle // Declared and init'd in peripherals.c
-#define SPI_DMA_TX_HANDLE      FC8_FLASH_SPI_RX_Handle
-#define SPI_DMA_RX_HANDLE      FC8_FLASH_SPI_TX_Handle
+#define SPI_FLASH_BASE         0 // ToDo: Port Over
+#define SPI_FLASH_DMA_HANDLE   0 // ToDo: Port Over
+#define SPI_DMA_TX_HANDLE      0
+#define SPI_DMA_RX_HANDLE      0
 void BOARD_InitFlashSPI();
 
 
@@ -136,9 +136,9 @@ void BOARD_InitFlashSPI();
 #define EEG_RESET_PORT BOARD_INITPINS_EEG_RESETn_PORT
 #define EEG_RESET_PIN  BOARD_INITPINS_EEG_RESETn_PIN
 
-#define EEG_PWDN_GPIO  BOARD_INITPINS_EEG_PWDNn_GPIO
-#define EEG_PWDN_PORT  BOARD_INITPINS_EEG_PWDNn_PORT
-#define EEG_PWDN_PIN   BOARD_INITPINS_EEG_PWDNn_PIN
+#define EEG_PWDN_GPIO  BOARD_INITPINS_EEG_PWDn_GPIO
+#define EEG_PWDN_PORT  BOARD_INITPINS_EEG_PWDn_PORT
+#define EEG_PWDN_PIN   BOARD_INITPINS_EEG_PWDn_PIN
 
 /*
  * Set whether the processor should control the
@@ -149,7 +149,7 @@ void BOARD_InitFlashSPI();
  * Set whether the processor should control the
  * EEG negative charge pump through the enable pin.
  */
-#define EEG_CP_CONTROL      1
+#define EEG_CP_CONTROL      0
 
 /*
  * Set the logic-level used to enable the

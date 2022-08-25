@@ -83,7 +83,7 @@ pin_labels:
 - {pin_num: J2, pin_signal: PIO0_7/FC1_SCK/SCT0_GPI4/SCT0_OUT4/CTIMER1_MAT0/I2S_BRIDGE_CLK_OUT/SEC_PIO0_7, label: EEG_SCLK, identifier: EEG_SCLK}
 - {pin_num: J3, pin_signal: PIO0_10/FC1_CTS_SDA_SSEL0/SCT0_GPI7/SCT0_OUT7/CTIMER1_MAT3/FC0_SSEL2/SEC_PIO0_10, label: EEG_CSn, identifier: EEG_CSn}
 - {pin_num: G1, pin_signal: PIO0_0/FC0_SCK/CTIMER0_MAT0/I2S_BRIDGE_CLK_IN/GPIO_INT_BMAT/SEC_PIO0_0, label: EEG_START, identifier: EEG_START}
-- {pin_num: L1, pin_signal: PIO0_11/FC1_RTS_SCL_SSEL1/SCT0_GPI0/SCT0_OUT8/CTIMER_INP2/FC0_SSEL3/SEC_PIO0_11, label: EEG_PWDn}
+- {pin_num: L1, pin_signal: PIO0_11/FC1_RTS_SCL_SSEL1/SCT0_GPI0/SCT0_OUT8/CTIMER_INP2/FC0_SSEL3/SEC_PIO0_11, label: EEG_PWDn, identifier: EEG_PWDn}
 - {pin_num: J15, pin_signal: PIO1_7/FC5_RTS_SCL_SSEL1/SCT0_GPI5/SCT0_OUT5/CTIMER_INP9/FC4_SSEL3, label: EEG_RESETn, identifier: EEG_RESETn}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
@@ -277,26 +277,26 @@ void BOARD_InitPins(void)
     /* PORT0 PIN10 (coords: J3) is configured as FC1_CTS_SDA_SSEL0 */
     IOPCTL_PinMuxSet(IOPCTL, 0U, 10U, port0_pin10_config);
 
-    const uint32_t port0_pin11_config = (/* Pin is configured as PIO0_11 */
-                                         IOPCTL_PIO_FUNC0 |
-                                         /* Disable pull-up / pull-down function */
-                                         IOPCTL_PIO_PUPD_DI |
-                                         /* Enable pull-down function */
-                                         IOPCTL_PIO_PULLDOWN_EN |
-                                         /* Disable input buffer function */
-                                         IOPCTL_PIO_INBUF_DI |
-                                         /* Normal mode */
-                                         IOPCTL_PIO_SLEW_RATE_NORMAL |
-                                         /* Normal drive */
-                                         IOPCTL_PIO_FULLDRIVE_DI |
-                                         /* Analog mux is disabled */
-                                         IOPCTL_PIO_ANAMUX_DI |
-                                         /* Pseudo Output Drain is disabled */
-                                         IOPCTL_PIO_PSEDRAIN_DI |
-                                         /* Input function is not inverted */
-                                         IOPCTL_PIO_INV_DI);
+    const uint32_t EEG_PWDn = (/* Pin is configured as PIO0_11 */
+                               IOPCTL_PIO_FUNC0 |
+                               /* Disable pull-up / pull-down function */
+                               IOPCTL_PIO_PUPD_DI |
+                               /* Enable pull-down function */
+                               IOPCTL_PIO_PULLDOWN_EN |
+                               /* Disable input buffer function */
+                               IOPCTL_PIO_INBUF_DI |
+                               /* Normal mode */
+                               IOPCTL_PIO_SLEW_RATE_NORMAL |
+                               /* Normal drive */
+                               IOPCTL_PIO_FULLDRIVE_DI |
+                               /* Analog mux is disabled */
+                               IOPCTL_PIO_ANAMUX_DI |
+                               /* Pseudo Output Drain is disabled */
+                               IOPCTL_PIO_PSEDRAIN_DI |
+                               /* Input function is not inverted */
+                               IOPCTL_PIO_INV_DI);
     /* PORT0 PIN11 (coords: L1) is configured as PIO0_11 */
-    IOPCTL_PinMuxSet(IOPCTL, 0U, 11U, port0_pin11_config);
+    IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_EEG_PWDn_PORT, BOARD_INITPINS_EEG_PWDn_PIN, EEG_PWDn);
 
     const uint32_t port0_pin12_config = (/* Pin is configured as SCT0_OUT2 */
                                          IOPCTL_PIO_FUNC3 |

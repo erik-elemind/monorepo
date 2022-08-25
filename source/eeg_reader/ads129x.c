@@ -352,7 +352,7 @@ void ads_init(ads129x* ads){
       .outputLogic = 0U
   };
   /* Initialize GPIO functionality on pin PIO1_13 (pin 2)  */
-  GPIO_PinInit(BOARD_INITPINS_EEG_CP_EN_GPIO, BOARD_INITPINS_EEG_CP_EN_PORT, BOARD_INITPINS_EEG_CP_EN_PIN, &EEG_CP_EN_config);
+  //GPIO_PinInit(BOARD_INITPINS_EEG_CP_EN_GPIO, BOARD_INITPINS_EEG_CP_EN_PORT, BOARD_INITPINS_EEG_CP_EN_PIN, &EEG_CP_EN_config);
 #endif
 
 #if defined(EEG_LDO_CONTROL) && (EEG_LDO_CONTROL > 0)
@@ -369,7 +369,7 @@ void ads_init(ads129x* ads){
 ads_status ads_on(ads129x* ads) {
 #if defined(EEG_CP_CONTROL) && (EEG_CP_CONTROL > 0)
   // Power ON EEG negative charge pump
-  GPIO_PinWrite(BOARD_INITPINS_EEG_CP_EN_GPIO, BOARD_INITPINS_EEG_CP_EN_PORT, BOARD_INITPINS_EEG_CP_EN_PIN, EEG_CP_ENABLE_LEVEL);
+  //GPIO_PinWrite(BOARD_INITPINS_EEG_CP_EN_GPIO, BOARD_INITPINS_EEG_CP_EN_PORT, BOARD_INITPINS_EEG_CP_EN_PIN, EEG_CP_ENABLE_LEVEL);
 #endif
 
 #if defined(EEG_LDO_CONTROL) && (EEG_LDO_CONTROL > 0)

@@ -18,7 +18,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "fsl_gint.h"
 #include "fsl_gpio.h"
 
 
@@ -50,8 +49,8 @@ typedef struct _gint_pint_pin_param_t
 typedef struct _gint_pint_param_t
 {
   GPIO_Type              *gpio_base;  // GPIO
-  GINT_Type              *gint_base;  // GINT0 or GINT1
-  gint_cb_t              gint_irq_callback;
+//  GINT_Type              *gint_base;  // GINT0 or GINT1
+//  gint_cb_t              gint_irq_callback;
   IRQn_Type              gint_irq_n;
   uint32_t               gint_irq_priority;
   gint_pint_pin_param_t  *monitored_pins;

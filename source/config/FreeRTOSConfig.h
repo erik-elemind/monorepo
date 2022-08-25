@@ -27,7 +27,7 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
-#include "LPC55S69_cm33_core0.h"
+#include "MIMXRT685S_cm33.h"
 #include "config_tracealyzer.h"
 
 #ifdef __cplusplus

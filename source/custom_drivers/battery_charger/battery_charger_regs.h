@@ -15,6 +15,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 
 #ifdef __cplusplus
@@ -33,8 +34,8 @@ typedef union {
   };
   uint8_t raw;
 } input_current_limit_t;
-static_assert(sizeof(input_current_limit_t) == sizeof(uint8_t),
-  "Register must be 1 byte");
+//static_assert((int) sizeof(input_current_limit_t) == (int) sizeof(uint8_t),
+//  "Register must be 1 byte");
 
 /// Charger Control 0 (REG01) register type
 typedef union {
@@ -50,8 +51,8 @@ typedef union {
   };
   uint8_t raw;
 } charger_control_0_t;
-static_assert(sizeof(charger_control_0_t) == sizeof(uint8_t),
-  "Register must be 1 byte");
+//static_assert(sizeof(charger_control_0_t) == sizeof(uint8_t),
+//  "Register must be 1 byte");
 
 /// Charger Current Limit (REG02) register type
 typedef union {
@@ -64,8 +65,8 @@ typedef union {
   };
   uint8_t raw;
 } charger_current_limit_t;
-static_assert(sizeof(charger_current_limit_t) == sizeof(uint8_t),
-  "Register must be 1 byte");
+//static_assert(sizeof(charger_current_limit_t) == sizeof(uint8_t),
+//  "Register must be 1 byte");
 
 /// Precharge and Termination Current Limit (REG03) register type
 typedef union {
@@ -77,8 +78,8 @@ typedef union {
   };
   uint8_t raw;
 } precharge_termination_current_limit_t;
-static_assert(sizeof(precharge_termination_current_limit_t) == sizeof(uint8_t),
-  "Register must be 1 byte");
+//static_assert(sizeof(precharge_termination_current_limit_t) == sizeof(uint8_t),
+//  "Register must be 1 byte");
 
 /// Battery Voltage Limit (REG04) register type
 typedef union {
@@ -91,8 +92,8 @@ typedef union {
   };
   uint8_t raw;
 } battery_voltage_limit_t;
-static_assert(sizeof(charger_current_limit_t) == sizeof(uint8_t),
-  "Register must be 1 byte");
+//static_assert(sizeof(charger_current_limit_t) == sizeof(uint8_t),
+//  "Register must be 1 byte");
 
 /// Charger Control 1 (REG05) register type
 typedef union {
@@ -109,8 +110,8 @@ typedef union {
   };
   uint8_t raw;
 } charger_control_1_t;
-static_assert(sizeof(charger_control_1_t) == sizeof(uint8_t),
-  "Register must be 1 byte");
+//static_assert(sizeof(charger_control_1_t) == sizeof(uint8_t),
+//  "Register must be 1 byte");
 
 /// Charger Control 2 (REG06) register type
 typedef union {
@@ -123,8 +124,8 @@ typedef union {
   };
   uint8_t raw;
 } charger_control_2_t;
-static_assert(sizeof(charger_control_2_t) == sizeof(uint8_t),
-  "Register must be 1 byte");
+//static_assert(sizeof(charger_control_2_t) == sizeof(uint8_t),
+//  "Register must be 1 byte");
 
 /// Charger Control 3 (REG07) register type
 typedef union {
@@ -141,8 +142,8 @@ typedef union {
   };
   uint8_t raw;
 } charger_control_3_t;
-static_assert(sizeof(charger_control_3_t) == sizeof(uint8_t),
-  "Register must be 1 byte");
+//static_assert(sizeof(charger_control_3_t) == sizeof(uint8_t),
+//  "Register must be 1 byte");
 
 /// Charger Status 0 (REG08) register type
 typedef union {
@@ -157,8 +158,8 @@ typedef union {
   };
   uint8_t raw;
 } charger_status_0_t;
-static_assert(sizeof(charger_status_0_t) == sizeof(uint8_t),
-  "Register must be 1 byte");
+//static_assert(sizeof(charger_status_0_t) == sizeof(uint8_t),
+//  "Register must be 1 byte");
 
 /// Charger Status 1 (REG09) register type
 typedef union {
@@ -173,8 +174,8 @@ typedef union {
   };
   uint8_t raw;
 } charger_status_1_t;
-static_assert(sizeof(charger_status_1_t) == sizeof(uint8_t),
-  "Register must be 1 byte");
+//static_assert(sizeof(charger_status_1_t) == sizeof(uint8_t),
+//  "Register must be 1 byte");
 
 /// Charger Status 2 (REG0A) register type
 typedef union {
@@ -192,8 +193,8 @@ typedef union {
   };
   uint8_t raw;
 } charger_status_2_t;
-static_assert(sizeof(charger_status_2_t) == sizeof(uint8_t),
-  "Register must be 1 byte");
+//static_assert(sizeof(charger_status_2_t) == sizeof(uint8_t),
+//  "Register must be 1 byte");
 
 /// Part Information (REG0B) register type
 typedef union {
@@ -206,8 +207,8 @@ typedef union {
   };
   uint8_t raw;
 } part_information_t;
-static_assert(sizeof(part_information_t) == sizeof(uint8_t),
-  "Register must be 1 byte");
+//static_assert(sizeof(part_information_t) == sizeof(uint8_t),
+//  "Register must be 1 byte");
 
 /// Charger Control 4 (REG0C) register type
 typedef union {
@@ -221,8 +222,8 @@ typedef union {
   };
   uint8_t raw;
 } charger_control_4_t;
-static_assert(sizeof(charger_control_4_t) == sizeof(uint8_t),
-  "Register must be 1 byte");
+//static_assert(sizeof(charger_control_4_t) == sizeof(uint8_t),
+//  "Register must be 1 byte");
 
 #ifdef __cplusplus
 }

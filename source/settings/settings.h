@@ -1,6 +1,6 @@
 #pragma once
 
-#include "minIni.h"
+#include <minIni.h>
 #include <stdint.h>
 #include <stdbool.h>
 
