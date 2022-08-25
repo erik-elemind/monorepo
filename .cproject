@@ -502,13 +502,13 @@
 								<option id="com.crt.advproject.link.cpp.lto.1612796622" name="Enable Link-time optimization (-flto)" superClass="com.crt.advproject.link.cpp.lto"/>
 								<option id="com.crt.advproject.link.cpp.lto.optmization.level.894912301" name="Link-time optimization level" superClass="com.crt.advproject.link.cpp.lto.optmization.level"/>
 								<option id="com.crt.advproject.link.cpp.thumb.2098321736" name="Thumb mode" superClass="com.crt.advproject.link.cpp.thumb" value="true" valueType="boolean"/>
-								<option id="com.crt.advproject.link.cpp.manage.597909117" name="Manage linker script" superClass="com.crt.advproject.link.cpp.manage"/>
-								<option id="com.crt.advproject.link.cpp.script.820004460" name="Linker script" superClass="com.crt.advproject.link.cpp.script" useByScannerDiscovery="false" value="" valueType="string"/>
+								<option id="com.crt.advproject.link.cpp.manage.597909117" name="Manage linker script" superClass="com.crt.advproject.link.cpp.manage" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+								<option id="com.crt.advproject.link.cpp.script.820004460" name="Linker script" superClass="com.crt.advproject.link.cpp.script" useByScannerDiscovery="false" value="morpheus_fw_imxrt685_Debug.ld" valueType="string"/>
 								<option id="com.crt.advproject.link.cpp.scriptdir.2017627662" name="Script path" superClass="com.crt.advproject.link.cpp.scriptdir" useByScannerDiscovery="false" value="" valueType="string"/>
 								<option id="com.crt.advproject.link.cpp.crpenable.1830931203" name="Enable automatic placement of Code Read Protection field in image" superClass="com.crt.advproject.link.cpp.crpenable"/>
 								<option id="com.crt.advproject.link.cpp.flashconfigenable.627255678" name="Enable automatic placement of Flash Configuration field in image" superClass="com.crt.advproject.link.cpp.flashconfigenable" value="true" valueType="boolean"/>
 								<option id="com.crt.advproject.link.cpp.ecrp.1436924730" name="Enhanced CRP" superClass="com.crt.advproject.link.cpp.ecrp"/>
-								<option id="com.crt.advproject.link.cpp.nanofloat.333653770" name="Enable printf float " superClass="com.crt.advproject.link.cpp.nanofloat"/>
+								<option id="com.crt.advproject.link.cpp.nanofloat.333653770" name="Enable printf float " superClass="com.crt.advproject.link.cpp.nanofloat" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option id="com.crt.advproject.link.cpp.nanofloat.scanf.1146202097" name="Enable scanf float " superClass="com.crt.advproject.link.cpp.nanofloat.scanf"/>
 								<option id="com.crt.advproject.link.cpp.toram.2061222290" name="Link application to RAM" superClass="com.crt.advproject.link.cpp.toram"/>
 								<option id="com.crt.advproject.link.memory.load.image.cpp.2021960866" name="Plain load image" superClass="com.crt.advproject.link.memory.load.image.cpp" useByScannerDiscovery="false" value="false;" valueType="string"/>
@@ -604,6 +604,16 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<folderInfo id="com.crt.advproject.config.exe.debug.1549239004.7789179" name="/" resourcePath="source/settings/test">
+						<toolChain id="com.crt.advproject.toolchain.exe.debug.1848673990" name="NXP MCU Tools" superClass="com.crt.advproject.toolchain.exe.debug" unusedChildren="">
+							<tool id="com.crt.advproject.cpp.exe.debug.1992843460" name="MCU C++ Compiler" superClass="com.crt.advproject.cpp.exe.debug.892527638"/>
+							<tool id="com.crt.advproject.gcc.exe.debug.845744931" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1056779789"/>
+							<tool id="com.crt.advproject.gas.exe.debug.27409737" name="MCU Assembler" superClass="com.crt.advproject.gas.exe.debug.1110646639"/>
+							<tool id="com.crt.advproject.link.cpp.exe.debug.2037262997" name="MCU C++ Linker" superClass="com.crt.advproject.link.cpp.exe.debug.1862933294"/>
+							<tool id="com.crt.advproject.link.exe.debug.102623159" name="MCU Linker" superClass="com.crt.advproject.link.exe.debug.1131162591"/>
+							<tool id="com.crt.advproject.tool.debug.debug.71468828" name="MCU Debugger" superClass="com.crt.advproject.tool.debug.debug.265948442"/>
+						</toolChain>
+					</folderInfo>
 					<folderInfo id="com.crt.advproject.config.exe.debug.1549239004.712160156" name="/" resourcePath="board">
 						<toolChain id="com.crt.advproject.toolchain.exe.debug.31023749" name="NXP MCU Tools" superClass="com.crt.advproject.toolchain.exe.debug" unusedChildren="">
 							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="com.crt.advproject.platform.exe.debug" name="ARM-based MCU (Debug)" superClass="com.crt.advproject.platform.exe.debug"/>
@@ -670,7 +680,7 @@
 						<entry flags="LOCAL|VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="evkmimxrt685"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="fatfs"/>
 						<entry flags="LOCAL|VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="flash_config"/>
-						<entry excluding="fatfs_interface" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="freertos_kernel"/>
+						<entry excluding="fatfs_interface" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="freertos_kernel"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="helix"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="minIni"/>
 						<entry excluding="tests|tracealyzer|system_monitor|signal_processing|sha256|settings|packet_serial|noise_test|memory_manager|led|interpreter|interface|hrm|heatshrink|error_handling|erp|eeg_reader|data_log|custom_drivers|config|compression|commands|button|audio_pjrc|audio|accel|app|ble|zmodem|shell|utils|dhara_interface|fatfs_interface" flags="LOCAL|VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source"/>
@@ -684,7 +694,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/compression"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/config"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/custom_drivers"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/data_log"/>
+						<entry excluding="offline" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/data_log"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/dhara_interface"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/eeg_reader"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/erp"/>
@@ -698,7 +708,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/memory_manager"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/noise_test"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/packet_serial"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/settings"/>
+						<entry excluding="test" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/settings"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/sha256"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/shell"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/signal_processing"/>
