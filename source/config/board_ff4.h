@@ -41,10 +41,10 @@ extern "C" {
 
 // NOTE: IRQn FLEXCOMM0_IRQn, INSTANCE 0U, BASEADDR USART0, and RST kFC0_RST_SHIFT_RSTn
 // must all use the same Flexcomm number (zero, one, two, etc.). Using zero here.
-#define USART_BLE_RTOS_HANDLE    FC0_BLE_UART_rtos_handle // Declared and init'd in peripherals.c
-#define USART_BLE_RST            kFC0_RST_SHIFT_RSTn    // Passed to RESET_ClearPeripheralReset()
+#define USART_BLE_RTOS_HANDLE    FLEXCOMM1_BLE_UART_rtos_handle // Declared and init'd in peripherals.c
+#define USART_BLE_RST            kFC1_RST_SHIFT_RSTn    // Passed to RESET_ClearPeripheralReset()
 #define USART_BLE_INSTANCE       0U
-#define USART_BLE_IRQn           FLEXCOMM0_IRQn
+#define USART_BLE_IRQn           FLEXCOMM1_IRQn
 #define USART_BLE_BASEADDR       USART0
 #define USART_BLE_CLK_FREQ       12000000U
 #define USART_BLE_BAUDRATE       115200

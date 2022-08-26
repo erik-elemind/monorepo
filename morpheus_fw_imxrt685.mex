@@ -343,16 +343,6 @@
                   <data type="Version">2.1.0</data>
                </feature>
             </dependency>
-            <dependency resourceType="SWComponent" resourceId="platform.drivers.flexspi" description="FLEXSPI Driver not found in the toolchain/IDE project. Project will not compile!" problem_level="2" source="Peripherals">
-               <feature name="enabled" evaluation="equal">
-                  <data type="Boolean">true</data>
-               </feature>
-            </dependency>
-            <dependency resourceType="SWComponent" resourceId="platform.drivers.flexspi" description="Unsupported version of the FLEXSPI Driver in the toolchain/IDE project. Required: ${required_value}, actual: ${actual_value}. Project might not compile correctly." problem_level="1" source="Peripherals">
-               <feature name="version" evaluation="greaterOrEqual">
-                  <data type="Version">2.2.1</data>
-               </feature>
-            </dependency>
             <dependency resourceType="SWComponent" resourceId="platform.drivers.flexcomm_usart" description="FLEXCOMM USART Driver not found in the toolchain/IDE project. Project will not compile!" problem_level="2" source="Peripherals">
                <feature name="enabled" evaluation="equal">
                   <data type="Boolean">true</data>
@@ -449,21 +439,6 @@
                   <dependency resourceType="SWComponent" resourceId="platform.drivers.flexcomm_spi_dma" description="The compatible version of the fsl_spi_dma driver is not available in the project  (required for the DMA mode)." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
                      <feature name="version" evaluation="compatible">
                         <data type="Version">2.1.0</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="SWComponent" resourceId="platform.drivers.flexspi_dma" description="The fsl_flexspi_dma driver is missing in the project  (required for the DMA mode)." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="enabled" evaluation="equal">
-                        <data type="Boolean">true</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="SWComponent" resourceId="platform.drivers.flexspi_dma" description="The compatible version of the fsl_flexspi_dma driver is not available in the project  (required for the DMA mode)." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="version" evaluation="compatible">
-                        <data type="Version">2.0.1</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="ClockOutput" resourceId="FLEXSPI_clock" description="FLEXSPI clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="frequency" evaluation="greaterThan">
-                        <data type="Frequency" unit="Hz">0</data>
                      </feature>
                   </dependency>
                   <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXCOMM1.usart_txd" description="Signal TX is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
@@ -657,118 +632,6 @@
                         </struct>
                      </config_set>
                   </instance>
-                  <instance name="FLEXSPI" uuid="e628de38-6968-4337-bf89-20787868538f" type="flexspi" type_id="flexspi_cc6da638fb0490ad15096647c2b8e52a" mode="dma" peripheral="FLEXSPI" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
-                     <config_set name="fsl_flexspi">
-                        <struct name="flexspiConfig">
-                           <setting name="rxSampleClock" value="kFLEXSPI_ReadSampleClkLoopbackInternally"/>
-                           <setting name="clockSource" value="FlexSpiClock"/>
-                           <setting name="clockSourceFreq" value="BOARD_BootClockRUN"/>
-                           <setting name="enableSckFreeRunning" value="false"/>
-                           <setting name="enableDoze" value="false"/>
-                           <setting name="enableHalfSpeedAccess" value="false"/>
-                           <setting name="enableSckBDiffOpt" value="false"/>
-                           <setting name="enableSameConfigForAll" value="false"/>
-                           <setting name="seqTimeoutCycleString" value="65535"/>
-                           <setting name="ipGrantTimeoutCycleString" value="255"/>
-                           <setting name="txWatermark" value="8"/>
-                           <setting name="rxWatermark" value="8"/>
-                           <struct name="ahbConfig">
-                              <setting name="ahbGrantTimeoutCycleString" value="255"/>
-                              <setting name="ahbBusTimeoutCycleString" value="65535"/>
-                              <setting name="resumeWaitCycleString" value="32"/>
-                              <array name="buffer">
-                                 <struct name="0">
-                                    <setting name="priority" value="0"/>
-                                    <setting name="masterIndex" value="0"/>
-                                    <setting name="bufferSize" value="256"/>
-                                    <setting name="enablePrefetch" value="true"/>
-                                 </struct>
-                                 <struct name="1">
-                                    <setting name="priority" value="1"/>
-                                    <setting name="masterIndex" value="0"/>
-                                    <setting name="bufferSize" value="256"/>
-                                    <setting name="enablePrefetch" value="true"/>
-                                 </struct>
-                                 <struct name="2">
-                                    <setting name="priority" value="2"/>
-                                    <setting name="masterIndex" value="0"/>
-                                    <setting name="bufferSize" value="256"/>
-                                    <setting name="enablePrefetch" value="true"/>
-                                 </struct>
-                                 <struct name="3">
-                                    <setting name="priority" value="3"/>
-                                    <setting name="masterIndex" value="0"/>
-                                    <setting name="bufferSize" value="256"/>
-                                    <setting name="enablePrefetch" value="true"/>
-                                 </struct>
-                                 <struct name="4">
-                                    <setting name="priority" value="4"/>
-                                    <setting name="masterIndex" value="0"/>
-                                    <setting name="bufferSize" value="256"/>
-                                    <setting name="enablePrefetch" value="true"/>
-                                 </struct>
-                                 <struct name="5">
-                                    <setting name="priority" value="5"/>
-                                    <setting name="masterIndex" value="0"/>
-                                    <setting name="bufferSize" value="256"/>
-                                    <setting name="enablePrefetch" value="true"/>
-                                 </struct>
-                                 <struct name="6">
-                                    <setting name="priority" value="6"/>
-                                    <setting name="masterIndex" value="0"/>
-                                    <setting name="bufferSize" value="256"/>
-                                    <setting name="enablePrefetch" value="true"/>
-                                 </struct>
-                                 <struct name="7">
-                                    <setting name="priority" value="7"/>
-                                    <setting name="masterIndex" value="0"/>
-                                    <setting name="bufferSize" value="256"/>
-                                    <setting name="enablePrefetch" value="true"/>
-                                 </struct>
-                              </array>
-                              <setting name="enableClearAHBBufferOpt" value="false"/>
-                              <setting name="enableReadAddressOpt" value="false"/>
-                              <setting name="enableAHBPrefetch" value="false"/>
-                              <setting name="enableAHBBufferable" value="false"/>
-                              <setting name="enableAHBCachable" value="false"/>
-                           </struct>
-                        </struct>
-                        <struct name="flexspiInterrupt">
-                           <set name="interrupt_sel">
-                              <selected/>
-                           </set>
-                        </struct>
-                        <setting name="enableCustomLUT" value="true"/>
-                        <struct name="lutConfig">
-                           <setting name="flash" value="customFlash"/>
-                           <setting name="lutName" value="defaultLUT"/>
-                           <setting name="lutSizeCustom" value="64"/>
-                        </struct>
-                        <array name="devices_configs"/>
-                        <struct name="dma_channels">
-                           <setting name="enable_rx_dma_channel" value="true"/>
-                           <struct name="dma_rx_channel">
-                              <setting name="DMA_source" value="kDma0RequestNoDMARequest28"/>
-                              <setting name="init_channel_priority" value="false"/>
-                              <setting name="dma_priority" value="kDMA_ChannelPriority0"/>
-                              <setting name="enable_custom_name" value="false"/>
-                           </struct>
-                           <setting name="enable_tx_dma_channel" value="true"/>
-                           <struct name="dma_tx_channel">
-                              <setting name="DMA_source" value="kDma0RequestNoDMARequest29"/>
-                              <setting name="init_channel_priority" value="false"/>
-                              <setting name="dma_priority" value="kDMA_ChannelPriority0"/>
-                              <setting name="enable_custom_name" value="false"/>
-                           </struct>
-                        </struct>
-                        <struct name="spi_dma_handle">
-                           <setting name="enable_custom_name" value="false"/>
-                           <setting name="init_callback_dma" value="false"/>
-                           <setting name="callback_fcn_dma" value=""/>
-                           <setting name="user_data_dma" value=""/>
-                        </struct>
-                     </config_set>
-                  </instance>
                   <instance name="FLEXCOMM1_BLE_UART" uuid="b92c9bc1-9721-48a9-aeed-8203827970fb" type="flexcomm_usart" type_id="flexcomm_usart_ed63debb5f147199906723fc49ad2e72" mode="freertos" peripheral="FLEXCOMM1" enabled="true" comment="" custom_name_enabled="true" editing_lock="false">
                      <config_set name="fsl_usart_freertos" quick_selection="QuickSelection1">
                         <struct name="usart_rtos_configuration">
@@ -850,8 +713,6 @@
                         <array name="dma_table">
                            <struct name="0"/>
                            <struct name="1"/>
-                           <struct name="2"/>
-                           <struct name="3"/>
                         </array>
                         <array name="dma_channels"/>
                         <setting name="init_interrupt" value="false"/>

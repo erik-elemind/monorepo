@@ -13,11 +13,9 @@
 #include "fsl_common.h"
 #include "fsl_spi.h"
 #include "fsl_spi_dma.h"
-#include "fsl_flexspi.h"
-#include "fsl_flexspi_dma.h"
-#include "fsl_clock.h"
 #include "fsl_usart.h"
 #include "fsl_usart_freertos.h"
+#include "fsl_clock.h"
 #include "fsl_i2c.h"
 #include "fsl_i2c_freertos.h"
 #include "fsl_pint.h"
@@ -46,18 +44,6 @@ extern "C" {
 #define FLEXCOMM0_EEG_SPI_TX_DMA_CHANNEL 1
 /* Used DMA device. */
 #define FLEXCOMM0_EEG_SPI_TX_DMA_BASEADDR DMA0
-/* Definition of peripheral ID */
-#define FLEXSPI_PERIPHERAL FLEXSPI
-/* Size of LUT (Look-up Table) */
-#define FLEXSPI_LUT_LENGTH 64
-/* Selected DMA channel number. */
-#define FLEXSPI_TX_DMA_CHANNEL 29
-/* Used DMA device. */
-#define FLEXSPI_TX_DMA_BASEADDR DMA0
-/* Selected DMA channel number. */
-#define FLEXSPI_RX_DMA_CHANNEL 28
-/* Used DMA device. */
-#define FLEXSPI_RX_DMA_BASEADDR DMA0
 /* Definition of peripheral ID */
 #define FLEXCOMM1_BLE_UART_PERIPHERAL ((USART_Type *)FLEXCOMM1)
 /* Definition of the clock source frequency */
@@ -118,11 +104,6 @@ extern const spi_master_config_t FLEXCOMM0_EEG_SPI_config;
 extern dma_handle_t FLEXCOMM0_EEG_SPI_RX_Handle;
 extern dma_handle_t FLEXCOMM0_EEG_SPI_TX_Handle;
 extern spi_dma_handle_t FLEXCOMM0_EEG_SPI_DMA_Handle;
-extern const flexspi_config_t FLEXSPI_config;
-extern const uint32_t FLEXSPI_LUT[FLEXSPI_LUT_LENGTH];
-extern dma_handle_t FLEXSPI_RX_Handle;
-extern dma_handle_t FLEXSPI_TX_Handle;
-extern flexspi_dma_handle_t FLEXSPI_DMA_Handle;
 extern usart_rtos_handle_t FLEXCOMM1_BLE_UART_rtos_handle;
 extern usart_handle_t FLEXCOMM1_BLE_UART_usart_handle;
 extern struct rtos_usart_config FLEXCOMM1_BLE_UART_rtos_config;

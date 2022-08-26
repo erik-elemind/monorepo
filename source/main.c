@@ -32,6 +32,7 @@
 #include "sleepstagescorer.h"
 #include "sleepstagescorer_terminate.h"
 #include "fatfs_writer.h"
+#include "loglevels.h"
 #include <stdio.h>
 
 static const char *TAG = "main";  // Logging prefix for this module

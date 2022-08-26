@@ -1381,7 +1381,6 @@ audio_task(void *ignored)
  * Pin change interrupt callback for audio update ISR,
  * This interrupt is NOT routed to a pin, but is intended to be software triggered.
  */
-#if defined(VARIANT_NFF1) || defined(VARIANT_FF1) || defined(VARIANT_FF2) || defined(VARIANT_FF3)
 
 #define HALT_IF_DEBUGGING()                              \
   do {                                                   \
@@ -1420,55 +1419,51 @@ void audio_event_update_streams_from_isr(status_t i2s_completion_status)
   TRACEALYZER_ISR_AUDIO_END( xHigherPriorityTaskWoken );
 }
 
-#endif
-
-#else // #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
-
-void audio_pretask_init(void){}
-void audio_task(void *ignored){}
-
-void audio_power_on(){}
-void audio_power_off(){}
-void audio_stop(){}
-void audio_pause(){}
-void audio_unpause(){}
-void audio_set_mute(bool m){}
-bool audio_get_mute(){return false;}
-void audio_set_volume(uint8_t vol){}
-void audio_set_volume_ble(uint8_t vol){}
-uint8_t audio_get_volume(){return 0;}
-void audio_set_volume_step(uint8_t step){}
-void audio_volume_up(){}
-void audio_volume_down(){}
-
-void audio_fgwav_play(char* filename, bool loop){}
-void audio_fgwav_stop(){}
-void audio_fg_fadein(uint32_t dur_ms){}
-void audio_fg_fadeout(uint32_t dur_ms){}
-
-void audio_bgwav_play(char* filename, bool loop){}
-void audio_bgwav_stop(){}
-void audio_bg_fadein(uint32_t dur_ms){}
-void audio_bg_fadeout(uint32_t dur_ms){}
-void audio_bg_script_volume(float gain){}
-void audio_bg_computed_volume(float gain){}
-
-void audio_mp3_play(const char* filename, bool loop){}
-void audio_mp3_stop(){}
-
-void audio_pink_play(){}
-void audio_pink_stop(){}
-void audio_pink_fadein(uint32_t dur_ms){}
-void audio_pink_fadeout(uint32_t dur_ms){}
-void audio_pink_script_volume(float gain){}
-void audio_pink_computed_volume(float gain){}
-void audio_pink_mute(bool mute){}
-
-void audio_sine_play(){}
-void audio_sine_stop(){}
-
-void audio_event_update_streams(void){}
-void audio_event_update_streams_from_isr(void){}
+//void audio_pretask_init(void){}
+//void audio_task(void *ignored){}
+//
+//void audio_power_on(){}
+//void audio_power_off(){}
+//void audio_stop(){}
+//void audio_pause(){}
+//void audio_unpause(){}
+//void audio_set_mute(bool m){}
+//bool audio_get_mute(){return false;}
+//void audio_set_volume(uint8_t vol){}
+//void audio_set_volume_ble(uint8_t vol){}
+//uint8_t audio_get_volume(){return 0;}
+//void audio_set_volume_step(uint8_t step){}
+//void audio_volume_up(){}
+//void audio_volume_down(){}
+//
+//void audio_fgwav_play(char* filename, bool loop){}
+//void audio_fgwav_stop(){}
+//void audio_fg_fadein(uint32_t dur_ms){}
+//void audio_fg_fadeout(uint32_t dur_ms){}
+//
+//void audio_bgwav_play(char* filename, bool loop){}
+//void audio_bgwav_stop(){}
+//void audio_bg_fadein(uint32_t dur_ms){}
+//void audio_bg_fadeout(uint32_t dur_ms){}
+//void audio_bg_script_volume(float gain){}
+//void audio_bg_computed_volume(float gain){}
+//
+//void audio_mp3_play(const char* filename, bool loop){}
+//void audio_mp3_stop(){}
+//
+//void audio_pink_play(){}
+//void audio_pink_stop(){}
+//void audio_pink_fadein(uint32_t dur_ms){}
+//void audio_pink_fadeout(uint32_t dur_ms){}
+//void audio_pink_script_volume(float gain){}
+//void audio_pink_computed_volume(float gain){}
+//void audio_pink_mute(bool mute){}
+//
+//void audio_sine_play(){}
+//void audio_sine_stop(){}
+//
+//void audio_event_update_streams(void){}
+//void audio_event_update_streams_from_isr(void){}
 
 
 #endif // #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
