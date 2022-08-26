@@ -52,7 +52,7 @@
 
 /*! @brief CDC ACM instance count */
 #ifndef USB_DEVICE_CONFIG_CDC_ACM
-#define USB_DEVICE_CONFIG_CDC_ACM (0U)
+#define USB_DEVICE_CONFIG_CDC_ACM (1U)
 #endif
 #ifndef USB_DEVICE_CONFIG_CDC_RNDIS
 #define USB_DEVICE_CONFIG_CDC_RNDIS (0U)
