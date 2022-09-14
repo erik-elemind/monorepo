@@ -45,7 +45,6 @@ static void system_boot_up(void)
 	BOARD_InitBootPins();
 	BOARD_InitBootClocks();
 	BOARD_InitDebugConsole();
-
 }
 
 
