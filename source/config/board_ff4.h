@@ -63,11 +63,11 @@ int BOARD_InitBLE();
 /******************************************************************************
  * DEBUG UART
  *****************************************************************************/
-#define USART_DEBUG_RTOS_HANDLE    FLEXCOMM5_DEBUG_UART_rtos_handle  // Declared and init'd in peripherals.c
+#define USART_DEBUG_RTOS_HANDLE    FC5_DEBUG_UART_rtos_handle  // Declared and init'd in peripherals.c
 #define USART_DEBUG_RST            kFC5_RST_SHIFT_RSTn    // Passed to RESET_ClearPeripheralReset()
 #define USART_DEBUG_NVIC_PRIORITY  3  // Interrupt priority: 1 is highest priority
 #define USART_DEBUG_IRQn           FLEXCOMM5_IRQn
-#define USART_DEBUG_BUFFER_SIZE    FLEXCOMM5_BACKGROUND_BUFFER_SIZE
+#define USART_DEBUG_BUFFER_SIZE    FC5_BACKGROUND_BUFFER_SIZE
 
 extern usart_rtos_handle_t         USART_DEBUG_RTOS_HANDLE;
 int BOARD_InitDebugConsole();
@@ -81,8 +81,8 @@ int BOARD_InitDebugConsole();
   extern spi_rtos_handle_t         SPI_EEG_RTOS_HANDLE;
 #endif
 
-#define SPI_EEG_BASE          FLEXCOMM0_EEG_SPI_PERIPHERAL // Declared and init'd in peripherals.c
-#define SPI_EEG_DMA_HANDLE    FLEXCOMM0_EEG_SPI_DMA_Handle // Declared and init'd in peripherals.c
+#define SPI_EEG_BASE          FC1_EEG_SPI_PERIPHERAL // Declared and init'd in peripherals.c
+#define SPI_EEG_DMA_HANDLE    FC1_EEG_SPI_DMA_Handle // Declared and init'd in peripherals.c
 extern spi_dma_handle_t SPI_EEG_DMA_HANDLE;
 void BOARD_InitEEGSPI();
 
@@ -97,7 +97,7 @@ void BOARD_InitFlashSPI();
 
 
 /******************************************************************************
- * I2C on FLEXCOMM 4
+ * I2C on FLEXCOMM 4F
  * Used By:
  *   Heart Rate Monitor
  *   Ambient Light
@@ -108,7 +108,7 @@ void BOARD_InitFlashSPI();
  *****************************************************************************/
 
 // This define redirects to a define from peripheral.h/c
-#define I2C4_RTOS_HANDLE      FLEXCOMM3_SENSOR_I2C_rtosHandle
+#define I2C4_RTOS_HANDLE      FC3_SENSOR_I2C_rtosHandle
 
 /******************************************************************************
  * I2C on FLEXCOMM 5
@@ -117,7 +117,7 @@ void BOARD_InitFlashSPI();
  *****************************************************************************/
 
 // This define redirects to a define from peripheral.h/c
-#define I2C5_RTOS_HANDLE      FLEXCOMM2_BATT_I2C_rtosHandle
+#define I2C5_RTOS_HANDLE      FC2_BATT_I2C_rtosHandle
 
 /******************************************************************************
  * EEG
