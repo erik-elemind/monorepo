@@ -1,0 +1,9 @@
+gcc \
+    ../../source_code/bootloader/lpc_pkt.c \
+    ../../source_code/bootloader/lpc_protocol.c \
+    ./uart.c \
+    testuart.c \
+    -I . \
+    -I ../../source_code/bootloader/ \
+    -I ../../../../../evk-isp-protocol \
+    -o testuart.out
