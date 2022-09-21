@@ -13,7 +13,7 @@ ECHO %PATH%|findstr /i /c:"%TOOLCHAIN_PATH:"=%">nul || set PATH=%PATH%;%TOOLCHAI
 
 ECHO Launching Eclipse IDE
 ECHO Clean Project ... 
-"%IDE%" -nosplash -noExit --launcher.suppressErrors -application org.eclipse.cdt.managedbuilder.core.headlessbuild -data "c:\Workspace" -cleanBuild morpheus_fw_imxrt685/Debug
+"%IDE%" -nosplash --launcher.suppressErrors -application org.eclipse.cdt.managedbuilder.core.headlessbuild -data "c:\Workspace" -cleanBuild morpheus_fw_imxrt685/Debug
 
 ECHO Build Project ... 
 "%IDE%" -nosplash -noExit --launcher.suppressErrors -application org.eclipse.cdt.managedbuilder.core.headlessbuild -data "c:\Workspace" -build morpheus_fw_imxrt685/Debug
