@@ -12,7 +12,7 @@ endif
 include dist.mk
 
 # This file contains VERSION_FILE, etc
-include ../version.mk
+include version.mk
 # Export the include
 export INC_FOLDERS=$(dir $(VERSION_FILE))
 
@@ -66,7 +66,7 @@ else
 endif
 
 # export the path for the inner makefile
-export GNU_INSTALL_ROOT := $(MYCC_PATH)/
+export GNU_INSTALL_ROOT := $(MYCC_PATH)
 # and the version (should be 8.3.1)
 export GNU_VERSION := $(shell $(MYCC) -dumpversion)
 
