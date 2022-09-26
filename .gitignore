@@ -9,3 +9,5 @@ dist
 
 # python virtual environment and modules
 .venv
+
+version.h

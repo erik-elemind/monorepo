@@ -20,11 +20,8 @@ export GIT_TAG_LATEST := $(shell git describe --abbrev=0 --always --tags)
 
 # Parse out the major and minor nums from the tag
 # Note the double dollar escape on the awk variables.
-#VER_MAJOR := $(shell echo $(GIT_TAG_LATEST) | awk -F'[v.]' '{print $$2}')
-#VER_MINOR := $(shell echo $(GIT_TAG_LATEST) | awk -F'[v.]' '{print $$3}')
-
-VER_MAJOR := 1
-VER_MINOR := 0
+VER_MAJOR := $(shell echo $(GIT_TAG_LATEST) | awk -F'[v.]' '{print $$2}')
+VER_MINOR := $(shell echo $(GIT_TAG_LATEST) | awk -F'[v.]' '{print $$3}')
 
 # TODO: Define this to be "" for release builds, and "d" for developer builds
 DEV_SUFFIX := d

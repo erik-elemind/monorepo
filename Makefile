@@ -7,10 +7,6 @@ export Q=
 export Q_REDIR=
 endif
 
-# This file has rules to download and unpack the externally distributed 
-# components such as SDK, ARMGCC, etc.
-include dist.mk
-
 # This file contains VERSION_FILE, etc
 include version.mk
 # Export the include
