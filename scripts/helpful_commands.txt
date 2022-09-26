@@ -1,0 +1,3 @@
+docker build -t=<imagename> .
+docker run -it --rm -v %cd%:/usr/morpheus__fw_nrf52 <imagename>
+make V=1 app

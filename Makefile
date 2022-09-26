@@ -115,8 +115,8 @@ help:
 	@echo "  clean      : cleans all target/board builds"
 
 .PHONY: $(TARGETS)
-$(TARGETS): $(VENV) $(VERSION_FILE)
-	$(Q) $(VENV_ENTER); make -C build/$@-$(BOARD) -j $(ARGS)
+$(TARGETS): $(VERSION_FILE)
+	$(Q) make -C build/$@-$(BOARD) -j $(ARGS)
 
 .PHONY: clean
 clean:

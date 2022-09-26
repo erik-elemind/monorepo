@@ -1,13 +1,33 @@
-FROM alpine:3.16
-RUN apk update
-RUN apk add --no-cache git
-RUN apk add --no-cache make
-RUN apk add --no-cache curl
-RUN apk add --no-cache newlib-arm-none-eabi
+FROM ubuntu:18.04
+ENV REFRESHED_AT 2022-09-25
+RUN apt-get update && apt update
 
-# Install python/pip
-RUN apk add --no-cache python3
-RUN apk add --no-cache py3-pip
+#Install various needed tools for build system
+RUN apt-get install -y wget && \
+	apt-get install -y git && \
+	apt-get install -y make && \
+	apt install -y curl && \
+	apt install -y zip && \
+	rm -rf /var/lib/apt/lists/*
 
-WORKDIR /usr/project
-CMD make dist;make sdk;make V=1 app;exit
+#Install Conda
+ENV PATH="/root/miniconda3/bin:${PATH}"
+ARG PATH="/root/miniconda3/bin:${PATH}"
+RUN wget \
+    https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+    && mkdir /root/.conda \
+    && bash Miniconda3-latest-Linux-x86_64.sh -b \
+    && rm -f Miniconda3-latest-Linux-x86_64.sh 
+
+RUN conda --version
+RUN conda init bash
+RUN conda config --set auto_activate_base false
+
+#Create Conda environment to use with Morpheus NRF project
+COPY scripts/environment.yml /usr/morpheus_config/
+RUN conda env create -n nrf_env --file /usr/morpheus_config/environment.yml
+
+#Set working directory and create
+WORKDIR /usr/morpheus_fw_nrf52
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "nrf_env", "make", "V=1"] 
+CMD ["app"] #default make target that can be overriden
