@@ -158,17 +158,70 @@ void USB0_IRQHandler(void)
 }
 #endif
 #if (defined(USB_DEVICE_CONFIG_LPCIP3511HS) && (USB_DEVICE_CONFIG_LPCIP3511HS > 0U))
-void USB1_IRQHandler(void)
+void USB_IRQHandler(void)
 {
     USB_DeviceLpcIp3511IsrFunction(s_cdcVcom.deviceHandle);
 }
 #endif
 /* USB PHY condfiguration */
-#define BOARD_USB_PHY_D_CAL     (0x05U)
-#define BOARD_USB_PHY_TXCAL45DP (0x0AU)
-#define BOARD_USB_PHY_TXCAL45DM (0x0AU)
+//#define BOARD_USB_PHY_D_CAL     (0x05U)
+//#define BOARD_USB_PHY_TXCAL45DP (0x0AU)
+//#define BOARD_USB_PHY_TXCAL45DM (0x0AU)
+#define BOARD_USB_PHY_D_CAL     (0x0CU)
+#define BOARD_USB_PHY_TXCAL45DP (0x06U)
+#define BOARD_USB_PHY_TXCAL45DM (0x06U)
 void USB_DeviceClockInit(void)
 {
+	uint8_t usbClockDiv = 1;
+	uint32_t usbClockFreq;
+	usb_phy_config_struct_t phyConfig = {
+		BOARD_USB_PHY_D_CAL,
+		BOARD_USB_PHY_TXCAL45DP,
+		BOARD_USB_PHY_TXCAL45DM,
+	};
+
+	/* enable USB IP clock */
+	CLOCK_SetClkDiv(kCLOCK_DivPfc1Clk, 5);
+	CLOCK_AttachClk(kXTALIN_CLK_to_USB_CLK);
+	CLOCK_SetClkDiv(kCLOCK_DivUsbHsFclk, usbClockDiv);
+	CLOCK_EnableUsbhsDeviceClock();
+	RESET_PeripheralReset(kUSBHS_PHY_RST_SHIFT_RSTn);
+	RESET_PeripheralReset(kUSBHS_DEVICE_RST_SHIFT_RSTn);
+	RESET_PeripheralReset(kUSBHS_HOST_RST_SHIFT_RSTn);
+	RESET_PeripheralReset(kUSBHS_SRAM_RST_SHIFT_RSTn);
+	/*Make sure USDHC ram buffer has power up*/
+	POWER_DisablePD(kPDRUNCFG_APD_USBHS_SRAM);
+	POWER_DisablePD(kPDRUNCFG_PPD_USBHS_SRAM);
+	POWER_ApplyPD();
+
+	/* save usb ip clock freq*/
+	usbClockFreq = g_xtalFreq / usbClockDiv;
+	/* enable USB PHY PLL clock, the phy bus clock (480MHz) source is same with USB IP */
+	CLOCK_EnableUsbHs0PhyPllClock(kXTALIN_CLK_to_USB_CLK, usbClockFreq);
+
+	#if defined(FSL_FEATURE_USBHSD_USB_RAM) && (FSL_FEATURE_USBHSD_USB_RAM)
+	for (int i = 0; i < FSL_FEATURE_USBHSD_USB_RAM; i++)
+	{
+		((uint8_t *)FSL_FEATURE_USBHSD_USB_RAM_BASE_ADDRESS)[i] = 0x00U;
+	}
+	#endif
+	USB_EhciPhyInit(CONTROLLER_ID, BOARD_XTAL_SYS_CLK_HZ, &phyConfig);
+
+	/* the following code should run after phy initialization and should wait some microseconds to make sure utmi clock
+	 * valid */
+	/* enable usb1 host clock */
+	CLOCK_EnableClock(kCLOCK_UsbhsHost);
+	/*  Wait until host_needclk de-asserts */
+	while (SYSCTL0->USBCLKSTAT & SYSCTL0_USBCLKSTAT_HOST_NEED_CLKST_MASK)
+	{
+		__ASM("nop");
+	}
+	/*According to reference mannual, device mode setting has to be set by access usb host register */
+	USBHSH->PORTMODE |= USBHSH_PORTMODE_DEV_ENABLE_MASK;
+	/* disable usb1 host clock */
+	CLOCK_DisableClock(kCLOCK_UsbhsHost);
+
+
 //#if defined(USB_DEVICE_CONFIG_LPCIP3511HS) && (USB_DEVICE_CONFIG_LPCIP3511HS > 0U)
 //    usb_phy_config_struct_t phyConfig = {
 //        BOARD_USB_PHY_D_CAL,
@@ -667,120 +720,9 @@ void virtual_com_init_helper(void)
 
   USB_DeviceIsrEnable();
 
-  /* USB-RTC Contention Issue.
-   *
-   * There are currently 3 possible solutions:
-   * Solution 1: Use a 12 second delay after the device powers on before the USB connection starts, delay occurs BEFORE scheduler start.
-   *             Implemented in virtual_com.c, end of virtual_com_init_helper() function.
-   * Solution 2: Use a 12 second delay after the device powers on before the USB connection starts, delay occurs AFTER scheduler start.
-   *             Implemented in shell_recv.c, at the start of shell_recv_task() function.
-   * Solution 3: In clock_config.c (variants/variant_ff2/clock_config.c), in function BOARD_BootClockPLL150M(),
-   *             comment-out the line 'CLOCK_AttachClk(kXTAL32K_to_OSC32K);' - which is a partial solution that fixed USB but disables RTC
-   *             unless additional code is added to switch to the 32kHZ FRO.
-   *
-   * The delay time of 12 seconds was arrived at experimentally.
-   * <= 10000 ms =  causes USB 3.0 init error on David's Windows 10 computer
-   * >= 11000 ms = WORKS
-   * using 12000 for safety.
-   *             */
-
-#if defined(USBC_XTAL32K_COMPATBILITY_OPTION) && (USBC_XTAL32K_COMPATBILITY_OPTION == 1U)
-  // USE THIS CODE FOR SOLUTION 1.
-  #ifdef VARIANT_FF2
-  SDK_DelayAtLeastUs(12000*1000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
-  #endif
-  virtual_com_delayed_start();
-#elif defined(USBC_XTAL32K_COMPATBILITY_OPTION) && (USBC_XTAL32K_COMPATBILITY_OPTION == 2U)
-  // do nothing
-#elif defined(USBC_XTAL32K_COMPATBILITY_OPTION) && (USBC_XTAL32K_COMPATBILITY_OPTION == 3U)
-  // USE THIS CODE FOR SOLUTION 3
-  /* The following code has been moved to the separate function virtual_com_delayed_start().
-   * This allows the virtual com to be initialized during a task, after other tasks have begun. */
-  /*Add one delay here to make the DP pull down long enough to allow host to detect the previous disconnection.*/
   SDK_DelayAtLeastUs(5000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
   USB_DeviceRun(s_cdcVcom.deviceHandle);
-#else
-  #error "USBC_XTAL32K_COMPATBILITY_OPTION unrecognized"
-#endif
 }
-
-void virtual_com_delayed_start(){
-      /*Add one delay here to make the DP pull down long enough to allow host to detect the previous disconnection.*/
-    SDK_DelayAtLeastUs(5000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
-    USB_DeviceRun(s_cdcVcom.deviceHandle);
-}
-
-///* Write data to virtual serial port. */
-//ssize_t
-//virtual_com_write_direct(char* buf, size_t count)
-//{
-//    usb_status_t error = kStatus_USB_Success;
-//    if (buf==NULL || count == 0)
-//    {
-//         error = kStatus_USB_InvalidParameter;
-//    }
-//    else
-//    {
-//         if ((1 != s_cdcVcom.attach) || (1 != s_cdcVcom.startTransactions))
-//         {
-//              error=kStatus_USB_ControllerNotFound;
-//         }
-//         else
-//         {
-//#if 1
-//           /* Use this code to send arbitrary large buffers*/
-//             size_t len_remaining = count;
-//             size_t buf_offset = 0;
-//
-//             while(len_remaining > 0){
-//
-//                 // Note: We never send exactly DATA_BUFF_SIZE as this causes the USB to hang.
-//                 //       Instead, we send one less than DATA_BUFF_SIZE.
-//                 size_t len_to_send = len_remaining < DATA_BUFF_SIZE ? len_remaining : DATA_BUFF_SIZE-1;
-//                 memcpy(s_currSendBuf, buf+buf_offset, len_to_send);
-//
-//                 char buf[40];
-//                 snprintf(buf,sizeof(buf),"%d [", count);
-//                 debug_uart_puts( buf );
-//
-//                 g_sendFinished = false;
-//                 if (USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_currSendBuf, len_to_send) != kStatus_USB_Success)
-//                 {
-//                      /* Failure to send Data Handling code here */
-//                   error = kStatus_USB_Error;
-//                   break;
-//                 } else {
-//                      /* Wait until transmission are done */
-//                      while (!g_sendFinished && s_cdcVcom.startTransactions==1 && s_cdcVcom.attach==1) {
-//                        snprintf(buf,sizeof(buf), "finished: %d start: %d attach: %d", g_sendFinished, s_cdcVcom.startTransactions, s_cdcVcom.attach);
-//                        debug_uart_puts( buf );
-//                        /*taskYIELD();*/
-//                        };
-//                      g_sendFinished = false;
-//                      debug_uart_puts( "]" );
-//
-//                      len_remaining -= len_to_send;
-//                      buf_offset += len_to_send;
-//                 }
-//             }
-//#else
-//             /* Use this code to send buffers less than DATA_BUFF_SIZE in size*/
-//             memcpy(s_currSendBuf, buf, count > DATA_BUFF_SIZE ? DATA_BUFF_SIZE : count);
-//             if (USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_currSendBuf, count > DATA_BUFF_SIZE ? DATA_BUFF_SIZE : count) != kStatus_USB_Success)
-//             {
-//                  /* Failure to send Data Handling code here */
-//             } else {
-//                  /* Wait until transmission are done */
-//                  while (!g_sendFinished) {};
-//                  g_sendFinished = false;
-//             }
-//
-//#endif
-//
-//         }
-//    }
-//    return (error == kStatus_USB_Success) ? count : -1;
-//}
 
 /* Write data to virtual serial port. */
 // buf - a pointer to s_currSendBuf
@@ -883,67 +825,11 @@ virtual_com_write(char* buf, size_t size)
   return buf_offset; // TODO: update this value
 }
 
-// TODO: call flush somewhere.
-void
-virtual_com_flush(){
-#if (defined(VIRTUAL_COM_AGGREGATE_WRITES) && (VIRTUAL_COM_AGGREGATE_WRITES > 0U))
-  if (xSemaphoreTake(xSemaphore, portMAX_DELAY) == pdPASS){
-    virtual_com_write_direct(s_currSendBuf, s_currSendBuf_offset);
-    s_currSendBuf_offset = 0;
-    xSemaphoreGive(xSemaphore);
-  }
-#endif
-}
-
 /* Initialize virtual serial port. */
 void virtual_com_init(void)
 {
-//    NVIC_ClearPendingIRQ(USB0_IRQn);
-//    NVIC_ClearPendingIRQ(USB0_NEEDCLK_IRQn);
-//    NVIC_ClearPendingIRQ(USB1_IRQn);
-//    NVIC_ClearPendingIRQ(USB1_NEEDCLK_IRQn);
-//
-//    POWER_DisablePD(kPDRUNCFG_PD_USB0_PHY); /*< Turn on USB0 Phy */
-//    POWER_DisablePD(kPDRUNCFG_PD_USB1_PHY); /*< Turn on USB1 Phy */
-//
-//    /* reset the IP to make sure it's in reset state. */
-//    RESET_PeripheralReset(kUSB0D_RST_SHIFT_RSTn);
-//    RESET_PeripheralReset(kUSB0HSL_RST_SHIFT_RSTn);
-//    RESET_PeripheralReset(kUSB0HMR_RST_SHIFT_RSTn);
-//    RESET_PeripheralReset(kUSB1H_RST_SHIFT_RSTn);
-//    RESET_PeripheralReset(kUSB1D_RST_SHIFT_RSTn);
-//    RESET_PeripheralReset(kUSB1_RST_SHIFT_RSTn);
-//    RESET_PeripheralReset(kUSB1RAM_RST_SHIFT_RSTn);
-//
-//#if defined(VARIANT_FF1) || defined(VARIANT_FF2) || defined(VARIANT_FF3)
-//    // FF1 board uses USB1 HS (High Speed) interface
-//    /* Enable usb1 host clock */
-//    CLOCK_EnableClock(kCLOCK_Usbh1);
-//    /* Put PHY powerdown under software control */
-//    *((uint32_t *)(USBHSH_BASE + 0x50)) = USBHSH_PORTMODE_SW_PDCOM_MASK;
-//      /* According to reference mannual, device mode setting has to be set by access usb host register */
-//    *((uint32_t *)(USBHSH_BASE + 0x50)) |= USBHSH_PORTMODE_DEV_ENABLE_MASK;
-//    /* Disable usb1 host clock */
-//    CLOCK_DisableClock(kCLOCK_Usbh1);
-//
-//#elif defined(VARIANT_NFF1)
-//    // NFF1 board uses USB0 FS (Full Speed) interface
-//
-//    /* Turn on USB0 Phy (not sure why we do this twice, but it was in example). */
-//    POWER_DisablePD(kPDRUNCFG_PD_USB0_PHY); /*< Turn on USB Phy */
-//    /* Enable usb0 host clock */
-//    CLOCK_SetClkDiv(kCLOCK_DivUsb0Clk, 1, false);
-//    CLOCK_AttachClk(kFRO_HF_to_USB0_CLK);
-//    CLOCK_EnableClock(kCLOCK_Usbhsl0);
-//    /*According to reference manual, device mode setting has to be set by access usb host register */
-//    *((uint32_t *)(USBFSH_BASE + 0x5C)) |= USBFSH_PORTMODE_DEV_ENABLE_MASK;
-//    /* Disable usb0 host clock */
-//    CLOCK_DisableClock(kCLOCK_Usbhsl0);
-//#else
-//#error "Unknown Morpheus variant--no USB initialization!"
-//#endif
-//
-//	virtual_com_init_helper();
+    NVIC_ClearPendingIRQ(USB_IRQn);
+	virtual_com_init_helper();
 }
 
 

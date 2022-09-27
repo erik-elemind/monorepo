@@ -73,18 +73,9 @@ void shell_recv_task(void *params)
    * using 12000 for safety.
    *             */
 
-#if defined(USBC_XTAL32K_COMPATBILITY_OPTION) && (USBC_XTAL32K_COMPATBILITY_OPTION == 1U)
-#elif defined(USBC_XTAL32K_COMPATBILITY_OPTION) && (USBC_XTAL32K_COMPATBILITY_OPTION == 2U)
-  // USE THIS CODE FOR SOLUTION 2
-  vTaskDelay((12000)/portTICK_PERIOD_MS);
-  virtual_com_delayed_start();
-#elif defined(USBC_XTAL32K_COMPATBILITY_OPTION) && (USBC_XTAL32K_COMPATBILITY_OPTION == 3U)
-  // USE THIS CODE FOR SOLUTION 3
+
   // Give the initial debug logs some time to finish printing...
    vTaskDelay((300)/portTICK_PERIOD_MS);
-#else
-  #error "USBC_XTAL32K_COMPATBILITY_OPTION unrecognized"
-#endif
 
 #ifdef SHELL_WELCOME_STRING
   puts(SHELL_WELCOME_STRING);
