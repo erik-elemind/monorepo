@@ -10,7 +10,7 @@ product: Peripherals v11.0
 processor: MIMXRT685S
 package_id: MIMXRT685SFVKB
 mcu_data: ksdk2_0
-processor_version: 12.0.0
+processor_version: 12.0.1
 functionalGroups:
 - name: BOARD_InitPeripherals
   UUID: fda78168-3fc8-40df-80b9-53d6edf10537

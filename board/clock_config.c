@@ -19,7 +19,7 @@ product: Clocks v10.0
 processor: MIMXRT685S
 package_id: MIMXRT685SFVKB
 mcu_data: ksdk2_0
-processor_version: 12.0.0
+processor_version: 12.0.1
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
@@ -84,7 +84,7 @@ void BOARD_InitBootClocks(void)
 name: BOARD_BootClockRUN
 called_from_default_init: true
 outputs:
-- {id: FLEXSPI_clock.outFreq, value: 198 MHz}
+- {id: FLEXSPI_clock.outFreq, value: 1056/19 MHz}
 - {id: FXCOM0_clock.outFreq, value: 16 MHz}
 - {id: FXCOM1_clock.outFreq, value: 16 MHz}
 - {id: FXCOM2_clock.outFreq, value: 16 MHz}
@@ -93,8 +93,7 @@ outputs:
 - {id: FXCOM5_clock.outFreq, value: 16 MHz}
 - {id: LPOSC1M_clock.outFreq, value: 1 MHz}
 - {id: OSTIMER_clock.outFreq, value: 1 MHz}
-- {id: RTC32K_clock.outFreq, value: 32.768 kHz}
-- {id: System_clock.outFreq, value: 198 MHz}
+- {id: System_clock.outFreq, value: 4752/19 MHz}
 - {id: WAKE_32K_clock.outFreq, value: 31.25 kHz}
 settings:
 - {id: PLL0_PFD0_CLK_GATE, value: Enabled}
@@ -107,27 +106,26 @@ settings:
 - {id: SYSCON.FC3FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC4FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC5FCLKSEL.sel, value: SYSCON.sfro}
-- {id: SYSCON.FLEXSPIFCLKDIV.scale, value: '1', locked: true}
+- {id: SYSCON.FLEXSPIFCLKDIV.scale, value: '9', locked: true}
 - {id: SYSCON.FLEXSPIFCLKSEL.sel, value: SYSCON.MAINCLKSELB}
 - {id: SYSCON.FRG4_DIV.scale, value: '511', locked: true}
 - {id: SYSCON.FRG4_MUL.scale, value: '256', locked: true}
-- {id: SYSCON.MAINCLKSELA.sel, value: SYSCON.SYSOSCBYPASS}
 - {id: SYSCON.MAINCLKSELB.sel, value: SYSCON.MAINPLLCLKDIV}
-- {id: SYSCON.MAINPLLCLKDIV.scale, value: '2', locked: true}
+- {id: SYSCON.MAINPLLCLKDIV.scale, value: '1', locked: true}
 - {id: SYSCON.PLL0.denom, value: '1'}
 - {id: SYSCON.PLL0.div, value: '22', locked: true}
 - {id: SYSCON.PLL0.num, value: '0'}
-- {id: SYSCON.PLL0_PFD0_DIV.scale, value: '24'}
+- {id: SYSCON.PLL0_PFD0_DIV.scale, value: '19', locked: true}
+- {id: SYSCON.PLL0_PFD0_MUL.scale, value: '18', locked: true}
 - {id: SYSCON.PLL1.denom, value: '1', locked: true}
 - {id: SYSCON.PLL1.div, value: '16', locked: true}
 - {id: SYSCON.PLL1.num, value: '0', locked: true}
-- {id: SYSCON.SYSCPUAHBCLKDIV.scale, value: '1', locked: true}
+- {id: SYSCON.SYSCPUAHBCLKDIV.scale, value: '2', locked: true}
 - {id: SYSCON.SYSPLL0CLKSEL.sel, value: SYSCON.SYSOSCBYPASS}
 - {id: SYSCTL_PDRUNCFG_SYSPLL_CFG, value: 'No'}
 - {id: SYSCTL_PDRUNCFG_SYSXTAL_CFG, value: Power_up}
-- {id: XTAL32K_EN_CFG, value: Enable}
+- {id: XTAL_LP_Enable, value: LowPowerMode}
 sources:
-- {id: RTC.XTAL32K.outFreq, value: 32.768 kHz, enabled: true}
 - {id: SYSCON.XTAL.outFreq, value: 24 MHz, enabled: true}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -166,21 +164,16 @@ void BOARD_BootClockRUN(void)
     /* Configure SYSOSC clock source */
     POWER_DisablePD(kPDRUNCFG_PD_SYSXTAL);                 /* Power on SYSXTAL */
     POWER_UpdateOscSettlingTime(BOARD_SYSOSC_SETTLING_US); /* Updated XTAL oscillator settling time */
-    CLOCK_EnableSysOscClk(true, false, BOARD_SYSOSC_SETTLING_US); /* Enable system OSC */
+    CLOCK_EnableSysOscClk(true, true, BOARD_SYSOSC_SETTLING_US); /* Enable system OSC */
     CLOCK_SetXtalFreq(BOARD_XTAL_SYS_CLK_HZ);              /* Sets external XTAL OSC freq */
 
     /* Configure SysPLL0 clock source */
     CLOCK_InitSysPll(&g_sysPllConfig_BOARD_BootClockRUN);
-    CLOCK_InitSysPfd(kCLOCK_Pfd0, 24);                /* Enable MAIN PLL clock */
+    CLOCK_InitSysPfd(kCLOCK_Pfd0, 19);                /* Enable MAIN PLL clock */
 
 
-    /* Configure 32K OSC clock */
-    CLOCK_EnableOsc32K(true);                         /* Enable 32KHz Oscillator clock */
-    CLOCK_EnableClock(kCLOCK_Rtc);                    /* Enable the RTC peripheral clock */
-    RTC->CTRL &= ~RTC_CTRL_SWRESET_MASK;              /* Make sure the reset bit is cleared */
-    RTC->CTRL &= ~RTC_CTRL_RTC_OSC_PD_MASK;           /* The RTC Oscillator is powered up */
+    CLOCK_SetClkDiv(kCLOCK_DivSysCpuAhbClk, 2U);         /* Set SYSCPUAHBCLKDIV divider to value 2 */
 
-    CLOCK_SetClkDiv(kCLOCK_DivMainPllClk, 2U);         /* Set MAINPLLCLKDIV divider to value 2 */
     /* Set up clock selectors - Attach clocks to the peripheries */
     CLOCK_AttachClk(kMAIN_PLL_to_MAIN_CLK);                 /* Switch MAIN_CLK to MAIN_PLL */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM0);                 /* Switch FLEXCOMM0 to SFRO */
@@ -189,13 +182,12 @@ void BOARD_BootClockRUN(void)
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM3);                 /* Switch FLEXCOMM3 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM4);                 /* Switch FLEXCOMM4 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM5);                 /* Switch FLEXCOMM5 to SFRO */
-    CLKCTL0->MAINCLKSELA = ((CLKCTL0->MAINCLKSELA & ~CLKCTL0_MAINCLKSELA_SEL_MASK) | CLKCTL0_MAINCLKSELA_SEL(1U));    /* Switch MAINCLKSELA to SFRO even it is not used for MAINCLKSELB */
 
     /* Set up dividers */
     CLOCK_SetClkDiv(kCLOCK_DivPllFrgClk, 1U);         /* Set FRGPLLCLKDIV divider to value 1 */
 
     /* Call weak function BOARD_SetFlexspiClock() to set user configured clock source/divider for FLEXSPI. */
-    BOARD_SetFlexspiClock(0U, 1U);
+    BOARD_SetFlexspiClock(0U, 9U);
 
     /*!< Set SystemCoreClock variable. */
     SystemCoreClock = BOARD_BOOTCLOCKRUN_CORE_CLOCK;

@@ -11,7 +11,7 @@ product: Pins v12.0
 processor: MIMXRT685S
 package_id: MIMXRT685SFVKB
 mcu_data: ksdk2_0
-processor_version: 12.0.0
+processor_version: 12.0.1
 pin_labels:
 - {pin_num: G2, pin_signal: PIO0_1/FC0_TXD_SCL_MISO_WS/CTIMER0_MAT1/I2S_BRIDGE_WS_IN/SEC_PIO0_1, label: BT_UART_TXD, identifier: BT_UART_TXD}
 - {pin_num: F4, pin_signal: PIO0_5/FC0_SSEL2/SCT0_GPI0/SCT0_OUT0/CTIMER_INP1/SEC_PIO0_5/ADC0_0, label: TEMP_SENSE_BAND, identifier: TEMP_SENSE_BAND}

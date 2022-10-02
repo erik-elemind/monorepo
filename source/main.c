@@ -57,8 +57,13 @@ int main(void)
 	system_boot_up();
 
 	//Fat FS Write Task
-	LOGV(TAG, "Launching fatfs_writer task...");
+	int x = 0;
 
+	while(1)
+	{
+		x++;
+		x--;
+	}
 
 
 
