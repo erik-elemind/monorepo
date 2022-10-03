@@ -106,7 +106,6 @@ instance:
       - 1: []
       - 2: []
       - 3: []
-      - 4: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -362,106 +361,6 @@ static void PINT_init(void) {
 }
 
 /***********************************************************************************************************************
- * SCT0_LED initialization code
- **********************************************************************************************************************/
-/* clang-format off */
-/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
-instance:
-- name: 'SCT0_LED'
-- type: 'sctimer'
-- mode: 'basic'
-- custom_name_enabled: 'true'
-- type_id: 'sctimer_7973000102117ff9c4fa4742aaf3ccb0'
-- functional_group: 'BOARD_InitPeripherals'
-- peripheral: 'SCT0'
-- config_sets:
-  - main:
-    - config:
-      - clockMode: 'kSCTIMER_System_ClockMode'
-      - clockSource: 'SynchronousFunctionClock'
-      - clockSourceFreq: 'GetFreq'
-      - SCTInputClockSourceFreq: 'custom:0'
-      - clockSelect: 'kSCTIMER_Clock_On_Rise_Input_0'
-      - enableCounterUnify: 'true'
-      - enableBidirection_l: 'false'
-      - enableBidirection_h: 'false'
-      - prescale_l: '1'
-      - prescale_h: '1'
-      - outInitState: ''
-      - inputsync: ''
-    - enableIRQ: 'true'
-    - interrupt:
-      - IRQn: 'SCT0_IRQn'
-      - enable_interrrupt: 'enabled'
-      - enable_priority: 'true'
-      - priority: '5'
-      - enable_custom_name: 'false'
-    - enableLTimer: 'false'
-    - enableHTimer: 'false'
-    - pwms:
-      - 0:
-        - output: 'kSCTIMER_Out_2'
-        - level: 'kSCTIMER_HighTrue'
-        - dutyCyclePercent: '1'
-      - 1:
-        - output: 'kSCTIMER_Out_6'
-        - level: 'kSCTIMER_HighTrue'
-        - dutyCyclePercent: '1'
-      - 2:
-        - output: 'kSCTIMER_Out_7'
-        - level: 'kSCTIMER_HighTrue'
-        - dutyCyclePercent: '1'
-    - pwmMode: 'kSCTIMER_EdgeAlignedPwm'
-    - pwmFrequency: '25000'
-    - events: []
-    - states:
-      - 0:
-        - pwms: 'pwm0 pwm1 pwm2'
- * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
-/* clang-format on */
-const sctimer_config_t SCT0_LED_initConfig = {
-  .enableCounterUnify = true,
-  .clockMode = kSCTIMER_System_ClockMode,
-  .clockSelect = kSCTIMER_Clock_On_Rise_Input_0,
-  .enableBidirection_l = false,
-  .enableBidirection_h = false,
-  .prescale_l = 0U,
-  .prescale_h = 0U,
-  .outInitState = 0U,
-  .inputsync = 0U
-};
-const sctimer_pwm_signal_param_t SCT0_LED_pwmSignalsConfig[3] = {
-  {
-    .output = kSCTIMER_Out_2,
-    .level = kSCTIMER_HighTrue,
-    .dutyCyclePercent = 1U
-  },
-  {
-    .output = kSCTIMER_Out_6,
-    .level = kSCTIMER_HighTrue,
-    .dutyCyclePercent = 1U
-  },
-  {
-    .output = kSCTIMER_Out_7,
-    .level = kSCTIMER_HighTrue,
-    .dutyCyclePercent = 1U
-  }
-};
-uint32_t SCT0_LED_pwmEvent[3];
-
-static void SCT0_LED_init(void) {
-  SCTIMER_Init(SCT0_LED_PERIPHERAL, &SCT0_LED_initConfig);
-  /* Initialization of state 0 */
-  SCTIMER_SetupPwm(SCT0_LED_PERIPHERAL, &SCT0_LED_pwmSignalsConfig[0], kSCTIMER_EdgeAlignedPwm, 25000U, SCT0_LED_CLOCK_FREQ, &SCT0_LED_pwmEvent[0]);
-  SCTIMER_SetupPwm(SCT0_LED_PERIPHERAL, &SCT0_LED_pwmSignalsConfig[1], kSCTIMER_EdgeAlignedPwm, 25000U, SCT0_LED_CLOCK_FREQ, &SCT0_LED_pwmEvent[1]);
-  SCTIMER_SetupPwm(SCT0_LED_PERIPHERAL, &SCT0_LED_pwmSignalsConfig[2], kSCTIMER_EdgeAlignedPwm, 25000U, SCT0_LED_CLOCK_FREQ, &SCT0_LED_pwmEvent[2]);
-  /* Interrupt vector SCT0_IRQn priority settings in the NVIC. */
-  NVIC_SetPriority(SCT0_LED_IRQN, SCT0_LED_IRQ_PRIORITY);
-  /* Enable interrupt SCT0_IRQn request in the NVIC. */
-  EnableIRQ(SCT0_LED_IRQN);
-}
-
-/***********************************************************************************************************************
  * FC0_BLE_UART initialization code
  **********************************************************************************************************************/
 /* clang-format off */
@@ -617,7 +516,6 @@ void BOARD_InitPeripherals(void)
   FC3_SENSOR_I2C_init();
   FC5_DEBUG_UART_init();
   PINT_init();
-  SCT0_LED_init();
   FC0_BLE_UART_init();
   FC1_EEG_SPI_init();
 }

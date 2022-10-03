@@ -243,9 +243,9 @@ void BOARD_SetRGB(uint8_t red_duty_cycle_percent, uint8_t grn_duty_cycle_percent
  * This define structure makes it easier to add BUTTON_3_*** defines in the future,
  * with minimal changes in button_config.c.
  */
-#define LED_PERIPHERAL        SCT0_LED_PERIPHERAL
-#define LED_pwmEvent          SCT0_LED_pwmEvent
-#define LED_initConfig        SCT0_LED_initConfig
+//#define LED_PERIPHERAL        SCT0_LED_PERIPHERAL
+//#define LED_pwmEvent          SCT0_LED_pwmEvent
+//#define LED_initConfig        SCT0_LED_initConfig
 
 #define POWER_BUTTON_PORT     BOARD_INITPINS_POWER_BTNn_PORT
 #define POWER_BUTTON_PIN      BOARD_INITPINS_POWER_BTNn_PIN

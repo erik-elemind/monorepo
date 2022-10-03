@@ -17,7 +17,6 @@
 #include "fsl_usart_freertos.h"
 #include "fsl_clock.h"
 #include "fsl_pint.h"
-#include "fsl_sctimer.h"
 #include "fsl_spi.h"
 #include "fsl_spi_dma.h"
 
@@ -72,17 +71,6 @@ extern "C" {
 #define PINT_INT_6 kPINT_PinInt6
 /* Definition of PINT interrupt ID for interrupt 7  */
 #define PINT_INT_7 kPINT_PinInt7
-/* BOARD_InitPeripherals defines for SCT0 */
-/* Definition of peripheral ID */
-#define SCT0_LED_PERIPHERAL SCT0
-/* Definition of clock source frequency */
-#define SCT0_LED_CLOCK_FREQ CLOCK_GetFreq(kCLOCK_BusClk)
-/* SCT0_LED interrupt vector ID (number). */
-#define SCT0_LED_IRQN SCT0_IRQn
-/* SCT0_LED interrupt vector priority. */
-#define SCT0_LED_IRQ_PRIORITY 5
-/* SCT0_LED interrupt handler identifier. */
-#define SCT0_LED_IRQHANDLER SCT0_IRQHandler
 /* Definition of peripheral ID */
 #define FC0_BLE_UART_PERIPHERAL ((USART_Type *)FLEXCOMM0)
 /* Definition of the clock source frequency */
@@ -117,9 +105,6 @@ extern const i2c_master_config_t FC3_SENSOR_I2C_config;
 extern usart_rtos_handle_t FC5_DEBUG_UART_rtos_handle;
 extern usart_handle_t FC5_DEBUG_UART_usart_handle;
 extern struct rtos_usart_config FC5_DEBUG_UART_rtos_config;
-extern const sctimer_config_t SCT0_LED_initConfig;
-extern const sctimer_pwm_signal_param_t SCT0_LED_pwmSignalsConfig[3];
-extern uint32_t SCT0_LED_pwmEvent[3];
 extern usart_rtos_handle_t FC0_BLE_UART_rtos_handle;
 extern usart_handle_t FC0_BLE_UART_usart_handle;
 extern struct rtos_usart_config FC0_BLE_UART_rtos_config;

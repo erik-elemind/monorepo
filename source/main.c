@@ -34,6 +34,7 @@
 #include "fatfs_writer.h"
 #include "loglevels.h"
 #include <stdio.h>
+#include "fsl_iopctl.h"
 
 static const char *TAG = "main";  // Logging prefix for this module
 
@@ -47,25 +48,63 @@ static void system_boot_up(void)
 	BOARD_InitDebugConsole();
 }
 
+const uint32_t LED_PWM_ON = (/* Pin is configured as PIO0_27 */
+                               IOPCTL_PIO_FUNC0 |
+                               /* Enable pull-up / pull-down function */
+                               IOPCTL_PIO_PUPD_EN |
+                               /* Enable pull-up function */
+                               IOPCTL_PIO_PULLDOWN_EN |
+                               /* Disable input buffer function */
+                               IOPCTL_PIO_INBUF_DI |
+                               /* Normal mode */
+                               IOPCTL_PIO_SLEW_RATE_NORMAL |
+                               /* Normal drive */
+                               IOPCTL_PIO_FULLDRIVE_DI |
+                               /* Analog mux is disabled */
+                               IOPCTL_PIO_ANAMUX_DI |
+                               /* Pseudo Output Drain is disabled */
+                               IOPCTL_PIO_PSEDRAIN_DI |
+                               /* Input function is not inverted */
+                               IOPCTL_PIO_INV_DI);
+
+const uint32_t LED_PWM_OFF = (/* Pin is configured as PIO0_27 */
+                               IOPCTL_PIO_FUNC0 |
+                               /* Enable pull-up / pull-down function */
+                               IOPCTL_PIO_PUPD_EN |
+                               /* Enable pull-up function */
+                               IOPCTL_PIO_PULLUP_EN |
+                               /* Disable input buffer function */
+                               IOPCTL_PIO_INBUF_DI |
+                               /* Normal mode */
+                               IOPCTL_PIO_SLEW_RATE_NORMAL |
+                               /* Normal drive */
+                               IOPCTL_PIO_FULLDRIVE_DI |
+                               /* Analog mux is disabled */
+                               IOPCTL_PIO_ANAMUX_DI |
+                               /* Pseudo Output Drain is disabled */
+                               IOPCTL_PIO_PSEDRAIN_DI |
+                               /* Input function is not inverted */
+                               IOPCTL_PIO_INV_DI);
 
 
 int main(void)
 {
-	TaskHandle_t task_handle;
-
 	// Boot up MCU
 	system_boot_up();
 
-	//Fat FS Write Task
-	int x = 0;
+
 
 	while(1)
 	{
-		x++;
-		x--;
+		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDR_PWM_PIN, LED_PWM_ON);
+		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDG_PWM_PIN, LED_PWM_ON);
+		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDB_PWM_PIN, LED_PWM_ON);
+		SDK_DelayAtLeastUs(1000*500, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDR_PWM_PIN, LED_PWM_OFF);
+		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDG_PWM_PIN, LED_PWM_OFF);
+		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDB_PWM_PIN, LED_PWM_OFF);
+		SDK_DelayAtLeastUs(1000*500, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
 	}
-
-
 
 	return 0;
 }
