@@ -59,8 +59,6 @@ extern "C" {
 #define PINT_PERIPHERAL ((PINT_Type *) PINT_BASE)
 /* Definition of PINT interrupt ID for interrupt 1  */
 #define PINT_INT_1 kPINT_PinInt1
-/* Definition of PINT interrupt ID for interrupt 2  */
-#define PINT_INT_2 kPINT_PinInt2
 /* Definition of PINT interrupt ID for interrupt 3  */
 #define PINT_INT_3 kPINT_PinInt3
 /* Definition of PINT interrupt ID for interrupt 4  */
@@ -69,8 +67,6 @@ extern "C" {
 #define PINT_INT_5 kPINT_PinInt5
 /* Definition of PINT interrupt ID for interrupt 6  */
 #define PINT_INT_6 kPINT_PinInt6
-/* Definition of PINT interrupt ID for interrupt 7  */
-#define PINT_INT_7 kPINT_PinInt7
 /* Definition of peripheral ID */
 #define FC0_BLE_UART_PERIPHERAL ((USART_Type *)FLEXCOMM0)
 /* Definition of the clock source frequency */
@@ -118,8 +114,6 @@ extern spi_dma_handle_t FC1_EEG_SPI_DMA_Handle;
  **********************************************************************************************************************/
 /* INT_1 callback function for the PINT component */
 extern void charger_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
-/* INT_2 callback function for the PINT component */
-extern void pb_int_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 /* INT_3 callback function for the PINT component */
 extern void hrm_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 /* INT_4 callback function for the PINT component */
@@ -128,8 +122,6 @@ extern void accel_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 extern void user_button1_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 /* INT_6 callback function for the PINT component */
 extern void user_button2_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
-/* INT_7 callback function for the PINT component */
-extern void power_button_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 /* SPI DMA callback function for the FC1_EEG_SPI component (init. function BOARD_InitPeripherals)*/
 extern void eeg_dma_rx_complete_isr(SPI_Type *,spi_dma_handle_t *,status_t ,void *);
 

@@ -279,16 +279,6 @@ instance:
           - enable_priority: 'false'
           - priority: '0'
       - 1:
-        - interrupt_id: 'INT_2'
-        - interrupt_selection: 'PINT.2'
-        - interrupt_type: 'kPINT_PinIntEnableNone'
-        - callback_function: 'pb_int_isr'
-        - enable_callback: 'false'
-        - interrupt:
-          - IRQn: 'PIN_INT2_IRQn'
-          - enable_priority: 'false'
-          - priority: '0'
-      - 2:
         - interrupt_id: 'INT_3'
         - interrupt_selection: 'PINT.3'
         - interrupt_type: 'kPINT_PinIntEnableNone'
@@ -298,7 +288,7 @@ instance:
           - IRQn: 'PIN_INT3_IRQn'
           - enable_priority: 'false'
           - priority: '0'
-      - 3:
+      - 2:
         - interrupt_id: 'INT_4'
         - interrupt_selection: 'PINT.4'
         - interrupt_type: 'kPINT_PinIntEnableNone'
@@ -308,7 +298,7 @@ instance:
           - IRQn: 'PIN_INT4_IRQn'
           - enable_priority: 'false'
           - priority: '0'
-      - 4:
+      - 3:
         - interrupt_id: 'INT_5'
         - interrupt_selection: 'PINT.5'
         - interrupt_type: 'kPINT_PinIntEnableNone'
@@ -318,7 +308,7 @@ instance:
           - IRQn: 'PIN_INT5_IRQn'
           - enable_priority: 'false'
           - priority: '0'
-      - 5:
+      - 4:
         - interrupt_id: 'INT_6'
         - interrupt_selection: 'PINT.6'
         - interrupt_type: 'kPINT_PinIntEnableNone'
@@ -326,16 +316,6 @@ instance:
         - enable_callback: 'false'
         - interrupt:
           - IRQn: 'PIN_INT6_IRQn'
-          - enable_priority: 'false'
-          - priority: '0'
-      - 6:
-        - interrupt_id: 'INT_7'
-        - interrupt_selection: 'PINT.7'
-        - interrupt_type: 'kPINT_PinIntEnableNone'
-        - callback_function: 'power_button_isr'
-        - enable_callback: 'false'
-        - interrupt:
-          - IRQn: 'PIN_INT7_IRQn'
           - enable_priority: 'false'
           - priority: '0'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
@@ -346,8 +326,6 @@ static void PINT_init(void) {
   PINT_Init(PINT_PERIPHERAL);
   /* PINT PINT.1 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_1, kPINT_PinIntEnableNone, charger_pint_isr);
-  /* PINT PINT.2 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_2, kPINT_PinIntEnableNone, pb_int_isr);
   /* PINT PINT.3 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_3, kPINT_PinIntEnableNone, hrm_pint_isr);
   /* PINT PINT.4 configuration */
@@ -356,8 +334,6 @@ static void PINT_init(void) {
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_5, kPINT_PinIntEnableNone, user_button1_isr);
   /* PINT PINT.6 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_6, kPINT_PinIntEnableNone, user_button2_isr);
-  /* PINT PINT.7 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_7, kPINT_PinIntEnableNone, power_button_isr);
 }
 
 /***********************************************************************************************************************

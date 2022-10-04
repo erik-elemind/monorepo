@@ -704,7 +704,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="helix"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="libs"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="minIni"/>
-						<entry excluding="generated/usb_host_config.h|tests|tracealyzer|system_monitor|signal_processing|sha256|settings|packet_serial|noise_test|memory_manager|led|interpreter|interface|hrm|heatshrink|error_handling|erp|eeg_reader|data_log|custom_drivers|config|compression|commands|button|audio_pjrc|audio|accel|app|ble|zmodem|shell|utils|dhara_interface|fatfs_interface" flags="LOCAL|VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source"/>
+						<entry excluding="interrupts|generated/usb_host_config.h|tests|tracealyzer|system_monitor|signal_processing|sha256|settings|packet_serial|noise_test|memory_manager|led|interpreter|interface|hrm|heatshrink|error_handling|erp|eeg_reader|data_log|custom_drivers|config|compression|commands|button|audio_pjrc|audio|accel|app|ble|zmodem|shell|utils|dhara_interface|fatfs_interface" flags="LOCAL|VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/accel"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/app"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/audio"/>
@@ -725,6 +725,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/hrm"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/interface"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/interpreter"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/interrupts"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/led"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/memory_manager"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/noise_test"/>
@@ -1360,7 +1361,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="helix"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="libs"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="minIni"/>
-						<entry excluding="tests|tracealyzer|system_monitor|signal_processing|sha256|settings|packet_serial|noise_test|memory_manager|led|interpreter|interface|hrm|heatshrink|error_handling|erp|eeg_reader|data_log|custom_drivers|config|compression|commands|button|audio_pjrc|audio|accel|app|ble|zmodem|shell|utils|dhara_interface|fatfs_interface" flags="LOCAL|VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source"/>
+						<entry excluding="interrupts|tests|tracealyzer|system_monitor|signal_processing|sha256|settings|packet_serial|noise_test|memory_manager|led|interpreter|interface|hrm|heatshrink|error_handling|erp|eeg_reader|data_log|custom_drivers|config|compression|commands|button|audio_pjrc|audio|accel|app|ble|zmodem|shell|utils|dhara_interface|fatfs_interface" flags="LOCAL|VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/accel"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/app"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/audio"/>
@@ -1381,6 +1382,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/hrm"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/interface"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/interpreter"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/interrupts"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/led"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/memory_manager"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/noise_test"/>
