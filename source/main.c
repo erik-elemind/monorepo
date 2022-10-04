@@ -16,10 +16,10 @@
  * Definitions
  ******************************************************************************/
 
-
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
+static void system_boot_up(void);
 
 /*******************************************************************************
  * Code
@@ -37,8 +37,6 @@
 #include "fsl_iopctl.h"
 
 static const char *TAG = "main";  // Logging prefix for this module
-
-static void system_boot_up(void);
 
 static void system_boot_up(void)
 {
@@ -93,14 +91,13 @@ int main(void)
 	// Boot up MCU
 	system_boot_up();
 
-
-
 	while(1)
 	{
 		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDR_PWM_PIN, LED_PWM_ON);
 		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDG_PWM_PIN, LED_PWM_ON);
 		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDB_PWM_PIN, LED_PWM_ON);
 		SDK_DelayAtLeastUs(1000*500, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+		printf("\n\rhello world\n\r");
 		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDR_PWM_PIN, LED_PWM_OFF);
 		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDG_PWM_PIN, LED_PWM_OFF);
 		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDB_PWM_PIN, LED_PWM_OFF);
