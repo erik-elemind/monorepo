@@ -45,6 +45,7 @@ static void system_boot_up(void)
 	// Init board hardware
 	BOARD_InitBootPins();
 	BOARD_InitBootClocks();
+	BOARD_InitBootPeripherals();
 	BOARD_InitDebugConsole();
 }
 
