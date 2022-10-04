@@ -19,6 +19,7 @@
 #include "fsl_pint.h"
 #include "fsl_spi.h"
 #include "fsl_spi_dma.h"
+#include "fsl_sctimer.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -90,6 +91,17 @@ extern "C" {
 #define FC1_EEG_SPI_TX_DMA_CHANNEL 3
 /* Used DMA device. */
 #define FC1_EEG_SPI_TX_DMA_BASEADDR DMA0
+/* BOARD_InitPeripherals defines for SCT0 */
+/* Definition of peripheral ID */
+#define SCT0_PERIPHERAL SCT0
+/* Definition of clock source frequency */
+#define SCT0_CLOCK_FREQ CLOCK_GetFreq(kCLOCK_BusClk)
+/* SCT0 interrupt vector ID (number). */
+#define SCT0_IRQN SCT0_IRQn
+/* SCT0 interrupt vector priority. */
+#define SCT0_IRQ_PRIORITY 2
+/* SCT0 interrupt handler identifier. */
+#define SCT0_IRQHANDLER SCT0_IRQHandler
 
 /***********************************************************************************************************************
  * Global variables
@@ -108,6 +120,9 @@ extern const spi_master_config_t FC1_EEG_SPI_config;
 extern dma_handle_t FC1_EEG_SPI_RX_Handle;
 extern dma_handle_t FC1_EEG_SPI_TX_Handle;
 extern spi_dma_handle_t FC1_EEG_SPI_DMA_Handle;
+extern const sctimer_config_t SCT0_initConfig;
+extern const sctimer_pwm_signal_param_t SCT0_pwmSignalsConfig[3];
+extern uint32_t SCT0_pwmEvent[3];
 
 /***********************************************************************************************************************
  * Callback functions

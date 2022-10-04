@@ -123,7 +123,7 @@ log_event(led_event_t *event)
 {
   switch (event->type) {
     default:
-      LOGV(TAG, "[%s] Event: %s", led_state_name(g_context.state), led_event_type_name(event->type));
+      LOGV(TAG, "[%s] Event: %s\n\r", led_state_name(g_context.state), led_event_type_name(event->type));
       break;
   }
 }
@@ -131,13 +131,13 @@ log_event(led_event_t *event)
 static void
 log_event_ignored(led_event_t *event)
 {
-  LOGD(TAG, "[%s] Ignored Event: %s", led_state_name(g_context.state), led_event_type_name(event->type));
+  LOGD(TAG, "[%s] Ignored Event: %s\n\r", led_state_name(g_context.state), led_event_type_name(event->type));
 }
 
 static void
 set_state(led_state_t state)
 {
-  LOGD(TAG, "[%s] -> [%s]", led_state_name(g_context.state), led_state_name(state));
+  LOGD(TAG, "[%s] -> [%s]\n\r", led_state_name(g_context.state), led_state_name(state));
 
   g_context.state = state;
 
@@ -295,7 +295,7 @@ handle_event(led_event_t *event)
 
     default:
       // (We should never get here.)
-      LOGE(TAG, "Unknown led state: %d", (int) g_context.state);
+      LOGE(TAG, "Unknown led state: %d\n\r", (int) g_context.state);
       break;
   }
 }
@@ -320,7 +320,7 @@ task_init()
 
   set_state(LED_STATE_STANDBY);
 
-  LOGV(TAG, "Task launched. Entering event loop.");
+  LOGV(TAG, "Task launched. Entering event loop.\n\r");
 }
 
 void
@@ -332,7 +332,7 @@ led_task(void *ignored)
   led_event_t event;
 
   while (1) {
-#if 0
+#if 1
     // ToDo: Replace/Delete the following debug code ----->
     // Assuming tick = ms, delay switching LEDs for 1 second
     vTaskDelay(200);
@@ -409,7 +409,7 @@ static led_pattern_t cur_state;
 void
 set_led_state(led_pattern_t led_pattern)
 {
-  LOGD(TAG, "Setting led state to %s\n", get_pattern_name(led_pattern));
+  LOGD(TAG, "Setting led state to %s\n\r", get_pattern_name(led_pattern));
   
   // Don't reset the animation progress if the state is the same
   if (cur_state == led_pattern) {
@@ -447,7 +447,7 @@ set_led_state(led_pattern_t led_pattern)
       BOARD_SetRGB32(0xaa0000);
       break;
     default:
-      LOGE(TAG, "set_led_state(): Unknown LED state!");
+      LOGE(TAG, "set_led_state(): Unknown LED state!\n\r");
       break;
   }
 }
