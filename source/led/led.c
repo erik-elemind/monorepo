@@ -332,7 +332,7 @@ led_task(void *ignored)
   led_event_t event;
 
   while (1) {
-#if 1
+#if 0
     // ToDo: Replace/Delete the following debug code ----->
     // Assuming tick = ms, delay switching LEDs for 1 second
     vTaskDelay(200);

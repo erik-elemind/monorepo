@@ -11,6 +11,8 @@
 #include "pin_mux.h"
 #include "clock_config.h"
 #include "board_ff4.h"
+#include "dsp_support.h"
+
 
 /* Project includes */
 #include "ble_uart_send.h"
@@ -50,6 +52,7 @@ StaticTask_t led_task_struct;
  * Prototypes
  ******************************************************************************/
 static void system_boot_up(void);
+static void dsp_boot_up(void);
 
 /*******************************************************************************
  * Code
@@ -65,6 +68,7 @@ static void system_boot_up(void);
 #include "loglevels.h"
 #include <stdio.h>
 #include "fsl_iopctl.h"
+#include "fsl_dsp.h"
 
 
 static void system_boot_up(void)
@@ -74,6 +78,8 @@ static void system_boot_up(void)
 	BOARD_InitBootClocks();
 	BOARD_InitBootPeripherals();
 	BOARD_InitDebugConsole();
+
+	BOARD_DSP_Init();
 }
 
 int main(void)
@@ -114,6 +120,8 @@ int main(void)
 	task_handle = xTaskCreateStatic(&led_task,
 	  "led", LED_TASK_STACK_SIZE, NULL, LED_TASK_PRIORITY, led_task_array, &led_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)LED_TASK_STACK_SIZE );
+
+	DSP_Start();
 
 	vTaskStartScheduler();
 
