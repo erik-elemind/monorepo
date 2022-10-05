@@ -19,6 +19,7 @@
 #include "fsl_pint.h"
 #include "fsl_spi.h"
 #include "fsl_spi_dma.h"
+#include "fsl_flexspi.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -90,6 +91,12 @@ extern "C" {
 #define FC1_EEG_SPI_TX_DMA_CHANNEL 3
 /* Used DMA device. */
 #define FC1_EEG_SPI_TX_DMA_BASEADDR DMA0
+/* Definition of peripheral ID */
+#define NAND_FLEXSPI_PERIPHERAL FLEXSPI
+/* NAND_FLEXSPI interrupt vector ID (number). */
+#define NAND_FLEXSPI_IRQN FLEXSPI_IRQn
+/* NAND_FLEXSPI interrupt handler identifier. */
+#define NAND_FLEXSPI_IRQHANDLER FLEXSPI_IRQHandler
 
 /***********************************************************************************************************************
  * Global variables
@@ -108,6 +115,7 @@ extern const spi_master_config_t FC1_EEG_SPI_config;
 extern dma_handle_t FC1_EEG_SPI_RX_Handle;
 extern dma_handle_t FC1_EEG_SPI_TX_Handle;
 extern spi_dma_handle_t FC1_EEG_SPI_DMA_Handle;
+extern const flexspi_config_t NAND_FLEXSPI_config;
 
 /***********************************************************************************************************************
  * Callback functions

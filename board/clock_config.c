@@ -84,7 +84,7 @@ void BOARD_InitBootClocks(void)
 name: BOARD_BootClockRUN
 called_from_default_init: true
 outputs:
-- {id: FLEXSPI_clock.outFreq, value: 1056/19 MHz}
+- {id: FLEXSPI_clock.outFreq, value: 6 MHz}
 - {id: FXCOM0_clock.outFreq, value: 16 MHz}
 - {id: FXCOM1_clock.outFreq, value: 16 MHz}
 - {id: FXCOM2_clock.outFreq, value: 16 MHz}
@@ -106,8 +106,8 @@ settings:
 - {id: SYSCON.FC3FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC4FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC5FCLKSEL.sel, value: SYSCON.sfro}
-- {id: SYSCON.FLEXSPIFCLKDIV.scale, value: '9', locked: true}
-- {id: SYSCON.FLEXSPIFCLKSEL.sel, value: SYSCON.MAINCLKSELB}
+- {id: SYSCON.FLEXSPIFCLKDIV.scale, value: '8', locked: true}
+- {id: SYSCON.FLEXSPIFCLKSEL.sel, value: SYSCON.ffro}
 - {id: SYSCON.FRG4_DIV.scale, value: '511', locked: true}
 - {id: SYSCON.FRG4_MUL.scale, value: '256', locked: true}
 - {id: SYSCON.MAINCLKSELB.sel, value: SYSCON.MAINPLLCLKDIV}
@@ -187,7 +187,7 @@ void BOARD_BootClockRUN(void)
     CLOCK_SetClkDiv(kCLOCK_DivPllFrgClk, 1U);         /* Set FRGPLLCLKDIV divider to value 1 */
 
     /* Call weak function BOARD_SetFlexspiClock() to set user configured clock source/divider for FLEXSPI. */
-    BOARD_SetFlexspiClock(0U, 9U);
+    BOARD_SetFlexspiClock(3U, 8U);
 
     /*!< Set SystemCoreClock variable. */
     SystemCoreClock = BOARD_BOOTCLOCKRUN_CORE_CLOCK;

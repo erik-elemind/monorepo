@@ -1,12 +1,9 @@
 /*
- * Copyright (C) 2021 Elemind Technologies, Inc.
+ * nand_platform_rt685_flexspi.c
  *
- * Created: June, 2020
- * Author:  Bradey Honsinger
- * Updated for generic nand driver: October, 2021
- *
- * Description: LPC HAL+FreeRTOS platform for the generic SPI NAND driver.
-*/
+ *  Created on: Oct 4, 2022
+ *      Author: Tyler Gage
+ */
 
 #include "nand.h"
 #include "nand_platform.h"
@@ -268,7 +265,7 @@ int nand_platform_init(void) {
   g_nand_handle.mutex = xSemaphoreCreateMutex();
   g_nand_handle.event = xSemaphoreCreateBinary();
 
-  if (NULL == g_nand_handle.mutex || 
+  if (NULL == g_nand_handle.mutex ||
       NULL == g_nand_handle.event) {
     return -1;
   }

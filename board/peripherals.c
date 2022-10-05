@@ -480,6 +480,179 @@ static void FC1_EEG_SPI_init(void) {
 }
 
 /***********************************************************************************************************************
+ * NAND_FLEXSPI initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'NAND_FLEXSPI'
+- type: 'flexspi'
+- mode: 'general'
+- custom_name_enabled: 'true'
+- type_id: 'flexspi_cc6da638fb0490ad15096647c2b8e52a'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'FLEXSPI'
+- config_sets:
+  - fsl_flexspi:
+    - flexspiConfig:
+      - rxSampleClock: 'kFLEXSPI_ReadSampleClkLoopbackInternally'
+      - clockSource: 'FlexSpiClock'
+      - clockSourceFreq: 'BOARD_BootClockRUN'
+      - enableSckFreeRunning: 'false'
+      - enableDoze: 'true'
+      - enableHalfSpeedAccess: 'false'
+      - enableSckBDiffOpt: 'false'
+      - enableSameConfigForAll: 'false'
+      - seqTimeoutCycleString: '65535'
+      - ipGrantTimeoutCycleString: '255'
+      - txWatermark: '8'
+      - rxWatermark: '8'
+      - ahbConfig:
+        - ahbGrantTimeoutCycleString: '255'
+        - ahbBusTimeoutCycleString: '65535'
+        - resumeWaitCycleString: '32'
+        - buffer:
+          - 0:
+            - priority: '0'
+            - masterIndex: '0'
+            - bufferSize: '256'
+            - enablePrefetch: 'true'
+          - 1:
+            - priority: '1'
+            - masterIndex: '0'
+            - bufferSize: '256'
+            - enablePrefetch: 'true'
+          - 2:
+            - priority: '2'
+            - masterIndex: '0'
+            - bufferSize: '256'
+            - enablePrefetch: 'true'
+          - 3:
+            - priority: '3'
+            - masterIndex: '0'
+            - bufferSize: '256'
+            - enablePrefetch: 'true'
+          - 4:
+            - priority: '4'
+            - masterIndex: '0'
+            - bufferSize: '256'
+            - enablePrefetch: 'true'
+          - 5:
+            - priority: '5'
+            - masterIndex: '0'
+            - bufferSize: '256'
+            - enablePrefetch: 'true'
+          - 6:
+            - priority: '6'
+            - masterIndex: '0'
+            - bufferSize: '256'
+            - enablePrefetch: 'true'
+          - 7:
+            - priority: '7'
+            - masterIndex: '0'
+            - bufferSize: '256'
+            - enablePrefetch: 'true'
+        - enableClearAHBBufferOpt: 'false'
+        - enableReadAddressOpt: 'false'
+        - enableAHBPrefetch: 'false'
+        - enableAHBBufferable: 'false'
+        - enableAHBCachable: 'false'
+    - flexspiInterrupt:
+      - interrupt_sel: ''
+      - interrupt_vectors:
+        - enableInterrupt: 'false'
+        - interrupt:
+          - IRQn: 'FLEXSPI_IRQn'
+          - enable_interrrupt: 'enabled'
+          - enable_priority: 'false'
+          - priority: '0'
+          - enable_custom_name: 'false'
+    - enableCustomLUT: 'false'
+    - lutConfig:
+      - flash: 'defaultFlash'
+      - lutName: 'defaultLUT'
+    - devices_configs: []
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const flexspi_config_t NAND_FLEXSPI_config = {
+  .rxSampleClock = kFLEXSPI_ReadSampleClkLoopbackInternally,
+  .enableSckFreeRunning = false,
+  .enableDoze = true,
+  .enableHalfSpeedAccess = false,
+  .enableSckBDiffOpt = false,
+  .enableSameConfigForAll = false,
+  .seqTimeoutCycle = 65535,
+  .ipGrantTimeoutCycle = 255,
+  .txWatermark = 8U,
+  .rxWatermark = 8U,
+  .ahbConfig = {
+    .ahbGrantTimeoutCycle = 255,
+    .ahbBusTimeoutCycle = 65535,
+    .resumeWaitCycle = 32,
+    .buffer = {
+      {
+        .priority = 0,
+        .masterIndex = 0U,
+        .bufferSize = 256U,
+        .enablePrefetch = true
+      },
+      {
+        .priority = 1,
+        .masterIndex = 0U,
+        .bufferSize = 256U,
+        .enablePrefetch = true
+      },
+      {
+        .priority = 2,
+        .masterIndex = 0U,
+        .bufferSize = 256U,
+        .enablePrefetch = true
+      },
+      {
+        .priority = 3,
+        .masterIndex = 0U,
+        .bufferSize = 256U,
+        .enablePrefetch = true
+      },
+      {
+        .priority = 4,
+        .masterIndex = 0U,
+        .bufferSize = 256U,
+        .enablePrefetch = true
+      },
+      {
+        .priority = 5,
+        .masterIndex = 0U,
+        .bufferSize = 256U,
+        .enablePrefetch = true
+      },
+      {
+        .priority = 6,
+        .masterIndex = 0U,
+        .bufferSize = 256U,
+        .enablePrefetch = true
+      },
+      {
+        .priority = 7,
+        .masterIndex = 0U,
+        .bufferSize = 256U,
+        .enablePrefetch = true
+      }
+    },
+    .enableClearAHBBufferOpt = false,
+    .enableReadAddressOpt = false,
+    .enableAHBPrefetch = false,
+    .enableAHBBufferable = false,
+    .enableAHBCachable = false
+  }
+};
+
+static void NAND_FLEXSPI_init(void) {
+  /* FLEXSPI peripheral initialization */
+  FLEXSPI_Init(NAND_FLEXSPI_PERIPHERAL, &NAND_FLEXSPI_config);
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 void BOARD_InitPeripherals(void)
@@ -494,6 +667,7 @@ void BOARD_InitPeripherals(void)
   PINT_init();
   FC0_BLE_UART_init();
   FC1_EEG_SPI_init();
+  NAND_FLEXSPI_init();
 }
 
 /***********************************************************************************************************************

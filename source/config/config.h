@@ -91,10 +91,6 @@
 
 #define USE_EEG_INTERRUPT_INITIATED_DMA (0U)
 
-// Use the new flash chip
-#define USE_FLASH_4KPAGE_GD5F4GQ4 (0U)
-#define USE_FLASH_2KPAGE_GD5F4GQ6 (1U)
-
 // Config Streaming Log Data (used in data_log.c)
 // 0U - stream NO logged data
 // 1U - stream ALL logged data

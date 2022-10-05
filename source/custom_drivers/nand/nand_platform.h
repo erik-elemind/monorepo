@@ -9,12 +9,7 @@
 #ifndef NAND_PLATFORM_H
 #define NAND_PLATFORM_H
 
-// System specific NAND header
-#if (defined(USE_FLASH_4KPAGE_GD5F4GQ4) && (USE_FLASH_4KPAGE_GD5F4GQ4 > 0U))
-#include "nand_GD5F4GQ4.h"
-#elif (defined(USE_FLASH_2KPAGE_GD5F4GQ6) && (USE_FLASH_2KPAGE_GD5F4GQ6 > 0U))
-#include "nand_GD5F4GQ6.h"
-#endif
+#include "nand_W25N04KW.h"
 
 #ifdef __cplusplus
 extern "C" {
