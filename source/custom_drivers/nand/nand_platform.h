@@ -22,8 +22,8 @@ void nand_platform_yield_delay(int delay_ms);
 int nand_platform_command_response(
   uint8_t* p_command,
   uint8_t command_len,
-  uint8_t* p_data,
-  uint16_t data_len
+  uint32_t* p_data,
+  uint32_t data_len
   );
 
 // Return 0 if command and data completed succesfully, or <0 error code

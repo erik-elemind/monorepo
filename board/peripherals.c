@@ -505,8 +505,8 @@ instance:
       - enableSameConfigForAll: 'false'
       - seqTimeoutCycleString: '65535'
       - ipGrantTimeoutCycleString: '255'
-      - txWatermark: '8'
-      - rxWatermark: '8'
+      - txWatermark: '1'
+      - rxWatermark: '1'
       - ahbConfig:
         - ahbGrantTimeoutCycleString: '255'
         - ahbBusTimeoutCycleString: '65535'
@@ -583,8 +583,8 @@ const flexspi_config_t NAND_FLEXSPI_config = {
   .enableSameConfigForAll = false,
   .seqTimeoutCycle = 65535,
   .ipGrantTimeoutCycle = 255,
-  .txWatermark = 8U,
-  .rxWatermark = 8U,
+  .txWatermark = 1U,
+  .rxWatermark = 1U,
   .ahbConfig = {
     .ahbGrantTimeoutCycle = 255,
     .ahbBusTimeoutCycle = 65535,

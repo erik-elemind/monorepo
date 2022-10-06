@@ -36,7 +36,11 @@ static void system_boot_up(void);
 #include <stdio.h>
 #include "fsl_iopctl.h"
 
-extern const uint32_t NAND_FLEXSPI_LUT[64];
+
+#include "nand_test.h"
+
+
+static void system_boot_up(void);
 
 static void system_boot_up(void)
 {
@@ -85,43 +89,12 @@ const uint32_t LED_PWM_OFF = (/* Pin is configured as PIO0_27 */
                                /* Input function is not inverted */
                                IOPCTL_PIO_INV_DI);
 
-
-
-
-
-
 int main(void)
 {
-
-	flexspi_device_config_t deviceconfig = {
-	    .flexspiRootClk       = 1000000,
-		.isSck2Enabled        = false,
-	    .flashSize            = 0x80000,
-	    .CSIntervalUnit       = kFLEXSPI_CsIntervalUnit1SckCycle,
-	    .CSInterval           = 2,
-	    .CSHoldTime           = 3,
-	    .CSSetupTime          = 3,
-	    .dataValidTime        = 2,
-	    .columnspace          = 0,
-	    .enableWordAddress    = 0,
-	    .AWRSeqIndex          = 0,
-	    .AWRSeqNumber         = 0,
-	    .ARDSeqIndex          = 0,
-	    .ARDSeqNumber         = 0,
-	    .AHBWriteWaitUnit     = kFLEXSPI_AhbWriteWaitUnit2AhbCycle,
-	    .AHBWriteWaitInterval = 0,
-		.enableWriteMask      = false
-	};
-
 	// Boot up MCU
 	system_boot_up();
 
-	// Test code
-	FLEXSPI_SetFlashConfig(FLEXSPI, &deviceconfig, kFLEXSPI_PortA1);
-
-	// Update LUT
-	FLEXSPI_UpdateLUT(FLEXSPI, 0, NAND_FLEXSPI_LUT, 64);
-
+	nand_test1();
 
 	while(1)
 	{

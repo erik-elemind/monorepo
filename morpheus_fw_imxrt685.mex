@@ -808,8 +808,8 @@
                            <setting name="enableSameConfigForAll" value="false"/>
                            <setting name="seqTimeoutCycleString" value="65535"/>
                            <setting name="ipGrantTimeoutCycleString" value="255"/>
-                           <setting name="txWatermark" value="8"/>
-                           <setting name="rxWatermark" value="8"/>
+                           <setting name="txWatermark" value="1"/>
+                           <setting name="rxWatermark" value="1"/>
                            <struct name="ahbConfig">
                               <setting name="ahbGrantTimeoutCycleString" value="255"/>
                               <setting name="ahbBusTimeoutCycleString" value="65535"/>

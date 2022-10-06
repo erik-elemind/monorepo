@@ -7,13 +7,111 @@
 
 #include "nand.h"
 #include "nand_platform.h"
+#include "util_delay.h"
 
 // HAL
-#include "fsl_spi.h"
-#include "fsl_spi_dma.h"
+#include "fsl_flexspi.h"
 
 // FreeRTOS
 #include "FreeRTOS.h"
+
+/* LUT for the W25N04KW NAND Flash*/
+#define NOR_CMD_LUT_SEQ_IDX_READ_NORMAL 7
+#define NOR_CMD_LUT_SEQ_IDX_READ_FAST 13
+#define NOR_CMD_LUT_SEQ_IDX_READ_FAST_QUAD 0
+#define NOR_CMD_LUT_SEQ_IDX_READSTATUS 8
+#define NOR_CMD_LUT_SEQ_IDX_WRITEENABLE 2
+#define NOR_CMD_LUT_SEQ_IDX_ERASESECTOR 3
+#define NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_QUAD 4
+#define NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_SINGLE 6
+#define NOR_CMD_LUT_SEQ_IDX_READID 1
+#define NOR_CMD_LUT_SEQ_IDX_WRITESTATUSREG 9
+#define NOR_CMD_LUT_SEQ_IDX_ENTERQPI 10
+#define NOR_CMD_LUT_SEQ_IDX_EXITQPI 11
+#define NOR_CMD_LUT_SEQ_IDX_READSTATUSREG 12
+#define NOR_CMD_LUT_SEQ_IDX_ERASECHIP 5
+
+#define NAND_FLEXSPI_LUT_LENGTH 64
+
+const uint32_t NAND_FLEXSPI_LUT[NAND_FLEXSPI_LUT_LENGTH] = {
+
+  /* Normal read mode -SDR */
+  [4 * NOR_CMD_LUT_SEQ_IDX_READ_NORMAL] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x03, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x18),
+  [4 * NOR_CMD_LUT_SEQ_IDX_READ_NORMAL + 1] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 0x04, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+  /* Fast read mode - SDR */
+  [4 * NOR_CMD_LUT_SEQ_IDX_READ_FAST] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x0B, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x18),
+  [4 * NOR_CMD_LUT_SEQ_IDX_READ_FAST + 1] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_1PAD, 0x08, kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 0x04),
+
+  /* Fast read quad mode - SDR */
+  [4 * NOR_CMD_LUT_SEQ_IDX_READ_FAST_QUAD] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0xEB, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_4PAD, 0x18),
+  [4 * NOR_CMD_LUT_SEQ_IDX_READ_FAST_QUAD + 1] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_4PAD, 0x06, kFLEXSPI_Command_READ_SDR, kFLEXSPI_4PAD, 0x04),
+
+  /* Read extend parameters */
+  [4 * NOR_CMD_LUT_SEQ_IDX_READSTATUS] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x81, kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 0x04),
+
+  /* Write Enable */  [4 * NOR_CMD_LUT_SEQ_IDX_WRITEENABLE] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x06, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+  /* Erase Sector */
+  [4 * NOR_CMD_LUT_SEQ_IDX_ERASESECTOR] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0xD7, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x18),
+
+  /* Page Program - single mode */
+  [4 * NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_SINGLE] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x02, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x18),
+  [4 * NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_SINGLE + 1] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_WRITE_SDR, kFLEXSPI_1PAD, 0x04, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+  /* Page Program - quad mode */
+  [4 * NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_QUAD] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x32, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x18),
+  [4 * NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_QUAD + 1] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_WRITE_SDR, kFLEXSPI_4PAD, 0x04, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+  /* Read ID */
+  [4 * NOR_CMD_LUT_SEQ_IDX_READID] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x9F, kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_1PAD, 0x8),
+  [4 * NOR_CMD_LUT_SEQ_IDX_READID + 1] =
+    FLEXSPI_LUT_SEQ(kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 0x03, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+  /* Enable Quad mode */  [4 * NOR_CMD_LUT_SEQ_IDX_WRITESTATUSREG] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x01, kFLEXSPI_Command_WRITE_SDR, kFLEXSPI_1PAD, 0x04),
+
+  /* Enter QPI mode */
+  [4 * NOR_CMD_LUT_SEQ_IDX_ENTERQPI] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x35, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+  /* Exit QPI mode */
+  [4 * NOR_CMD_LUT_SEQ_IDX_EXITQPI] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_4PAD, 0xF5, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+  /* Read status register */
+  [4 * NOR_CMD_LUT_SEQ_IDX_READSTATUSREG] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x05, kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 0x04),
+
+  /* Erase whole chip */
+  [4 * NOR_CMD_LUT_SEQ_IDX_ERASECHIP] =
+  FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0xC7, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+};
+
+/* FLEXSPI_IRQn interrupt handler */
+void NAND_FLEXSPI_IRQHANDLER(void) {
+  /*  Place your code here */
+  /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F
+     Store immediate overlapping exception return operation might vector to incorrect interrupt. */
+  #if defined __CORTEX_M && (__CORTEX_M == 4U)
+    __DSB();
+  #endif
+}
+
 
 // Create a reference struct to use for the chipnfo.
 // This is externed via nand.h, but could also be returned by a getter().
@@ -167,57 +265,77 @@ static status_t spi_flash_transfer(nand_platform_handle_t *handle, spi_transfer_
 
 // Delay for delay_ms (delay_ms may be zero for a simple thread yield).
 void nand_platform_yield_delay(int delay_ms) {
-#if 0
-//#ifdef FREERTOS_CONFIG_H
-  if ((xTaskGetSchedulerState() == taskSCHEDULER_RUNNING) && !(xPortIsInsideInterrupt())) {
-      vTaskDelay(delay_ms);  // (this calls taskYIELD() for us)
-  }
-  else {
-    SDK_DelayAtLeastUs(delay_ms * 1000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
-  }
-#else
-  SDK_DelayAtLeastUs(delay_ms * 1000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
-#endif
+	util_delay_ms(delay_ms);
 }
 
 // Return 0 if command and response completed succesfully, or <0 error code
 int nand_platform_command_response(
   uint8_t* p_command,
   uint8_t command_len,
-  uint8_t* p_data,
-  uint16_t data_len
+  uint32_t* p_data,
+  uint32_t data_len
   )
 {
   status_t status;
+  flexspi_transfer_t flashXfer;
 
-  spi_transfer_t spi_transfer = {0};
+  uint32_t buff[1] = {0};
 
-  /* Start transfer for command TX (don't de-assert CS after). */
-  spi_transfer.txData   = (uint8_t*)p_command;
-  spi_transfer.dataSize = command_len;
-  spi_transfer.rxData   = NULL;
-  if ((p_data == NULL) || (data_len == 0)) {
-      spi_transfer.configFlags |= kSPI_FrameAssert;
-  }
-  else {
-    spi_transfer.configFlags = 0;
+  for(int i=0;i<32;i++)
+  {
+	  printf("%04X ", FLEXSPI->RFDR[i]);
   }
 
-  status = spi_flash_transfer(&g_nand_handle, &spi_transfer);
+  flashXfer.deviceAddress = 0;
+  flashXfer.port          = kFLEXSPI_PortA1;
+  flashXfer.cmdType       = kFLEXSPI_Read;
+  flashXfer.SeqNumber     = 1;
+  flashXfer.seqIndex = NOR_CMD_LUT_SEQ_IDX_READID;
+  flashXfer.data     = buff;
+  flashXfer.dataSize = 3;
 
-  if (status == kStatus_Success) {
-    if ((p_data != NULL) && (data_len > 0)) {
-      /* Start transfer for data RX (de-assert CS after to indicate end of
-         transaction).  */
-      spi_transfer.txData   = NULL;
-      spi_transfer.dataSize = data_len;
-      spi_transfer.rxData   = (uint8_t*)p_data;
-      spi_transfer.configFlags |= kSPI_FrameAssert;
+  status = FLEXSPI_TransferBlocking(FLEXSPI, &flashXfer);
 
-      status = spi_flash_transfer(&g_nand_handle, &spi_transfer);
+  printf("status = %d\r\n", status);
+
+  for(int i=0;i<32;i++)
+    {
+  	  printf("%04X ", FLEXSPI->RFDR[i]);
     }
-  }
 
+  	 for(int i=0;i<1;i++)
+  	 {
+  		 printf("%d ", buff[i]);
+  	 }
+
+//  	 printf("\r\n");
+//  spi_transfer_t spi_transfer = {0};
+//
+//  /* Start transfer for command TX (don't de-assert CS after). */
+//  spi_transfer.txData   = (uint8_t*)p_command;
+//  spi_transfer.dataSize = command_len;
+//  spi_transfer.rxData   = NULL;
+//  if ((p_data == NULL) || (data_len == 0)) {
+//      spi_transfer.configFlags |= kSPI_FrameAssert;
+//  }
+//  else {
+//    spi_transfer.configFlags = 0;
+//  }
+//
+//  status = spi_flash_transfer(&g_nand_handle, &spi_transfer);
+//
+//  if (status == kStatus_Success) {
+//    if ((p_data != NULL) && (data_len > 0)) {
+//      /* Start transfer for data RX (de-assert CS after to indicate end of
+//         transaction).  */
+//      spi_transfer.txData   = NULL;
+//      spi_transfer.dataSize = data_len;
+//      spi_transfer.rxData   = (uint8_t*)p_data;
+//      spi_transfer.configFlags |= kSPI_FrameAssert;
+//
+//      status = spi_flash_transfer(&g_nand_handle, &spi_transfer);
+//    }
+//  }
   return status;
 }
 
@@ -230,38 +348,41 @@ int nand_platform_command_with_data(
 {
   status_t status;
 
-  spi_transfer_t spi_transfer = {0};
 
-  /* Start transfer for command TX (don't de-assert CS after). */
-  spi_transfer.txData   = (uint8_t*)p_command;
-  spi_transfer.dataSize = command_len;
-  spi_transfer.rxData   = NULL;
-  if ((p_data == NULL) || (data_len == 0)) {
-      spi_transfer.configFlags |= kSPI_FrameAssert;
-  }
-  else {
-    spi_transfer.configFlags = 0;
-  }
+//  spi_transfer_t spi_transfer = {0};
+//
+//  /* Start transfer for command TX (don't de-assert CS after). */
+//  spi_transfer.txData   = (uint8_t*)p_command;
+//  spi_transfer.dataSize = command_len;
+//  spi_transfer.rxData   = NULL;
+//  if ((p_data == NULL) || (data_len == 0)) {
+//      spi_transfer.configFlags |= kSPI_FrameAssert;
+//  }
+//  else {
+//    spi_transfer.configFlags = 0;
+//  }
+//
+//  status = spi_flash_transfer(&g_nand_handle, &spi_transfer);
+//
+//  if (status == kStatus_Success) {
+//    if ((p_data != NULL) && (data_len > 0)) {
+//      /* Start transfer for data TX (de-assert CS after to indicate end of
+//         transaction).  */
+//      spi_transfer.txData   = (uint8_t*)p_data;
+//      spi_transfer.dataSize = data_len;
+//      spi_transfer.rxData   = NULL;
+//      spi_transfer.configFlags |= kSPI_FrameAssert;
+//
+//      status = spi_flash_transfer(&g_nand_handle, &spi_transfer);
+//    }
+//  }
 
-  status = spi_flash_transfer(&g_nand_handle, &spi_transfer);
-
-  if (status == kStatus_Success) {
-    if ((p_data != NULL) && (data_len > 0)) {
-      /* Start transfer for data TX (de-assert CS after to indicate end of
-         transaction).  */
-      spi_transfer.txData   = (uint8_t*)p_data;
-      spi_transfer.dataSize = data_len;
-      spi_transfer.rxData   = NULL;
-      spi_transfer.configFlags |= kSPI_FrameAssert;
-
-      status = spi_flash_transfer(&g_nand_handle, &spi_transfer);
-    }
-  }
 
   return status;
 }
 
 int nand_platform_init(void) {
+  // Initialize RTOS related functions
   g_nand_handle.mutex = xSemaphoreCreateMutex();
   g_nand_handle.event = xSemaphoreCreateBinary();
 
@@ -272,5 +393,34 @@ int nand_platform_init(void) {
 
   vQueueAddToRegistry(g_nand_handle.mutex, "nand_spi_mutex_sem");
   vQueueAddToRegistry(g_nand_handle.event, "nand_spi_event_sem");
+
+
+  // Initialize FlexSPI peripheral configuration
+  flexspi_device_config_t deviceconfig = {
+  	    .flexspiRootClk       = 6000000,
+  		.isSck2Enabled        = false,
+  	    .flashSize            = 0x80000,
+  	    .CSIntervalUnit       = kFLEXSPI_CsIntervalUnit1SckCycle,
+  	    .CSInterval           = 2,
+  	    .CSHoldTime           = 3,
+  	    .CSSetupTime          = 3,
+  	    .dataValidTime        = 2,
+  	    .columnspace          = 0,
+  	    .enableWordAddress    = 0,
+  	    .AWRSeqIndex          = 0,
+  	    .AWRSeqNumber         = 0,
+  	    .ARDSeqIndex          = 0,
+  	    .ARDSeqNumber         = 0,
+  	    .AHBWriteWaitUnit     = kFLEXSPI_AhbWriteWaitUnit2AhbCycle,
+  	    .AHBWriteWaitInterval = 0,
+  		.enableWriteMask      = false
+  	};
+  FLEXSPI_SetFlashConfig(FLEXSPI, &deviceconfig, kFLEXSPI_PortA1);
+
+  // Update LUT
+  FLEXSPI_UpdateLUT(FLEXSPI, 0, NAND_FLEXSPI_LUT, 64);
+
+  FLEXSPI_SoftwareReset(FLEXSPI);
+
   return 0;
 }
