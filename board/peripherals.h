@@ -95,6 +95,8 @@ extern "C" {
 #define NAND_FLEXSPI_PERIPHERAL FLEXSPI
 /* NAND_FLEXSPI interrupt vector ID (number). */
 #define NAND_FLEXSPI_IRQN FLEXSPI_IRQn
+/* NAND_FLEXSPI interrupt vector priority. */
+#define NAND_FLEXSPI_IRQ_PRIORITY 0
 /* NAND_FLEXSPI interrupt handler identifier. */
 #define NAND_FLEXSPI_IRQHANDLER FLEXSPI_IRQHandler
 
@@ -116,6 +118,7 @@ extern dma_handle_t FC1_EEG_SPI_RX_Handle;
 extern dma_handle_t FC1_EEG_SPI_TX_Handle;
 extern spi_dma_handle_t FC1_EEG_SPI_DMA_Handle;
 extern const flexspi_config_t NAND_FLEXSPI_config;
+extern flexspi_handle_t NAND_FLEXSPI_handle;
 
 /***********************************************************************************************************************
  * Callback functions

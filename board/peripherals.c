@@ -106,6 +106,7 @@ instance:
       - 1: []
       - 2: []
       - 3: []
+      - 4: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -487,7 +488,7 @@ static void FC1_EEG_SPI_init(void) {
 instance:
 - name: 'NAND_FLEXSPI'
 - type: 'flexspi'
-- mode: 'general'
+- mode: 'transfer'
 - custom_name_enabled: 'true'
 - type_id: 'flexspi_cc6da638fb0490ad15096647c2b8e52a'
 - functional_group: 'BOARD_InitPeripherals'
@@ -497,17 +498,18 @@ instance:
     - flexspiConfig:
       - rxSampleClock: 'kFLEXSPI_ReadSampleClkLoopbackInternally'
       - clockSource: 'FlexSpiClock'
-      - clockSourceFreq: 'BOARD_BootClockRUN'
+      - clockSourceFreq: 'custom:6000000'
       - enableSckFreeRunning: 'false'
-      - enableDoze: 'true'
+      - enableDoze: 'false'
       - enableHalfSpeedAccess: 'false'
       - enableSckBDiffOpt: 'false'
       - enableSameConfigForAll: 'false'
       - seqTimeoutCycleString: '65535'
       - ipGrantTimeoutCycleString: '255'
-      - txWatermark: '1'
-      - rxWatermark: '1'
+      - txWatermark: '8'
+      - rxWatermark: '8'
       - ahbConfig:
+        - customAHBclockFreq: '6000000'
         - ahbGrantTimeoutCycleString: '255'
         - ahbBusTimeoutCycleString: '65535'
         - resumeWaitCycleString: '32'
@@ -560,11 +562,11 @@ instance:
     - flexspiInterrupt:
       - interrupt_sel: ''
       - interrupt_vectors:
-        - enableInterrupt: 'false'
+        - enableInterrupt: 'true'
         - interrupt:
           - IRQn: 'FLEXSPI_IRQn'
           - enable_interrrupt: 'enabled'
-          - enable_priority: 'false'
+          - enable_priority: 'true'
           - priority: '0'
           - enable_custom_name: 'false'
     - enableCustomLUT: 'false'
@@ -572,19 +574,23 @@ instance:
       - flash: 'defaultFlash'
       - lutName: 'defaultLUT'
     - devices_configs: []
+    - transferHandle:
+      - init_callback_transfer: 'false'
+      - callback_fcn_transfer: 'mycallback'
+      - user_data_transfer: 'myuserdatapointer'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 const flexspi_config_t NAND_FLEXSPI_config = {
   .rxSampleClock = kFLEXSPI_ReadSampleClkLoopbackInternally,
   .enableSckFreeRunning = false,
-  .enableDoze = true,
+  .enableDoze = false,
   .enableHalfSpeedAccess = false,
   .enableSckBDiffOpt = false,
   .enableSameConfigForAll = false,
   .seqTimeoutCycle = 65535,
   .ipGrantTimeoutCycle = 255,
-  .txWatermark = 1U,
-  .rxWatermark = 1U,
+  .txWatermark = 8U,
+  .rxWatermark = 8U,
   .ahbConfig = {
     .ahbGrantTimeoutCycle = 255,
     .ahbBusTimeoutCycle = 65535,
@@ -646,10 +652,17 @@ const flexspi_config_t NAND_FLEXSPI_config = {
     .enableAHBCachable = false
   }
 };
+flexspi_handle_t NAND_FLEXSPI_handle;
 
 static void NAND_FLEXSPI_init(void) {
   /* FLEXSPI peripheral initialization */
   FLEXSPI_Init(NAND_FLEXSPI_PERIPHERAL, &NAND_FLEXSPI_config);
+  /* Interrupt vector FLEXSPI_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(NAND_FLEXSPI_IRQN, NAND_FLEXSPI_IRQ_PRIORITY);
+  /* Enable interrupt FLEXSPI_IRQn request in the NVIC. */
+  EnableIRQ(NAND_FLEXSPI_IRQN);
+  /* Initializes the FLEXSPI handle which is used in transactional functions. */
+  FLEXSPI_TransferCreateHandle(NAND_FLEXSPI_PERIPHERAL, &NAND_FLEXSPI_handle, NULL, NULL);
 }
 
 /***********************************************************************************************************************

@@ -172,9 +172,17 @@
                   <pin peripheral="PINT" signal="PINT, 2" pin_num="J17" pin_signal="PIO1_6/FC5_CTS_SDA_SSEL0/SCT0_GPI4/SCT0_OUT4/FC4_SSEL2"/>
                   <pin peripheral="PINT" signal="PINT, 3" pin_num="B1" pin_signal="PIO1_9/FC5_SSEL3/SCT0_GPI7/UTICK_CAP1/CTIMER1_MAT3/ADC0_12"/>
                   <pin peripheral="PINT" signal="PINT, 4" pin_num="K16" pin_signal="PIO1_10/MCLK/FREQME_GPIO_CLK/CTIMER_INP10/CLKOUT"/>
-                  <pin peripheral="GPIO" signal="PIO1, 24" pin_num="T7" pin_signal="PIO1_24/FLEXSPI0A_DATA4/SCT0_GPI3"/>
+                  <pin peripheral="GPIO" signal="PIO1, 24" pin_num="T7" pin_signal="PIO1_24/FLEXSPI0A_DATA4/SCT0_GPI3">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                     </pin_features>
+                  </pin>
                   <pin peripheral="GPIO" signal="PIO1, 25" pin_num="U7" pin_signal="PIO1_25/FLEXSPI0A_DATA5/SCT0_OUT3"/>
-                  <pin peripheral="GPIO" signal="PIO1, 27" pin_num="T8" pin_signal="PIO1_27/FLEXSPI0A_DATA7/SCT0_OUT4"/>
+                  <pin peripheral="GPIO" signal="PIO1, 27" pin_num="T8" pin_signal="PIO1_27/FLEXSPI0A_DATA7/SCT0_OUT4">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                     </pin_features>
+                  </pin>
                   <pin peripheral="GPIO" signal="PIO1, 30" pin_num="P10" pin_signal="PIO1_30/SD0_CLK/SCT0_GPI0"/>
                   <pin peripheral="GPIO" signal="PIO2, 3" pin_num="T12" pin_signal="PIO2_3/SD0_D3/SCT0_OUT1"/>
                   <pin peripheral="GPIO" signal="PIO2, 4" pin_num="T13" pin_signal="PIO2_4/SD0_WR_PRT/SCT0_OUT2/SD0_DS"/>
@@ -566,11 +574,6 @@
                         <data type="Version">2.1.0</data>
                      </feature>
                   </dependency>
-                  <dependency resourceType="ClockOutput" resourceId="FLEXSPI_clock" description="FLEXSPI clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="frequency" evaluation="greaterThan">
-                        <data type="Frequency" unit="Hz">0</data>
-                     </feature>
-                  </dependency>
                </dependencies>
                <instances>
                   <instance name="NVIC" uuid="653970ab-e215-4f80-a534-8b7c6ec66a07" type="nvic" type_id="nvic_57b5eef3774cc60acaede6f5b8bddc67" mode="general" peripheral="NVIC" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
@@ -580,6 +583,7 @@
                            <struct name="1"/>
                            <struct name="2"/>
                            <struct name="3"/>
+                           <struct name="4"/>
                         </array>
                         <array name="interrupts"/>
                      </config_set>
@@ -795,22 +799,23 @@
                         </struct>
                      </config_set>
                   </instance>
-                  <instance name="NAND_FLEXSPI" uuid="7d8b9be9-f47a-4195-8c3b-9ce2d3cc9c5b" type="flexspi" type_id="flexspi_cc6da638fb0490ad15096647c2b8e52a" mode="general" peripheral="FLEXSPI" enabled="true" comment="" custom_name_enabled="true" editing_lock="false">
+                  <instance name="NAND_FLEXSPI" uuid="7d8b9be9-f47a-4195-8c3b-9ce2d3cc9c5b" type="flexspi" type_id="flexspi_cc6da638fb0490ad15096647c2b8e52a" mode="transfer" peripheral="FLEXSPI" enabled="true" comment="" custom_name_enabled="true" editing_lock="false">
                      <config_set name="fsl_flexspi">
                         <struct name="flexspiConfig">
                            <setting name="rxSampleClock" value="kFLEXSPI_ReadSampleClkLoopbackInternally"/>
                            <setting name="clockSource" value="FlexSpiClock"/>
-                           <setting name="clockSourceFreq" value="BOARD_BootClockRUN"/>
+                           <setting name="clockSourceFreq" value="custom:6000000"/>
                            <setting name="enableSckFreeRunning" value="false"/>
-                           <setting name="enableDoze" value="true"/>
+                           <setting name="enableDoze" value="false"/>
                            <setting name="enableHalfSpeedAccess" value="false"/>
                            <setting name="enableSckBDiffOpt" value="false"/>
                            <setting name="enableSameConfigForAll" value="false"/>
                            <setting name="seqTimeoutCycleString" value="65535"/>
                            <setting name="ipGrantTimeoutCycleString" value="255"/>
-                           <setting name="txWatermark" value="1"/>
-                           <setting name="rxWatermark" value="1"/>
+                           <setting name="txWatermark" value="8"/>
+                           <setting name="rxWatermark" value="8"/>
                            <struct name="ahbConfig">
+                              <setting name="customAHBclockFreq" value="6000000"/>
                               <setting name="ahbGrantTimeoutCycleString" value="255"/>
                               <setting name="ahbBusTimeoutCycleString" value="65535"/>
                               <setting name="resumeWaitCycleString" value="32"/>
@@ -876,11 +881,11 @@
                               <selected/>
                            </set>
                            <struct name="interrupt_vectors">
-                              <setting name="enableInterrupt" value="false"/>
+                              <setting name="enableInterrupt" value="true"/>
                               <struct name="interrupt">
                                  <setting name="IRQn" value="FLEXSPI_IRQn"/>
                                  <setting name="enable_interrrupt" value="enabled"/>
-                                 <setting name="enable_priority" value="false"/>
+                                 <setting name="enable_priority" value="true"/>
                                  <setting name="priority" value="0"/>
                                  <setting name="enable_custom_name" value="false"/>
                               </struct>
@@ -892,6 +897,11 @@
                            <setting name="lutName" value="defaultLUT"/>
                         </struct>
                         <array name="devices_configs"/>
+                        <struct name="transferHandle">
+                           <setting name="init_callback_transfer" value="false"/>
+                           <setting name="callback_fcn_transfer" value="mycallback"/>
+                           <setting name="user_data_transfer" value="myuserdatapointer"/>
+                        </struct>
                      </config_set>
                   </instance>
                </instances>

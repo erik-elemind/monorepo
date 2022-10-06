@@ -142,9 +142,9 @@ BOARD_InitPins:
   - {pin_num: J17, peripheral: PINT, signal: 'PINT, 2', pin_signal: PIO1_6/FC5_CTS_SDA_SSEL0/SCT0_GPI4/SCT0_OUT4/FC4_SSEL2}
   - {pin_num: B1, peripheral: PINT, signal: 'PINT, 3', pin_signal: PIO1_9/FC5_SSEL3/SCT0_GPI7/UTICK_CAP1/CTIMER1_MAT3/ADC0_12}
   - {pin_num: K16, peripheral: PINT, signal: 'PINT, 4', pin_signal: PIO1_10/MCLK/FREQME_GPIO_CLK/CTIMER_INP10/CLKOUT}
-  - {pin_num: T7, peripheral: GPIO, signal: 'PIO1, 24', pin_signal: PIO1_24/FLEXSPI0A_DATA4/SCT0_GPI3}
+  - {pin_num: T7, peripheral: GPIO, signal: 'PIO1, 24', pin_signal: PIO1_24/FLEXSPI0A_DATA4/SCT0_GPI3, direction: OUTPUT}
   - {pin_num: U7, peripheral: GPIO, signal: 'PIO1, 25', pin_signal: PIO1_25/FLEXSPI0A_DATA5/SCT0_OUT3}
-  - {pin_num: T8, peripheral: GPIO, signal: 'PIO1, 27', pin_signal: PIO1_27/FLEXSPI0A_DATA7/SCT0_OUT4}
+  - {pin_num: T8, peripheral: GPIO, signal: 'PIO1, 27', pin_signal: PIO1_27/FLEXSPI0A_DATA7/SCT0_OUT4, direction: OUTPUT}
   - {pin_num: P10, peripheral: GPIO, signal: 'PIO1, 30', pin_signal: PIO1_30/SD0_CLK/SCT0_GPI0}
   - {pin_num: T12, peripheral: GPIO, signal: 'PIO2, 3', pin_signal: PIO2_3/SD0_D3/SCT0_OUT1}
   - {pin_num: T13, peripheral: GPIO, signal: 'PIO2, 4', pin_signal: PIO2_4/SD0_WR_PRT/SCT0_OUT2/SD0_DS}
@@ -194,6 +194,9 @@ void BOARD_InitPins(void)
     /* Enables the clock for the GPIO0 module */
     CLOCK_EnableClock(kCLOCK_HsGpio0);
 
+    /* Enables the clock for the GPIO1 module */
+    CLOCK_EnableClock(kCLOCK_HsGpio1);
+
     gpio_pin_config_t LEDB_PWM_config = {
         .pinDirection = kGPIO_DigitalInput,
         .outputLogic = 0U
@@ -228,6 +231,20 @@ void BOARD_InitPins(void)
     };
     /* Initialize GPIO functionality on pin PIO0_27 (pin B3)  */
     GPIO_PinInit(BOARD_INITPINS_LEDR_PWM_GPIO, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDR_PWM_PIN, &LEDR_PWM_config);
+
+    gpio_pin_config_t FLASH_MUX_SEL_config = {
+        .pinDirection = kGPIO_DigitalOutput,
+        .outputLogic = 0U
+    };
+    /* Initialize GPIO functionality on pin PIO1_24 (pin T7)  */
+    GPIO_PinInit(BOARD_INITPINS_FLASH_MUX_SEL_GPIO, BOARD_INITPINS_FLASH_MUX_SEL_PORT, BOARD_INITPINS_FLASH_MUX_SEL_PIN, &FLASH_MUX_SEL_config);
+
+    gpio_pin_config_t FLASH_MUX_EN_config = {
+        .pinDirection = kGPIO_DigitalOutput,
+        .outputLogic = 0U
+    };
+    /* Initialize GPIO functionality on pin PIO1_27 (pin T8)  */
+    GPIO_PinInit(BOARD_INITPINS_FLASH_MUX_EN_GPIO, BOARD_INITPINS_FLASH_MUX_EN_PORT, BOARD_INITPINS_FLASH_MUX_EN_PIN, &FLASH_MUX_EN_config);
     /* PIO0_13 is selected for PINT input 0 */
     INPUTMUX_AttachSignal(INPUTMUX, 0U, kINPUTMUX_GpioPort0Pin13ToPintsel);
     /* PIO0_19 is selected for PINT input 1 */
