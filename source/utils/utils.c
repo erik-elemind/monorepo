@@ -19,7 +19,7 @@ int recv_cnt = 0;
 void
 print_version (void)
 {
-  printf (PROJECT_NAME " fw:0x%08x/%s git:%s reset:0x%08lx\n",
+  printf (PROJECT_NAME " fw:0x%08x/%s git:%s reset:0x%08lx\n\r",
 	  FW_VERSION_INTEGER, FW_VERSION_STRING, GIT_VERSION, get_reset_reason());
 }
 

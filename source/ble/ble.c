@@ -356,7 +356,7 @@ ble_therapy_request(void)
 void
 ble_therapy_command(uint8_t therapy)
 {
-  LOGV("ble.c","THERAPY: %d",therapy);
+  LOGV("ble.c","THERAPY: %d\n\r",therapy);
 
   ble_event_t event = { .type = BLE_EVENT_THERAPY_COMMAND,
     .user_data = {therapy} };
@@ -519,7 +519,7 @@ log_event(ble_event_t *event)
     // suppress electrode quality update event
       break;
     default:
-      LOGV(TAG, "[%s] Event: %s", ble_state_name(g_ble_context.state),
+      LOGV(TAG, "[%s] Event: %s\n\r", ble_state_name(g_ble_context.state),
         ble_event_type_name(event->type));
       break;
   }
@@ -528,13 +528,13 @@ log_event(ble_event_t *event)
 static void
 log_event_ignored(ble_event_t *event)
 {
-  LOGD(TAG, "[%s] Ignored Event: %s", ble_state_name(g_ble_context.state), ble_event_type_name(event->type));
+  LOGD(TAG, "[%s] Ignored Event: %s\n\r", ble_state_name(g_ble_context.state), ble_event_type_name(event->type));
 }
 
 static void
 set_state(ble_state_t state)
 {
-  LOGD(TAG, "[%s] -> [%s]", ble_state_name(g_ble_context.state), ble_state_name(state));
+  LOGD(TAG, "[%s] -> [%s]\n\r", ble_state_name(g_ble_context.state), ble_state_name(state));
 
   g_ble_context.state = state;
 
@@ -973,7 +973,7 @@ handle_event(ble_event_t *event)
 
     default:
       // (We should never get here.)
-      LOGE(TAG, "Unknown ble state: %d", (int) g_ble_context.state);
+      LOGE(TAG, "Unknown ble state: %d\n\r", (int) g_ble_context.state);
       break;
   }
 }
@@ -996,7 +996,7 @@ task_init()
   // Any post-scheduler init goes here.
   set_state(BLE_STATE_STANDBY);
 
-  LOGV(TAG, "Task launched. Entering event loop.");
+  LOGV(TAG, "Task launched. Entering event loop.\n\r");
 }
 
 void

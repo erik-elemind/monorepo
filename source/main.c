@@ -12,9 +12,39 @@
 #include "clock_config.h"
 #include "board_ff4.h"
 
+/* Project includes */
+#include "ble_uart_send.h"
+#include "ble_uart_recv.h"
+#include "led.h"
+
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+/* FreeRTOS includes */
+#include "FreeRTOS.h"
+#include "task.h"
+
+#define BLE_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*5) // 5
+#define BLE_TASK_PRIORITY 1
+StackType_t ble_task_array[ BLE_TASK_STACK_SIZE ];
+StaticTask_t ble_task_struct;
+
+#define BLE_UART_RECV_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*5) // 6
+#define BLE_UART_RECV_TASK_PRIORITY 1
+StackType_t ble_uart_recv_task_array[ BLE_UART_RECV_TASK_STACK_SIZE ];
+StaticTask_t ble_uart_recv_task_struct;
+
+#if (defined(ENABLE_BLE_UART_SEND_TASK) && (ENABLE_BLE_UART_SEND_TASK > 0U))
+#define BLE_UART_SEND_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*4) //6
+#define BLE_UART_SEND_TASK_PRIORITY 1
+StackType_t ble_uart_send_task_array[ BLE_UART_SEND_TASK_STACK_SIZE ];
+StaticTask_t ble_uart_send_task_struct;
+#endif
+
+#define LED_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*2)
+#define LED_TASK_PRIORITY 1
+StackType_t led_task_array[ LED_TASK_STACK_SIZE ];
+StaticTask_t led_task_struct;
 
 /*******************************************************************************
  * Prototypes
@@ -36,7 +66,6 @@ static void system_boot_up(void);
 #include <stdio.h>
 #include "fsl_iopctl.h"
 
-static const char *TAG = "main";  // Logging prefix for this module
 
 static void system_boot_up(void)
 {
@@ -47,62 +76,46 @@ static void system_boot_up(void)
 	BOARD_InitDebugConsole();
 }
 
-const uint32_t LED_PWM_ON = (/* Pin is configured as PIO0_27 */
-                               IOPCTL_PIO_FUNC0 |
-                               /* Enable pull-up / pull-down function */
-                               IOPCTL_PIO_PUPD_EN |
-                               /* Enable pull-up function */
-                               IOPCTL_PIO_PULLDOWN_EN |
-                               /* Disable input buffer function */
-                               IOPCTL_PIO_INBUF_DI |
-                               /* Normal mode */
-                               IOPCTL_PIO_SLEW_RATE_NORMAL |
-                               /* Normal drive */
-                               IOPCTL_PIO_FULLDRIVE_DI |
-                               /* Analog mux is disabled */
-                               IOPCTL_PIO_ANAMUX_DI |
-                               /* Pseudo Output Drain is disabled */
-                               IOPCTL_PIO_PSEDRAIN_DI |
-                               /* Input function is not inverted */
-                               IOPCTL_PIO_INV_DI);
-
-const uint32_t LED_PWM_OFF = (/* Pin is configured as PIO0_27 */
-                               IOPCTL_PIO_FUNC0 |
-                               /* Enable pull-up / pull-down function */
-                               IOPCTL_PIO_PUPD_EN |
-                               /* Enable pull-up function */
-                               IOPCTL_PIO_PULLUP_EN |
-                               /* Disable input buffer function */
-                               IOPCTL_PIO_INBUF_DI |
-                               /* Normal mode */
-                               IOPCTL_PIO_SLEW_RATE_NORMAL |
-                               /* Normal drive */
-                               IOPCTL_PIO_FULLDRIVE_DI |
-                               /* Analog mux is disabled */
-                               IOPCTL_PIO_ANAMUX_DI |
-                               /* Pseudo Output Drain is disabled */
-                               IOPCTL_PIO_PSEDRAIN_DI |
-                               /* Input function is not inverted */
-                               IOPCTL_PIO_INV_DI);
-
-
 int main(void)
 {
 	// Boot up MCU
 	system_boot_up();
+	print_version();
 
-	while(1)
-	{
-		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDR_PWM_PIN, LED_PWM_ON);
-		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDG_PWM_PIN, LED_PWM_ON);
-		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDB_PWM_PIN, LED_PWM_ON);
-		SDK_DelayAtLeastUs(1000*500, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
-		printf("\n\rhello world\n\r");
-		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDR_PWM_PIN, LED_PWM_OFF);
-		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDG_PWM_PIN, LED_PWM_OFF);
-		IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_LEDR_PWM_PORT, BOARD_INITPINS_LEDB_PWM_PIN, LED_PWM_OFF);
-		SDK_DelayAtLeastUs(1000*500, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
-	}
+	// Initialize RTOS tasks
+#if 1
+	TaskHandle_t task_handle;
+#endif
 
-	return 0;
+	/* BLE tasks */
+	printf("Launching BLE task...\n\r");
+	ble_pretask_init();
+	task_handle = xTaskCreateStatic(&ble_task,
+			"ble", BLE_TASK_STACK_SIZE, NULL, BLE_TASK_PRIORITY, ble_task_array, &ble_task_struct);
+
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *) BLE_TASK_STACK_SIZE );
+
+	printf("Launching BLE uart_recv task...\n\r");
+	ble_uart_recv_pretask_init();
+	task_handle = xTaskCreateStatic(&ble_uart_recv_task,
+	      "ble_uart_recv", BLE_UART_RECV_TASK_STACK_SIZE, NULL, BLE_UART_RECV_TASK_PRIORITY, ble_uart_recv_task_array, &ble_uart_recv_task_struct);
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *) BLE_UART_RECV_TASK_STACK_SIZE );
+
+	#if (defined(ENABLE_BLE_UART_SEND_TASK) && (ENABLE_BLE_UART_SEND_TASK > 0U))
+	printf("Launching BLE uart_send task...\n\r");
+	ble_uart_send_pretask_init();
+	task_handle = xTaskCreateStatic(&ble_uart_send_task,
+		  "ble_uart_send", BLE_UART_SEND_TASK_STACK_SIZE, NULL, BLE_UART_SEND_TASK_PRIORITY, ble_uart_send_task_array, &ble_uart_send_task_struct);
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)BLE_UART_SEND_TASK_STACK_SIZE );
+	#endif
+
+	printf("Launching led task...\n\r");
+	led_pretask_init();
+	task_handle = xTaskCreateStatic(&led_task,
+	  "led", LED_TASK_STACK_SIZE, NULL, LED_TASK_PRIORITY, led_task_array, &led_task_struct);
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)LED_TASK_STACK_SIZE );
+
+	vTaskStartScheduler();
+
+	for (;;); // loop to allow new debug session to connect
 }
