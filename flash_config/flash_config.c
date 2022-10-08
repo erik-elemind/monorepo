@@ -31,24 +31,26 @@ const flexspi_nor_config_t flexspi_config = {
 
 			.waitTimeCfgCommands = 1,
 
+			.controllerMiscOption = (1u << kFlexSpiMiscOffset_SafeConfigFreqEnable),
+
             .deviceType    = 0x1,
             .sflashPadType = kSerialFlash_4Pads,
-            .serialClkFreq = kFlexSpiSerialClk_133MHz,
+            .serialClkFreq = kFlexSpiSerialClk_SDR_48MHz,
             .sflashA1Size  = 0,
             .sflashA2Size  = 0,
-            .sflashB1Size  = 0x800000,
+            .sflashB1Size  = 0x1000000,
             .sflashB2Size  = 0,
             .lookupTable =
                 {
                     /* Read */
-                    [0] = FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x6B, RADDR_SDR, FLEXSPI_4PAD, 0x18),
-                    [1] = FLEXSPI_LUT_SEQ(DUMMY_SDR, FLEXSPI_4PAD, 0x08, READ_SDR, FLEXSPI_4PAD, 0x04),
+                    [0] = FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x6B, RADDR_SDR, FLEXSPI_1PAD, 0x18),
+                    [1] = FLEXSPI_LUT_SEQ(DUMMY_SDR, FLEXSPI_1PAD, 0x08, READ_SDR, FLEXSPI_4PAD, 0x04),
 
                     /* Read Status */
-                    //[4 * 1 + 0] = FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x05, READ_SDR, FLEXSPI_1PAD, 0x04),
+                    [4 * 1 + 0] = FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x05, READ_SDR, FLEXSPI_1PAD, 0x04),
 
                     /* Write Enable */
-                    //[4 * 3 + 0] = FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x06, STOP_EXE, FLEXSPI_1PAD, 0x00),
+                    [4 * 3 + 0] = FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x06, STOP_EXE, FLEXSPI_1PAD, 0x00),
                 },
         },
     .pageSize           = 0x100,
