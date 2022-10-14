@@ -16,7 +16,7 @@
     <booleanAttribute key="com.nxp.mcuxpresso.jlink.flash.halt.target" value="true"/>
     <booleanAttribute key="com.nxp.mcuxpresso.jlink.flash.reset.target" value="true"/>
     <stringAttribute key="com.nxp.mcuxpresso.segger.auto.startup" value="auto"/>
-    <stringAttribute key="com.nxp.mcuxpresso.segger.device" value="MIMXRT685S_M33"/>
+    <stringAttribute key="com.nxp.mcuxpresso.segger.device" value="MIMXRT685S"/>
     <stringAttribute key="com.nxp.mcuxpresso.segger.endian" value="little"/>
     <stringAttribute key="com.nxp.mcuxpresso.segger.halt.target" value="-halt"/>
     <stringAttribute key="com.nxp.mcuxpresso.segger.if" value="SWD"/>
@@ -70,6 +70,7 @@
     <stringAttribute key="org.eclipse.cdt.dsf.gdb.TRACEPOINT_MODE" value="TP_NORMAL_ONLY"/>
     <booleanAttribute key="org.eclipse.cdt.dsf.gdb.UPDATE_THREADLIST_ON_SUSPEND" value="false"/>
     <intAttribute key="org.eclipse.cdt.launch.ATTR_BUILD_BEFORE_LAUNCH_ATTR" value="2"/>
+    <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_ID" value="gdb"/>
     <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_START_MODE" value="remote"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="Debug\morpheus_fw_imxrt685.axf"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="morpheus_fw_imxrt685"/>
