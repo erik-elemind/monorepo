@@ -789,15 +789,15 @@
                            <setting name="enable_rx_dma_channel" value="true"/>
                            <struct name="dma_rx_channel">
                               <setting name="DMA_source" value="kDma0RequestFlexcomm1Rx"/>
-                              <setting name="init_channel_priority" value="false"/>
-                              <setting name="dma_priority" value="kDMA_ChannelPriority0"/>
+                              <setting name="init_channel_priority" value="true"/>
+                              <setting name="dma_priority" value="kDMA_ChannelPriority3"/>
                               <setting name="enable_custom_name" value="false"/>
                            </struct>
                            <setting name="enable_tx_dma_channel" value="true"/>
                            <struct name="dma_tx_channel">
                               <setting name="DMA_source" value="kDma0RequestFlexcomm1Tx"/>
-                              <setting name="init_channel_priority" value="false"/>
-                              <setting name="dma_priority" value="kDMA_ChannelPriority0"/>
+                              <setting name="init_channel_priority" value="true"/>
+                              <setting name="dma_priority" value="kDMA_ChannelPriority4"/>
                               <setting name="enable_custom_name" value="false"/>
                            </struct>
                         </struct>

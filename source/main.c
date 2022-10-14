@@ -18,6 +18,8 @@
 #include "ble_uart_send.h"
 #include "ble_uart_recv.h"
 #include "led.h"
+#include "eeg_reader.h"
+#include "eeg_processor.h"
 
 /*******************************************************************************
  * Definitions
@@ -25,6 +27,8 @@
 /* FreeRTOS includes */
 #include "FreeRTOS.h"
 #include "task.h"
+
+static const char *TAG = "main";  // Logging prefix for this module
 
 #define BLE_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*5) // 5
 #define BLE_TASK_PRIORITY 1
@@ -47,6 +51,16 @@ StaticTask_t ble_uart_send_task_struct;
 #define LED_TASK_PRIORITY 1
 StackType_t led_task_array[ LED_TASK_STACK_SIZE ];
 StaticTask_t led_task_struct;
+
+#define EEG_READER_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*3) //6
+#define EEG_READER_TASK_PRIORITY 4 // used to be 5
+StackType_t eeg_reader_task_array[ EEG_READER_TASK_STACK_SIZE ];
+StaticTask_t eeg_reader_task_struct;
+
+#define EEG_PROCESSOR_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*(5+10)) //5 orig, added 110 for compression algo using float (not double)
+#define EEG_PROCESSOR_TASK_PRIORITY 3
+StackType_t eeg_processor_task_array[ EEG_PROCESSOR_TASK_STACK_SIZE ];
+StaticTask_t eeg_processor_task_struct;
 
 /*******************************************************************************
  * Prototypes
@@ -122,6 +136,28 @@ int main(void)
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)LED_TASK_STACK_SIZE );
 
 	DSP_Start();
+
+	#if (defined(ENABLE_EEG_READER_TASK) && (ENABLE_EEG_READER_TASK > 0U))
+	  LOGV(TAG, "Launching eeg_reader task...");
+
+	  eeg_reader_pretask_init();
+
+	  task_handle = xTaskCreateStatic(&eeg_reader_task,
+		  "eeg_reader", EEG_READER_TASK_STACK_SIZE, NULL, EEG_READER_TASK_PRIORITY, eeg_reader_task_array, &eeg_reader_task_struct);
+
+	  vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)EEG_READER_TASK_STACK_SIZE );
+	#endif
+
+	#if (defined(ENABLE_EEG_PROCESSOR_TASK) && (ENABLE_EEG_PROCESSOR_TASK > 0U))
+	  LOGV(TAG, "Launching eeg_processor task...");
+
+	  eeg_processor_pretask_init();
+
+	  task_handle = xTaskCreateStatic(&eeg_processor_task,
+		  "eeg_processor", EEG_PROCESSOR_TASK_STACK_SIZE, NULL, EEG_PROCESSOR_TASK_PRIORITY, eeg_processor_task_array, &eeg_processor_task_struct);
+
+	  vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)EEG_PROCESSOR_TASK_STACK_SIZE );
+	#endif
 
 	vTaskStartScheduler();
 

@@ -426,14 +426,14 @@ instance:
       - enable_rx_dma_channel: 'true'
       - dma_rx_channel:
         - DMA_source: 'kDma0RequestFlexcomm1Rx'
-        - init_channel_priority: 'false'
-        - dma_priority: 'kDMA_ChannelPriority0'
+        - init_channel_priority: 'true'
+        - dma_priority: 'kDMA_ChannelPriority3'
         - enable_custom_name: 'false'
       - enable_tx_dma_channel: 'true'
       - dma_tx_channel:
         - DMA_source: 'kDma0RequestFlexcomm1Tx'
-        - init_channel_priority: 'false'
-        - dma_priority: 'kDMA_ChannelPriority0'
+        - init_channel_priority: 'true'
+        - dma_priority: 'kDMA_ChannelPriority4'
         - enable_custom_name: 'false'
     - spi_dma_handle:
       - enable_custom_name: 'false'
@@ -470,10 +470,14 @@ static void FC1_EEG_SPI_init(void) {
   SPI_MasterInit(FC1_EEG_SPI_PERIPHERAL, &FC1_EEG_SPI_config, FC1_EEG_SPI_CLOCK_SOURCE);
   /* Enable the DMA 2 channel in the DMA */
   DMA_EnableChannel(FC1_EEG_SPI_RX_DMA_BASEADDR, FC1_EEG_SPI_RX_DMA_CHANNEL);
+  /* Set the DMA 2 channel priority */
+  DMA_SetChannelPriority(FC1_EEG_SPI_RX_DMA_BASEADDR, FC1_EEG_SPI_RX_DMA_CHANNEL, kDMA_ChannelPriority3);
   /* Create the DMA FC1_EEG_SPI_RX_Handle handle */
   DMA_CreateHandle(&FC1_EEG_SPI_RX_Handle, FC1_EEG_SPI_RX_DMA_BASEADDR, FC1_EEG_SPI_RX_DMA_CHANNEL);
   /* Enable the DMA 3 channel in the DMA */
   DMA_EnableChannel(FC1_EEG_SPI_TX_DMA_BASEADDR, FC1_EEG_SPI_TX_DMA_CHANNEL);
+  /* Set the DMA 3 channel priority */
+  DMA_SetChannelPriority(FC1_EEG_SPI_TX_DMA_BASEADDR, FC1_EEG_SPI_TX_DMA_CHANNEL, kDMA_ChannelPriority4);
   /* Create the DMA FC1_EEG_SPI_TX_Handle handle */
   DMA_CreateHandle(&FC1_EEG_SPI_TX_Handle, FC1_EEG_SPI_TX_DMA_BASEADDR, FC1_EEG_SPI_TX_DMA_CHANNEL);
   /* Create the SPI DMA handle */
