@@ -155,7 +155,7 @@ void BOARD_InitFlashSPI();
  * Set the logic-level used to enable the
  * EEG LDO voltage regulator through the enable pin.
  */
-#define EEG_LDO_ENABLE_LEVEL 0
+#define EEG_LDO_ENABLE_LEVEL 1
 /*
  * Set the logic-level used to enable the
  * EEG negative charge pump through the enable pin.

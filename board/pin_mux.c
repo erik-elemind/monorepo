@@ -164,10 +164,11 @@ BOARD_InitPins:
   - {pin_num: L3, peripheral: FLEXCOMM1, signal: RXD_SDA_MOSI_DATA, pin_signal: PIO0_9/FC1_RXD_SDA_MOSI_DATA/SCT0_GPI6/SCT0_OUT6/CTIMER1_MAT2/I2S_BRIDGE_DATA_OUT/SEC_PIO0_9}
   - {pin_num: J3, peripheral: FLEXCOMM1, signal: CTS_SDA_SSEL0, pin_signal: PIO0_10/FC1_CTS_SDA_SSEL0/SCT0_GPI7/SCT0_OUT7/CTIMER1_MAT3/FC0_SSEL2/SEC_PIO0_10}
   - {pin_num: G1, peripheral: GPIO, signal: 'PIO0, 0', pin_signal: PIO0_0/FC0_SCK/CTIMER0_MAT0/I2S_BRIDGE_CLK_IN/GPIO_INT_BMAT/SEC_PIO0_0}
-  - {pin_num: L1, peripheral: GPIO, signal: 'PIO0, 11', pin_signal: PIO0_11/FC1_RTS_SCL_SSEL1/SCT0_GPI0/SCT0_OUT8/CTIMER_INP2/FC0_SSEL3/SEC_PIO0_11}
+  - {pin_num: L1, peripheral: GPIO, signal: 'PIO0, 11', pin_signal: PIO0_11/FC1_RTS_SCL_SSEL1/SCT0_GPI0/SCT0_OUT8/CTIMER_INP2/FC0_SSEL3/SEC_PIO0_11, direction: OUTPUT,
+    gpio_init_state: 'true'}
   - {pin_num: R13, peripheral: GPIO, signal: 'PIO2, 9', pin_signal: PIO2_9/SD0_CARD_DET_N/SCT0_OUT5/CTIMER1_MAT3}
   - {pin_num: F4, peripheral: ADC0, signal: 'CH, 0', pin_signal: PIO0_5/FC0_SSEL2/SCT0_GPI0/SCT0_OUT0/CTIMER_INP1/SEC_PIO0_5/ADC0_0}
-  - {pin_num: J15, peripheral: GPIO, signal: 'PIO1, 7', pin_signal: PIO1_7/FC5_RTS_SCL_SSEL1/SCT0_GPI5/SCT0_OUT5/CTIMER_INP9/FC4_SSEL3}
+  - {pin_num: J15, peripheral: GPIO, signal: 'PIO1, 7', pin_signal: PIO1_7/FC5_RTS_SCL_SSEL1/SCT0_GPI5/SCT0_OUT5/CTIMER_INP9/FC4_SSEL3, direction: OUTPUT, gpio_init_state: 'true'}
   - {pin_num: U16, peripheral: GPIO, signal: 'PIO2, 7', pin_signal: PIO2_7/SD0_D6/SCT0_GPI5/CTIMER1_MAT1, direction: OUTPUT, gpio_init_state: 'false'}
   - {pin_num: T2, peripheral: FLEXSPI, signal: FLEXSPI_B_SS0_B, pin_signal: PIO2_19/PDM_CLK67/FLEXSPI0B_SS0_N}
   - {pin_num: L2, peripheral: FLEXSPI, signal: FLEXSPI_B_DATA0, pin_signal: PIO1_11/HS_SPI_SCK/CTIMER2_MAT0/FLEXSPI0B_DATA0}
@@ -198,8 +199,18 @@ void BOARD_InitPins(void)
     /* Enables the clock for the GPIO0 module */
     CLOCK_EnableClock(kCLOCK_HsGpio0);
 
+    /* Enables the clock for the GPIO1 module */
+    CLOCK_EnableClock(kCLOCK_HsGpio1);
+
     /* Enables the clock for the GPIO2 module */
     CLOCK_EnableClock(kCLOCK_HsGpio2);
+
+    gpio_pin_config_t EEG_PWDn_config = {
+        .pinDirection = kGPIO_DigitalOutput,
+        .outputLogic = 1U
+    };
+    /* Initialize GPIO functionality on pin PIO0_11 (pin L1)  */
+    GPIO_PinInit(BOARD_INITPINS_EEG_PWDn_GPIO, BOARD_INITPINS_EEG_PWDn_PORT, BOARD_INITPINS_EEG_PWDn_PIN, &EEG_PWDn_config);
 
     gpio_pin_config_t EEG_DRDYn_config = {
         .pinDirection = kGPIO_DigitalInput,
@@ -214,6 +225,13 @@ void BOARD_InitPins(void)
     };
     /* Initialize GPIO functionality on pin PIO0_14 (pin A3)  */
     GPIO_PinInit(BOARD_INITPINS_DEBUG_LEDn_GPIO, BOARD_INITPINS_DEBUG_LEDn_PORT, BOARD_INITPINS_DEBUG_LEDn_PIN, &DEBUG_LEDn_config);
+
+    gpio_pin_config_t EEG_RESETn_config = {
+        .pinDirection = kGPIO_DigitalOutput,
+        .outputLogic = 1U
+    };
+    /* Initialize GPIO functionality on pin PIO1_7 (pin J15)  */
+    GPIO_PinInit(BOARD_INITPINS_EEG_RESETn_GPIO, BOARD_INITPINS_EEG_RESETn_PORT, BOARD_INITPINS_EEG_RESETn_PIN, &EEG_RESETn_config);
 
     gpio_pin_config_t EEG_LDO_EN_config = {
         .pinDirection = kGPIO_DigitalOutput,

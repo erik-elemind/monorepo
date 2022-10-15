@@ -574,17 +574,17 @@ void BOARD_InitBootPins(void);
 /*! @name PIO0_11 (coord L1), EEG_PWDn
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_EEG_PWDn_PERIPHERAL GPIO           /*!<@brief Peripheral name */
-#define BOARD_INITPINS_EEG_PWDn_SIGNAL PIO0               /*!<@brief Signal name */
-#define BOARD_INITPINS_EEG_PWDn_CHANNEL 11                /*!<@brief Signal channel */
+#define BOARD_INITPINS_EEG_PWDn_PERIPHERAL GPIO                    /*!<@brief Peripheral name */
+#define BOARD_INITPINS_EEG_PWDn_SIGNAL PIO0                        /*!<@brief Signal name */
+#define BOARD_INITPINS_EEG_PWDn_CHANNEL 11                         /*!<@brief Signal channel */
 
 /* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_EEG_PWDn_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_EEG_PWDn_GPIO_PIN_MASK (1U << 11U) /*!<@brief GPIO pin mask */
-#define BOARD_INITPINS_EEG_PWDn_PORT 0U                   /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_EEG_PWDn_PIN 11U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_EEG_PWDn_PIN_MASK (1U << 11U)      /*!<@brief PORT pin mask */
-                                                          /* @} */
+#define BOARD_INITPINS_EEG_PWDn_GPIO GPIO                          /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_EEG_PWDn_GPIO_PIN_MASK (1U << 11U)          /*!<@brief GPIO pin mask */
+#define BOARD_INITPINS_EEG_PWDn_PORT 0U                            /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_EEG_PWDn_PIN 11U                            /*!<@brief PORT pin number */
+#define BOARD_INITPINS_EEG_PWDn_PIN_MASK (1U << 11U)               /*!<@brief PORT pin mask */
+                                                                   /* @} */
 
 /*! @name ADC0_0 (coord F4), TEMP_SENSE_BAND
   @{ */
@@ -597,17 +597,17 @@ void BOARD_InitBootPins(void);
 /*! @name PIO1_7 (coord J15), EEG_RESETn
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_EEG_RESETn_PERIPHERAL GPIO          /*!<@brief Peripheral name */
-#define BOARD_INITPINS_EEG_RESETn_SIGNAL PIO1              /*!<@brief Signal name */
-#define BOARD_INITPINS_EEG_RESETn_CHANNEL 7                /*!<@brief Signal channel */
+#define BOARD_INITPINS_EEG_RESETn_PERIPHERAL GPIO                    /*!<@brief Peripheral name */
+#define BOARD_INITPINS_EEG_RESETn_SIGNAL PIO1                        /*!<@brief Signal name */
+#define BOARD_INITPINS_EEG_RESETn_CHANNEL 7                          /*!<@brief Signal channel */
 
 /* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_EEG_RESETn_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_EEG_RESETn_GPIO_PIN_MASK (1U << 7U) /*!<@brief GPIO pin mask */
-#define BOARD_INITPINS_EEG_RESETn_PORT 1U                  /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_EEG_RESETn_PIN 7U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_EEG_RESETn_PIN_MASK (1U << 7U)      /*!<@brief PORT pin mask */
-                                                           /* @} */
+#define BOARD_INITPINS_EEG_RESETn_GPIO GPIO                          /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_EEG_RESETn_GPIO_PIN_MASK (1U << 7U)           /*!<@brief GPIO pin mask */
+#define BOARD_INITPINS_EEG_RESETn_PORT 1U                            /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_EEG_RESETn_PIN 7U                             /*!<@brief PORT pin number */
+#define BOARD_INITPINS_EEG_RESETn_PIN_MASK (1U << 7U)                /*!<@brief PORT pin mask */
+                                                                     /* @} */
 
 /*! @name PIO2_7 (coord U16), EEG_LDO_EN
   @{ */
