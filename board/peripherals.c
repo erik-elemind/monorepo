@@ -107,6 +107,7 @@ instance:
       - 2: []
       - 3: []
       - 4: []
+      - 5: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -319,12 +320,24 @@ instance:
           - IRQn: 'PIN_INT6_IRQn'
           - enable_priority: 'false'
           - priority: '0'
+      - 5:
+        - interrupt_id: 'INT_0'
+        - interrupt_selection: 'PINT.0'
+        - interrupt_type: 'kPINT_PinIntEnableFallEdge'
+        - callback_function: 'eeg_drdy_pint_isr'
+        - enable_callback: 'true'
+        - interrupt:
+          - IRQn: 'PIN_INT0_IRQn'
+          - enable_priority: 'true'
+          - priority: '3'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
 static void PINT_init(void) {
   /* PINT initiation  */
   PINT_Init(PINT_PERIPHERAL);
+  /* Interrupt vector PIN_INT0_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(PINT_PINT_0_IRQN, PINT_PINT_0_IRQ_PRIORITY);
   /* PINT PINT.1 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_1, kPINT_PinIntEnableNone, charger_pint_isr);
   /* PINT PINT.3 configuration */
@@ -335,6 +348,10 @@ static void PINT_init(void) {
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_5, kPINT_PinIntEnableNone, user_button1_isr);
   /* PINT PINT.6 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_6, kPINT_PinIntEnableNone, user_button2_isr);
+  /* PINT PINT.0 configuration */
+  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_0, kPINT_PinIntEnableFallEdge, eeg_drdy_pint_isr);
+  /* Enable PINT PINT.0 callback */
+  PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt0);
 }
 
 /***********************************************************************************************************************

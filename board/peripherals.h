@@ -58,6 +58,10 @@ extern "C" {
 /* BOARD_InitPeripherals defines for PINT */
 /* Definition of peripheral ID */
 #define PINT_PERIPHERAL ((PINT_Type *) PINT_BASE)
+/* PINT interrupt vector ID (number). */
+#define PINT_PINT_0_IRQN PIN_INT0_IRQn
+/* PINT interrupt vector priority. */
+#define PINT_PINT_0_IRQ_PRIORITY 3
 /* Definition of PINT interrupt ID for interrupt 1  */
 #define PINT_INT_1 kPINT_PinInt1
 /* Definition of PINT interrupt ID for interrupt 3  */
@@ -68,6 +72,8 @@ extern "C" {
 #define PINT_INT_5 kPINT_PinInt5
 /* Definition of PINT interrupt ID for interrupt 6  */
 #define PINT_INT_6 kPINT_PinInt6
+/* Definition of PINT interrupt ID for interrupt 0  */
+#define PINT_INT_0 kPINT_PinInt0
 /* Definition of peripheral ID */
 #define FC0_BLE_UART_PERIPHERAL ((USART_Type *)FLEXCOMM0)
 /* Definition of the clock source frequency */
@@ -137,6 +143,8 @@ extern void accel_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 extern void user_button1_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 /* INT_6 callback function for the PINT component */
 extern void user_button2_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
+/* INT_0 callback function for the PINT component */
+extern void eeg_drdy_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 /* SPI DMA callback function for the FC1_EEG_SPI component (init. function BOARD_InitPeripherals)*/
 extern void eeg_dma_rx_complete_isr(SPI_Type *,spi_dma_handle_t *,status_t ,void *);
 

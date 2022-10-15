@@ -15,6 +15,7 @@
 #include "anim.h"
 
 #define LED_EVENT_QUEUE_SIZE 10
+#define LOG_LEVEL_MODULE LOG_NONE
 
 static const char *TAG = "led";	// Logging prefix for this module
 

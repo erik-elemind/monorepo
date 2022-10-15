@@ -13,12 +13,7 @@ void eeg_filters_init(eeg_filters_context_t *context){
   eeg_filters_enable_line_filter(context, true);
   eeg_filters_enable_az_filter(context, true);
   eeg_filters_config_line_filter(context, 14,25);
-#if defined(VARIANT_FF2)
-  // FF2 needs a hard cut off frequency
-  eeg_filters_config_az_filter(context, 14, 3);
-#elif defined(VARIANT_FF3)
   eeg_filters_config_az_filter(context, 14, 0.5);
-#endif
 }
 
 void eeg_filters_enable_line_filter(eeg_filters_context_t *context, bool enable){
