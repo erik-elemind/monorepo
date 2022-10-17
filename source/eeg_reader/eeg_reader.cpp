@@ -479,7 +479,6 @@ eeg_reader_task(void *ignored)
   task_init();
 
   eeg_reader_event_t event;
-  eeg_reader_event_start(); //ToDo: remove test code here
 
   while (1) {
 

@@ -140,6 +140,10 @@ void BOARD_InitFlashSPI();
 #define EEG_PWDN_PORT  BOARD_INITPINS_EEG_PWDn_PORT
 #define EEG_PWDN_PIN   BOARD_INITPINS_EEG_PWDn_PIN
 
+#define EEG_LDO_EN_GPIO BOARD_INITPINS_EEG_LDO_EN_GPIO
+#define EEG_LDO_EN_PORT BOARD_INITPINS_EEG_LDO_EN_PORT
+#define EEG_LDO_EN_PIN BOARD_INITPINS_EEG_LDO_EN_PIN
+
 /*
  * Set whether the processor should control the
  * EEG LDO voltage regulator through the enable pin.

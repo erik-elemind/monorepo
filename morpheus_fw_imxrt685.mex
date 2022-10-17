@@ -141,6 +141,7 @@
                         <pin_feature name="identifier" value=""/>
                         <pin_feature name="pupdena" value="disabled"/>
                         <pin_feature name="pupdsel" value="pullDown"/>
+                        <pin_feature name="ibena" value="enabled"/>
                      </pin_features>
                   </pin>
                   <pin peripheral="GPIO" signal="PIO0, 6" pin_num="E1" pin_signal="PIO0_6/FC0_SSEL3/SCT0_GPI1/SCT0_OUT1/CTIMER0_MAT0/SEC_PIO0_6/ADC0_8"/>
@@ -227,6 +228,7 @@
                   <pin peripheral="GPIO" signal="PIO0, 13" pin_num="G3" pin_signal="PIO0_13/FC1_SSEL3/SCT0_GPI3/SCT0_OUT3/CTIMER0_MAT1/SEC_PIO0_13/ADC0_9">
                      <pin_features>
                         <pin_feature name="direction" value="INPUT"/>
+                        <pin_feature name="ibena" value="enabled"/>
                      </pin_features>
                   </pin>
                </pins>
