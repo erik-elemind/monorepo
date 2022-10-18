@@ -435,22 +435,20 @@ public:
     eeg_filters_filter( &filters, f_sample);
 #endif //ENABLE_EEG_FILTERS
 
-    //data_log_eeg( f_sample );
+    //data_log_eeg( f_sample ); //ToDo: Enable once data log is setup
 
     // log initial values
     if(first_run){
       first_run = false;
       // save off initial delta parameters
 #if (defined(ECHT_ENABLE) && (ECHT_ENABLE > 0U))
-    //  data_log_echt_channel(f_sample->sample_number, echt_chnum.get());
+    //  data_log_echt_channel(f_sample->sample_number, echt_chnum.get()); //ToDo: Enable once data log is setup
 #endif
       // log stimulus on
-     // data_log_stimulus_switch(f_sample->sample_number, stim_on.get());
+     // data_log_stimulus_switch(f_sample->sample_number, stim_on.get()); //ToDo: Enable once data log is setup
       // log stimulus amplitude
-    //  data_log_stimulus_amplitude(f_sample->sample_number,stim_amp.get());
+    //  data_log_stimulus_amplitude(f_sample->sample_number,stim_amp.get()); //ToDo: Enable once data log is setup
     }
-
-    //printf("eeg: %d, %d, %d \r\n", f_sample->eeg_channels[0], f_sample->eeg_channels[1], f_sample->eeg_channels[2]);
 
     compute_instRMS(f_sample->eeg_channels);
 
@@ -570,7 +568,7 @@ public:
             // if the phase of brainwave entered the region we want to "pulse", UNPAUSE the audio
             audio_pink_mute(false);
             // log the pulse start
-            //data_log_pulse(f_sample->sample_number, true);
+            //data_log_pulse(f_sample->sample_number, true); //ToDo: Enable once data log is setup
           }
 
         }else if ( /*(!pulse_trig_curr && pulse_trig_prev) ||*/ triggered_sample_count > triggered_sample_count_reset ) {
@@ -580,7 +578,7 @@ public:
             // if the phase of brainwave exists the region we want to "pulse", PAUSE the audio
             audio_pink_mute(true);
             // log the pulse end
-            //data_log_pulse(f_sample->sample_number, false);
+            //data_log_pulse(f_sample->sample_number, false); //ToDo: Enable once data log is setup
           }
         }
 

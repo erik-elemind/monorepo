@@ -171,7 +171,7 @@ void data_log_echt_channel(unsigned long sample_number, uint8_t echt_channel_num
 #endif
 #define ECHT_CHANNEL_BUFFER_SIZE (PACKET_TYPE_SIZE + SAMPLE_NUMBER_SIZE + sizeof(echt_channel_number) )
 
-  return; // Todo: debug code
+  return; // Todo: Remove this line once datalog task is ready
 
   uint8_t* scratch = (uint8_t*) dl_malloc_if_file_ready(ECHT_CHANNEL_BUFFER_SIZE);
   if(scratch==NULL) {return;}

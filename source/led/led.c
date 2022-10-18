@@ -327,16 +327,9 @@ task_init()
 void
 led_task(void *ignored)
 {
-
   task_init();
 
   led_event_t event;
-
-  uint8_t flag = 0;
- // uint32_t port_state = 0;
-
-  //RESET_PeripheralReset(kHSGPIO0_RST_SHIFT_RSTn);
-  //GPIO_PinInit(BOARD_INITPINS_EEG_START_GPIO, BOARD_INITPINS_EEG_START_PORT, BOARD_INITPINS_EEG_START_PIN, &(gpio_pin_config_t){kGPIO_DigitalOutput, (0U)});
 
   while (1) {
     // ToDo: Replace/Delete the following debug code ----->
@@ -375,7 +368,6 @@ led_task(void *ignored)
     log_event(&event);
 
     handle_event(&event);
-
   }
 }
 
