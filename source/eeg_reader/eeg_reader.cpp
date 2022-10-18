@@ -179,7 +179,6 @@ eeg_reader_event_power_off(void)
 void
 eeg_reader_event_start(void)
 {
-  LOGV(TAG, "start eeg\r\n"); //ToDo: remove test code here
   eeg_reader_event_t event = {.type = EEG_READER_EVENT_START, {0}};
   xQueueSend(g_event_queue, &event, portMAX_DELAY);
 }
@@ -546,7 +545,7 @@ void eeg_dma_rx_complete_isr(SPI_Type *base, spi_dma_handle_t *handle, status_t 
 // Immediately kick off a DMA read of the SPI bytes:
 void eeg_drdy_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status)
 {
-	LOGV(TAG, "eeg_drdy_pint_isr\r\n"); //ToDo: remove test code here
+//	LOGV(TAG, "eeg_drdy_pint_isr\r\n"); //ToDo: remove test code here
     TRACEALYZER_ISR_EEG_BEGIN( EEG_DRDY_PINT_ISR_TRACE );
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
@@ -590,7 +589,7 @@ static void handle_eeg_drdy_pint_isr(){
 }
 
 static void eeg_spi_rx_complete_isr(SPI_Type *base, spi_master_handle_t *handle, status_t status, void *userData){
-	LOGV(TAG, "eeg_spi_rx_complete_isr\r\n"); //ToDo: remove test code here
+//	LOGV(TAG, "eeg_spi_rx_complete_isr\r\n"); //ToDo: remove test code here
 	TRACEALYZER_ISR_EEG_BEGIN(EEG_DMA_RX_COMPLETE_ISR_TRACE);
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
@@ -663,7 +662,7 @@ static void arrange_and_send_eeg_channels_from_isr(BaseType_t *pxHigherPriorityT
 }
 
 void handle_eeg_temp_sample(int32_t temp) {
-  data_log_temp(temp);
+ // data_log_temp(temp);
 }
 
 #else

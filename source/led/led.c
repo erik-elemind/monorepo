@@ -333,9 +333,12 @@ led_task(void *ignored)
   led_event_t event;
 
   uint8_t flag = 0;
+ // uint32_t port_state = 0;
+
+  //RESET_PeripheralReset(kHSGPIO0_RST_SHIFT_RSTn);
+  //GPIO_PinInit(BOARD_INITPINS_EEG_START_GPIO, BOARD_INITPINS_EEG_START_PORT, BOARD_INITPINS_EEG_START_PIN, &(gpio_pin_config_t){kGPIO_DigitalOutput, (0U)});
 
   while (1) {
-#if 0
     // ToDo: Replace/Delete the following debug code ----->
     // Assuming tick = ms, delay switching LEDs for 1 second
 	LOGV("DEBUG:","Start:%d Res: %d, Pwdn: %d, Drdy: %d, LDO en:%d",
@@ -345,24 +348,21 @@ led_task(void *ignored)
 			GPIO_PinRead(EEG_DRDY_GPIO, EEG_DRDY_PORT,EEG_DRDY_PIN),
 			GPIO_PinRead(EEG_LDO_EN_GPIO, EEG_LDO_EN_PORT,EEG_LDO_EN_PIN));
 
+#if 1
+
+	vTaskDelay(200);
+	//GPIO_PinWrite(GPIO, 0U, 0U, 1U);
+
 	if(flag == 0)
 	{
 		eeg_reader_event_start(); //ToDo: remove test code here
 		flag = 1;
 	}
 
+
+
 	vTaskDelay(200);
-
-
-    //ToDo: Debug code, read GPIO states:
-	LOGV("DEBUG:","Start:%d Res: %d, Pwdn: %d, Drdy: %d, LDO en:%d",
-				GPIO_PinRead(EEG_START_GPIO, EEG_START_PORT,EEG_START_PIN),
-				GPIO_PinRead(EEG_RESET_GPIO, EEG_RESET_PORT,EEG_RESET_PIN),
-				GPIO_PinRead(EEG_PWDN_GPIO, EEG_PWDN_PORT, EEG_PWDN_PIN),
-				GPIO_PinRead(EEG_DRDY_GPIO, EEG_DRDY_PORT,EEG_DRDY_PIN),
-				GPIO_PinRead(EEG_LDO_EN_GPIO, EEG_LDO_EN_PORT,EEG_LDO_EN_PIN));
-
-    vTaskDelay(200);
+	//GPIO_PinWrite(GPIO, 0U, 0U, 0U);
 
     // Make the LEDs cycle from Red->Green->Blue.
     event.type      = LED_EVENT_TYPE1;

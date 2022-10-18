@@ -87,6 +87,10 @@ static void dsp_boot_up(void);
 
 static void system_boot_up(void)
 {
+	RESET_PeripheralReset(kHSGPIO0_RST_SHIFT_RSTn);
+	RESET_PeripheralReset(kHSGPIO1_RST_SHIFT_RSTn);
+	RESET_PeripheralReset(kHSGPIO2_RST_SHIFT_RSTn);
+
 	// Init board hardware
 	BOARD_InitBootPins();
 	BOARD_InitBootClocks();
@@ -108,56 +112,38 @@ int main(void)
 #endif
 
 	/* BLE tasks */
-	printf("Launching BLE task...\n\r");
+	LOGV(TAG, "Launching BLE task...");
 	ble_pretask_init();
 	task_handle = xTaskCreateStatic(&ble_task,
 			"ble", BLE_TASK_STACK_SIZE, NULL, BLE_TASK_PRIORITY, ble_task_array, &ble_task_struct);
-
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *) BLE_TASK_STACK_SIZE );
 
-	printf("Launching BLE uart_recv task...\n\r");
+	LOGV(TAG, "Launching BLE uart_recv task...");
 	ble_uart_recv_pretask_init();
 	task_handle = xTaskCreateStatic(&ble_uart_recv_task,
 	      "ble_uart_recv", BLE_UART_RECV_TASK_STACK_SIZE, NULL, BLE_UART_RECV_TASK_PRIORITY, ble_uart_recv_task_array, &ble_uart_recv_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *) BLE_UART_RECV_TASK_STACK_SIZE );
 
-	#if (defined(ENABLE_BLE_UART_SEND_TASK) && (ENABLE_BLE_UART_SEND_TASK > 0U))
-	printf("Launching BLE uart_send task...\n\r");
-	ble_uart_send_pretask_init();
-	task_handle = xTaskCreateStatic(&ble_uart_send_task,
-		  "ble_uart_send", BLE_UART_SEND_TASK_STACK_SIZE, NULL, BLE_UART_SEND_TASK_PRIORITY, ble_uart_send_task_array, &ble_uart_send_task_struct);
-	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)BLE_UART_SEND_TASK_STACK_SIZE );
-	#endif
-
-	printf("Launching led task...\n\r");
+	LOGV(TAG, "Launching led task...");
 	led_pretask_init();
 	task_handle = xTaskCreateStatic(&led_task,
 	  "led", LED_TASK_STACK_SIZE, NULL, LED_TASK_PRIORITY, led_task_array, &led_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)LED_TASK_STACK_SIZE );
 
+
 	DSP_Start();
 
-	#if (defined(ENABLE_EEG_READER_TASK) && (ENABLE_EEG_READER_TASK > 0U))
-	  LOGV(TAG, "Launching eeg_reader task...");
+	LOGV(TAG, "Launching eeg_reader task...");
+	eeg_reader_pretask_init();
+	task_handle = xTaskCreateStatic(&eeg_reader_task,
+	  "eeg_reader", EEG_READER_TASK_STACK_SIZE, NULL, EEG_READER_TASK_PRIORITY, eeg_reader_task_array, &eeg_reader_task_struct);
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)EEG_READER_TASK_STACK_SIZE );
 
-	  eeg_reader_pretask_init();
-
-	  task_handle = xTaskCreateStatic(&eeg_reader_task,
-		  "eeg_reader", EEG_READER_TASK_STACK_SIZE, NULL, EEG_READER_TASK_PRIORITY, eeg_reader_task_array, &eeg_reader_task_struct);
-
-	  vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)EEG_READER_TASK_STACK_SIZE );
-	#endif
-
-	#if (defined(ENABLE_EEG_PROCESSOR_TASK) && (ENABLE_EEG_PROCESSOR_TASK > 0U))
-	  LOGV(TAG, "Launching eeg_processor task...");
-
-	  eeg_processor_pretask_init();
-
-	  task_handle = xTaskCreateStatic(&eeg_processor_task,
-		  "eeg_processor", EEG_PROCESSOR_TASK_STACK_SIZE, NULL, EEG_PROCESSOR_TASK_PRIORITY, eeg_processor_task_array, &eeg_processor_task_struct);
-
-	  vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)EEG_PROCESSOR_TASK_STACK_SIZE );
-	#endif
+	LOGV(TAG, "Launching eeg_processor task...");
+	eeg_processor_pretask_init();
+	task_handle = xTaskCreateStatic(&eeg_processor_task,
+	  "eeg_processor", EEG_PROCESSOR_TASK_STACK_SIZE, NULL, EEG_PROCESSOR_TASK_PRIORITY, eeg_processor_task_array, &eeg_processor_task_struct);
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)EEG_PROCESSOR_TASK_STACK_SIZE );
 
 	vTaskStartScheduler();
 
