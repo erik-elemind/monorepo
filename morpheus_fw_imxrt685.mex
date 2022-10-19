@@ -381,6 +381,16 @@
                   <data type="Version">2.4.0</data>
                </feature>
             </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.lpc_gpio" description="GPIO Driver not found in the toolchain/IDE project. Project will not compile!" problem_level="2" source="Peripherals">
+               <feature name="enabled" evaluation="equal">
+                  <data type="Boolean">true</data>
+               </feature>
+            </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.lpc_gpio" description="Unsupported version of the GPIO Driver in the toolchain/IDE project. Required: ${required_value}, actual: ${actual_value}. Project might not compile correctly." problem_level="1" source="Peripherals">
+               <feature name="version" evaluation="equivalent">
+                  <data type="Version">2.1.1</data>
+               </feature>
+            </dependency>
          </dependencies>
          <generated_project_files>
             <file path="board/peripherals.c" update_enabled="true"/>
@@ -861,6 +871,9 @@
                            </struct>
                         </array>
                      </config_set>
+                  </instance>
+                  <instance name="GPIO" uuid="ae7bf2a4-c5f4-4f5c-99fd-bb6204710993" type="lpc_gpio" type_id="lpc_gpio_8c9ab9b3668a514c1f4609fe43001865" mode="GPIO" peripheral="GPIO" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                     <config_set name="lpc_gpio"/>
                   </instance>
                </instances>
             </functional_group>
