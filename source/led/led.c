@@ -334,30 +334,11 @@ led_task(void *ignored)
   eeg_reader_event_start(); // ToDo: remove for testing, set off the eeg
 
   while (1) {
-    // ToDo: Replace/Delete the following debug code ----->
-    // Assuming tick = ms, delay switching LEDs for 1 second
-	LOGV("DEBUG:","Start:%d Res: %d, Pwdn: %d, Drdy: %d, LDO en:%d",
-			GPIO_PinRead(EEG_START_GPIO, EEG_START_PORT,EEG_START_PIN),
-			GPIO_PinRead(EEG_RESET_GPIO, EEG_RESET_PORT,EEG_RESET_PIN),
-			GPIO_PinRead(EEG_PWDN_GPIO, EEG_PWDN_PORT, EEG_PWDN_PIN),
-			GPIO_PinRead(EEG_DRDY_GPIO, EEG_DRDY_PORT,EEG_DRDY_PIN),
-			GPIO_PinRead(EEG_LDO_EN_GPIO, EEG_LDO_EN_PORT,EEG_LDO_EN_PIN));
+
 
 #if 1
-
+	// ToDo: Replace/Delete the following debug code ----->
 	vTaskDelay(200);
-	//GPIO_PinWrite(GPIO, 0U, 0U, 1U);
-
-	if(flag == 0)
-	{
-		eeg_reader_event_start(); //ToDo: remove test code here
-		flag = 1;
-	}
-
-
-
-	vTaskDelay(200);
-	//GPIO_PinWrite(GPIO, 0U, 0U, 0U);
 
     // Make the LEDs cycle from Red->Green->Blue.
     event.type      = LED_EVENT_TYPE1;
