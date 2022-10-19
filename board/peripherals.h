@@ -20,6 +20,8 @@
 #include "fsl_spi.h"
 #include "fsl_spi_dma.h"
 #include "fsl_sctimer.h"
+#include "fsl_i2s.h"
+#include "fsl_i2s_dma.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -108,6 +110,15 @@ extern "C" {
 #define SCT0_IRQ_PRIORITY 2
 /* SCT0 interrupt handler identifier. */
 #define SCT0_IRQHANDLER SCT0_IRQHandler
+/* BOARD_InitPeripherals defines for FLEXCOMM4 */
+/* Definition of peripheral ID */
+#define FC4_AUDIO_I2S_PERIPHERAL ((I2S_Type *)FLEXCOMM4)
+/* Definition of the clock source frequency */
+#define FC4_AUDIO_I2S_CLOCK_SOURCE 16000000UL
+/* Selected DMA channel number. */
+#define FC4_AUDIO_I2S_TX_DMA_CHANNEL 9
+/* Used DMA device. */
+#define FC4_AUDIO_I2S_TX_DMA_BASEADDR DMA0
 
 /***********************************************************************************************************************
  * Global variables
@@ -129,6 +140,9 @@ extern spi_dma_handle_t FC1_EEG_SPI_DMA_Handle;
 extern const sctimer_config_t SCT0_initConfig;
 extern const sctimer_pwm_signal_param_t SCT0_pwmSignalsConfig[3];
 extern uint32_t SCT0_pwmEvent[3];
+extern const i2s_config_t FC4_AUDIO_I2S_config;
+extern dma_handle_t FC4_AUDIO_I2S_TX_Handle;
+extern i2s_dma_handle_t FC4_AUDIO_I2S_Tx_DMA_Handle;
 
 /***********************************************************************************************************************
  * Callback functions

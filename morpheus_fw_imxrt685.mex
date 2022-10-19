@@ -158,9 +158,22 @@
                   <pin peripheral="GPIO" signal="PIO0, 23" pin_num="C9" pin_signal="PIO0_23/FC3_RXD_SDA_MOSI_DATA/CTIMER3_MAT2/TRACEDATA(1)/SEC_PIO0_23"/>
                   <pin peripheral="FLEXCOMM3" signal="CTS_SDA_SSEL0" pin_num="B9" pin_signal="PIO0_24/FC3_CTS_SDA_SSEL0/CTIMER3_MAT3/FC2_SSEL2/TRACEDATA(2)/CLKOUT/SEC_PIO0_24"/>
                   <pin peripheral="FLEXCOMM3" signal="RTS_SCL_SSEL1" pin_num="A9" pin_signal="PIO0_25/FC3_RTS_SCL_SSEL1/FREQME_GPIO_CLK/CTIMER_INP6/FC2_SSEL3/TRACEDATA(3)/CLKIN/SEC_PIO0_25"/>
-                  <pin peripheral="FLEXCOMM4" signal="SCK" pin_num="D11" pin_signal="PIO0_28/FC4_SCK/CTIMER4_MAT0/I2S_BRIDGE_CLK_OUT/SEC_PIO0_28"/>
-                  <pin peripheral="FLEXCOMM4" signal="TXD_SCL_MISO_WS" pin_num="B10" pin_signal="PIO0_29/FC4_TXD_SCL_MISO_WS/CTIMER4_MAT1/I2S_BRIDGE_WS_OUT/SEC_PIO0_29"/>
-                  <pin peripheral="FLEXCOMM4" signal="RXD_SDA_MOSI_DATA" pin_num="C11" pin_signal="PIO0_30/FC4_RXD_SDA_MOSI_DATA/CTIMER4_MAT2/I2S_BRIDGE_DATA_OUT/SEC_PIO0_30"/>
+                  <pin peripheral="FLEXCOMM4" signal="SCK" pin_num="D11" pin_signal="PIO0_28/FC4_SCK/CTIMER4_MAT0/I2S_BRIDGE_CLK_OUT/SEC_PIO0_28">
+                     <pin_features>
+                        <pin_feature name="ibena" value="enabled"/>
+                        <pin_feature name="iiena" value="disabled"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="FLEXCOMM4" signal="TXD_SCL_MISO_WS" pin_num="B10" pin_signal="PIO0_29/FC4_TXD_SCL_MISO_WS/CTIMER4_MAT1/I2S_BRIDGE_WS_OUT/SEC_PIO0_29">
+                     <pin_features>
+                        <pin_feature name="ibena" value="enabled"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="FLEXCOMM4" signal="RXD_SDA_MOSI_DATA" pin_num="C11" pin_signal="PIO0_30/FC4_RXD_SDA_MOSI_DATA/CTIMER4_MAT2/I2S_BRIDGE_DATA_OUT/SEC_PIO0_30">
+                     <pin_features>
+                        <pin_feature name="ibena" value="enabled"/>
+                     </pin_features>
+                  </pin>
                   <pin peripheral="GPIO" signal="PIO0, 31" pin_num="A11" pin_signal="PIO0_31/FC4_CTS_SDA_SSEL0/SCT0_GPI0/SCT0_OUT6/CTIMER4_MAT3/FC3_SSEL2/SEC_PIO0_31"/>
                   <pin peripheral="GPIO" signal="PIO1, 2" pin_num="A7" pin_signal="PIO1_2/FC4_SSEL3/SCT0_GPI3/SCT0_OUT9/CTIMER1_MAT1/CMP0_C"/>
                   <pin peripheral="GPIO" signal="PIO1, 3" pin_num="G16" pin_signal="PIO1_3/FC5_SCK"/>
@@ -454,14 +467,14 @@
                   <data type="Version">2.4.0</data>
                </feature>
             </dependency>
-            <dependency resourceType="SWComponent" resourceId="platform.drivers.lpc_gpio" description="GPIO Driver not found in the toolchain/IDE project. Project will not compile!" problem_level="2" source="Peripherals">
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.flexcomm_i2s" description="FLEXCOMM I2S Driver not found in the toolchain/IDE project. Project will not compile!" problem_level="2" source="Peripherals">
                <feature name="enabled" evaluation="equal">
                   <data type="Boolean">true</data>
                </feature>
             </dependency>
-            <dependency resourceType="SWComponent" resourceId="platform.drivers.lpc_gpio" description="Unsupported version of the GPIO Driver in the toolchain/IDE project. Required: ${required_value}, actual: ${actual_value}. Project might not compile correctly." problem_level="1" source="Peripherals">
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.flexcomm_i2s" description="Unsupported version of the FLEXCOMM I2S Driver in the toolchain/IDE project. Required: ${required_value}, actual: ${actual_value}. Project might not compile correctly." problem_level="1" source="Peripherals">
                <feature name="version" evaluation="equivalent">
-                  <data type="Version">2.1.1</data>
+                  <data type="Version">2.2.0</data>
                </feature>
             </dependency>
          </dependencies>
@@ -662,6 +675,36 @@
                         <data type="Boolean">true</data>
                      </feature>
                   </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXCOMM4.i2s_sck" description="Signal I2S clock signal SCK is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="equal">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXCOMM4.i2s_ws" description="Signal I2S word select signal WS is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="equal">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXCOMM4.i2s_data" description="Signal I2S data signal SDA is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="equal">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="ClockOutput" resourceId="FXCOM4_clock" description="FXCOM4 clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="frequency" evaluation="greaterThan">
+                        <data type="Frequency" unit="Hz">0</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.flexcomm_i2s_dma" description="The flexcomm_i2s_dma (fsl_i2s_dma.c) driver is missing in the project  (required for the DMA mode)." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="enabled" evaluation="equal">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.flexcomm_i2s_dma" description="The compatible version of the flexcomm_i2s_dma (fsl_i2s_dma.c) driver is not available in the project  (required for the DMA mode)." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="version" evaluation="compatible">
+                        <data type="Version">2.1.0</data>
+                     </feature>
+                  </dependency>
                </dependencies>
                <instances>
                   <instance name="NVIC" uuid="653970ab-e215-4f80-a534-8b7c6ec66a07" type="nvic" type_id="nvic_57b5eef3774cc60acaede6f5b8bddc67" mode="general" peripheral="NVIC" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
@@ -741,6 +784,7 @@
                         <array name="dma_table">
                            <struct name="0"/>
                            <struct name="1"/>
+                           <struct name="2"/>
                         </array>
                         <array name="dma_channels"/>
                         <setting name="init_interrupt" value="false"/>
@@ -963,8 +1007,49 @@
                         </array>
                      </config_set>
                   </instance>
-                  <instance name="GPIO" uuid="ae7bf2a4-c5f4-4f5c-99fd-bb6204710993" type="lpc_gpio" type_id="lpc_gpio_8c9ab9b3668a514c1f4609fe43001865" mode="GPIO" peripheral="GPIO" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
-                     <config_set name="lpc_gpio"/>
+                  <instance name="FC4_AUDIO_I2S" uuid="d06f8b98-93bb-4779-9df9-85b6ab785b9a" type="flexcomm_i2s" type_id="flexcomm_i2s_d821d1d3dded76c4d4194ae52cbf73a5" mode="dma" peripheral="FLEXCOMM4" enabled="true" comment="" custom_name_enabled="true" editing_lock="false">
+                     <config_set name="fsl_i2s">
+                        <struct name="i2s_config">
+                           <setting name="usage" value="playback"/>
+                           <setting name="masterSlave" value="kI2S_MasterSlaveNormalMaster"/>
+                           <setting name="sckPolM" value="false"/>
+                           <setting name="wsPolM" value="false"/>
+                           <struct name="clockConfig">
+                              <setting name="sampleRate_Hz" value="kSAI_SampleRate22050Hz"/>
+                              <setting name="clockSource" value="FXCOMFunctionClock"/>
+                              <setting name="clockSourceFreq" value="BOARD_BootClockRUN"/>
+                              <setting name="masterClockDependency" value="false"/>
+                           </struct>
+                           <setting name="mode" value="kI2S_ModeI2sClassic"/>
+                           <setting name="dataLengthM" value="16"/>
+                           <setting name="stereo" value="kSAI_Stereo"/>
+                           <setting name="i2s_mono_palcement" value="kSAI_Mono_Left"/>
+                           <setting name="positionM" value="0"/>
+                           <array name="secondary_channels_array"/>
+                           <setting name="frameLengthM" value="128"/>
+                           <setting name="rightLow" value="false"/>
+                           <setting name="leftJust" value="false"/>
+                           <setting name="watermarkM_Tx" value="ki2s_TxFifo4"/>
+                           <setting name="txEmptyZeroTx" value="true"/>
+                           <setting name="pack48" value="false"/>
+                        </struct>
+                     </config_set>
+                     <config_set name="dmaCfg">
+                        <struct name="dma_channels">
+                           <struct name="dma_tx_channel">
+                              <setting name="DMA_source" value="kDma0RequestFlexcomm4Tx"/>
+                              <setting name="init_channel_priority" value="true"/>
+                              <setting name="dma_priority" value="kDMA_ChannelPriority5"/>
+                              <setting name="enable_custom_name" value="false"/>
+                           </struct>
+                        </struct>
+                        <struct name="i2s_dma_handle">
+                           <setting name="enable_custom_name" value="false"/>
+                           <setting name="init_callback" value="false"/>
+                           <setting name="callback_fcn" value=""/>
+                           <setting name="user_data" value=""/>
+                        </struct>
+                     </config_set>
                   </instance>
                </instances>
             </functional_group>

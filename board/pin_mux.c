@@ -130,9 +130,9 @@ BOARD_InitPins:
   - {pin_num: C9, peripheral: GPIO, signal: 'PIO0, 23', pin_signal: PIO0_23/FC3_RXD_SDA_MOSI_DATA/CTIMER3_MAT2/TRACEDATA(1)/SEC_PIO0_23}
   - {pin_num: B9, peripheral: FLEXCOMM3, signal: CTS_SDA_SSEL0, pin_signal: PIO0_24/FC3_CTS_SDA_SSEL0/CTIMER3_MAT3/FC2_SSEL2/TRACEDATA(2)/CLKOUT/SEC_PIO0_24}
   - {pin_num: A9, peripheral: FLEXCOMM3, signal: RTS_SCL_SSEL1, pin_signal: PIO0_25/FC3_RTS_SCL_SSEL1/FREQME_GPIO_CLK/CTIMER_INP6/FC2_SSEL3/TRACEDATA(3)/CLKIN/SEC_PIO0_25}
-  - {pin_num: D11, peripheral: FLEXCOMM4, signal: SCK, pin_signal: PIO0_28/FC4_SCK/CTIMER4_MAT0/I2S_BRIDGE_CLK_OUT/SEC_PIO0_28}
-  - {pin_num: B10, peripheral: FLEXCOMM4, signal: TXD_SCL_MISO_WS, pin_signal: PIO0_29/FC4_TXD_SCL_MISO_WS/CTIMER4_MAT1/I2S_BRIDGE_WS_OUT/SEC_PIO0_29}
-  - {pin_num: C11, peripheral: FLEXCOMM4, signal: RXD_SDA_MOSI_DATA, pin_signal: PIO0_30/FC4_RXD_SDA_MOSI_DATA/CTIMER4_MAT2/I2S_BRIDGE_DATA_OUT/SEC_PIO0_30}
+  - {pin_num: D11, peripheral: FLEXCOMM4, signal: SCK, pin_signal: PIO0_28/FC4_SCK/CTIMER4_MAT0/I2S_BRIDGE_CLK_OUT/SEC_PIO0_28, ibena: enabled, iiena: disabled}
+  - {pin_num: B10, peripheral: FLEXCOMM4, signal: TXD_SCL_MISO_WS, pin_signal: PIO0_29/FC4_TXD_SCL_MISO_WS/CTIMER4_MAT1/I2S_BRIDGE_WS_OUT/SEC_PIO0_29, ibena: enabled}
+  - {pin_num: C11, peripheral: FLEXCOMM4, signal: RXD_SDA_MOSI_DATA, pin_signal: PIO0_30/FC4_RXD_SDA_MOSI_DATA/CTIMER4_MAT2/I2S_BRIDGE_DATA_OUT/SEC_PIO0_30, ibena: enabled}
   - {pin_num: A11, peripheral: GPIO, signal: 'PIO0, 31', pin_signal: PIO0_31/FC4_CTS_SDA_SSEL0/SCT0_GPI0/SCT0_OUT6/CTIMER4_MAT3/FC3_SSEL2/SEC_PIO0_31}
   - {pin_num: A7, peripheral: GPIO, signal: 'PIO1, 2', pin_signal: PIO1_2/FC4_SSEL3/SCT0_GPI3/SCT0_OUT9/CTIMER1_MAT1/CMP0_C}
   - {pin_num: G16, peripheral: GPIO, signal: 'PIO1, 3', pin_signal: PIO1_3/FC5_SCK}
@@ -713,8 +713,8 @@ void BOARD_InitPins(void)
                                          IOPCTL_PIO_PUPD_DI |
                                          /* Enable pull-down function */
                                          IOPCTL_PIO_PULLDOWN_EN |
-                                         /* Disable input buffer function */
-                                         IOPCTL_PIO_INBUF_DI |
+                                         /* Enables input buffer function */
+                                         IOPCTL_PIO_INBUF_EN |
                                          /* Normal mode */
                                          IOPCTL_PIO_SLEW_RATE_NORMAL |
                                          /* Normal drive */
@@ -734,8 +734,8 @@ void BOARD_InitPins(void)
                                          IOPCTL_PIO_PUPD_DI |
                                          /* Enable pull-down function */
                                          IOPCTL_PIO_PULLDOWN_EN |
-                                         /* Disable input buffer function */
-                                         IOPCTL_PIO_INBUF_DI |
+                                         /* Enables input buffer function */
+                                         IOPCTL_PIO_INBUF_EN |
                                          /* Normal mode */
                                          IOPCTL_PIO_SLEW_RATE_NORMAL |
                                          /* Normal drive */
@@ -776,8 +776,8 @@ void BOARD_InitPins(void)
                                          IOPCTL_PIO_PUPD_DI |
                                          /* Enable pull-down function */
                                          IOPCTL_PIO_PULLDOWN_EN |
-                                         /* Disable input buffer function */
-                                         IOPCTL_PIO_INBUF_DI |
+                                         /* Enables input buffer function */
+                                         IOPCTL_PIO_INBUF_EN |
                                          /* Normal mode */
                                          IOPCTL_PIO_SLEW_RATE_NORMAL |
                                          /* Normal drive */
