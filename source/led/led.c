@@ -331,6 +331,8 @@ led_task(void *ignored)
 
   led_event_t event;
 
+  eeg_reader_event_start(); // ToDo: remove for testing, set off the eeg
+
   while (1) {
     // ToDo: Replace/Delete the following debug code ----->
     // Assuming tick = ms, delay switching LEDs for 1 second
