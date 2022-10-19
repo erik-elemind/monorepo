@@ -93,6 +93,7 @@ outputs:
 - {id: FXCOM5_clock.outFreq, value: 16 MHz}
 - {id: LPOSC1M_clock.outFreq, value: 1 MHz}
 - {id: OSTIMER_clock.outFreq, value: 1 MHz}
+- {id: RTC32K_clock.outFreq, value: 32.768 kHz}
 - {id: System_clock.outFreq, value: 4752/19 MHz}
 - {id: WAKE_32K_clock.outFreq, value: 31.25 kHz}
 settings:
@@ -124,8 +125,10 @@ settings:
 - {id: SYSCON.SYSPLL0CLKSEL.sel, value: SYSCON.SYSOSCBYPASS}
 - {id: SYSCTL_PDRUNCFG_SYSPLL_CFG, value: 'No'}
 - {id: SYSCTL_PDRUNCFG_SYSXTAL_CFG, value: Power_up}
+- {id: XTAL32K_EN_CFG, value: Enable}
 - {id: XTAL_LP_Enable, value: LowPowerMode}
 sources:
+- {id: RTC.XTAL32K.outFreq, value: 32.768 kHz, enabled: true}
 - {id: SYSCON.XTAL.outFreq, value: 24 MHz, enabled: true}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -171,6 +174,12 @@ void BOARD_BootClockRUN(void)
     CLOCK_InitSysPll(&g_sysPllConfig_BOARD_BootClockRUN);
     CLOCK_InitSysPfd(kCLOCK_Pfd0, 19);                /* Enable MAIN PLL clock */
 
+
+    /* Configure 32K OSC clock */
+    CLOCK_EnableOsc32K(true);                         /* Enable 32KHz Oscillator clock */
+    CLOCK_EnableClock(kCLOCK_Rtc);                    /* Enable the RTC peripheral clock */
+    RTC->CTRL &= ~RTC_CTRL_SWRESET_MASK;              /* Make sure the reset bit is cleared */
+    RTC->CTRL &= ~RTC_CTRL_RTC_OSC_PD_MASK;           /* The RTC Oscillator is powered up */
 
     CLOCK_SetClkDiv(kCLOCK_DivSysCpuAhbClk, 2U);         /* Set SYSCPUAHBCLKDIV divider to value 2 */
 

@@ -323,25 +323,12 @@ void ads_set_gain(ads129x* ads, uint8_t gain) {
     return;
   }
 
-#if defined(VARIANT_FF2)
-  // set eeg gain
-  ads_wreg(CH1SET, gain_reg_val);
-  ads_wreg(CH2SET, gain_reg_val);
-  ads_wreg(CH3SET, gain_reg_val);
-  ads_wreg(CH4SET, gain_reg_val);
-  ads_wreg(CH5SET, gain_reg_val);
-  ads_wreg(CH6SET, gain_reg_val);
-  ads_wreg(CH7SET, gain_reg_val);
-  ads_wreg(CH8SET, gain_reg_val);
-#elif defined(VARIANT_FF3)
   // set eeg gain
   ads_wreg(CH1SET, gain_reg_val);
   ads_wreg(CH2SET, gain_reg_val);
   ads_wreg(CH3SET, gain_reg_val);
   // Set gain on skin temp sensor channel to 1.
   ads_wreg(CH4SET, ADS1298_GAIN_1X);
-#endif
-
 }
 
 void ads_init(ads129x* ads){

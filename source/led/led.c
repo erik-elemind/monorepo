@@ -15,6 +15,7 @@
 #include "anim.h"
 
 #define LED_EVENT_QUEUE_SIZE 10
+//#define LOG_LEVEL_MODULE LOG_NONE
 
 static const char *TAG = "led";	// Logging prefix for this module
 
@@ -326,16 +327,18 @@ task_init()
 void
 led_task(void *ignored)
 {
-
   task_init();
 
   led_event_t event;
 
+  eeg_reader_event_start(); // ToDo: remove for testing, set off the eeg
+
   while (1) {
-#if 0
-    // ToDo: Replace/Delete the following debug code ----->
-    // Assuming tick = ms, delay switching LEDs for 1 second
-    vTaskDelay(200);
+
+
+#if 1
+	// ToDo: Replace/Delete the following debug code ----->
+	vTaskDelay(200);
 
     // Make the LEDs cycle from Red->Green->Blue.
     event.type      = LED_EVENT_TYPE1;
@@ -348,7 +351,6 @@ led_task(void *ignored)
     log_event(&event);
 
     handle_event(&event);
-
   }
 }
 

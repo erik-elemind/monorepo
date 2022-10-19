@@ -107,6 +107,7 @@ instance:
       - 2: []
       - 3: []
       - 4: []
+      - 5: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -319,12 +320,24 @@ instance:
           - IRQn: 'PIN_INT6_IRQn'
           - enable_priority: 'false'
           - priority: '0'
+      - 5:
+        - interrupt_id: 'INT_0'
+        - interrupt_selection: 'PINT.0'
+        - interrupt_type: 'kPINT_PinIntEnableFallEdge'
+        - callback_function: 'eeg_drdy_pint_isr'
+        - enable_callback: 'true'
+        - interrupt:
+          - IRQn: 'PIN_INT0_IRQn'
+          - enable_priority: 'true'
+          - priority: '3'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
 static void PINT_init(void) {
   /* PINT initiation  */
   PINT_Init(PINT_PERIPHERAL);
+  /* Interrupt vector PIN_INT0_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(PINT_PINT_0_IRQN, PINT_PINT_0_IRQ_PRIORITY);
   /* PINT PINT.1 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_1, kPINT_PinIntEnableNone, charger_pint_isr);
   /* PINT PINT.3 configuration */
@@ -335,6 +348,10 @@ static void PINT_init(void) {
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_5, kPINT_PinIntEnableNone, user_button1_isr);
   /* PINT PINT.6 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_6, kPINT_PinIntEnableNone, user_button2_isr);
+  /* PINT PINT.0 configuration */
+  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_0, kPINT_PinIntEnableFallEdge, eeg_drdy_pint_isr);
+  /* Enable PINT PINT.0 callback */
+  PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt0);
 }
 
 /***********************************************************************************************************************
@@ -426,14 +443,14 @@ instance:
       - enable_rx_dma_channel: 'true'
       - dma_rx_channel:
         - DMA_source: 'kDma0RequestFlexcomm1Rx'
-        - init_channel_priority: 'false'
-        - dma_priority: 'kDMA_ChannelPriority0'
+        - init_channel_priority: 'true'
+        - dma_priority: 'kDMA_ChannelPriority3'
         - enable_custom_name: 'false'
       - enable_tx_dma_channel: 'true'
       - dma_tx_channel:
         - DMA_source: 'kDma0RequestFlexcomm1Tx'
-        - init_channel_priority: 'false'
-        - dma_priority: 'kDMA_ChannelPriority0'
+        - init_channel_priority: 'true'
+        - dma_priority: 'kDMA_ChannelPriority4'
         - enable_custom_name: 'false'
     - spi_dma_handle:
       - enable_custom_name: 'false'
@@ -470,10 +487,14 @@ static void FC1_EEG_SPI_init(void) {
   SPI_MasterInit(FC1_EEG_SPI_PERIPHERAL, &FC1_EEG_SPI_config, FC1_EEG_SPI_CLOCK_SOURCE);
   /* Enable the DMA 2 channel in the DMA */
   DMA_EnableChannel(FC1_EEG_SPI_RX_DMA_BASEADDR, FC1_EEG_SPI_RX_DMA_CHANNEL);
+  /* Set the DMA 2 channel priority */
+  DMA_SetChannelPriority(FC1_EEG_SPI_RX_DMA_BASEADDR, FC1_EEG_SPI_RX_DMA_CHANNEL, kDMA_ChannelPriority3);
   /* Create the DMA FC1_EEG_SPI_RX_Handle handle */
   DMA_CreateHandle(&FC1_EEG_SPI_RX_Handle, FC1_EEG_SPI_RX_DMA_BASEADDR, FC1_EEG_SPI_RX_DMA_CHANNEL);
   /* Enable the DMA 3 channel in the DMA */
   DMA_EnableChannel(FC1_EEG_SPI_TX_DMA_BASEADDR, FC1_EEG_SPI_TX_DMA_CHANNEL);
+  /* Set the DMA 3 channel priority */
+  DMA_SetChannelPriority(FC1_EEG_SPI_TX_DMA_BASEADDR, FC1_EEG_SPI_TX_DMA_CHANNEL, kDMA_ChannelPriority4);
   /* Create the DMA FC1_EEG_SPI_TX_Handle handle */
   DMA_CreateHandle(&FC1_EEG_SPI_TX_Handle, FC1_EEG_SPI_TX_DMA_BASEADDR, FC1_EEG_SPI_TX_DMA_CHANNEL);
   /* Create the SPI DMA handle */

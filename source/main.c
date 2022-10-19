@@ -18,6 +18,8 @@
 #include "ble_uart_send.h"
 #include "ble_uart_recv.h"
 #include "led.h"
+#include "eeg_reader.h"
+#include "eeg_processor.h"
 
 /*******************************************************************************
  * Definitions
@@ -25,6 +27,8 @@
 /* FreeRTOS includes */
 #include "FreeRTOS.h"
 #include "task.h"
+
+static const char *TAG = "main";  // Logging prefix for this module
 
 #define BLE_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*5) // 5
 #define BLE_TASK_PRIORITY 1
@@ -48,6 +52,16 @@ StaticTask_t ble_uart_send_task_struct;
 StackType_t led_task_array[ LED_TASK_STACK_SIZE ];
 StaticTask_t led_task_struct;
 
+#define EEG_READER_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*3) //6
+#define EEG_READER_TASK_PRIORITY 4 // used to be 5
+StackType_t eeg_reader_task_array[ EEG_READER_TASK_STACK_SIZE ];
+StaticTask_t eeg_reader_task_struct;
+
+#define EEG_PROCESSOR_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*(5+10)) //5 orig, added 110 for compression algo using float (not double)
+#define EEG_PROCESSOR_TASK_PRIORITY 3
+StackType_t eeg_processor_task_array[ EEG_PROCESSOR_TASK_STACK_SIZE ];
+StaticTask_t eeg_processor_task_struct;
+
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
@@ -70,9 +84,13 @@ static void dsp_boot_up(void);
 #include "fsl_iopctl.h"
 #include "fsl_dsp.h"
 
-
 static void system_boot_up(void)
 {
+	// Make sure that GPIO peripherals reset before gpios initialize
+	RESET_PeripheralReset(kHSGPIO0_RST_SHIFT_RSTn);
+	RESET_PeripheralReset(kHSGPIO1_RST_SHIFT_RSTn);
+	RESET_PeripheralReset(kHSGPIO2_RST_SHIFT_RSTn);
+
 	// Init board hardware
 	BOARD_InitBootPins();
 	BOARD_InitBootClocks();
@@ -80,6 +98,7 @@ static void system_boot_up(void)
 	BOARD_InitDebugConsole();
 
 	BOARD_DSP_Init();
+
 }
 
 int main(void)
@@ -89,41 +108,44 @@ int main(void)
 	print_version();
 
 	// Initialize RTOS tasks
-#if 1
 	TaskHandle_t task_handle;
-#endif
 
 	/* BLE tasks */
-	printf("Launching BLE task...\n\r");
+	LOGV(TAG, "Launching BLE task...");
 	ble_pretask_init();
 	task_handle = xTaskCreateStatic(&ble_task,
 			"ble", BLE_TASK_STACK_SIZE, NULL, BLE_TASK_PRIORITY, ble_task_array, &ble_task_struct);
-
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *) BLE_TASK_STACK_SIZE );
 
-	printf("Launching BLE uart_recv task...\n\r");
+	LOGV(TAG, "Launching BLE uart_recv task...");
 	ble_uart_recv_pretask_init();
 	task_handle = xTaskCreateStatic(&ble_uart_recv_task,
 	      "ble_uart_recv", BLE_UART_RECV_TASK_STACK_SIZE, NULL, BLE_UART_RECV_TASK_PRIORITY, ble_uart_recv_task_array, &ble_uart_recv_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *) BLE_UART_RECV_TASK_STACK_SIZE );
 
-	#if (defined(ENABLE_BLE_UART_SEND_TASK) && (ENABLE_BLE_UART_SEND_TASK > 0U))
-	printf("Launching BLE uart_send task...\n\r");
-	ble_uart_send_pretask_init();
-	task_handle = xTaskCreateStatic(&ble_uart_send_task,
-		  "ble_uart_send", BLE_UART_SEND_TASK_STACK_SIZE, NULL, BLE_UART_SEND_TASK_PRIORITY, ble_uart_send_task_array, &ble_uart_send_task_struct);
-	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)BLE_UART_SEND_TASK_STACK_SIZE );
-	#endif
-
-	printf("Launching led task...\n\r");
+	/* LED task */
+	LOGV(TAG, "Launching led task...");
 	led_pretask_init();
 	task_handle = xTaskCreateStatic(&led_task,
 	  "led", LED_TASK_STACK_SIZE, NULL, LED_TASK_PRIORITY, led_task_array, &led_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)LED_TASK_STACK_SIZE );
 
+	/* EEG tasks */
+	LOGV(TAG, "Launching eeg_reader task...");
+	eeg_reader_pretask_init();
+	task_handle = xTaskCreateStatic(&eeg_reader_task,
+	  "eeg_reader", EEG_READER_TASK_STACK_SIZE, NULL, EEG_READER_TASK_PRIORITY, eeg_reader_task_array, &eeg_reader_task_struct);
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)EEG_READER_TASK_STACK_SIZE );
+
+	LOGV(TAG, "Launching eeg_processor task...");
+	eeg_processor_pretask_init();
+	task_handle = xTaskCreateStatic(&eeg_processor_task,
+	  "eeg_processor", EEG_PROCESSOR_TASK_STACK_SIZE, NULL, EEG_PROCESSOR_TASK_PRIORITY, eeg_processor_task_array, &eeg_processor_task_struct);
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)EEG_PROCESSOR_TASK_STACK_SIZE );
+
 	DSP_Start();
 
 	vTaskStartScheduler();
 
-	for (;;); // loop to allow new debug session to connect
+	for (;;);
 }
