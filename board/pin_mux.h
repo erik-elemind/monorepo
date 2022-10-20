@@ -266,16 +266,24 @@ void BOARD_InitBootPins(void);
 /*! @name FC5_TXD_SCL_MISO_WS (coord G17), DEBUG_UART_TXD
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_DEBUG_UART_TXD_PERIPHERAL FLEXCOMM5         /*!<@brief Peripheral name */
-#define BOARD_INITPINS_DEBUG_UART_TXD_SIGNAL TXD_SCL_MISO_WS       /*!<@brief Signal name */
-                                                                   /* @} */
+/*!
+ * @brief Peripheral name */
+#define BOARD_INITPINS_DEBUG_UART_TXD_PERIPHERAL FLEXCOMM5
+/*!
+ * @brief Signal name */
+#define BOARD_INITPINS_DEBUG_UART_TXD_SIGNAL TXD_SCL_MISO_WS
+/* @} */
 
 /*! @name FC5_RXD_SDA_MOSI_DATA (coord J16), DEBUG_UART_RXD
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_DEBUG_UART_RXD_PERIPHERAL FLEXCOMM5           /*!<@brief Peripheral name */
-#define BOARD_INITPINS_DEBUG_UART_RXD_SIGNAL RXD_SDA_MOSI_DATA       /*!<@brief Signal name */
-                                                                     /* @} */
+/*!
+ * @brief Peripheral name */
+#define BOARD_INITPINS_DEBUG_UART_RXD_PERIPHERAL FLEXCOMM5
+/*!
+ * @brief Signal name */
+#define BOARD_INITPINS_DEBUG_UART_RXD_SIGNAL RXD_SDA_MOSI_DATA
+/* @} */
 
 /*! @name ADC0_4 (coord B5), MEMS_ANALOG
   @{ */

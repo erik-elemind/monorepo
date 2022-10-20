@@ -20,6 +20,7 @@
 #include "fsl_spi.h"
 #include "fsl_spi_dma.h"
 #include "fsl_sctimer.h"
+#include "fsl_gpio.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -55,6 +56,8 @@ extern "C" {
 #define FC5_DEBUG_UART_BACKGROUND_BUFFER_SIZE 256
 /* FC5_DEBUG_UART interrupt vector ID (number). */
 #define FC5_DEBUG_UART_IRQN FLEXCOMM5_IRQn
+/* FC5_DEBUG_UART interrupt vector priority. */
+#define FC5_DEBUG_UART_IRQ_PRIORITY 5
 /* BOARD_InitPeripherals defines for PINT */
 /* Definition of peripheral ID */
 #define PINT_PERIPHERAL ((PINT_Type *) PINT_BASE)
@@ -108,6 +111,8 @@ extern "C" {
 #define SCT0_IRQ_PRIORITY 2
 /* SCT0 interrupt handler identifier. */
 #define SCT0_IRQHANDLER SCT0_IRQHandler
+/* Definition of peripheral ID */
+#define GPIO_GPIO GPIO
 
 /***********************************************************************************************************************
  * Global variables

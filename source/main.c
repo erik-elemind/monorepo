@@ -15,9 +15,13 @@
 
 
 /* Project includes */
+#include "app.h"
+#include "shell_recv.h"
 #include "ble_uart_send.h"
 #include "ble_uart_recv.h"
+#include "utils.h"
 #include "led.h"
+#include "syscalls.h"   // for shell/shell.c and printf()
 #include "eeg_reader.h"
 #include "eeg_processor.h"
 
@@ -62,6 +66,11 @@ StaticTask_t eeg_reader_task_struct;
 StackType_t eeg_processor_task_array[ EEG_PROCESSOR_TASK_STACK_SIZE ];
 StaticTask_t eeg_processor_task_struct;
 
+#define SHELL_RECV_TASK_STACK_SIZE                (configMINIMAL_STACK_SIZE*8) // 8
+#define SHELL_RECV_TASK_PRIORITY 1
+StackType_t shell_recv_task_array[ SHELL_RECV_TASK_STACK_SIZE ];
+StaticTask_t shell_recv_task_struct;
+
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
@@ -105,6 +114,9 @@ int main(void)
 {
 	// Boot up MCU
 	system_boot_up();
+
+	syscalls_pretask_init();  // for printf()'s _write() and getchar()'s _read()
+
 	print_version();
 
 	// Initialize RTOS tasks
@@ -142,6 +154,13 @@ int main(void)
 	task_handle = xTaskCreateStatic(&eeg_processor_task,
 	  "eeg_processor", EEG_PROCESSOR_TASK_STACK_SIZE, NULL, EEG_PROCESSOR_TASK_PRIORITY, eeg_processor_task_array, &eeg_processor_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)EEG_PROCESSOR_TASK_STACK_SIZE );
+
+	/* Shell task */
+	LOGV(TAG, "Launching shell recv task...");
+	shell_recv_pretask_init();
+	task_handle = xTaskCreateStatic(&shell_recv_task,
+	  "shell_recv", SHELL_RECV_TASK_STACK_SIZE, NULL, SHELL_RECV_TASK_PRIORITY, shell_recv_task_array, &shell_recv_task_struct);
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)SHELL_RECV_TASK_STACK_SIZE );
 
 	DSP_Start();
 

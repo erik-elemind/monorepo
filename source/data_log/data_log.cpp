@@ -377,20 +377,6 @@ bool open_eeg_comp_data_log(const char* log_filename_to_compress) {
 }
 #endif
 
-
-/*****************************************************************************/
-// Miscellaneous helper functions
-
-void add_to_buffer(uint8_t *buf, size_t buf_size, size_t &offset, void* data, size_t data_size){
-  configASSERT( (offset + data_size) <= buf_size );
-  memcpy( buf+offset, data, data_size );
-  offset += data_size;
-}
-
-
-void add_to_buffer(uint8_t *buf, size_t buf_size, size_t &offset, uint8_t data){
-  add_to_buffer(buf, buf_size, offset, (void*) &data, 1);
-}
 /*****************************************************************************/
 // Thread-safe functions
 
@@ -815,17 +801,26 @@ void data_log_pretask_init(void){}
 void data_log_task(void *ignored){}
 void data_log_open(){}
 void data_log_close(){}
-void data_log_eeg( ads129x_frontal_sample *sample ){}
-void data_log_inst_amp_phs(unsigned long sample_number, float instAmp, float instPhs){}
-void data_log_pulse(unsigned long sample_number, bool pulse){}
-void data_log_echt_channel(unsigned long sample_number, uint8_t echt_channel_number){}
-void data_log_stimulus_switch(unsigned long sample_number, bool stim_on){}
-void data_log_stimulus_amplitude(unsigned long sample_number, float stim_amp){}
-void data_log_command(char* line){}
-void data_log_accel(int16_t x, int16_t y, int16_t z){}
-void data_log_accel_temp(int8_t temp) {}
-void data_log_als(float lux) {}
-void data_log_mic(int32_t mic) {}
-void data_log_temp(int32_t temp) {}
+
+void data_log_set_time(char *datetime_string, size_t datetime_size){}
+
+void* dl_malloc_if_file_ready(size_t size){ return NULL; }
+void send_data(uint8_t *scratch, uint32_t scratch_size, data_log_event_type_t event_type, TickType_t xTicksToWait){}
+void send_data(uint8_t *scratch, uint32_t scratch_size, TickType_t xTicksToWait){}
+void send_data(DLBuffer *dlbuf, TickType_t xTicksToWait){}
 
 #endif // (defined(ENABLE_DATA_LOG_TASK) && (ENABLE_DATA_LOG_TASK > 0U))
+
+
+/*****************************************************************************/
+// Miscellaneous helper functions
+
+void add_to_buffer(uint8_t *buf, size_t buf_size, size_t &offset, void* data, size_t data_size){
+  configASSERT( (offset + data_size) <= buf_size );
+  memcpy( buf+offset, data, data_size );
+  offset += data_size;
+}
+
+void add_to_buffer(uint8_t *buf, size_t buf_size, size_t &offset, uint8_t data){
+  add_to_buffer(buf, buf_size, offset, (void*) &data, 1);
+}

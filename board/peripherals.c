@@ -231,8 +231,8 @@ instance:
       - buffer_size: '256'
     - interrupt_priority:
       - IRQn: 'FLEXCOMM5_IRQn'
-      - enable_priority: 'false'
-      - priority: '0'
+      - enable_priority: 'true'
+      - priority: '5'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 usart_rtos_handle_t FC5_DEBUG_UART_rtos_handle;
@@ -252,6 +252,8 @@ static void FC5_DEBUG_UART_init(void) {
   FC5_DEBUG_UART_rtos_config.srcclk = FC5_DEBUG_UART_CLOCK_SOURCE;
   /* USART rtos initialization */
   USART_RTOS_Init(&FC5_DEBUG_UART_rtos_handle, &FC5_DEBUG_UART_usart_handle, &FC5_DEBUG_UART_rtos_config);
+  /* Interrupt vector FLEXCOMM5_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(FC5_DEBUG_UART_IRQN, FC5_DEBUG_UART_IRQ_PRIORITY);
 }
 
 /***********************************************************************************************************************
@@ -600,6 +602,28 @@ static void SCT0_init(void) {
   /* Enable interrupt SCT0_IRQn request in the NVIC. */
   EnableIRQ(SCT0_IRQN);
 }
+
+/***********************************************************************************************************************
+ * GPIO initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'GPIO'
+- type: 'lpc_gpio'
+- mode: 'GPIO'
+- custom_name_enabled: 'false'
+- type_id: 'lpc_gpio_8c9ab9b3668a514c1f4609fe43001865'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'GPIO'
+- config_sets:
+  - lpc_gpio: []
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+
+/* Empty initialization function (commented out)
+static void GPIO_init(void) {
+} */
 
 /***********************************************************************************************************************
  * Initialization functions
