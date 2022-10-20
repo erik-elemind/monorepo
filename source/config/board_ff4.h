@@ -95,7 +95,6 @@ void BOARD_InitEEGSPI();
 void BOARD_InitFlashSPI();
 
 
-
 /******************************************************************************
  * I2C on FLEXCOMM 4F
  * Used By:

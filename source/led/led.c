@@ -13,9 +13,9 @@
 #include "led.h"
 
 #include "anim.h"
+#include "audio.h"
 
 #define LED_EVENT_QUEUE_SIZE 10
-//#define LOG_LEVEL_MODULE LOG_NONE
 
 static const char *TAG = "led";	// Logging prefix for this module
 
@@ -330,11 +330,14 @@ led_task(void *ignored)
   task_init();
 
   led_event_t event;
+  int flag = 0;
 
-  eeg_reader_event_start(); // ToDo: remove for testing, set off the eeg
+  // Kick off for power testing
+  vTaskDelay(200);
+  eeg_reader_event_start();
+  audio_test();
 
   while (1) {
-
 
 #if 1
 	// ToDo: Replace/Delete the following debug code ----->

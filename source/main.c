@@ -110,7 +110,6 @@ static void system_boot_up(void)
 	BOARD_InitDebugConsole();
 
 	BOARD_DSP_Init();
-
 }
 
 int main(void)

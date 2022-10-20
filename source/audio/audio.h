@@ -54,6 +54,8 @@ extern "C" {
 #define AUDIO_ENABLE_I2S_OUTPUT 1
 #endif
 
+void audio_test(void);
+
 // Init called before vTaskStartScheduler() launches our Task in main():
 void audio_pretask_init(void);
 

@@ -17,7 +17,7 @@
 
 // TODO: Use this RAM in a more clever manner?
 // If this is set to 1, only one instance of "AudioPlayUffsWav" can exist at a time.
-#define USE_SRAMX_AUDIO_BUFFER (1U)
+#define USE_SRAMX_AUDIO_BUFFER (0U)
 
 // TODO: Check why everything runs when WAV_BUFFER_UFFS_READ_CHUNK_SIZE is 512, but not when it is 4096.
 //#define WAV_BUFFER_UFFS_READ_CHUNK_SIZE 4096
@@ -31,7 +31,7 @@
 //#define WAV_BUFFER_SIZE_BYTES  (0x8000-1)
 //#define SRAMX_ADDRESS (0x04000000)
 #define WAV_BUFFER_SIZE_BYTES  (0x4000-1)
-#define SRAMX_ADDRESS (0x04000000)
+#define SRAMX_ADDRESS (0x0001C000)
 #else
 // The number of bytes removed from the buffer during an update() call.
 // The 4* multiple assumes 2 channel audio data is stored on buffer.

@@ -72,20 +72,23 @@ instance:
       - 1: []
       - 2: []
     - dma_channels: []
-    - init_interrupt: 'false'
+    - init_interrupt: 'true'
     - dma_interrupt:
       - IRQn: 'DMA0_IRQn'
       - enable_interrrupt: 'enabled'
-      - enable_priority: 'false'
-      - priority: '0'
-      - enable_custom_name: 'false'
-    - quick_selection: 'default'
+      - enable_priority: 'true'
+      - priority: '2'
+      - enable_custom_name: 'true'
+      - handler_custom_name: 'DMA0_DriverIRQHandler'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
-/* Empty initialization function (commented out)
 static void DMA0_init(void) {
-} */
+  /* Interrupt vector DMA0_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(DMA0_IRQN, DMA0_IRQ_PRIORITY);
+  /* Enable interrupt DMA0_IRQn request in the NVIC. */
+  EnableIRQ(DMA0_IRQN);
+}
 
 /***********************************************************************************************************************
  * NVIC initialization code
@@ -109,6 +112,7 @@ instance:
       - 3: []
       - 4: []
       - 5: []
+      - 6: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -190,9 +194,8 @@ instance:
       - timeout_Ms: '35'
     - interrupt_priority:
       - IRQn: 'FLEXCOMM3_IRQn'
-      - enable_priority: 'false'
-      - priority: '0'
-    - quick_selection: 'QS_I2C_Master'
+      - enable_priority: 'true'
+      - priority: '5'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 i2c_rtos_handle_t FC3_SENSOR_I2C_rtosHandle;
@@ -206,6 +209,8 @@ const i2c_master_config_t FC3_SENSOR_I2C_config = {
 static void FC3_SENSOR_I2C_init(void) {
   /* Initialization function */
   I2C_RTOS_Init(&FC3_SENSOR_I2C_rtosHandle, FC3_SENSOR_I2C_PERIPHERAL, &FC3_SENSOR_I2C_config, FC3_SENSOR_I2C_CLOCK_SOURCE);
+  /* Interrupt vector FLEXCOMM3_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(FC3_SENSOR_I2C_FLEXCOMM_IRQN, FC3_SENSOR_I2C_FLEXCOMM_IRQ_PRIORITY);
 }
 
 /***********************************************************************************************************************
@@ -648,8 +653,8 @@ instance:
         - enable_custom_name: 'false'
     - i2s_dma_handle:
       - enable_custom_name: 'false'
-      - init_callback: 'false'
-      - callback_fcn: ''
+      - init_callback: 'true'
+      - callback_fcn: 'audio_i2s_isr'
       - user_data: ''
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -661,7 +666,7 @@ const i2s_config_t FC4_AUDIO_I2S_config = {
   .leftJust = false,
   .sckPol = false,
   .wsPol = false,
-  .divider = 5,
+  .divider = 1,
   .oneChannel = false,
   .dataLength = 16,
   .frameLength = 128,
@@ -683,7 +688,7 @@ static void FC4_AUDIO_I2S_init(void) {
   /* Create the DMA FC4_AUDIO_I2S_TX_Handle handle */
   DMA_CreateHandle(&FC4_AUDIO_I2S_TX_Handle, FC4_AUDIO_I2S_TX_DMA_BASEADDR, FC4_AUDIO_I2S_TX_DMA_CHANNEL);
   /* Create the I2S DMA handle */
-  I2S_TxTransferCreateHandleDMA(FC4_AUDIO_I2S_PERIPHERAL, &FC4_AUDIO_I2S_Tx_DMA_Handle, &FC4_AUDIO_I2S_TX_Handle, NULL, NULL);
+  I2S_TxTransferCreateHandleDMA(FC4_AUDIO_I2S_PERIPHERAL, &FC4_AUDIO_I2S_Tx_DMA_Handle, &FC4_AUDIO_I2S_TX_Handle, audio_i2s_isr, NULL);
 }
 
 /***********************************************************************************************************************
@@ -695,6 +700,7 @@ void BOARD_InitPeripherals(void)
   DMA_Init(DMA0_DMA_BASEADDR);
 
   /* Initialize components */
+  DMA0_init();
   FC2_BATT_I2C_init();
   FC3_SENSOR_I2C_init();
   FC5_DEBUG_UART_init();

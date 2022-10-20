@@ -251,17 +251,33 @@ void BOARD_InitBootPins(void);
 /*! @name PIO1_3 (coord G16), SSM2518_SHTDNn
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_SSM2518_SHTDNn_PERIPHERAL GPIO          /*!<@brief Peripheral name */
-#define BOARD_INITPINS_SSM2518_SHTDNn_SIGNAL PIO1              /*!<@brief Signal name */
-#define BOARD_INITPINS_SSM2518_SHTDNn_CHANNEL 3                /*!<@brief Signal channel */
+/*!
+ * @brief Peripheral name */
+#define BOARD_INITPINS_SSM2518_SHTDNn_PERIPHERAL GPIO
+/*!
+ * @brief Signal name */
+#define BOARD_INITPINS_SSM2518_SHTDNn_SIGNAL PIO1
+/*!
+ * @brief Signal channel */
+#define BOARD_INITPINS_SSM2518_SHTDNn_CHANNEL 3
 
 /* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_SSM2518_SHTDNn_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_SSM2518_SHTDNn_GPIO_PIN_MASK (1U << 3U) /*!<@brief GPIO pin mask */
-#define BOARD_INITPINS_SSM2518_SHTDNn_PORT 1U                  /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_SSM2518_SHTDNn_PIN 3U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_SSM2518_SHTDNn_PIN_MASK (1U << 3U)      /*!<@brief PORT pin mask */
-                                                               /* @} */
+/*!
+ * @brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_SSM2518_SHTDNn_GPIO GPIO
+/*!
+ * @brief GPIO pin mask */
+#define BOARD_INITPINS_SSM2518_SHTDNn_GPIO_PIN_MASK (1U << 3U)
+/*!
+ * @brief PORT peripheral base pointer */
+#define BOARD_INITPINS_SSM2518_SHTDNn_PORT 1U
+/*!
+ * @brief PORT pin number */
+#define BOARD_INITPINS_SSM2518_SHTDNn_PIN 3U
+/*!
+ * @brief PORT pin mask */
+#define BOARD_INITPINS_SSM2518_SHTDNn_PIN_MASK (1U << 3U)
+/* @} */
 
 /*! @name FC5_TXD_SCL_MISO_WS (coord G17), DEBUG_UART_TXD
   @{ */

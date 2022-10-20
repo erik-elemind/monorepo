@@ -300,6 +300,18 @@ audio_event_type_name(audio_event_type_t event_type)
 }
 
 /*****************************************************************************/
+
+void audio_test(void)
+{
+	audio_power_on();
+	audio_pink_fadein(5);
+	audio_set_volume(128);
+    audio_pink_mute(false);
+    audio_pink_play();
+    audio_sine_play();
+}
+
+
 // Thread-safe functions
 
 void audio_power_on()
@@ -777,7 +789,9 @@ log_event(audio_event_t *event)
 {
   switch (event->type) {
   case AUDIO_EVENT_SOFTWARE_ISR_OCCURRED:
-    // squelch this one to avoid spamming the console
+	// squelch this one to avoid spamming the console
+	  //LOGV(TAG, "isr");
+	 // SDK_DelayAtLeastUs(10000, SystemCoreClock);
     break;
 
   case AUDIO_EVENT_SET_MUTE:

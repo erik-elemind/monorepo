@@ -26,7 +26,6 @@ wavbuf_pretask_init(void)
 {
   // Any pre-scheduler init goes here.
   AudioPlayUffsWavBufferRTOS::pretask_init_all_buffers();
-
 }
 
 
