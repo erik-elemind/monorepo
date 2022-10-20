@@ -18,7 +18,7 @@
 #include "command_helpers.h"
 #include "dhara_utils.h"
 #include "map.h"
-#include "nand.h"
+#include "nand_W25N04KW.h"
 
 #include "board_config.h"
 

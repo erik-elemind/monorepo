@@ -71,20 +71,58 @@ instance:
       - 0: []
       - 1: []
     - dma_channels: []
-    - init_interrupt: 'false'
+    - init_interrupt: 'true'
     - dma_interrupt:
       - IRQn: 'DMA0_IRQn'
       - enable_interrrupt: 'enabled'
-      - enable_priority: 'false'
+      - enable_priority: 'true'
       - priority: '0'
       - enable_custom_name: 'false'
-    - quick_selection: 'default'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
-/* Empty initialization function (commented out)
 static void DMA0_init(void) {
-} */
+  /* Interrupt vector DMA0_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(DMA0_IRQN, DMA0_IRQ_PRIORITY);
+  /* Enable interrupt DMA0_IRQn request in the NVIC. */
+  EnableIRQ(DMA0_IRQN);
+}
+
+/***********************************************************************************************************************
+ * DMA1 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'DMA1'
+- type: 'lpc_dma'
+- mode: 'basic'
+- custom_name_enabled: 'false'
+- type_id: 'lpc_dma_c13ca997a68f2ca6c666916ba13db7d7'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'DMA1'
+- config_sets:
+  - fsl_dma:
+    - dma_table:
+      - 0: []
+      - 1: []
+    - dma_channels: []
+    - init_interrupt: 'true'
+    - dma_interrupt:
+      - IRQn: 'DMA1_IRQn'
+      - enable_interrrupt: 'enabled'
+      - enable_priority: 'true'
+      - priority: '0'
+      - enable_custom_name: 'false'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+
+static void DMA1_init(void) {
+  /* Interrupt vector DMA1_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(DMA1_IRQN, DMA1_IRQ_PRIORITY);
+  /* Enable interrupt DMA1_IRQn request in the NVIC. */
+  EnableIRQ(DMA1_IRQN);
+}
 
 /***********************************************************************************************************************
  * NVIC initialization code
@@ -107,6 +145,7 @@ instance:
       - 2: []
       - 3: []
       - 4: []
+      - 5: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -488,7 +527,7 @@ static void FC1_EEG_SPI_init(void) {
 instance:
 - name: 'NAND_FLEXSPI'
 - type: 'flexspi'
-- mode: 'transfer'
+- mode: 'dma'
 - custom_name_enabled: 'true'
 - type_id: 'flexspi_cc6da638fb0490ad15096647c2b8e52a'
 - functional_group: 'BOARD_InitPeripherals'
@@ -498,7 +537,7 @@ instance:
     - flexspiConfig:
       - rxSampleClock: 'kFLEXSPI_ReadSampleClkLoopbackInternally'
       - clockSource: 'FlexSpiClock'
-      - clockSourceFreq: 'custom:6000000'
+      - clockSourceFreq: 'BOARD_BootClockRUN'
       - enableSckFreeRunning: 'false'
       - enableDoze: 'false'
       - enableHalfSpeedAccess: 'false'
@@ -509,7 +548,6 @@ instance:
       - txWatermark: '8'
       - rxWatermark: '8'
       - ahbConfig:
-        - customAHBclockFreq: '6000000'
         - ahbGrantTimeoutCycleString: '255'
         - ahbBusTimeoutCycleString: '65535'
         - resumeWaitCycleString: '32'
@@ -518,7 +556,7 @@ instance:
             - priority: '0'
             - masterIndex: '0'
             - bufferSize: '256'
-            - enablePrefetch: 'true'
+            - enablePrefetch: 'false'
           - 1:
             - priority: '1'
             - masterIndex: '0'
@@ -561,23 +599,56 @@ instance:
         - enableAHBCachable: 'false'
     - flexspiInterrupt:
       - interrupt_sel: ''
-      - interrupt_vectors:
-        - enableInterrupt: 'true'
-        - interrupt:
-          - IRQn: 'FLEXSPI_IRQn'
-          - enable_interrrupt: 'enabled'
-          - enable_priority: 'true'
-          - priority: '0'
-          - enable_custom_name: 'false'
     - enableCustomLUT: 'false'
     - lutConfig:
       - flash: 'defaultFlash'
       - lutName: 'defaultLUT'
-    - devices_configs: []
-    - transferHandle:
-      - init_callback_transfer: 'false'
-      - callback_fcn_transfer: 'mycallback'
-      - user_data_transfer: 'myuserdatapointer'
+    - devices_configs:
+      - 0:
+        - device_struct:
+          - flexspiDevicePrefixID: 'NAND'
+          - isSck2Enabled: 'false'
+          - flashSize: '0x80000'
+          - CSIntervalUnit: 'kFLEXSPI_CsIntervalUnit1SckCycle'
+          - CSIntervalString: '2'
+          - CSHoldTimeString: '3'
+          - CSSetupTimeString: '3'
+          - dataValidTimeString: '2'
+          - columnspace: '0'
+          - enableWordAddress: 'false'
+          - AWRSeqIndex: '0'
+          - AWRSeqNumber: '0'
+          - ARDSeqIndex: '0'
+          - ARDSeqNumber: '0'
+          - AHBWriteWaitUnit: 'kFLEXSPI_AhbWriteWaitUnit2AhbCycle'
+          - AHBWriteWaitIntervalString: '0'
+          - enableWriteMask: 'false'
+        - transferConfig:
+          - deviceAddress: '0'
+          - port: 'kFLEXSPI_PortA1'
+          - cmdType: 'kFLEXSPI_Command'
+          - seqIndex: '0'
+          - SeqNumber: '0'
+          - dataBufferEnable: 'false'
+          - dataSizeInt: '1'
+    - dma_channels:
+      - enable_rx_dma_channel: 'true'
+      - dma_rx_channel:
+        - DMA_source: 'kDma1RequestNoDMARequest28'
+        - init_channel_priority: 'true'
+        - dma_priority: 'kDMA_ChannelPriority0'
+        - enable_custom_name: 'false'
+      - enable_tx_dma_channel: 'true'
+      - dma_tx_channel:
+        - DMA_source: 'kDma1RequestNoDMARequest29'
+        - init_channel_priority: 'true'
+        - dma_priority: 'kDMA_ChannelPriority0'
+        - enable_custom_name: 'false'
+    - spi_dma_handle:
+      - enable_custom_name: 'false'
+      - init_callback_dma: 'true'
+      - callback_fcn_dma: 'nand_flexspi_isr'
+      - user_data_dma: ''
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 const flexspi_config_t NAND_FLEXSPI_config = {
@@ -600,7 +671,7 @@ const flexspi_config_t NAND_FLEXSPI_config = {
         .priority = 0,
         .masterIndex = 0U,
         .bufferSize = 256U,
-        .enablePrefetch = true
+        .enablePrefetch = false
       },
       {
         .priority = 1,
@@ -652,17 +723,57 @@ const flexspi_config_t NAND_FLEXSPI_config = {
     .enableAHBCachable = false
   }
 };
-flexspi_handle_t NAND_FLEXSPI_handle;
+flexspi_device_config_t NAND_FLEXSPI_config_NAND = {
+  .flexspiRootClk = 6000000UL,
+  .isSck2Enabled = false,
+  .flashSize = 0x80000UL,
+  .CSIntervalUnit = kFLEXSPI_CsIntervalUnit1SckCycle,
+  .CSInterval = 2,
+  .CSHoldTime = 3,
+  .CSSetupTime = 3,
+  .dataValidTime = 2,
+  .columnspace = 0U,
+  .enableWordAddress = false,
+  .AWRSeqIndex = 0U,
+  .AWRSeqNumber = 0U,
+  .ARDSeqIndex = 0U,
+  .ARDSeqNumber = 0U,
+  .AHBWriteWaitUnit = kFLEXSPI_AhbWriteWaitUnit2AhbCycle,
+  .AHBWriteWaitInterval = 0,
+  .enableWriteMask = false
+};
+const flexspi_transfer_t NAND_FLEXSPI_config_transfer_NAND = {
+  .deviceAddress = 0UL,
+  .port = kFLEXSPI_PortA1,
+  .cmdType = kFLEXSPI_Command,
+  .seqIndex = 0U,
+  .SeqNumber = 0U,
+  .data = 0,
+  .dataSize = NAND_FLEXSPI_TRANSFER_BUFFER_SIZE_0
+};
+dma_handle_t NAND_FLEXSPI_TX_Handle;
+dma_handle_t NAND_FLEXSPI_RX_Handle;
+flexspi_dma_handle_t NAND_FLEXSPI_DMA_Handle;
 
 static void NAND_FLEXSPI_init(void) {
   /* FLEXSPI peripheral initialization */
   FLEXSPI_Init(NAND_FLEXSPI_PERIPHERAL, &NAND_FLEXSPI_config);
-  /* Interrupt vector FLEXSPI_IRQn priority settings in the NVIC. */
-  NVIC_SetPriority(NAND_FLEXSPI_IRQN, NAND_FLEXSPI_IRQ_PRIORITY);
-  /* Enable interrupt FLEXSPI_IRQn request in the NVIC. */
-  EnableIRQ(NAND_FLEXSPI_IRQN);
-  /* Initializes the FLEXSPI handle which is used in transactional functions. */
-  FLEXSPI_TransferCreateHandle(NAND_FLEXSPI_PERIPHERAL, &NAND_FLEXSPI_handle, NULL, NULL);
+  /* Configure flash settings according to serial flash feature. */
+  FLEXSPI_SetFlashConfig(NAND_FLEXSPI_PERIPHERAL, &NAND_FLEXSPI_config_NAND, kFLEXSPI_PortA1);
+  /* Enable the DMA 29 channel in the DMA */
+  DMA_EnableChannel(NAND_FLEXSPI_TX_DMA_BASEADDR, NAND_FLEXSPI_TX_DMA_CHANNEL);
+  /* Set the DMA 29 channel priority */
+  DMA_SetChannelPriority(NAND_FLEXSPI_TX_DMA_BASEADDR, NAND_FLEXSPI_TX_DMA_CHANNEL, kDMA_ChannelPriority0);
+  /* Enable the DMA 28 channel in the DMA */
+  DMA_EnableChannel(NAND_FLEXSPI_RX_DMA_BASEADDR, NAND_FLEXSPI_RX_DMA_CHANNEL);
+  /* Set the DMA 28 channel priority */
+  DMA_SetChannelPriority(NAND_FLEXSPI_RX_DMA_BASEADDR, NAND_FLEXSPI_RX_DMA_CHANNEL, kDMA_ChannelPriority0);
+  /* Create the DMA NAND_FLEXSPI_TX_Handle handle */
+  DMA_CreateHandle(&NAND_FLEXSPI_TX_Handle, NAND_FLEXSPI_TX_DMA_BASEADDR, NAND_FLEXSPI_TX_DMA_CHANNEL);
+  /* Create the DMA NAND_FLEXSPI_RX_Handle handle */
+  DMA_CreateHandle(&NAND_FLEXSPI_RX_Handle, NAND_FLEXSPI_RX_DMA_BASEADDR, NAND_FLEXSPI_RX_DMA_CHANNEL);
+  /* Initializes the FLEXSPI DMA handle which is used in transactional functions. */
+  FLEXSPI_TransferCreateHandleDMA(NAND_FLEXSPI_PERIPHERAL, &NAND_FLEXSPI_DMA_Handle, nand_flexspi_isr, NULL, &NAND_FLEXSPI_TX_Handle, &NAND_FLEXSPI_RX_Handle);
 }
 
 /***********************************************************************************************************************
@@ -672,8 +783,11 @@ void BOARD_InitPeripherals(void)
 {
   /* Global initialization */
   DMA_Init(DMA0_DMA_BASEADDR);
+  DMA_Init(DMA1_DMA_BASEADDR);
 
   /* Initialize components */
+  DMA0_init();
+  DMA1_init();
   FC2_BATT_I2C_init();
   FC3_SENSOR_I2C_init();
   FC5_DEBUG_UART_init();

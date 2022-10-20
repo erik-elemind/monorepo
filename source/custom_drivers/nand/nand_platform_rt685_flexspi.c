@@ -5,48 +5,16 @@
  *      Author: Tyler Gage
  */
 
-#include "nand.h"
+#include "nand_W25N04KW.h"
 #include "nand_platform.h"
 #include "util_delay.h"
 
 // HAL
 #include "fsl_flexspi.h"
+#include "fsl_flexspi_dma.h"
 
 // FreeRTOS
 #include "FreeRTOS.h"
-
-/* LUT for the W25N04KW NAND Flash*/
-
-
-#define NAND_FLEXSPI_LUT_LENGTH 64
-
-
-#define NAND_CMD_LUT_SEQ_IDX_READID 8
-#define NAND_CMD_LUT_SEQ_IDX_READSTATUS 1
-
-const uint32_t NAND_FLEXSPI_LUT[NAND_FLEXSPI_LUT_LENGTH] = {
-	/* Read Status */
-	[4 * NAND_CMD_LUT_SEQ_IDX_READSTATUS] =
-	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x0F, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x08),
-	[4 * NAND_CMD_LUT_SEQ_IDX_READSTATUS + 1] =
-	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 0x01, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
-	/* Read ID */
-	[4 * NAND_CMD_LUT_SEQ_IDX_READID] =
-	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x9F, kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_1PAD, 0x08),
-	[4 * NAND_CMD_LUT_SEQ_IDX_READID + 1] =
-	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 0x08, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
-};
-
-/* FLEXSPI_IRQn interrupt handler */
-//void NAND_FLEXSPI_IRQHANDLER(void) {
-//  /*  Place your code here */
-//  /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F
-//     Store immediate overlapping exception return operation might vector to incorrect interrupt. */
-//  #if defined __CORTEX_M && (__CORTEX_M == 4U)
-//    __DSB();
-//  #endif
-//}
-
 
 // Create a reference struct to use for the chipnfo.
 // This is externed via nand.h, but could also be returned by a getter().
@@ -80,7 +48,7 @@ typedef struct nand_platform_handle {
 
 static nand_platform_handle_t g_nand_handle = {
   .base = SPI_FLASH_BASE,
-  .spi_handle = NULL
+  .spi_handle = &NAND_FLEXSPI_DMA_Handle
 };
 
 #if !(defined(NAND_SPI_USE_SEMAPHORE) && (NAND_SPI_USE_SEMAPHORE > 0U))
@@ -168,8 +136,9 @@ SPI_MasterTransferDMA_Blocking(nand_platform_handle_t *handle, const spi_transfe
   return kStatus_Success;
 }
 
+#if 0
 // This routine is declared in peripherals.h
-void nand_spi_isr(SPI_Type *base, spi_dma_handle_t *handle, status_t status, void *userData){
+void nand_spi_isr(FLEXSPI_Type *base, flexspi_dma_handle_t *handle, status_t status, void *userData){
   TRACEALYZER_ISR_FLASH_BEGIN( FLASH_SPI_ISR_TRACE );
 
   // Capture most recent transfer status for use outside this ISR
@@ -187,6 +156,71 @@ void nand_spi_isr(SPI_Type *base, spi_dma_handle_t *handle, status_t status, voi
 #endif
 }
 
+#else
+
+
+volatile bool g_flexspi_done = false;
+
+void nand_flexspi_isr(FLEXSPI_Type *base, flexspi_dma_handle_t *handle, status_t status, void *userData){
+	g_flexspi_done = true;
+}
+
+
+status_t
+FLEXSPI_MasterTransferDMA_Blocking(nand_platform_handle_t *handle, const flexspi_transfer_t *xfer)
+{
+	g_flexspi_done = false;
+	status_t status;
+
+//	FLEXSPI_TransferUpdateSizeDMA(NAND_FLEXSPI_PERIPHERAL, &NAND_FLEXSPI_DMA_Handle, kFLEXPSI_DMAnSize1Bytes);
+
+	do{
+		status = FLEXSPI_TransferDMA(NAND_FLEXSPI_PERIPHERAL, &NAND_FLEXSPI_DMA_Handle, xfer);
+		printf("DMAstatus = %d\r\n", status);
+	}while(status != kStatus_Success);
+
+//	while(!g_flexspi_done){
+//
+//	}
+
+
+	printf("DMAstatus = %d\r\n", status);
+//	printf("\n\rTransfer Done\n\r");
+
+	return status;
+}
+
+status_t
+FLEXSPI_MasterTransferDMA_Blocking2(const flexspi_transfer_t *xfer)
+{
+	return FLEXSPI_MasterTransferDMA_Blocking(&g_nand_handle, xfer);
+}
+
+
+#endif
+
+
+
+#if 0
+void nand_spi_isr(SPI_Type *base, spi_dma_handle_t *handle, status_t status, void *userData){
+  TRACEALYZER_ISR_FLASH_BEGIN( FLASH_SPI_ISR_TRACE );
+
+  // Capture most recent transfer status for use outside this ISR
+  g_spi_transfer_status = status;
+
+#if (defined(NAND_SPI_USE_SEMAPHORE) && (NAND_SPI_USE_SEMAPHORE > 0U))
+  BaseType_t reschedule;
+  xSemaphoreGiveFromISR(g_nand_handle.event, &reschedule);
+  // This yield is important to prevent breaks in the eeg sampling and audio playback.
+  portYIELD_FROM_ISR(reschedule);
+  TRACEALYZER_ISR_FLASH_END( reschedule );
+#else
+  g_spi_dma_rx_is_complete = true;
+  TRACEALYZER_ISR_FLASH_END(0);
+#endif
+}
+#endif
+
 static status_t spi_flash_transfer(nand_platform_handle_t *handle, spi_transfer_t *xfer){
   // TODO: Use the FreeRTOS driver here; need to modify handle?
   if (xfer->dataSize < NAND_DMA_MIN_XFER_SIZE_BYTES) {
@@ -202,17 +236,7 @@ static status_t spi_flash_transfer(nand_platform_handle_t *handle, spi_transfer_
 void nand_platform_yield_delay(int delay_ms) {
 	util_delay_ms(delay_ms);
 }
-void * myuserdatapointer;
 
-static int done = 0;
-
-void mycallback(FLEXSPI_Type *base, flexspi_handle_t *handle, status_t status, void *userData)
-{
-	printf("callback???\r\n");
-	done = 1;
-}
-
-uint32_t buff[10] = {0};
 
 // Return 0 if command and response completed succesfully, or <0 error code
 int nand_platform_command_response(
@@ -222,83 +246,7 @@ int nand_platform_command_response(
   uint32_t data_len
   )
 {
-  status_t status;
-  flexspi_transfer_t flashXfer;
-
-
-
-		flashXfer.deviceAddress = 0;
-		flashXfer.port          = kFLEXSPI_PortA1;
-		flashXfer.cmdType       = kFLEXSPI_Read;
-		flashXfer.SeqNumber     = 1;
-		flashXfer.seqIndex = NAND_CMD_LUT_SEQ_IDX_READID;
-		flashXfer.data     = buff;
-		flashXfer.dataSize = 4;
-
-		status = FLEXSPI_TransferBlocking(FLEXSPI, &flashXfer);
-
-		printf("status = %d\r\n", status);
-		printf("Vendor ID: %04X", buff[0]);
-
-
-		flashXfer.deviceAddress = 0xA0;
-		flashXfer.port          = kFLEXSPI_PortA1;
-		flashXfer.cmdType       = kFLEXSPI_Read;
-		flashXfer.SeqNumber     = 1;
-		flashXfer.seqIndex = NAND_CMD_LUT_SEQ_IDX_READSTATUS;
-		flashXfer.data     = buff;
-		flashXfer.dataSize = 8;
-
-		status = FLEXSPI_TransferBlocking(FLEXSPI, &flashXfer);
-
-		printf("status = %d\r\n", status);
-		printf("Status Reg 1: %04X\r\n", buff[0]);
-
-		flashXfer.deviceAddress = 0xB0;
-		flashXfer.port          = kFLEXSPI_PortA1;
-		flashXfer.cmdType       = kFLEXSPI_Read;
-		flashXfer.SeqNumber     = 1;
-		flashXfer.seqIndex = NAND_CMD_LUT_SEQ_IDX_READSTATUS;
-		flashXfer.data     = buff;
-		flashXfer.dataSize = 8;
-
-		status = FLEXSPI_TransferBlocking(FLEXSPI, &flashXfer);
-
-		printf("status = %d\r\n", status);
-		printf("Status Reg 2: %04X\r\n", buff[0]);
-
-		flashXfer.deviceAddress = 0xC0;
-		flashXfer.port          = kFLEXSPI_PortA1;
-		flashXfer.cmdType       = kFLEXSPI_Read;
-		flashXfer.SeqNumber     = 1;
-		flashXfer.seqIndex = NAND_CMD_LUT_SEQ_IDX_READSTATUS;
-		flashXfer.data     = buff;
-		flashXfer.dataSize = 8;
-
-		status = FLEXSPI_TransferBlocking(FLEXSPI, &flashXfer);
-
-		printf("status = %d\r\n", status);
-		printf("Status Reg 3: %04X\r\n", buff[0]);
-
-//		// Lets try non blocking?
-//
-//		flashXfer.deviceAddress = 0;
-//		flashXfer.port          = kFLEXSPI_PortA1;
-//		flashXfer.cmdType       = kFLEXSPI_Read;
-//		flashXfer.SeqNumber     = 1;
-//		flashXfer.seqIndex = NAND_CMD_LUT_SEQ_IDX_READID;
-//		flashXfer.data     = buff;
-//		flashXfer.dataSize = 4;
-//
-//		status = FLEXSPI_TransferNonBlocking(FLEXSPI, &NAND_FLEXSPI_handle, &flashXfer);
-//
-//		printf("status = %d\r\n", status);
-//
-//		size_t count=0;
-//
-//		while(done == 0){}
-//
-//		printf("Vendor ID 2 :count = %d,  %04X",count, buff[0]);
+	status_t status;
 
 //////////////////////////////////////////////////////// FF3 version
 //  	 printf("\r\n");
@@ -386,34 +334,5 @@ int nand_platform_init(void) {
 
   vQueueAddToRegistry(g_nand_handle.mutex, "nand_spi_mutex_sem");
   vQueueAddToRegistry(g_nand_handle.event, "nand_spi_event_sem");
-
-
-  // Initialize FlexSPI peripheral configuration
-  flexspi_device_config_t deviceconfig = {
-  	    .flexspiRootClk       = 6000000,
-  		.isSck2Enabled        = false,
-  	    .flashSize            = 0x80000,
-  	    .CSIntervalUnit       = kFLEXSPI_CsIntervalUnit1SckCycle,
-  	    .CSInterval           = 2,
-  	    .CSHoldTime           = 3,
-  	    .CSSetupTime          = 3,
-  	    .dataValidTime        = 2,
-  	    .columnspace          = 0,
-  	    .enableWordAddress    = 0,
-  	    .AWRSeqIndex          = 0,
-  	    .AWRSeqNumber         = 0,
-  	    .ARDSeqIndex          = 0,
-  	    .ARDSeqNumber         = 0,
-  	    .AHBWriteWaitUnit     = kFLEXSPI_AhbWriteWaitUnit2AhbCycle,
-  	    .AHBWriteWaitInterval = 0,
-  		.enableWriteMask      = false
-  	};
-  FLEXSPI_SetFlashConfig(FLEXSPI, &deviceconfig, kFLEXSPI_PortA1);
-
-  // Update LUT
-  FLEXSPI_UpdateLUT(FLEXSPI, 0, NAND_FLEXSPI_LUT, 64);
-
-  FLEXSPI_SoftwareReset(FLEXSPI);
-
   return 0;
 }

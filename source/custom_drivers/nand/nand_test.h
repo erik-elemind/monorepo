@@ -5,7 +5,7 @@
  *      Author: tyler
  */
 #include "fsl_common.h"
-#include "nand_platform.h"
+#include "nand_W25N04KW.h"
 
 #ifndef NAND_NAND_TEST_H_
 #define NAND_NAND_TEST_H_

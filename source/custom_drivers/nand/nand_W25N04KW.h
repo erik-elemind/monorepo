@@ -1,5 +1,5 @@
 /*
- * spi_nand.h
+ * nand_W25N04KW.h
  *
  * Copyright (C) 2021 Igor Institute, Inc.
  *
@@ -111,12 +111,21 @@ typedef struct nand_user_data {
 // Feature registers
 typedef enum {
   FEATURE_REG_PROTECTION = 0xA0,
-  FEATURE_REG_FEATURE1 = 0xB0,
+  FEATURE_REG_CONFIGURATION = 0xB0,
   FEATURE_REG_STATUS = 0xC0,
-  FEATURE_REG_FEATURE2 = 0xD0,
-  FEATURE_REG_FEATURE3 = 0xE0,
-  FEATURE_REG_STATUS2 = 0xF0
+  FEATURE_REG_ECC1 = 0x10,
+  FEATURE_REG_ECC2 = 0x20,
+  FEATURE_REG_ECC3 = 0x30,
+  FEATURE_REG_ECC4 = 0x40,
+  FEATURE_REG_ECC5 = 0x50,
 } feature_reg_t;
+
+
+/** Initialize the NAND flash and communications with the flash.
+
+ */
+int
+nand_init();
 
 /** Evaluate the status register ECC bits for data safety analysis.
 
@@ -175,6 +184,22 @@ nand_get_feature_reg(
   nand_user_data_t *user_data,
   feature_reg_t feature_reg,
   uint8_t* p_data
+  );
+
+/** Set feature register.
+
+    @param user_data Flash SPI handle
+    @param feature_reg Feature register to read
+    @param data Data to write (1 byte)
+
+    @return 0 if command and response completed
+    succesfully, or error code
+ */
+int
+nand_set_feature_reg(
+  nand_user_data_t *user_data,
+  feature_reg_t feature_reg,
+  uint8_t data
   );
 
 /** Unlock flash.

@@ -18,7 +18,7 @@
 
 #include "config.h"
 #include "ffconf.h"
-#include "nand.h"
+#include "nand_W25N04KW.h"
 #include "loglevels.h"
 
 // Check sizes. FatFS must be configured with a sector size greater than

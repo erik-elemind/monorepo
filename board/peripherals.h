@@ -20,6 +20,7 @@
 #include "fsl_spi.h"
 #include "fsl_spi_dma.h"
 #include "fsl_flexspi.h"
+#include "fsl_flexspi_dma.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -31,6 +32,20 @@ extern "C" {
 /* Definitions for BOARD_InitPeripherals functional group */
 /* Used DMA device. */
 #define DMA0_DMA_BASEADDR DMA0
+/* DMA0 interrupt vector ID (number). */
+#define DMA0_IRQN DMA0_IRQn
+/* DMA0 interrupt vector priority. */
+#define DMA0_IRQ_PRIORITY 0
+/* DMA0 interrupt handler identifier. */
+#define DMA0_IRQHANDLER DMA0_IRQHandler
+/* Used DMA device. */
+#define DMA1_DMA_BASEADDR DMA1
+/* DMA1 interrupt vector ID (number). */
+#define DMA1_IRQN DMA1_IRQn
+/* DMA1 interrupt vector priority. */
+#define DMA1_IRQ_PRIORITY 0
+/* DMA1 interrupt handler identifier. */
+#define DMA1_IRQHANDLER DMA1_IRQHandler
 /* BOARD_InitPeripherals defines for FLEXCOMM2 */
 /* Definition of peripheral ID */
 #define FC2_BATT_I2C_PERIPHERAL ((I2C_Type *)FLEXCOMM2)
@@ -93,12 +108,16 @@ extern "C" {
 #define FC1_EEG_SPI_TX_DMA_BASEADDR DMA0
 /* Definition of peripheral ID */
 #define NAND_FLEXSPI_PERIPHERAL FLEXSPI
-/* NAND_FLEXSPI interrupt vector ID (number). */
-#define NAND_FLEXSPI_IRQN FLEXSPI_IRQn
-/* NAND_FLEXSPI interrupt vector priority. */
-#define NAND_FLEXSPI_IRQ_PRIORITY 0
-/* NAND_FLEXSPI interrupt handler identifier. */
-#define NAND_FLEXSPI_IRQHANDLER FLEXSPI_IRQHandler
+/* Transfer buffer size. */
+#define NAND_FLEXSPI_TRANSFER_BUFFER_SIZE_0 1
+/* Selected DMA channel number. */
+#define NAND_FLEXSPI_TX_DMA_CHANNEL 29
+/* Used DMA device. */
+#define NAND_FLEXSPI_TX_DMA_BASEADDR DMA1
+/* Selected DMA channel number. */
+#define NAND_FLEXSPI_RX_DMA_CHANNEL 28
+/* Used DMA device. */
+#define NAND_FLEXSPI_RX_DMA_BASEADDR DMA1
 
 /***********************************************************************************************************************
  * Global variables
@@ -118,7 +137,11 @@ extern dma_handle_t FC1_EEG_SPI_RX_Handle;
 extern dma_handle_t FC1_EEG_SPI_TX_Handle;
 extern spi_dma_handle_t FC1_EEG_SPI_DMA_Handle;
 extern const flexspi_config_t NAND_FLEXSPI_config;
-extern flexspi_handle_t NAND_FLEXSPI_handle;
+extern flexspi_device_config_t NAND_FLEXSPI_config_NAND;
+extern const flexspi_transfer_t NAND_FLEXSPI_config_transfer_NAND;
+extern dma_handle_t NAND_FLEXSPI_RX_Handle;
+extern dma_handle_t NAND_FLEXSPI_TX_Handle;
+extern flexspi_dma_handle_t NAND_FLEXSPI_DMA_Handle;
 
 /***********************************************************************************************************************
  * Callback functions
@@ -135,6 +158,8 @@ extern void user_button1_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 extern void user_button2_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 /* SPI DMA callback function for the FC1_EEG_SPI component (init. function BOARD_InitPeripherals)*/
 extern void eeg_dma_rx_complete_isr(SPI_Type *,spi_dma_handle_t *,status_t ,void *);
+/* FLEXSPI DMA callback function for the NAND_FLEXSPI component (init. function BOARD_InitPeripherals)*/
+extern void nand_flexspi_isr(FLEXSPI_Type *, flexspi_dma_handle_t *, status_t, void *);
 
 /***********************************************************************************************************************
  * Initialization functions

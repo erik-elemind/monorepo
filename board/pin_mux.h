@@ -31,6 +31,7 @@ void BOARD_InitBootPins(void);
 #define IOPCTL_PIO_FUNC0 0x00u            /*!<@brief Selects pin function 0 */
 #define IOPCTL_PIO_FUNC1 0x01u            /*!<@brief Selects pin function 1 */
 #define IOPCTL_PIO_INBUF_DI 0x00u         /*!<@brief Disable input buffer function */
+#define IOPCTL_PIO_INBUF_EN 0x40u         /*!<@brief Enables input buffer function */
 #define IOPCTL_PIO_INV_DI 0x00u           /*!<@brief Input function is not inverted */
 #define IOPCTL_PIO_PSEDRAIN_DI 0x00u      /*!<@brief Pseudo Output Drain is disabled */
 #define IOPCTL_PIO_PULLDOWN_EN 0x00u      /*!<@brief Enable pull-down function */
@@ -67,20 +68,6 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_NAND_CSn_PERIPHERAL FLEXSPI       /*!<@brief Peripheral name */
 #define BOARD_INITPINS_NAND_CSn_SIGNAL FLEXSPI_A_SS0_B   /*!<@brief Signal name */
                                                          /* @} */
-
-/*! @name FLEXSPI0A_DATA0 (coord T5), NAND_D0
-  @{ */
-/* Routed pin properties */
-#define BOARD_INITPINS_NAND_D0_PERIPHERAL FLEXSPI       /*!<@brief Peripheral name */
-#define BOARD_INITPINS_NAND_D0_SIGNAL FLEXSPI_A_DATA0   /*!<@brief Signal name */
-                                                        /* @} */
-
-/*! @name FLEXSPI0A_DATA1 (coord U5), NAND_D1
-  @{ */
-/* Routed pin properties */
-#define BOARD_INITPINS_NAND_D1_PERIPHERAL FLEXSPI       /*!<@brief Peripheral name */
-#define BOARD_INITPINS_NAND_D1_SIGNAL FLEXSPI_A_DATA1   /*!<@brief Signal name */
-                                                        /* @} */
 
 /*! @name FLEXSPI0A_DATA2 (coord P6), NAND_D2
   @{ */
@@ -698,6 +685,20 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_LEDR_PWM_PIN 27U                           /*!<@brief PORT pin number */
 #define BOARD_INITPINS_LEDR_PWM_PIN_MASK (1U << 27U)              /*!<@brief PORT pin mask */
                                                                   /* @} */
+
+/*! @name FLEXSPI0A_DATA0 (coord T5), NAND_D0
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_NAND_D0_PERIPHERAL FLEXSPI       /*!<@brief Peripheral name */
+#define BOARD_INITPINS_NAND_D0_SIGNAL FLEXSPI_A_DATA0   /*!<@brief Signal name */
+                                                        /* @} */
+
+/*! @name FLEXSPI0A_DATA1 (coord U5), NAND_D1
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_NAND_D1_PERIPHERAL FLEXSPI       /*!<@brief Peripheral name */
+#define BOARD_INITPINS_NAND_D1_SIGNAL FLEXSPI_A_DATA1   /*!<@brief Signal name */
+                                                        /* @} */
 
 /*!
  * @brief 

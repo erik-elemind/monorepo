@@ -6,16 +6,37 @@
  */
 #include "nand_test.h"
 
-void nand_test1(void)
-{
-	nand_platform_init();
+void nand_test1(void) {
+	status_t status;
 
-	//Test 1: Test command response
-	uint8_t p_command = 0x9B;
-	uint8_t command_len = 1;
-	uint32_t* p_data[3] = {0};
-	uint32_t data_len = 8;
+	// TEST READ ID
+	uint8_t p_mfg_id;
+	uint16_t p_device_id;
 
-	nand_platform_command_response(&p_command, command_len, p_data, data_len);
+	status = nand_get_id(NULL, &p_mfg_id, &p_device_id);
+	printf("status = %d\r\n", status);
+	printf("MFG ID: %02X\r\n", p_mfg_id);
+	printf("DEV ID: %04X\r\n", p_device_id);
+
+
+	uint8_t data;
+	// TEST PROTECTION REGISTER READ
+	nand_get_feature_reg(NULL, FEATURE_REG_PROTECTION, &data);
+	printf("status = %d\r\n", status);
+	printf("Status Reg 1: %04X\r\n", data);
+
+	// TEST CONFIGURATION REGISTER READ
+	nand_get_feature_reg(NULL, FEATURE_REG_CONFIGURATION, &data);
+	printf("status = %d\r\n", status);
+	printf("Status Reg 1: %04X\r\n", data);
+
+	// TEST STATUS REGISTER READ
+	nand_get_feature_reg(NULL, FEATURE_REG_STATUS, &data);
+	printf("status = %d\r\n", status);
+	printf("Status Reg 1: %04X\r\n", data);
+
+	// TEST PRINT DETAILED STATUS
+	nand_print_detailed_status(NULL);
+
 
 }

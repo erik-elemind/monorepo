@@ -16,7 +16,7 @@
 #include "fsl_gpio.h"
 #include "loglevels.h"
 
-#include "nand.h"
+#include "nand_W25N04KW.h"
 #include "board_config.h"
 #include "command_helpers.h"
 

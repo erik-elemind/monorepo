@@ -9,7 +9,11 @@
 #ifndef NAND_PLATFORM_H
 #define NAND_PLATFORM_H
 
-#include "nand_W25N04KW.h"
+#include "nand_W25N04KW_config.h"
+
+// HAL
+#include "fsl_flexspi.h"
+#include "fsl_flexspi_dma.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,6 +40,8 @@ int nand_platform_command_with_data(
 
 // Callbacks for the DMA ISRs
 void nand_platform_spi_dma_rx_complete(void);
+
+status_t FLEXSPI_MasterTransferDMA_Blocking2(const flexspi_transfer_t *xfer);
 
 // Init
 int nand_platform_init(void);

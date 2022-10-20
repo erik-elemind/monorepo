@@ -137,10 +137,16 @@
                   </pin>
                   <pin peripheral="FLEXSPI" signal="FLEXSPI_A_SCLK" pin_num="T9" pin_signal="PIO1_18/FLEXSPI0A_SCLK/SCT0_GPI0/CTIMER3_MAT3"/>
                   <pin peripheral="FLEXSPI" signal="FLEXSPI_A_SS0_B" pin_num="T4" pin_signal="PIO1_19/FLEXSPI0A_SS0_N/SCT0_OUT0/CTIMER4_MAT0"/>
-                  <pin peripheral="FLEXSPI" signal="FLEXSPI_A_DATA0" pin_num="T5" pin_signal="PIO1_20/FLEXSPI0A_DATA0/SCT0_GPI1/CTIMER4_MAT1"/>
-                  <pin peripheral="FLEXSPI" signal="FLEXSPI_A_DATA1" pin_num="U5" pin_signal="PIO1_21/FLEXSPI0A_DATA1/SCT0_OUT1/CTIMER4_MAT2"/>
-                  <pin peripheral="FLEXSPI" signal="FLEXSPI_A_DATA2" pin_num="P6" pin_signal="PIO1_22/FLEXSPI0A_DATA2/SCT0_GPI2/CTIMER4_MAT3"/>
-                  <pin peripheral="FLEXSPI" signal="FLEXSPI_A_DATA3" pin_num="P7" pin_signal="PIO1_23/FLEXSPI0A_DATA3/SCT0_OUT2/CTIMER_INP8"/>
+                  <pin peripheral="FLEXSPI" signal="FLEXSPI_A_DATA2" pin_num="P6" pin_signal="PIO1_22/FLEXSPI0A_DATA2/SCT0_GPI2/CTIMER4_MAT3">
+                     <pin_features>
+                        <pin_feature name="ibena" value="enabled"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="FLEXSPI" signal="FLEXSPI_A_DATA3" pin_num="P7" pin_signal="PIO1_23/FLEXSPI0A_DATA3/SCT0_OUT2/CTIMER_INP8">
+                     <pin_features>
+                        <pin_feature name="ibena" value="enabled"/>
+                     </pin_features>
+                  </pin>
                   <pin peripheral="PINT" signal="PINT, 0" pin_num="G3" pin_signal="PIO0_13/FC1_SSEL3/SCT0_GPI3/SCT0_OUT3/CTIMER0_MAT1/SEC_PIO0_13/ADC0_9">
                      <pin_features>
                         <pin_feature name="identifier" value=""/>
@@ -226,6 +232,16 @@
                         <pin_feature name="direction" value="INPUT"/>
                         <pin_feature name="pupdena" value="enabled"/>
                         <pin_feature name="pupdsel" value="pullUp"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="FLEXSPI" signal="FLEXSPI_A_DATA0" pin_num="T5" pin_signal="PIO1_20/FLEXSPI0A_DATA0/SCT0_GPI1/CTIMER4_MAT1">
+                     <pin_features>
+                        <pin_feature name="ibena" value="enabled"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="FLEXSPI" signal="FLEXSPI_A_DATA1" pin_num="U5" pin_signal="PIO1_21/FLEXSPI0A_DATA1/SCT0_OUT1/CTIMER4_MAT2">
+                     <pin_features>
+                        <pin_feature name="ibena" value="enabled"/>
                      </pin_features>
                   </pin>
                </pins>
@@ -574,6 +590,51 @@
                         <data type="Version">2.1.0</data>
                      </feature>
                   </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXSPI.flexspi_a_data0" description="Signal FlexSPI A data 0 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXSPI.flexspi_a_data1" description="Signal FlexSPI A data 1 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXSPI.flexspi_a_data2" description="Signal FlexSPI A data 2 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXSPI.flexspi_a_data3" description="Signal FlexSPI A data 3 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXSPI.flexspi_a_sclk" description="Signal FlexSPI A serial clock is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXSPI.flexspi_a_ss0_b" description="Signal FlexSPI A chip select 0 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.flexspi_dma" description="The fsl_flexspi_dma driver is missing in the project  (required for the DMA mode)." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="enabled" evaluation="equal">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.flexspi_dma" description="The compatible version of the fsl_flexspi_dma driver is not available in the project  (required for the DMA mode)." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="version" evaluation="compatible">
+                        <data type="Version">2.0.1</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="ClockOutput" resourceId="FLEXSPI_clock" description="FLEXSPI clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="frequency" evaluation="greaterThan">
+                        <data type="Frequency" unit="Hz">0</data>
+                     </feature>
+                  </dependency>
                </dependencies>
                <instances>
                   <instance name="NVIC" uuid="653970ab-e215-4f80-a534-8b7c6ec66a07" type="nvic" type_id="nvic_57b5eef3774cc60acaede6f5b8bddc67" mode="general" peripheral="NVIC" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
@@ -584,6 +645,7 @@
                            <struct name="2"/>
                            <struct name="3"/>
                            <struct name="4"/>
+                           <struct name="5"/>
                         </array>
                         <array name="interrupts"/>
                      </config_set>
@@ -648,17 +710,17 @@
                      </config_set>
                   </instance>
                   <instance name="DMA0" uuid="8c64c917-d1b6-4314-8cce-c6d3bb1c3626" type="lpc_dma" type_id="lpc_dma_c13ca997a68f2ca6c666916ba13db7d7" mode="basic" peripheral="DMA0" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
-                     <config_set name="fsl_dma" quick_selection="default">
+                     <config_set name="fsl_dma">
                         <array name="dma_table">
                            <struct name="0"/>
                            <struct name="1"/>
                         </array>
                         <array name="dma_channels"/>
-                        <setting name="init_interrupt" value="false"/>
+                        <setting name="init_interrupt" value="true"/>
                         <struct name="dma_interrupt">
                            <setting name="IRQn" value="DMA0_IRQn"/>
                            <setting name="enable_interrrupt" value="enabled"/>
-                           <setting name="enable_priority" value="false"/>
+                           <setting name="enable_priority" value="true"/>
                            <setting name="priority" value="0"/>
                            <setting name="enable_custom_name" value="false"/>
                         </struct>
@@ -799,12 +861,12 @@
                         </struct>
                      </config_set>
                   </instance>
-                  <instance name="NAND_FLEXSPI" uuid="7d8b9be9-f47a-4195-8c3b-9ce2d3cc9c5b" type="flexspi" type_id="flexspi_cc6da638fb0490ad15096647c2b8e52a" mode="transfer" peripheral="FLEXSPI" enabled="true" comment="" custom_name_enabled="true" editing_lock="false">
+                  <instance name="NAND_FLEXSPI" uuid="7d8b9be9-f47a-4195-8c3b-9ce2d3cc9c5b" type="flexspi" type_id="flexspi_cc6da638fb0490ad15096647c2b8e52a" mode="dma" peripheral="FLEXSPI" enabled="true" comment="" custom_name_enabled="true" editing_lock="false">
                      <config_set name="fsl_flexspi">
                         <struct name="flexspiConfig">
                            <setting name="rxSampleClock" value="kFLEXSPI_ReadSampleClkLoopbackInternally"/>
                            <setting name="clockSource" value="FlexSpiClock"/>
-                           <setting name="clockSourceFreq" value="custom:6000000"/>
+                           <setting name="clockSourceFreq" value="BOARD_BootClockRUN"/>
                            <setting name="enableSckFreeRunning" value="false"/>
                            <setting name="enableDoze" value="false"/>
                            <setting name="enableHalfSpeedAccess" value="false"/>
@@ -815,7 +877,6 @@
                            <setting name="txWatermark" value="8"/>
                            <setting name="rxWatermark" value="8"/>
                            <struct name="ahbConfig">
-                              <setting name="customAHBclockFreq" value="6000000"/>
                               <setting name="ahbGrantTimeoutCycleString" value="255"/>
                               <setting name="ahbBusTimeoutCycleString" value="65535"/>
                               <setting name="resumeWaitCycleString" value="32"/>
@@ -824,7 +885,7 @@
                                     <setting name="priority" value="0"/>
                                     <setting name="masterIndex" value="0"/>
                                     <setting name="bufferSize" value="256"/>
-                                    <setting name="enablePrefetch" value="true"/>
+                                    <setting name="enablePrefetch" value="false"/>
                                  </struct>
                                  <struct name="1">
                                     <setting name="priority" value="1"/>
@@ -880,27 +941,82 @@
                            <set name="interrupt_sel">
                               <selected/>
                            </set>
-                           <struct name="interrupt_vectors">
-                              <setting name="enableInterrupt" value="true"/>
-                              <struct name="interrupt">
-                                 <setting name="IRQn" value="FLEXSPI_IRQn"/>
-                                 <setting name="enable_interrrupt" value="enabled"/>
-                                 <setting name="enable_priority" value="true"/>
-                                 <setting name="priority" value="0"/>
-                                 <setting name="enable_custom_name" value="false"/>
-                              </struct>
-                           </struct>
                         </struct>
                         <setting name="enableCustomLUT" value="false"/>
                         <struct name="lutConfig">
                            <setting name="flash" value="defaultFlash"/>
                            <setting name="lutName" value="defaultLUT"/>
                         </struct>
-                        <array name="devices_configs"/>
-                        <struct name="transferHandle">
-                           <setting name="init_callback_transfer" value="false"/>
-                           <setting name="callback_fcn_transfer" value="mycallback"/>
-                           <setting name="user_data_transfer" value="myuserdatapointer"/>
+                        <array name="devices_configs">
+                           <struct name="0">
+                              <struct name="device_struct">
+                                 <setting name="flexspiDevicePrefixID" value="NAND"/>
+                                 <setting name="isSck2Enabled" value="false"/>
+                                 <setting name="flashSize" value="0x80000"/>
+                                 <setting name="CSIntervalUnit" value="kFLEXSPI_CsIntervalUnit1SckCycle"/>
+                                 <setting name="CSIntervalString" value="2"/>
+                                 <setting name="CSHoldTimeString" value="3"/>
+                                 <setting name="CSSetupTimeString" value="3"/>
+                                 <setting name="dataValidTimeString" value="2"/>
+                                 <setting name="columnspace" value="0"/>
+                                 <setting name="enableWordAddress" value="false"/>
+                                 <setting name="AWRSeqIndex" value="0"/>
+                                 <setting name="AWRSeqNumber" value="0"/>
+                                 <setting name="ARDSeqIndex" value="0"/>
+                                 <setting name="ARDSeqNumber" value="0"/>
+                                 <setting name="AHBWriteWaitUnit" value="kFLEXSPI_AhbWriteWaitUnit2AhbCycle"/>
+                                 <setting name="AHBWriteWaitIntervalString" value="0"/>
+                                 <setting name="enableWriteMask" value="false"/>
+                              </struct>
+                              <struct name="transferConfig">
+                                 <setting name="deviceAddress" value="0"/>
+                                 <setting name="port" value="kFLEXSPI_PortA1"/>
+                                 <setting name="cmdType" value="kFLEXSPI_Command"/>
+                                 <setting name="seqIndex" value="0"/>
+                                 <setting name="SeqNumber" value="0"/>
+                                 <setting name="dataBufferEnable" value="false"/>
+                                 <setting name="dataSizeInt" value="1"/>
+                              </struct>
+                           </struct>
+                        </array>
+                        <struct name="dma_channels">
+                           <setting name="enable_rx_dma_channel" value="true"/>
+                           <struct name="dma_rx_channel">
+                              <setting name="DMA_source" value="kDma1RequestNoDMARequest28"/>
+                              <setting name="init_channel_priority" value="true"/>
+                              <setting name="dma_priority" value="kDMA_ChannelPriority0"/>
+                              <setting name="enable_custom_name" value="false"/>
+                           </struct>
+                           <setting name="enable_tx_dma_channel" value="true"/>
+                           <struct name="dma_tx_channel">
+                              <setting name="DMA_source" value="kDma1RequestNoDMARequest29"/>
+                              <setting name="init_channel_priority" value="true"/>
+                              <setting name="dma_priority" value="kDMA_ChannelPriority0"/>
+                              <setting name="enable_custom_name" value="false"/>
+                           </struct>
+                        </struct>
+                        <struct name="spi_dma_handle">
+                           <setting name="enable_custom_name" value="false"/>
+                           <setting name="init_callback_dma" value="true"/>
+                           <setting name="callback_fcn_dma" value="nand_flexspi_isr"/>
+                           <setting name="user_data_dma" value=""/>
+                        </struct>
+                     </config_set>
+                  </instance>
+                  <instance name="DMA1" uuid="3c05fddf-6c77-49ab-8dbd-da48c7fe036c" type="lpc_dma" type_id="lpc_dma_c13ca997a68f2ca6c666916ba13db7d7" mode="basic" peripheral="DMA1" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                     <config_set name="fsl_dma">
+                        <array name="dma_table">
+                           <struct name="0"/>
+                           <struct name="1"/>
+                        </array>
+                        <array name="dma_channels"/>
+                        <setting name="init_interrupt" value="true"/>
+                        <struct name="dma_interrupt">
+                           <setting name="IRQn" value="DMA1_IRQn"/>
+                           <setting name="enable_interrrupt" value="enabled"/>
+                           <setting name="enable_priority" value="true"/>
+                           <setting name="priority" value="0"/>
+                           <setting name="enable_custom_name" value="false"/>
                         </struct>
                      </config_set>
                   </instance>

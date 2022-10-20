@@ -1,5 +1,5 @@
 /*
- * spi_nand.c
+ * nand_W25N04KW.c
  *
  * Copyright (C) 2020 Igor Institute, Inc.
  *
@@ -14,7 +14,7 @@
 
 #include "config.h"
 
-#include "nand.h"
+#include "nand_W25N04KW.h"
 #include "nand_platform.h"
 
 // Set the log level for this file
@@ -24,6 +24,108 @@
 /// Logging prefix
 static const char* TAG = "nand";
 
+
+/* RESET_NOW - reset NAND immediately.
+ * ENABLE_RESET and ACTIVATE RESET are used together.
+ * ENABLE_RESET first, followed by ACTIVATE_RESET.*/
+#define NAND_CMD_LUT_SEQ_IDX_RESET            0
+#define NAND_CMD_LUT_SEQ_IDX_READ_ID          1
+#define NAND_CMD_LUT_SEQ_IDX_READ_STATUS      2
+#define NAND_CMD_LUT_SEQ_IDX_WRITE_STATUS     3
+#define NAND_CMD_LUT_SEQ_IDX_WRITE_ENABLE     4
+#define NAND_CMD_LUT_SEQ_IDX_WRITE_DISABLE    5
+#define NAND_CMD_LUT_SEQ_IDX_BLOCK_ERASE      6
+#define NAND_CMD_LUT_SEQ_IDX_QUAD_LOAD_ZEROED 7
+#define NAND_CMD_LUT_SEQ_IDX_QUAD_LOAD_RANDOM 8
+#define NAND_CMD_LUT_SEQ_IDX_PROGRAM_EXECUTE  9
+#define NAND_CMD_LUT_SEQ_IDX_PAGE_READ        10
+#define NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUAD   11
+#define NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUADIO 12
+#define NAND_CMD_LUT_SEQ_IDX_POWER_DOWN       13
+#define NAND_CMD_LUT_SEQ_IDX_POWER_UP         14
+
+
+/* LUT for the W25N04KW NAND Flash*/
+#define NAND_FLEXSPI_LUT_LENGTH 64
+
+const uint32_t NAND_FLEXSPI_LUT[NAND_FLEXSPI_LUT_LENGTH] = {
+    /* Device Reset (FFh) */
+	/* Enable Reset (66h) */
+	/* Reset Device (99h) */
+	[4 * NAND_CMD_LUT_SEQ_IDX_RESET] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x08, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+	/* Read ID (9Fh) */
+	[4 * NAND_CMD_LUT_SEQ_IDX_READ_ID] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x9F, kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_1PAD, 0x08), //8
+	[4 * NAND_CMD_LUT_SEQ_IDX_READ_ID + 1] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 0x00, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+	/* Read Status Register (0Fh)*/
+	[4 * NAND_CMD_LUT_SEQ_IDX_READ_STATUS] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x0F, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x08), //8
+	[4 * NAND_CMD_LUT_SEQ_IDX_READ_STATUS + 1] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 0x00, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+	/* Write Status Register (1Fh)*/
+	[4 * NAND_CMD_LUT_SEQ_IDX_WRITE_STATUS] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x1F, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x08), //8
+	[4 * NAND_CMD_LUT_SEQ_IDX_WRITE_STATUS + 1] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_WRITE_SDR, kFLEXSPI_1PAD, 0x00, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+	/* Write Enable (06h) */
+	[4 * NAND_CMD_LUT_SEQ_IDX_WRITE_ENABLE] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x06, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+	/* Write Disable (04h) */
+	[4 * NAND_CMD_LUT_SEQ_IDX_WRITE_DISABLE] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x04, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+	/* Block Erase (D8h) */
+	[4 * NAND_CMD_LUT_SEQ_IDX_BLOCK_ERASE] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0xD8, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x18), //24
+
+	/* Quad Load Program Data (32h) */
+	[4 * NAND_CMD_LUT_SEQ_IDX_QUAD_LOAD_ZEROED] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x32, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x10), //16
+	[4 * NAND_CMD_LUT_SEQ_IDX_QUAD_LOAD_ZEROED + 1] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_WRITE_SDR, kFLEXSPI_4PAD, 0x00, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+	/* Quad Random Load Program Data (34h) */
+	[4 * NAND_CMD_LUT_SEQ_IDX_QUAD_LOAD_RANDOM] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x34, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x10), //16
+	[4 * NAND_CMD_LUT_SEQ_IDX_QUAD_LOAD_RANDOM + 1] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_WRITE_SDR, kFLEXSPI_4PAD, 0x00, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+	/* Program Execute (10h) */
+	[4 * NAND_CMD_LUT_SEQ_IDX_PROGRAM_EXECUTE] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x10, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x18), //24
+
+	/* Page Data Read (13h) */
+	[4 * NAND_CMD_LUT_SEQ_IDX_PAGE_READ] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x13, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x18), //24
+
+	/* Fast Read Quad Output (6Bh) */
+	[4 * NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUAD] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x6B, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x10), //16
+	[4 * NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUAD + 1] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_1PAD, 0x08, kFLEXSPI_Command_READ_SDR, kFLEXSPI_4PAD, 0x00),
+
+	/* Fast Read Quad I/0) (ECh) */ // ????????????????
+	[4 * NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUADIO] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0xEC, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_4PAD, 0x10), //16 ???
+	[4 * NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUADIO + 1] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_1PAD, 0x0A, kFLEXSPI_Command_READ_SDR, kFLEXSPI_4PAD, 0x00),
+
+	/* Deep Power Down (B9h) */
+	[4 * NAND_CMD_LUT_SEQ_IDX_POWER_DOWN] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0xB9, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+	/* Release Power-Down (ABh) */
+	[4 * NAND_CMD_LUT_SEQ_IDX_POWER_UP] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0xAB, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
+
+};
 
 // Check for a define with the number of ECC bits in the status register
 #ifndef NAND_ECC_STATUS_REG_BIT_COUNT
@@ -52,139 +154,129 @@ static const char* TAG = "nand";
 
 // Flash commands (originally used with GigaDevice GD5F family)
 typedef enum {
-  COMMAND_WRITE_ENABLE = 0x06,
-  COMMAND_WRITE_DISABLE = 0x04,
-  COMMAND_GET_FEATURES = 0x0F,
-  COMMAND_SET_FEATURE = 0x1F,
-  COMMAND_PAGE_READ = 0x13,
-  COMMAND_READ_FROM_CACHE = 0x03,
-  COMMAND_FAST_READ_FROM_CACHE = 0x0B,
+  // These commands do NOT need an address:
+  COMMAND_WRITE_ENABLE  = NAND_CMD_LUT_SEQ_IDX_WRITE_ENABLE,
+  COMMAND_WRITE_DISABLE = NAND_CMD_LUT_SEQ_IDX_WRITE_DISABLE,
+  COMMAND_POWER_DOWN    = NAND_CMD_LUT_SEQ_IDX_POWER_DOWN,
+  COMMAND_POWER_UP      = NAND_CMD_LUT_SEQ_IDX_POWER_UP,
 
-  COMMAND_READ_FROM_CACHE_X_2 = 0x3B,
-  COMMAND_READ_FROM_CACHE_X_4 = 0x6B,
-  COMMAND_READ_FROM_CACHE_DUAL_IO = 0xBB,
-  COMMAND_READ_FROM_CACHE_QUAD_IO = 0xEB,
-
-  COMMAND_READ_ID = 0x9F,
-  COMMAND_PROGRAM_LOAD = 0x02,
-
-  COMMAND_PROGRAM_LOAD_X_4 = 0x32,
-
-  COMMAND_PROGRAM_EXECUTE = 0x10,
-  COMMAND_PROGRAM_LOAD_RANDOM = 0x84,
-  COMMAND_BLOCK_ERASE = 0xD8,
-  COMMAND_RESET = 0xFF
+  // These commands DO need an address:
+  COMMAND_BLOCK_ERASE =  NAND_CMD_LUT_SEQ_IDX_BLOCK_ERASE,
+  COMMAND_PROGRAM_EXECUTE = NAND_CMD_LUT_SEQ_IDX_PROGRAM_EXECUTE,
+  COMMAND_PAGE_READ = NAND_CMD_LUT_SEQ_IDX_PAGE_READ
 } nand_command_t;
+
+typedef enum{
+  COMMAND_RESET_NOW = 0xFF,
+  COMMAND_ENABLE_RESET = 0x66,
+  COMMAND_ACTIVATE_RESET = 0x99,
+} nand_reset_command_t;
 
 // Device constants
 
 // Prevent padding bytes in register union structs. (This is popped back below.)
 #pragma pack(push,1)
 
-// Status register type
+// Protection Register (Status Register 1) type
 typedef union {
   struct {
     // lsb
-    bool oip : 1;
-    bool wel : 1;
-    bool e_fail : 1;
-    bool p_fail : 1;
-    uint8_t eccs : NAND_ECC_STATUS_REG_BIT_COUNT; // (this bit count varies between chips)
-    bool reserved : (8-4-NAND_ECC_STATUS_REG_BIT_COUNT);
-    // msb
-  };
-  uint8_t raw;
-} nand_status_reg_t;
-
-// Protection register type
-typedef union {
-  struct {
-    // lsb
-    bool reserved1 : 1;
-    bool cmp : 1;
-    bool inv : 1;
-    bool bp0 : 1;
-    bool bp1 : 1;
-    bool bp2 : 1;
-    bool reserved2: 1;
-    bool brwd : 1;
+    bool    srp1 : 1;
+    bool    wpe  : 1;
+    bool    tb   : 1;
+    uint8_t bp   : 4;
+    bool    srp0 : 1;
     // msb
   };
   uint8_t raw;
 } nand_protection_reg_t;
 
-// Feature1 register type
+// Configuration Register (Status Register 2) type
 typedef union {
   struct {
     // lsb
-    bool qe : 1;
-    uint8_t reserved : 3;
-    bool ecc_en : 1;
-    bool reserved2 : 1;
-    bool otp_en: 1;
-    bool otp_prt : 1;
+    bool    hdis : 1;
+    uint8_t ods  : 2;
+    bool    buf  : 1;
+    uint8_t ecce : 4;
+    bool    sr1l : 1;
+    bool    otpe : 1;
+	bool    otpl : 1;
     // msb
   };
   uint8_t raw;
-} nand_feature1_reg_t;
+} nand_configuration_reg_t;
 
-// Feature2 register type
+// Status Register (Status Register 3) type
 typedef union {
   struct {
     // lsb
-    uint8_t reserved1 : 5;
-    uint8_t ds_io : 2;
-    bool reserved2 : 1;
+    bool    busy     : 1;
+    bool    wel      : 1;
+    bool    efail    : 1;
+    bool    pfail    : 1;
+    uint8_t ecc      : 2;
+    uint8_t reserved : 2;
     // msb
   };
   uint8_t raw;
-} nand_feature2_reg_t;
+} nand_status_reg_t;
 
-// DS (drive strength) values from feature2_reg_t
-enum {
-  DS_100_PERCENT = 0,
-  DS_75_PERCENT = 1,
-  DS_50_PERCENT = 2,
-  DS_25_PERCENT = 3,
-};
-
-// Get Features command
-typedef union {
-  struct __attribute__((packed)) {
-    uint8_t command; ///< COMMAND_GET_FEATURES
-    uint8_t reg; ///< From feature_reg_t
+typedef union{
+  struct{
+    // lsb
+    uint8_t  reserved : 4;
+    uint8_t  bfd      : 4;
+    // msb
   };
-  uint8_t raw[2];
-} get_features_command_t;
+  uint8_t raw;
+} nand_bit_flip_count_reg_t;
 
-// Set Feature command
-typedef union {
-  struct __attribute__((packed)) {
-    uint8_t command; ///< COMMAND_SET_FEATURE
-    uint8_t reg; ///< From feature_reg_t
-    uint8_t data; ///< protection_reg_t, feature_1_reg_t, or feature_2_reg_t
+typedef union{
+  struct{
+    // lsb
+    bool     bfs0     : 1;
+    bool     bfs1     : 1;
+    bool     bfs2     : 1;
+    bool     bfs3     : 1;
+    uint8_t  reserved : 4;
+    // msb
   };
-  uint8_t raw[3];
-} set_feature_command_t;
+  uint8_t raw;
+} nand_bit_flip_status_reg_t;
 
-// Page Read to Cache command
-typedef union {
-  struct __attribute__((packed)) {
-    uint8_t command; ///< COMMAND_PAGE_READ
-    uint8_t page_addr[3]; ///< Select page to read (24-bit address), MSB-first
+typedef union{
+  struct{
+    // lsb
+    uint8_t mfs      : 3;
+    uint8_t reserved : 1;
+    uint8_t mbf      : 4;
+    // msb
   };
-  uint8_t raw[4];
-} page_read_command_t;
+  uint8_t raw;
+} nand_max_bit_flip_count_reg_t;
 
-// Read From Cache command
-typedef union {
-  struct __attribute__((packed)) {
-    uint8_t command; ///< COMMAND_READ_FROM_CACHE
-    uint8_t dummy;
-    uint8_t addr[2]; ///< Address to start read (within page), MSB-first
+typedef union{
+  struct{
+    // lsb
+    uint8_t bfr_sec0     : 4;
+    uint8_t bfr_sec1     : 4;
+    // msb
   };
-  uint8_t raw[4];
-} read_from_cache_command_t;
+  uint8_t raw;
+} nand_bit_flip_count_sec01_reg_t;
+
+typedef union{
+  struct{
+    // lsb
+    uint8_t bfr_sec2     : 4;
+    uint8_t bfr_sec3     : 4;
+    // msb
+  };
+  uint8_t raw;
+} nand_bit_flip_count_sec23_reg_t;
+
+
 
 // Read ID command response
 typedef union {
@@ -195,34 +287,10 @@ typedef union {
   uint8_t raw[3];
 } read_id_response_t;
 
-// Program Load command
-typedef union {
-  struct __attribute__((packed)) {
-    uint8_t command; ///< COMMAND_PROGRAM_LOAD
-    uint8_t addr[2]; ///< Address to start write (within page), MSB-first
-  };
-  uint8_t raw[3];
-} program_load_command_t;
-
-// Program Execute command
-typedef union {
-  struct __attribute__((packed)) {
-    uint8_t command; ///< COMMAND_PROGRAM_EXECUTE
-    uint8_t page_addr[3]; ///< Page to write (24-bit address), MSB-first
-  };
-  uint8_t raw[4];
-} program_execute_command_t;
-
-// Erase Block command
-typedef union {
-  struct __attribute__((packed)) {
-    uint8_t command; ///< COMMAND_BLOCK_ERASE
-    uint8_t page_addr[3]; ///< Page to write (24-bit address), MSB-first
-  };
-  uint8_t raw[4];
-} erase_block_command_t;
-
 #pragma pack(pop)
+
+
+DMA_ALLOCATE_DATA_TRANSFER_BUFFER(static uint32_t feature_buff[1], sizeof(uint32_t)) = {0};
 
 
 /** Send command (no response data).
@@ -239,11 +307,158 @@ typedef union {
 static int
 nand_command(
   nand_user_data_t *user_data,
-  uint8_t* p_command,
-  uint8_t command_len
+  nand_command_t command,
+  uint32_t address
   )
 {
-  return nand_platform_command_response(p_command, command_len, NULL, 0);
+  status_t status;
+  flexspi_transfer_t flashXfer;
+
+  flashXfer.deviceAddress = address;
+  flashXfer.port = kFLEXSPI_PortA1;
+  flashXfer.cmdType = kFLEXSPI_Command;
+  flashXfer.SeqNumber = 1;
+  flashXfer.seqIndex = command;
+  flashXfer.data = NULL;
+  flashXfer.dataSize = 0;
+
+  status = FLEXSPI_TransferBlocking(NAND_FLEXSPI_PERIPHERAL, &flashXfer);
+
+  return status;
+}
+
+int
+nand_init(){
+  //  // Initialize FlexSPI peripheral configuration
+  //  flexspi_device_config_t deviceconfig = {
+  //  	    .flexspiRootClk       = 6000000,
+  //  		.isSck2Enabled        = false,
+  //  	    .flashSize            = 0x80000,
+  //  	    .CSIntervalUnit       = kFLEXSPI_CsIntervalUnit1SckCycle,
+  //  	    .CSInterval           = 2,
+  //  	    .CSHoldTime           = 3,
+  //  	    .CSSetupTime          = 3,
+  //  	    .dataValidTime        = 2,
+  //  	    .columnspace          = 0,
+  //  	    .enableWordAddress    = 0,
+  //  	    .AWRSeqIndex          = 0,
+  //  	    .AWRSeqNumber         = 0,
+  //  	    .ARDSeqIndex          = 0,
+  //  	    .ARDSeqNumber         = 0,
+  //  	    .AHBWriteWaitUnit     = kFLEXSPI_AhbWriteWaitUnit2AhbCycle,
+  //  	    .AHBWriteWaitInterval = 0,
+  //  		.enableWriteMask      = false
+  //  	};
+  //  FLEXSPI_SetFlashConfig(FLEXSPI, &deviceconfig, kFLEXSPI_PortA1);
+
+  // Update LUT
+  FLEXSPI_UpdateLUT(FLEXSPI, 0, NAND_FLEXSPI_LUT, 64);
+
+  FLEXSPI_SoftwareReset(FLEXSPI);
+
+  nand_ecc_enable(NULL, true);
+
+  int status = nand_platform_init();
+  return status;
+}
+
+/** NAND RESET */
+int
+nand_reset(nand_reset_command_t command){
+    status_t status;
+    flexspi_transfer_t flashXfer;
+
+    flashXfer.deviceAddress = command;
+    flashXfer.port = kFLEXSPI_PortA1;
+    flashXfer.cmdType = kFLEXSPI_Command;
+    flashXfer.SeqNumber = 1;
+    flashXfer.seqIndex = NAND_CMD_LUT_SEQ_IDX_RESET;
+    flashXfer.data = NULL;
+    flashXfer.dataSize = 0;
+
+    status = FLEXSPI_TransferBlocking(NAND_FLEXSPI_PERIPHERAL, &flashXfer);
+
+    return status;
+}
+
+/** NAND POWER DOWN/UP */
+static int
+nand_power(nand_user_data_t *user_data, bool enable){
+	if(enable){
+		return nand_command(user_data, COMMAND_POWER_UP, 0);
+	}else{
+		return nand_command(user_data, COMMAND_POWER_DOWN, 0);
+	}
+}
+
+/** Get NAND ID. */
+int
+nand_get_id(
+  nand_user_data_t *user_data,
+  uint8_t* p_mfg_id,
+  uint16_t* p_device_id
+  )
+{
+  LOGV(TAG, "nand_get_id");
+
+  flexspi_transfer_t flashXfer;
+  status_t status;
+  read_id_response_t response;
+
+  memset(feature_buff, 0, sizeof(feature_buff));
+
+  flashXfer.deviceAddress = 0;
+  flashXfer.port = kFLEXSPI_PortA1;
+  flashXfer.cmdType = kFLEXSPI_Read;
+  flashXfer.SeqNumber = 1;
+  flashXfer.seqIndex = NAND_CMD_LUT_SEQ_IDX_READ_ID;
+  flashXfer.data = feature_buff;
+  flashXfer.dataSize = 3;
+
+  status = FLEXSPI_TransferBlocking(NAND_FLEXSPI_PERIPHERAL, &flashXfer);
+
+  memcpy(response.raw, &(feature_buff[0]), 3);
+  *p_mfg_id = response.mfg_id;
+  *p_device_id = (response.device_id[0] << 8) | (response.device_id[1]);
+
+  return status;
+}
+
+/** Get feature register.
+
+    @param user_data Flash SPI handle
+    @param feature_reg Feature register to read
+    @param data Data to read (1 byte)
+
+    @return 0 if command and response completed
+    succesfully, or error code
+ */
+int
+nand_get_feature_reg(
+    nand_user_data_t *user_data,
+    feature_reg_t feature_reg,
+    uint8_t *data)
+{
+  flexspi_transfer_t flashXfer;
+  status_t status;
+
+  memset(feature_buff, 0, sizeof(feature_buff));
+
+  flashXfer.deviceAddress = feature_reg;
+  flashXfer.port = kFLEXSPI_PortA1;
+  flashXfer.cmdType = kFLEXSPI_Read;
+  flashXfer.SeqNumber = 1;
+  flashXfer.seqIndex = NAND_CMD_LUT_SEQ_IDX_READ_STATUS;
+  flashXfer.data = feature_buff;
+  flashXfer.dataSize = 1;
+
+  status = FLEXSPI_TransferBlocking(NAND_FLEXSPI_PERIPHERAL, &flashXfer);
+
+  *data = feature_buff[0] & 0xFF;
+
+  LOGV(TAG, "nand_get_feature_reg: feature_reg 0x%X (1 B) in: 0x%X (1 B)", feature_reg, data);
+
+  return status;
 }
 
 /** Set feature register.
@@ -255,22 +470,30 @@ nand_command(
     @return 0 if command and response completed
     succesfully, or error code
  */
-static int
+int
 nand_set_feature_reg(
   nand_user_data_t *user_data,
   feature_reg_t feature_reg,
   uint8_t data
   )
 {
-  LOGV(TAG, "nand_get_feature_reg: feature_reg 0x%X (1 B) in: 0x%X (1 B)", feature_reg, data);
+  LOGV(TAG, "nand_set_feature_reg: feature_reg 0x%X (1 B) in: 0x%X (1 B)", feature_reg, data);
 
-  set_feature_command_t command = {
-    .command = COMMAND_SET_FEATURE,
-    .reg = feature_reg,
-    .data = data
-  };
-  int status = nand_command(user_data,
-    command.raw, sizeof(command.raw));
+  flexspi_transfer_t flashXfer;
+  status_t status;
+
+  memset(feature_buff, 0, sizeof(feature_buff));
+  feature_buff[0] = data;
+
+  flashXfer.deviceAddress = feature_reg;
+  flashXfer.port = kFLEXSPI_PortA1;
+  flashXfer.cmdType = kFLEXSPI_Write;
+  flashXfer.SeqNumber = 1;
+  flashXfer.seqIndex = NAND_CMD_LUT_SEQ_IDX_WRITE_STATUS;
+  flashXfer.data = feature_buff;
+  flashXfer.dataSize = 1;
+
+  status = FLEXSPI_TransferBlocking(NAND_FLEXSPI_PERIPHERAL, &flashXfer);
 
   return status;
 }
@@ -299,97 +522,6 @@ nand_get_status_reg(
   return status;
 }
 
-/** Evaluate the status register ECC bits for data safety analysis. */
-int
-nand_ecc_result(uint8_t status_register_byte)
-{
-  int result;
-  uint32_t ecc_bits_corrected = ecc_bits_map(status_register_byte);
-//  printf("nand_ecc_result: ecc_bits_corrected: %lu\n", ecc_bits_corrected);
-
-  if (ecc_bits_corrected == 0) {
-    result = NAND_NO_ERR;  // Clean data :)
-  }
-  else if (ecc_bits_corrected <= NAND_ECC_SAFE_CORRECTED_BIT_COUNT) {
-    result = NAND_NO_ERR;  // Fib to minimize bad block flagging
-  }
-  else if (ecc_bits_corrected <= NAND_ECC_MAX_CORRECTED_BIT_COUNT) {
-    result = NAND_ECC_OK; // The end draws nigh...
-  }
-  else {
-    result = NAND_ECC_FAIL;      // Bad data :(
-  }
-
-  return result;
-}
-
-/** Read and evaluate the status register ECC bits for data safety analysis. */
-int nand_ecc_bits(nand_user_data_t *user_data, uint32_t* num_bits)
-{
-  nand_status_reg_t status_reg;
-  // Read the status register
-  int status = nand_get_status_reg(user_data, &status_reg);
-  if (status == 0) {
-    // Decode the status register, and return
-    // the actual number of ECC corrected bits.
-    *num_bits = ecc_bits_map(status_reg.raw);
-  }
-  return status;
-}
-
-
-/** Get NAND ID. */
-int
-nand_get_id(
-  nand_user_data_t *user_data,
-  uint8_t* p_mfg_id,
-  uint16_t* p_device_id
-  )
-{
-  LOGV(TAG, "nand_get_id");
-
-  uint8_t command = COMMAND_READ_ID;
-  read_id_response_t response;
-  int status = nand_platform_command_response(
-    &command, sizeof(command),
-    (uint8_t*)&response, sizeof(response));
-
-  *p_mfg_id = response.mfg_id;
-  *p_device_id = (response.device_id[0] << 8) | (response.device_id[1]);
-
-  return status;
-}
-
-/** Get feature register.
-
-    @param user_data Flash SPI handle
-    @param feature_reg Feature register to read
-    @param[out] data Data received (1 byte)
-
-    @return 0 if command and response completed
-    succesfully, or error code
- */
-int
-nand_get_feature_reg(
-  nand_user_data_t *user_data,
-  feature_reg_t feature_reg,
-  uint8_t* p_data
-  )
-{
-  LOGV(TAG, "nand_get_feature_reg: feature_reg 0x%X (1 B)", feature_reg);
-
-  get_features_command_t command = {
-    .command = COMMAND_GET_FEATURES,
-    .reg = feature_reg
-  };
-  int status = nand_platform_command_response(
-    command.raw, sizeof(command.raw), p_data, 1);
-
-  LOGV(TAG, "...nand_get_feature_reg: out: 0x%X (1 B)", *(uint8_t *)p_data);
-
-  return status;
-}
-
 /** Unlock flash. */
 int
 nand_unlock(nand_user_data_t *user_data)
@@ -397,17 +529,26 @@ nand_unlock(nand_user_data_t *user_data)
   LOGV(TAG, "nand_unlock");
 
   nand_protection_reg_t protection_reg;
-  protection_reg.cmp = 0;
-  protection_reg.inv = 0;
-  protection_reg.bp0 = 0;
-  protection_reg.bp1 = 0;
-  protection_reg.bp2 = 0;
-  protection_reg.brwd = 0;
+  protection_reg.srp1 = 0;
+  protection_reg.wpe = 0;
+  protection_reg.tb = 0;
+  protection_reg.bp = 0;
+  protection_reg.srp0 = 0;
 
   int status = nand_set_feature_reg(user_data,
     FEATURE_REG_PROTECTION, protection_reg.raw);
 
   return status;
+}
+
+/** Write Enable/Disable*/
+static int
+nand_write_enable(nand_user_data_t *user_data, bool enable){
+	if(enable){
+		return nand_command(user_data, COMMAND_WRITE_ENABLE, 0);
+	}else{
+		return nand_command(user_data, COMMAND_WRITE_DISABLE, 0);
+	}
 }
 
 /** Enable/disable on-chip ECC. */
@@ -416,16 +557,16 @@ nand_ecc_enable(nand_user_data_t *user_data, bool enable)
 {
   LOGV(TAG, "nand_ecc_enable: %d", (int)enable);
 
-  nand_feature1_reg_t feature1_reg;
+  nand_configuration_reg_t configuration_reg;
   int status = nand_get_feature_reg(user_data,
-    FEATURE_REG_FEATURE1, &feature1_reg.raw);
+      FEATURE_REG_CONFIGURATION, &configuration_reg.raw);
   if (status < 0) {
     return status;
   }
 
-  feature1_reg.ecc_en = enable;
+  configuration_reg.ecce = enable;
   status = nand_set_feature_reg(user_data,
-    FEATURE_REG_FEATURE1, feature1_reg.raw);
+      FEATURE_REG_CONFIGURATION, configuration_reg.raw);
 
   return status;
 }
@@ -588,13 +729,23 @@ nand_read_page_from_cache(
     (int)page_offset, p_data, (int)data_len);
 
   int status;
+  flexspi_transfer_t flashXfer;
 
-  read_from_cache_command_t read_from_cache = {
-    .command = COMMAND_READ_FROM_CACHE,
-    .addr = PAGE_OFFSET_TO_MSB_FIRST_ARRAY(page_offset)
-  };
-  status = nand_platform_command_response(
-    read_from_cache.raw, sizeof(read_from_cache.raw), p_data, data_len);
+#if 0
+  uint8_t seqIndex = NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUAD;
+#else
+  uint8_t seqIndex = NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUADIO;
+#endif
+
+  flashXfer.deviceAddress = page_offset; // TODO: Is this just the page_offset ????
+  flashXfer.port = kFLEXSPI_PortA1;
+  flashXfer.cmdType = kFLEXSPI_Read;
+  flashXfer.SeqNumber = 1;
+  flashXfer.seqIndex = seqIndex;
+  flashXfer.data = (uint32_t*) p_data;
+  flashXfer.dataSize = data_len;
+
+  status = FLEXSPI_TransferBlocking(NAND_FLEXSPI_PERIPHERAL, &flashXfer);
 
   return status;
 }
@@ -616,14 +767,8 @@ nand_read_page_into_cache(
     nand_print_detailed_status(user_data);
   }
 #endif
-  ///@todo BH - Check page_addr, page_offset, data_len value
 
-  // Start page read into flash internal cache
-  page_read_command_t page_read = {
-    .command = COMMAND_PAGE_READ,
-    .page_addr = PAGE_ADDR_TO_MSB_FIRST_ARRAY(page_addr)
-  };
-  status = nand_command(user_data, page_read.raw, sizeof(page_read.raw));
+  status = nand_command(user_data,COMMAND_PAGE_READ,page_addr);
   if (status < 0) {
     LOGE(TAG, "nand_read_page_into_cache(): COMMAND_PAGE_READ error: %d", status);
     return status;
@@ -634,7 +779,7 @@ nand_read_page_into_cache(
     // Check OIP (Operation In Progress) bit
     status = nand_get_status_reg(user_data, &status_reg);
     if(status == kStatus_Success){
-      if(status_reg.oip == 0){
+      if(status_reg.busy == 0){
         break;
       }
     }
@@ -648,7 +793,9 @@ nand_read_page_into_cache(
 
   // Check ECCS bits after read from cache operation. Note that ECC failures
   // are expected normal behavior as the chip wears out.
-  return nand_ecc_result((uint8_t)status_reg.raw);  
+  return nand_ecc_result((uint8_t)status_reg.raw);
+
+  return 0;
 }
 
 /** Write flash page cache. */
@@ -664,20 +811,23 @@ nand_write_into_page_cache(
     (int)page_offset, *(uint32_t *)p_data, (int)data_len);
 
   int status;
+  flexspi_transfer_t flashXfer;
 
-  // COMMAND_PROGRAM_LOAD: "SPI-NAND controller outputs 0xFF data to the NAND
-  // for the address that data was not loaded by Program Load (02h) command."
-  //
-  // COMMAND_PROGRAM_LOAD_RANDOM: "When Program Execute (10h) command was issued
-  // just after Program Load Random Data (84h) command, SPI-NAND controller
-  // outputs contents of Cache Register to the NAND."
-  program_load_command_t program_load = {
-//      .command = COMMAND_PROGRAM_LOAD_RANDOM,
-    .command = COMMAND_PROGRAM_LOAD,
-    .addr = PAGE_OFFSET_TO_MSB_FIRST_ARRAY(page_offset)
-  };
-  status = nand_platform_command_with_data(
-    program_load.raw, sizeof(program_load.raw), p_data, data_len);
+#if 1
+  uint8_t seqIndex = NAND_CMD_LUT_SEQ_IDX_QUAD_LOAD_ZEROED;
+#else
+  uint8_t seqIndex = NAND_CMD_LUT_SEQ_IDX_QUAD_LOAD_RANDOM;
+#endif
+
+  flashXfer.deviceAddress = page_offset; // TODO: Is this just the page_offset ????
+  flashXfer.port = kFLEXSPI_PortA1;
+  flashXfer.cmdType = kFLEXSPI_Write;
+  flashXfer.SeqNumber = 1;
+  flashXfer.seqIndex = seqIndex;
+  flashXfer.data = (uint32_t*) p_data;
+  flashXfer.dataSize = data_len;
+
+  status = FLEXSPI_TransferBlocking(NAND_FLEXSPI_PERIPHERAL, &flashXfer);
 
   return status;
 }
@@ -692,9 +842,7 @@ int nand_program_page_cache(
   nand_status_reg_t status_reg;
 
   // Set write enable latch
-  uint8_t write_enable_command = COMMAND_WRITE_ENABLE;
-  status = nand_command(user_data,
-    &write_enable_command, sizeof(write_enable_command));
+  status = nand_write_enable(user_data, true);
   if (status < 0) {
     LOGE(TAG, "nand_write_page(): COMMAND_WRITE_ENABLE error: %d",
       status);
@@ -702,12 +850,7 @@ int nand_program_page_cache(
   }
 
   // Program data from cache into flash page
-  program_execute_command_t program_execute = {
-    .command = COMMAND_PROGRAM_EXECUTE,
-    .page_addr = PAGE_ADDR_TO_MSB_FIRST_ARRAY(page_addr)
-  };
-  status = nand_command(user_data,
-    program_execute.raw, sizeof(program_execute.raw));
+  status = nand_command(user_data, COMMAND_PROGRAM_EXECUTE, page_addr); // TODO: Use page_addr directly???
   if (status < 0) {
     LOGE(TAG, "nand_write_page(): COMMAND_PROGRAM_EXECUTE error: %d",
       status);
@@ -719,7 +862,7 @@ int nand_program_page_cache(
     // Check OIP (Operation In Progress) bit
     status = nand_get_status_reg(user_data, &status_reg);
     if(status == kStatus_Success){
-      if(status_reg.oip == 0){
+      if(status_reg.busy == 0){
         break;
       }
     }
@@ -733,7 +876,7 @@ int nand_program_page_cache(
   }
 
   // Check status register bit
-  if (status_reg.p_fail == 1) {
+  if (status_reg.pfail == 1) {
     status = NAND_UNKNOWN_ERR;  // Program Failed
   }
 
@@ -755,19 +898,19 @@ nand_block_status(
 
   // check if ECC is enabled
   // according to the documentation, ecc should be disabled when checking the bad page mark.
-  nand_feature1_reg_t feature1_reg;
+  nand_configuration_reg_t config_reg;
   status = nand_get_feature_reg(user_data,
-    FEATURE_REG_FEATURE1, &feature1_reg.raw);
+		  FEATURE_REG_CONFIGURATION, &config_reg.raw);
   if (status != 0) {
     return status;
   }
-  bool ecc_enabled = feature1_reg.ecc_en;
+  bool ecc_enabled = config_reg.ecce;
 
   // disable ECC
   if(ecc_enabled){
-    feature1_reg.ecc_en = false;
+    config_reg.ecce = false;
     status = nand_set_feature_reg(user_data,
-      FEATURE_REG_FEATURE1, feature1_reg.raw);
+    		FEATURE_REG_CONFIGURATION, config_reg.raw);
     if (status != 0) {
       return status;
     }
@@ -780,7 +923,7 @@ nand_block_status(
   // But always use page 0 since that is where the marker is.
   page = 0;
 
-  // First byte of spare is the marker. Datasheet calls this the 
+  // First byte of spare is the marker. Datasheet calls this the
   // "Bad Block Mark".
   static const uint32_t GOOD_BLOCK_MARKER_ADDR = NAND_PAGE_SIZE;
   // Anything other than 0xFF is bad.
@@ -797,9 +940,9 @@ nand_block_status(
 
   // enable ECC
   if(ecc_enabled){
-    feature1_reg.ecc_en = true;
+	config_reg.ecce = true;
     status = nand_set_feature_reg(user_data,
-      FEATURE_REG_FEATURE1, feature1_reg.raw);
+    		FEATURE_REG_CONFIGURATION, config_reg.raw);
     if (status != 0) {
       return status;
     }
@@ -825,10 +968,7 @@ nand_erase_block(
   nand_page_addr_to_block_page(page_addr,user_data->chipinfo->block_addr_offset, &block, &page);
   LOGV(TAG, "nand_erase_block(): page_addr 0x%lx (%lu), page %lu of block %lu", page_addr, page_addr, page, block);
 
-  // Set write enable latch
-  uint8_t write_enable_command = COMMAND_WRITE_ENABLE;
-  status = nand_command(user_data,
-    &write_enable_command, sizeof(write_enable_command));
+  status = nand_write_enable(user_data, true);
   if (status < 0) {
     LOGE(TAG, "nand_erase_block(): COMMAND_WRITE_ENABLE error: %d",
       status);
@@ -836,12 +976,7 @@ nand_erase_block(
   }
 
   // Erase block
-  erase_block_command_t erase_block = {
-    .command = COMMAND_BLOCK_ERASE,
-    .page_addr = PAGE_ADDR_TO_MSB_FIRST_ARRAY((block << NAND_PAGES_PER_BLOCK_LOG2))
-  };
-  status = nand_command(user_data,
-    erase_block.raw, sizeof(erase_block.raw));
+  status = nand_command(user_data, COMMAND_BLOCK_ERASE, (block << NAND_PAGES_PER_BLOCK_LOG2));
   if (status < 0) {
     LOGE(TAG, "nand_erase_block(): COMMAND_ERASE_BLOCK error: %d",
       status);
@@ -856,12 +991,12 @@ nand_erase_block(
 
   do {
     // Check OIP (Operation In Progress) bit
-    status = nand_get_status_reg(user_data, &status_reg);	
-    if (status == NAND_NO_ERR && status_reg.oip == 1) {
+    status = nand_get_status_reg(user_data, &status_reg);
+    if (status == NAND_NO_ERR && status_reg.busy == 1) {
       // We are still waiting for the flash chip to be ready.
       nand_platform_yield_delay(1);
     }
-  } while (status == NAND_NO_ERR && status_reg.oip == 1);
+  } while (status == NAND_NO_ERR && status_reg.busy == 1);
 
   if (status < 0) {
     LOGE(TAG, "nand_erase_block(): _get_status_reg() error: %d", status);
@@ -869,7 +1004,7 @@ nand_erase_block(
   }
 
   // Check E_FAIL bit in status reg
-  if (status_reg.e_fail == 1) {
+  if (status_reg.efail == 1) {
     LOGW(TAG, "nand_erase_block(): e_fail==1 on block: %ld, returning NAND_UNKNOWN_ERR", block);
     status = NAND_UNKNOWN_ERR;  // Erase Failed.
   }
@@ -892,28 +1027,30 @@ nand_print_detailed_status(
   if (status == NAND_NO_ERR) {
     printf("  Protection register (%02x): 0x%x\n",
       FEATURE_REG_PROTECTION, protection_reg.raw);
-    printf("    cmp: %d\n", protection_reg.cmp);
-    printf("    inv: %d\n", protection_reg.inv);
-    printf("    bp0: %d\n", protection_reg.bp0);
-    printf("    bp1: %d\n", protection_reg.bp1);
-    printf("    bp2: %d\n", protection_reg.bp2);
-    printf("    brwd: %d\n", protection_reg.brwd);
+    printf("    srp1: %d\n", protection_reg.srp1);
+    printf("    wpe: %d\n", protection_reg.wpe);
+    printf("    tb: %d\n", protection_reg.tb);
+    printf("    bp: %d\n", protection_reg.bp);
+    printf("    srp0: %d\n", protection_reg.srp0);
   }
   else {
     printf("Error reading protection register: %d\n", status);
   }
 
-  // Get feature1 register
-  nand_feature1_reg_t feature1_reg;
+  // Get configuration register
+  nand_configuration_reg_t config_reg;
   status = nand_get_feature_reg(user_data,
-    FEATURE_REG_FEATURE1, &feature1_reg.raw);
+		  FEATURE_REG_CONFIGURATION, &config_reg.raw);
   if (status == NAND_NO_ERR) {
     printf("  Feature1 register (%02x): 0x%x\n",
-      FEATURE_REG_FEATURE1, feature1_reg.raw);
-    printf("    qe: %d\n", feature1_reg.qe);
-    printf("    ecc_en: %d\n", feature1_reg.ecc_en);
-    printf("    otp_en: %d\n", feature1_reg.otp_en);
-    printf("    otp_prt: %d\n", feature1_reg.otp_prt);
+    		FEATURE_REG_CONFIGURATION, config_reg.raw);
+    printf("    hdis: %d\n", config_reg.hdis);
+    printf("    ods: %d\n", config_reg.ods);
+    printf("    buf: %d\n", config_reg.buf);
+    printf("    ecce: %d\n", config_reg.ecce);
+    printf("    sr1l: %d\n", config_reg.sr1l);
+    printf("    otpe: %d\n", config_reg.otpe);
+    printf("    otpl: %d\n", config_reg.otpl);
   }
   else {
     printf("Error reading feature1 register: %d\n", status);
@@ -926,29 +1063,129 @@ nand_print_detailed_status(
   if (status == NAND_NO_ERR) {
     printf("  Status register (%02x): 0x%x\n",
       FEATURE_REG_STATUS, status_reg.raw);
-    printf("    oip: %d\n", status_reg.oip);
+    printf("    busy: %d\n", status_reg.busy);
     printf("    wel: %d\n", status_reg.wel);
-    printf("    e_fail: %d\n", status_reg.e_fail);
-    printf("    p_fail: %d\n", status_reg.p_fail);
-    printf("    eccs: %d\n", status_reg.eccs);
+    printf("    efail: %d\n", status_reg.efail);
+    printf("    pfail: %d\n", status_reg.pfail);
+    printf("    ecc: %d\n", status_reg.ecc);
   }
   else {
     printf("Error reading status register: %d\n", status);
   }
 
-  // Get feature2 register
-  nand_feature2_reg_t feature2_reg;
+  // Get ECC1 register
+  nand_bit_flip_count_reg_t ecc1_reg;
   status = nand_get_feature_reg(user_data,
-    FEATURE_REG_FEATURE2, &feature2_reg.raw);
+		  FEATURE_REG_ECC1, &ecc1_reg.raw);
   if (status == NAND_NO_ERR) {
-    printf("  Feature2 register (%02x): 0x%x\n",
-      FEATURE_REG_FEATURE2, feature2_reg.raw);
-    printf("    ds_io: %d\n", feature2_reg.ds_io);
+    printf("  ECC1 register (%02x): 0x%x\n",
+    		FEATURE_REG_ECC1, ecc1_reg.raw);
+    printf("    bfd: %d\n", ecc1_reg.bfd);
   }
   else {
-    printf("Error reading feature2 register: %d\n", status);
+    printf("Error reading ECC1 register: %d\n", status);
+  }
+
+  ////////////////////////////////////////////
+
+  // Get ECC2 register
+  nand_bit_flip_status_reg_t ecc2_reg;
+  status = nand_get_feature_reg(user_data,
+		  FEATURE_REG_ECC2, &ecc2_reg.raw);
+  if (status == NAND_NO_ERR) {
+    printf("  ECC1 register (%02x): 0x%x\n",
+    		FEATURE_REG_ECC2, ecc2_reg.raw);
+    printf("    bfs0: %d\n", ecc2_reg.bfs0);
+    printf("    bfs1: %d\n", ecc2_reg.bfs1);
+    printf("    bfs2: %d\n", ecc2_reg.bfs2);
+    printf("    bfs3: %d\n", ecc2_reg.bfs3);
+  }
+  else {
+    printf("Error reading ECC2 register: %d\n", status);
+  }
+
+  // Get ECC3 register
+  nand_max_bit_flip_count_reg_t ecc3_reg;
+  status = nand_get_feature_reg(user_data,
+		  FEATURE_REG_ECC3, &ecc3_reg.raw);
+  if (status == NAND_NO_ERR) {
+    printf("  ECC1 register (%02x): 0x%x\n",
+    		FEATURE_REG_ECC3, ecc3_reg.raw);
+    printf("    mfs: %d\n", ecc3_reg.mfs);
+    printf("    mbf: %d\n", ecc3_reg.mbf);
+  }
+  else {
+    printf("Error reading ECC3 register: %d\n", status);
+  }
+
+  // Get ECC4 register
+  nand_bit_flip_count_sec01_reg_t ecc4_reg;
+  status = nand_get_feature_reg(user_data,
+		  FEATURE_REG_ECC4, &ecc4_reg.raw);
+  if (status == NAND_NO_ERR) {
+    printf("  ECC1 register (%02x): 0x%x\n",
+    		FEATURE_REG_ECC4, ecc4_reg.raw);
+    printf("    bfr_sec0: %d\n", ecc4_reg.bfr_sec0);
+    printf("    bfr_sec1: %d\n", ecc4_reg.bfr_sec1);
+  }
+  else {
+    printf("Error reading ECC4 register: %d\n", status);
+  }
+
+  // Get ECC5 register
+  nand_bit_flip_count_sec23_reg_t ecc5_reg;
+  status = nand_get_feature_reg(user_data,
+		  FEATURE_REG_ECC5, &ecc5_reg.raw);
+  if (status == NAND_NO_ERR) {
+    printf("  ECC1 register (%02x): 0x%x\n",
+    		FEATURE_REG_ECC5, ecc5_reg.raw);
+    printf("    bfr_sec2: %d\n", ecc5_reg.bfr_sec2);
+    printf("    bfr_sec3: %d\n", ecc5_reg.bfr_sec3);
+  }
+  else {
+    printf("Error reading ECC5 register: %d\n", status);
   }
 
   return status;
 }
+
+
+/** Evaluate the status register ECC bits for data safety analysis. */
+int
+nand_ecc_result(uint8_t status_register_byte)
+{
+  int result;
+  uint32_t ecc_bits_corrected = ecc_bits_map(status_register_byte);
+//  printf("nand_ecc_result: ecc_bits_corrected: %lu\n", ecc_bits_corrected);
+
+  if (ecc_bits_corrected == 0) {
+    result = NAND_NO_ERR;  // Clean data :)
+  }
+  else if (ecc_bits_corrected <= NAND_ECC_SAFE_CORRECTED_BIT_COUNT) {
+    result = NAND_NO_ERR;  // Fib to minimize bad block flagging
+  }
+  else if (ecc_bits_corrected <= NAND_ECC_MAX_CORRECTED_BIT_COUNT) {
+    result = NAND_ECC_OK; // The end draws nigh...
+  }
+  else {
+    result = NAND_ECC_FAIL;      // Bad data :(
+  }
+
+  return result;
+}
+
+/** Read and evaluate the status register ECC bits for data safety analysis. */
+int nand_ecc_bits(nand_user_data_t *user_data, uint32_t* num_bits)
+{
+  nand_status_reg_t status_reg;
+  // Read the status register
+  int status = nand_get_status_reg(user_data, &status_reg);
+  if (status == 0) {
+    // Decode the status register, and return
+    // the actual number of ECC corrected bits.
+    *num_bits = ecc_bits_map(status_reg.raw);
+  }
+  return status;
+}
+
 

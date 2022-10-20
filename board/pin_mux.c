@@ -115,10 +115,8 @@ BOARD_InitPins:
   - {pin_num: G3, peripheral: GPIO, signal: 'PIO0, 13', pin_signal: PIO0_13/FC1_SSEL3/SCT0_GPI3/SCT0_OUT3/CTIMER0_MAT1/SEC_PIO0_13/ADC0_9, direction: INPUT}
   - {pin_num: T9, peripheral: FLEXSPI, signal: FLEXSPI_A_SCLK, pin_signal: PIO1_18/FLEXSPI0A_SCLK/SCT0_GPI0/CTIMER3_MAT3}
   - {pin_num: T4, peripheral: FLEXSPI, signal: FLEXSPI_A_SS0_B, pin_signal: PIO1_19/FLEXSPI0A_SS0_N/SCT0_OUT0/CTIMER4_MAT0}
-  - {pin_num: T5, peripheral: FLEXSPI, signal: FLEXSPI_A_DATA0, pin_signal: PIO1_20/FLEXSPI0A_DATA0/SCT0_GPI1/CTIMER4_MAT1}
-  - {pin_num: U5, peripheral: FLEXSPI, signal: FLEXSPI_A_DATA1, pin_signal: PIO1_21/FLEXSPI0A_DATA1/SCT0_OUT1/CTIMER4_MAT2}
-  - {pin_num: P6, peripheral: FLEXSPI, signal: FLEXSPI_A_DATA2, pin_signal: PIO1_22/FLEXSPI0A_DATA2/SCT0_GPI2/CTIMER4_MAT3}
-  - {pin_num: P7, peripheral: FLEXSPI, signal: FLEXSPI_A_DATA3, pin_signal: PIO1_23/FLEXSPI0A_DATA3/SCT0_OUT2/CTIMER_INP8}
+  - {pin_num: P6, peripheral: FLEXSPI, signal: FLEXSPI_A_DATA2, pin_signal: PIO1_22/FLEXSPI0A_DATA2/SCT0_GPI2/CTIMER4_MAT3, ibena: enabled}
+  - {pin_num: P7, peripheral: FLEXSPI, signal: FLEXSPI_A_DATA3, pin_signal: PIO1_23/FLEXSPI0A_DATA3/SCT0_OUT2/CTIMER_INP8, ibena: enabled}
   - {pin_num: G3, peripheral: PINT, signal: 'PINT, 0', pin_signal: PIO0_13/FC1_SSEL3/SCT0_GPI3/SCT0_OUT3/CTIMER0_MAT1/SEC_PIO0_13/ADC0_9, identifier: ''}
   - {pin_num: E1, peripheral: GPIO, signal: 'PIO0, 6', pin_signal: PIO0_6/FC0_SSEL3/SCT0_GPI1/SCT0_OUT1/CTIMER0_MAT0/SEC_PIO0_6/ADC0_8}
   - {pin_num: A3, peripheral: GPIO, signal: 'PIO0, 14', pin_signal: PIO0_14/FC2_SCK/SCT0_GPI0/SCT0_OUT0/CTIMER2_MAT0/I2S_BRIDGE_CLK_IN/SEC_PIO0_14, direction: OUTPUT}
@@ -175,6 +173,8 @@ BOARD_InitPins:
     pupdsel: pullUp}
   - {pin_num: B3, peripheral: GPIO, signal: 'PIO0, 27', pin_signal: PIO0_27/FC3_SSEL3/SCT0_GPI7/SCT0_OUT7/CTIMER0_MAT3/SEC_PIO0_27/ADC0_11, direction: INPUT, pupdena: enabled,
     pupdsel: pullUp}
+  - {pin_num: T5, peripheral: FLEXSPI, signal: FLEXSPI_A_DATA0, pin_signal: PIO1_20/FLEXSPI0A_DATA0/SCT0_GPI1/CTIMER4_MAT1, ibena: enabled}
+  - {pin_num: U5, peripheral: FLEXSPI, signal: FLEXSPI_A_DATA1, pin_signal: PIO1_21/FLEXSPI0A_DATA1/SCT0_OUT1/CTIMER4_MAT2, ibena: enabled}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -1045,8 +1045,8 @@ void BOARD_InitPins(void)
                                          IOPCTL_PIO_PUPD_DI |
                                          /* Enable pull-down function */
                                          IOPCTL_PIO_PULLDOWN_EN |
-                                         /* Disable input buffer function */
-                                         IOPCTL_PIO_INBUF_DI |
+                                         /* Enables input buffer function */
+                                         IOPCTL_PIO_INBUF_EN |
                                          /* Normal mode */
                                          IOPCTL_PIO_SLEW_RATE_NORMAL |
                                          /* Normal drive */
@@ -1066,8 +1066,8 @@ void BOARD_InitPins(void)
                                          IOPCTL_PIO_PUPD_DI |
                                          /* Enable pull-down function */
                                          IOPCTL_PIO_PULLDOWN_EN |
-                                         /* Disable input buffer function */
-                                         IOPCTL_PIO_INBUF_DI |
+                                         /* Enables input buffer function */
+                                         IOPCTL_PIO_INBUF_EN |
                                          /* Normal mode */
                                          IOPCTL_PIO_SLEW_RATE_NORMAL |
                                          /* Normal drive */
@@ -1087,8 +1087,8 @@ void BOARD_InitPins(void)
                                          IOPCTL_PIO_PUPD_DI |
                                          /* Enable pull-down function */
                                          IOPCTL_PIO_PULLDOWN_EN |
-                                         /* Disable input buffer function */
-                                         IOPCTL_PIO_INBUF_DI |
+                                         /* Enables input buffer function */
+                                         IOPCTL_PIO_INBUF_EN |
                                          /* Normal mode */
                                          IOPCTL_PIO_SLEW_RATE_NORMAL |
                                          /* Normal drive */
@@ -1108,8 +1108,8 @@ void BOARD_InitPins(void)
                                          IOPCTL_PIO_PUPD_DI |
                                          /* Enable pull-down function */
                                          IOPCTL_PIO_PULLDOWN_EN |
-                                         /* Disable input buffer function */
-                                         IOPCTL_PIO_INBUF_DI |
+                                         /* Enables input buffer function */
+                                         IOPCTL_PIO_INBUF_EN |
                                          /* Normal mode */
                                          IOPCTL_PIO_SLEW_RATE_NORMAL |
                                          /* Normal drive */
