@@ -89,7 +89,7 @@ outputs:
 - {id: FXCOM1_clock.outFreq, value: 16 MHz}
 - {id: FXCOM2_clock.outFreq, value: 16 MHz}
 - {id: FXCOM3_clock.outFreq, value: 16 MHz}
-- {id: FXCOM4_clock.outFreq, value: 16 MHz}
+- {id: FXCOM4_clock.outFreq, value: 27648/9709 MHz}
 - {id: FXCOM5_clock.outFreq, value: 16 MHz}
 - {id: LPOSC1M_clock.outFreq, value: 1 MHz}
 - {id: OSTIMER_clock.outFreq, value: 1 MHz}
@@ -105,12 +105,13 @@ settings:
 - {id: SYSCON.FC1FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC2FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC3FCLKSEL.sel, value: SYSCON.sfro}
-- {id: SYSCON.FC4FCLKSEL.sel, value: SYSCON.sfro}
+- {id: SYSCON.FC4FCLKSEL.sel, value: SYSCON.FRG4}
 - {id: SYSCON.FC5FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FLEXSPIFCLKDIV.scale, value: '9', locked: true}
 - {id: SYSCON.FLEXSPIFCLKSEL.sel, value: SYSCON.MAINCLKSELB}
-- {id: SYSCON.FRG4_DIV.scale, value: '511', locked: true}
-- {id: SYSCON.FRG4_MUL.scale, value: '256', locked: true}
+- {id: SYSCON.FRG4CLKSEL.sel, value: SYSCON.FRGPLLCLKDIV}
+- {id: SYSCON.FRG4_DIV.scale, value: '511'}
+- {id: SYSCON.FRGPLLCLKDIV.scale, value: '88', locked: true}
 - {id: SYSCON.MAINCLKSELB.sel, value: SYSCON.MAINPLLCLKDIV}
 - {id: SYSCON.MAINPLLCLKDIV.scale, value: '1', locked: true}
 - {id: SYSCON.PLL0.denom, value: '1'}
@@ -142,6 +143,13 @@ const clock_sys_pll_config_t g_sysPllConfig_BOARD_BootClockRUN =
         .numerator = 0,                           /* Numerator of the SYSPLL0 fractional loop divider isnull */
         .denominator = 1,                         /* Denominator of the SYSPLL0 fractional loop divider isnull */
         .sys_pll_mult = kCLOCK_SysPllMult22       /* Divide by 22 */
+    };
+const clock_frg_clk_config_t g_frg4Config_BOARD_BootClockRUN =
+    {
+        .num = 4,
+        .sfg_clock_src = kCLOCK_FrgPllDiv,
+        .divider = 255U,
+        .mult = 255
     };
 /*******************************************************************************
  * Code for BOARD_BootClockRUN configuration
@@ -183,17 +191,19 @@ void BOARD_BootClockRUN(void)
 
     CLOCK_SetClkDiv(kCLOCK_DivSysCpuAhbClk, 2U);         /* Set SYSCPUAHBCLKDIV divider to value 2 */
 
+    CLOCK_SetFRGClock(&g_frg4Config_BOARD_BootClockRUN);    /* Setup FRG4 clock */
+
     /* Set up clock selectors - Attach clocks to the peripheries */
     CLOCK_AttachClk(kMAIN_PLL_to_MAIN_CLK);                 /* Switch MAIN_CLK to MAIN_PLL */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM0);                 /* Switch FLEXCOMM0 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM1);                 /* Switch FLEXCOMM1 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM2);                 /* Switch FLEXCOMM2 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM3);                 /* Switch FLEXCOMM3 to SFRO */
-    CLOCK_AttachClk(kSFRO_to_FLEXCOMM4);                 /* Switch FLEXCOMM4 to SFRO */
+    CLOCK_AttachClk(kFRG_to_FLEXCOMM4);                 /* Switch FLEXCOMM4 to FRG */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM5);                 /* Switch FLEXCOMM5 to SFRO */
 
     /* Set up dividers */
-    CLOCK_SetClkDiv(kCLOCK_DivPllFrgClk, 1U);         /* Set FRGPLLCLKDIV divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivPllFrgClk, 88U);         /* Set FRGPLLCLKDIV divider to value 88 */
 
     /* Call weak function BOARD_SetFlexspiClock() to set user configured clock source/divider for FLEXSPI. */
     BOARD_SetFlexspiClock(0U, 9U);

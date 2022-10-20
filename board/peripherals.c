@@ -70,21 +70,25 @@ instance:
     - dma_table:
       - 0: []
       - 1: []
+      - 2: []
     - dma_channels: []
-    - init_interrupt: 'false'
+    - init_interrupt: 'true'
     - dma_interrupt:
       - IRQn: 'DMA0_IRQn'
       - enable_interrrupt: 'enabled'
-      - enable_priority: 'false'
-      - priority: '0'
-      - enable_custom_name: 'false'
-    - quick_selection: 'default'
+      - enable_priority: 'true'
+      - priority: '2'
+      - enable_custom_name: 'true'
+      - handler_custom_name: 'DMA0_DriverIRQHandler'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
-/* Empty initialization function (commented out)
 static void DMA0_init(void) {
-} */
+  /* Interrupt vector DMA0_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(DMA0_IRQN, DMA0_IRQ_PRIORITY);
+  /* Enable interrupt DMA0_IRQn request in the NVIC. */
+  EnableIRQ(DMA0_IRQN);
+}
 
 /***********************************************************************************************************************
  * NVIC initialization code
@@ -108,6 +112,7 @@ instance:
       - 3: []
       - 4: []
       - 5: []
+      - 6: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -189,9 +194,8 @@ instance:
       - timeout_Ms: '35'
     - interrupt_priority:
       - IRQn: 'FLEXCOMM3_IRQn'
-      - enable_priority: 'false'
-      - priority: '0'
-    - quick_selection: 'QS_I2C_Master'
+      - enable_priority: 'true'
+      - priority: '5'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 i2c_rtos_handle_t FC3_SENSOR_I2C_rtosHandle;
@@ -205,6 +209,8 @@ const i2c_master_config_t FC3_SENSOR_I2C_config = {
 static void FC3_SENSOR_I2C_init(void) {
   /* Initialization function */
   I2C_RTOS_Init(&FC3_SENSOR_I2C_rtosHandle, FC3_SENSOR_I2C_PERIPHERAL, &FC3_SENSOR_I2C_config, FC3_SENSOR_I2C_CLOCK_SOURCE);
+  /* Interrupt vector FLEXCOMM3_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(FC3_SENSOR_I2C_FLEXCOMM_IRQN, FC3_SENSOR_I2C_FLEXCOMM_IRQ_PRIORITY);
 }
 
 /***********************************************************************************************************************
@@ -602,6 +608,90 @@ static void SCT0_init(void) {
 }
 
 /***********************************************************************************************************************
+ * FC4_AUDIO_I2S initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'FC4_AUDIO_I2S'
+- type: 'flexcomm_i2s'
+- mode: 'dma'
+- custom_name_enabled: 'true'
+- type_id: 'flexcomm_i2s_d821d1d3dded76c4d4194ae52cbf73a5'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'FLEXCOMM4'
+- config_sets:
+  - fsl_i2s:
+    - i2s_config:
+      - usage: 'playback'
+      - masterSlave: 'kI2S_MasterSlaveNormalMaster'
+      - sckPolM: 'false'
+      - wsPolM: 'false'
+      - clockConfig:
+        - sampleRate_Hz: 'kSAI_SampleRate22050Hz'
+        - clockSource: 'FXCOMFunctionClock'
+        - clockSourceFreq: 'BOARD_BootClockRUN'
+        - masterClockDependency: 'false'
+      - mode: 'kI2S_ModeI2sClassic'
+      - dataLengthM: '16'
+      - stereo: 'kSAI_Stereo'
+      - i2s_mono_palcement: 'kSAI_Mono_Left'
+      - positionM: '0'
+      - secondary_channels_array: []
+      - frameLengthM: '128'
+      - rightLow: 'false'
+      - leftJust: 'false'
+      - watermarkM_Tx: 'ki2s_TxFifo4'
+      - txEmptyZeroTx: 'true'
+      - pack48: 'false'
+  - dmaCfg:
+    - dma_channels:
+      - dma_tx_channel:
+        - DMA_source: 'kDma0RequestFlexcomm4Tx'
+        - init_channel_priority: 'true'
+        - dma_priority: 'kDMA_ChannelPriority5'
+        - enable_custom_name: 'false'
+    - i2s_dma_handle:
+      - enable_custom_name: 'false'
+      - init_callback: 'true'
+      - callback_fcn: 'audio_i2s_isr'
+      - user_data: ''
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+/* Flexcomm I2S configuration */
+const i2s_config_t FC4_AUDIO_I2S_config = {
+  .masterSlave = kI2S_MasterSlaveNormalMaster,
+  .mode = kI2S_ModeI2sClassic,
+  .rightLow = false,
+  .leftJust = false,
+  .sckPol = false,
+  .wsPol = false,
+  .divider = 1,
+  .oneChannel = false,
+  .dataLength = 16,
+  .frameLength = 128,
+  .position = 0,
+  .watermark = 4,
+  .txEmptyZero = true,
+  .pack48 = false
+};
+dma_handle_t FC4_AUDIO_I2S_TX_Handle;
+i2s_dma_handle_t FC4_AUDIO_I2S_Tx_DMA_Handle;
+
+static void FC4_AUDIO_I2S_init(void) {
+  /* Flexcomm I2S initialization */
+  I2S_TxInit(FC4_AUDIO_I2S_PERIPHERAL, &FC4_AUDIO_I2S_config);
+  /* Enable the DMA 9 channel in the DMA */
+  DMA_EnableChannel(FC4_AUDIO_I2S_TX_DMA_BASEADDR, FC4_AUDIO_I2S_TX_DMA_CHANNEL);
+  /* Set the DMA 9 channel priority */
+  DMA_SetChannelPriority(FC4_AUDIO_I2S_TX_DMA_BASEADDR, FC4_AUDIO_I2S_TX_DMA_CHANNEL, kDMA_ChannelPriority5);
+  /* Create the DMA FC4_AUDIO_I2S_TX_Handle handle */
+  DMA_CreateHandle(&FC4_AUDIO_I2S_TX_Handle, FC4_AUDIO_I2S_TX_DMA_BASEADDR, FC4_AUDIO_I2S_TX_DMA_CHANNEL);
+  /* Create the I2S DMA handle */
+  I2S_TxTransferCreateHandleDMA(FC4_AUDIO_I2S_PERIPHERAL, &FC4_AUDIO_I2S_Tx_DMA_Handle, &FC4_AUDIO_I2S_TX_Handle, audio_i2s_isr, NULL);
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 void BOARD_InitPeripherals(void)
@@ -610,6 +700,7 @@ void BOARD_InitPeripherals(void)
   DMA_Init(DMA0_DMA_BASEADDR);
 
   /* Initialize components */
+  DMA0_init();
   FC2_BATT_I2C_init();
   FC3_SENSOR_I2C_init();
   FC5_DEBUG_UART_init();
@@ -617,6 +708,7 @@ void BOARD_InitPeripherals(void)
   FC0_BLE_UART_init();
   FC1_EEG_SPI_init();
   SCT0_init();
+  FC4_AUDIO_I2S_init();
 }
 
 /***********************************************************************************************************************
