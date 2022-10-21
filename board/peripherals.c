@@ -70,14 +70,16 @@ instance:
     - dma_table:
       - 0: []
       - 1: []
+      - 2: []
     - dma_channels: []
     - init_interrupt: 'true'
     - dma_interrupt:
       - IRQn: 'DMA0_IRQn'
       - enable_interrrupt: 'enabled'
       - enable_priority: 'true'
-      - priority: '0'
-      - enable_custom_name: 'false'
+      - priority: '2'
+      - enable_custom_name: 'true'
+      - handler_custom_name: 'DMA0_DriverIRQHandler'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
@@ -146,6 +148,8 @@ instance:
       - 3: []
       - 4: []
       - 5: []
+      - 6: []
+      - 7: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -227,9 +231,8 @@ instance:
       - timeout_Ms: '35'
     - interrupt_priority:
       - IRQn: 'FLEXCOMM3_IRQn'
-      - enable_priority: 'false'
-      - priority: '0'
-    - quick_selection: 'QS_I2C_Master'
+      - enable_priority: 'true'
+      - priority: '5'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 i2c_rtos_handle_t FC3_SENSOR_I2C_rtosHandle;
@@ -243,6 +246,8 @@ const i2c_master_config_t FC3_SENSOR_I2C_config = {
 static void FC3_SENSOR_I2C_init(void) {
   /* Initialization function */
   I2C_RTOS_Init(&FC3_SENSOR_I2C_rtosHandle, FC3_SENSOR_I2C_PERIPHERAL, &FC3_SENSOR_I2C_config, FC3_SENSOR_I2C_CLOCK_SOURCE);
+  /* Interrupt vector FLEXCOMM3_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(FC3_SENSOR_I2C_FLEXCOMM_IRQN, FC3_SENSOR_I2C_FLEXCOMM_IRQ_PRIORITY);
 }
 
 /***********************************************************************************************************************
@@ -269,8 +274,8 @@ instance:
       - buffer_size: '256'
     - interrupt_priority:
       - IRQn: 'FLEXCOMM5_IRQn'
-      - enable_priority: 'false'
-      - priority: '0'
+      - enable_priority: 'true'
+      - priority: '5'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 usart_rtos_handle_t FC5_DEBUG_UART_rtos_handle;
@@ -290,6 +295,8 @@ static void FC5_DEBUG_UART_init(void) {
   FC5_DEBUG_UART_rtos_config.srcclk = FC5_DEBUG_UART_CLOCK_SOURCE;
   /* USART rtos initialization */
   USART_RTOS_Init(&FC5_DEBUG_UART_rtos_handle, &FC5_DEBUG_UART_usart_handle, &FC5_DEBUG_UART_rtos_config);
+  /* Interrupt vector FLEXCOMM5_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(FC5_DEBUG_UART_IRQN, FC5_DEBUG_UART_IRQ_PRIORITY);
 }
 
 /***********************************************************************************************************************
@@ -358,12 +365,24 @@ instance:
           - IRQn: 'PIN_INT6_IRQn'
           - enable_priority: 'false'
           - priority: '0'
+      - 5:
+        - interrupt_id: 'INT_0'
+        - interrupt_selection: 'PINT.0'
+        - interrupt_type: 'kPINT_PinIntEnableFallEdge'
+        - callback_function: 'eeg_drdy_pint_isr'
+        - enable_callback: 'true'
+        - interrupt:
+          - IRQn: 'PIN_INT0_IRQn'
+          - enable_priority: 'true'
+          - priority: '3'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
 static void PINT_init(void) {
   /* PINT initiation  */
   PINT_Init(PINT_PERIPHERAL);
+  /* Interrupt vector PIN_INT0_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(PINT_PINT_0_IRQN, PINT_PINT_0_IRQ_PRIORITY);
   /* PINT PINT.1 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_1, kPINT_PinIntEnableNone, charger_pint_isr);
   /* PINT PINT.3 configuration */
@@ -374,6 +393,10 @@ static void PINT_init(void) {
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_5, kPINT_PinIntEnableNone, user_button1_isr);
   /* PINT PINT.6 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_6, kPINT_PinIntEnableNone, user_button2_isr);
+  /* PINT PINT.0 configuration */
+  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_0, kPINT_PinIntEnableFallEdge, eeg_drdy_pint_isr);
+  /* Enable PINT PINT.0 callback */
+  PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt0);
 }
 
 /***********************************************************************************************************************
@@ -465,14 +488,14 @@ instance:
       - enable_rx_dma_channel: 'true'
       - dma_rx_channel:
         - DMA_source: 'kDma0RequestFlexcomm1Rx'
-        - init_channel_priority: 'false'
-        - dma_priority: 'kDMA_ChannelPriority0'
+        - init_channel_priority: 'true'
+        - dma_priority: 'kDMA_ChannelPriority3'
         - enable_custom_name: 'false'
       - enable_tx_dma_channel: 'true'
       - dma_tx_channel:
         - DMA_source: 'kDma0RequestFlexcomm1Tx'
-        - init_channel_priority: 'false'
-        - dma_priority: 'kDMA_ChannelPriority0'
+        - init_channel_priority: 'true'
+        - dma_priority: 'kDMA_ChannelPriority4'
         - enable_custom_name: 'false'
     - spi_dma_handle:
       - enable_custom_name: 'false'
@@ -509,14 +532,202 @@ static void FC1_EEG_SPI_init(void) {
   SPI_MasterInit(FC1_EEG_SPI_PERIPHERAL, &FC1_EEG_SPI_config, FC1_EEG_SPI_CLOCK_SOURCE);
   /* Enable the DMA 2 channel in the DMA */
   DMA_EnableChannel(FC1_EEG_SPI_RX_DMA_BASEADDR, FC1_EEG_SPI_RX_DMA_CHANNEL);
+  /* Set the DMA 2 channel priority */
+  DMA_SetChannelPriority(FC1_EEG_SPI_RX_DMA_BASEADDR, FC1_EEG_SPI_RX_DMA_CHANNEL, kDMA_ChannelPriority3);
   /* Create the DMA FC1_EEG_SPI_RX_Handle handle */
   DMA_CreateHandle(&FC1_EEG_SPI_RX_Handle, FC1_EEG_SPI_RX_DMA_BASEADDR, FC1_EEG_SPI_RX_DMA_CHANNEL);
   /* Enable the DMA 3 channel in the DMA */
   DMA_EnableChannel(FC1_EEG_SPI_TX_DMA_BASEADDR, FC1_EEG_SPI_TX_DMA_CHANNEL);
+  /* Set the DMA 3 channel priority */
+  DMA_SetChannelPriority(FC1_EEG_SPI_TX_DMA_BASEADDR, FC1_EEG_SPI_TX_DMA_CHANNEL, kDMA_ChannelPriority4);
   /* Create the DMA FC1_EEG_SPI_TX_Handle handle */
   DMA_CreateHandle(&FC1_EEG_SPI_TX_Handle, FC1_EEG_SPI_TX_DMA_BASEADDR, FC1_EEG_SPI_TX_DMA_CHANNEL);
   /* Create the SPI DMA handle */
   SPI_MasterTransferCreateHandleDMA(FC1_EEG_SPI_PERIPHERAL, &FC1_EEG_SPI_DMA_Handle, eeg_dma_rx_complete_isr, NULL, &FC1_EEG_SPI_TX_Handle, &FC1_EEG_SPI_RX_Handle);
+}
+
+/***********************************************************************************************************************
+ * SCT0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'SCT0'
+- type: 'sctimer'
+- mode: 'basic'
+- custom_name_enabled: 'false'
+- type_id: 'sctimer_7973000102117ff9c4fa4742aaf3ccb0'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'SCT0'
+- config_sets:
+  - main:
+    - config:
+      - clockMode: 'kSCTIMER_System_ClockMode'
+      - clockSource: 'SynchronousFunctionClock'
+      - clockSourceFreq: 'GetFreq'
+      - SCTInputClockSourceFreq: 'custom:0'
+      - clockSelect: 'kSCTIMER_Clock_On_Rise_Input_0'
+      - enableCounterUnify: 'true'
+      - enableBidirection_l: 'false'
+      - enableBidirection_h: 'false'
+      - prescale_l: '1'
+      - prescale_h: '1'
+      - outInitState: ''
+      - inputsync: ''
+    - enableIRQ: 'true'
+    - interrupt:
+      - IRQn: 'SCT0_IRQn'
+      - enable_interrrupt: 'enabled'
+      - enable_priority: 'true'
+      - priority: '2'
+      - enable_custom_name: 'false'
+    - enableLTimer: 'false'
+    - enableHTimer: 'false'
+    - pwms:
+      - 0:
+        - output: 'kSCTIMER_Out_7'
+        - level: 'kSCTIMER_LowTrue'
+        - dutyCyclePercent: '1'
+      - 1:
+        - output: 'kSCTIMER_Out_6'
+        - level: 'kSCTIMER_LowTrue'
+        - dutyCyclePercent: '1'
+      - 2:
+        - output: 'kSCTIMER_Out_2'
+        - level: 'kSCTIMER_LowTrue'
+        - dutyCyclePercent: '1'
+    - pwmMode: 'kSCTIMER_EdgeAlignedPwm'
+    - pwmFrequency: '25000'
+    - events: []
+    - states:
+      - 0:
+        - pwms: 'pwm0 pwm1 pwm2'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const sctimer_config_t SCT0_initConfig = {
+  .enableCounterUnify = true,
+  .clockMode = kSCTIMER_System_ClockMode,
+  .clockSelect = kSCTIMER_Clock_On_Rise_Input_0,
+  .enableBidirection_l = false,
+  .enableBidirection_h = false,
+  .prescale_l = 0U,
+  .prescale_h = 0U,
+  .outInitState = 0U,
+  .inputsync = 0U
+};
+const sctimer_pwm_signal_param_t SCT0_pwmSignalsConfig[3] = {
+  {
+    .output = kSCTIMER_Out_7,
+    .level = kSCTIMER_LowTrue,
+    .dutyCyclePercent = 1U
+  },
+  {
+    .output = kSCTIMER_Out_6,
+    .level = kSCTIMER_LowTrue,
+    .dutyCyclePercent = 1U
+  },
+  {
+    .output = kSCTIMER_Out_2,
+    .level = kSCTIMER_LowTrue,
+    .dutyCyclePercent = 1U
+  }
+};
+uint32_t SCT0_pwmEvent[3];
+
+static void SCT0_init(void) {
+  SCTIMER_Init(SCT0_PERIPHERAL, &SCT0_initConfig);
+  /* Initialization of state 0 */
+  SCTIMER_SetupPwm(SCT0_PERIPHERAL, &SCT0_pwmSignalsConfig[0], kSCTIMER_EdgeAlignedPwm, 25000U, SCT0_CLOCK_FREQ, &SCT0_pwmEvent[0]);
+  SCTIMER_SetupPwm(SCT0_PERIPHERAL, &SCT0_pwmSignalsConfig[1], kSCTIMER_EdgeAlignedPwm, 25000U, SCT0_CLOCK_FREQ, &SCT0_pwmEvent[1]);
+  SCTIMER_SetupPwm(SCT0_PERIPHERAL, &SCT0_pwmSignalsConfig[2], kSCTIMER_EdgeAlignedPwm, 25000U, SCT0_CLOCK_FREQ, &SCT0_pwmEvent[2]);
+  /* Interrupt vector SCT0_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(SCT0_IRQN, SCT0_IRQ_PRIORITY);
+  /* Enable interrupt SCT0_IRQn request in the NVIC. */
+  EnableIRQ(SCT0_IRQN);
+}
+
+/***********************************************************************************************************************
+ * FC4_AUDIO_I2S initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'FC4_AUDIO_I2S'
+- type: 'flexcomm_i2s'
+- mode: 'dma'
+- custom_name_enabled: 'true'
+- type_id: 'flexcomm_i2s_d821d1d3dded76c4d4194ae52cbf73a5'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'FLEXCOMM4'
+- config_sets:
+  - fsl_i2s:
+    - i2s_config:
+      - usage: 'playback'
+      - masterSlave: 'kI2S_MasterSlaveNormalMaster'
+      - sckPolM: 'false'
+      - wsPolM: 'false'
+      - clockConfig:
+        - sampleRate_Hz: 'kSAI_SampleRate22050Hz'
+        - clockSource: 'FXCOMFunctionClock'
+        - clockSourceFreq: 'BOARD_BootClockRUN'
+        - masterClockDependency: 'false'
+      - mode: 'kI2S_ModeI2sClassic'
+      - dataLengthM: '16'
+      - stereo: 'kSAI_Stereo'
+      - i2s_mono_palcement: 'kSAI_Mono_Left'
+      - positionM: '0'
+      - secondary_channels_array: []
+      - frameLengthM: '128'
+      - rightLow: 'false'
+      - leftJust: 'false'
+      - watermarkM_Tx: 'ki2s_TxFifo4'
+      - txEmptyZeroTx: 'true'
+      - pack48: 'false'
+  - dmaCfg:
+    - dma_channels:
+      - dma_tx_channel:
+        - DMA_source: 'kDma0RequestFlexcomm4Tx'
+        - init_channel_priority: 'true'
+        - dma_priority: 'kDMA_ChannelPriority5'
+        - enable_custom_name: 'false'
+    - i2s_dma_handle:
+      - enable_custom_name: 'false'
+      - init_callback: 'true'
+      - callback_fcn: 'audio_i2s_isr'
+      - user_data: ''
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+/* Flexcomm I2S configuration */
+const i2s_config_t FC4_AUDIO_I2S_config = {
+  .masterSlave = kI2S_MasterSlaveNormalMaster,
+  .mode = kI2S_ModeI2sClassic,
+  .rightLow = false,
+  .leftJust = false,
+  .sckPol = false,
+  .wsPol = false,
+  .divider = 1,
+  .oneChannel = false,
+  .dataLength = 16,
+  .frameLength = 128,
+  .position = 0,
+  .watermark = 4,
+  .txEmptyZero = true,
+  .pack48 = false
+};
+dma_handle_t FC4_AUDIO_I2S_TX_Handle;
+i2s_dma_handle_t FC4_AUDIO_I2S_Tx_DMA_Handle;
+
+static void FC4_AUDIO_I2S_init(void) {
+  /* Flexcomm I2S initialization */
+  I2S_TxInit(FC4_AUDIO_I2S_PERIPHERAL, &FC4_AUDIO_I2S_config);
+  /* Enable the DMA 9 channel in the DMA */
+  DMA_EnableChannel(FC4_AUDIO_I2S_TX_DMA_BASEADDR, FC4_AUDIO_I2S_TX_DMA_CHANNEL);
+  /* Set the DMA 9 channel priority */
+  DMA_SetChannelPriority(FC4_AUDIO_I2S_TX_DMA_BASEADDR, FC4_AUDIO_I2S_TX_DMA_CHANNEL, kDMA_ChannelPriority5);
+  /* Create the DMA FC4_AUDIO_I2S_TX_Handle handle */
+  DMA_CreateHandle(&FC4_AUDIO_I2S_TX_Handle, FC4_AUDIO_I2S_TX_DMA_BASEADDR, FC4_AUDIO_I2S_TX_DMA_CHANNEL);
+  /* Create the I2S DMA handle */
+  I2S_TxTransferCreateHandleDMA(FC4_AUDIO_I2S_PERIPHERAL, &FC4_AUDIO_I2S_Tx_DMA_Handle, &FC4_AUDIO_I2S_TX_Handle, audio_i2s_isr, NULL);
 }
 
 /***********************************************************************************************************************
@@ -556,7 +767,7 @@ instance:
             - priority: '0'
             - masterIndex: '0'
             - bufferSize: '256'
-            - enablePrefetch: 'false'
+            - enablePrefetch: 'true'
           - 1:
             - priority: '1'
             - masterIndex: '0'
@@ -671,7 +882,7 @@ const flexspi_config_t NAND_FLEXSPI_config = {
         .priority = 0,
         .masterIndex = 0U,
         .bufferSize = 256U,
-        .enablePrefetch = false
+        .enablePrefetch = true
       },
       {
         .priority = 1,
@@ -724,7 +935,7 @@ const flexspi_config_t NAND_FLEXSPI_config = {
   }
 };
 flexspi_device_config_t NAND_FLEXSPI_config_NAND = {
-  .flexspiRootClk = 6000000UL,
+  .flexspiRootClk = 55578900UL,
   .isSck2Enabled = false,
   .flashSize = 0x80000UL,
   .CSIntervalUnit = kFLEXSPI_CsIntervalUnit1SckCycle,
@@ -794,6 +1005,8 @@ void BOARD_InitPeripherals(void)
   PINT_init();
   FC0_BLE_UART_init();
   FC1_EEG_SPI_init();
+  SCT0_init();
+  FC4_AUDIO_I2S_init();
   NAND_FLEXSPI_init();
 }
 

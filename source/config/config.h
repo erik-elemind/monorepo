@@ -78,9 +78,10 @@
 // 1U - enable the task, ble_uart_send_buf() pushes messages onto stream buf
 #define ENABLE_BLE_UART_SEND_TASK (0U)
 
+#define ENABLE_APP_TASK (0U) // TODO: Reenable when app task is thoughtfully added
 #define ENABLE_AUDIO_TASK (1U)
 #define ENABLE_AUDIO_MP3_TASK (0U) //(0U)
-#define ENABLE_DATA_LOG_TASK (1U)
+#define ENABLE_DATA_LOG_TASK (0U) // TODO: Reenable when data log task is thoughtfully added
 #define ENABLE_EEG_READER_TASK (1U)
 #define ENABLE_EEG_PROCESSOR_TASK (1U)
 #define ENABLE_HRM_TASK (1U)

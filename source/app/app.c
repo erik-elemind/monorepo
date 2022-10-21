@@ -44,6 +44,8 @@
 
 #include "../interpreter/interpreter.h"
 
+#if (defined(ENABLE_APP_TASK) && (ENABLE_APP_TASK > 0U))
+
 #define APP_EVENT_QUEUE_SIZE 10
 #define POWER_GOOD_BATT_THRESHOLD 15
 
@@ -775,3 +777,33 @@ app_task(void *ignored)
 
   }
 }
+
+#else // (defined(ENABLE_APP_TASK) && (ENABLE_APP_TASK > 0U))
+
+void app_pretask_init(void){}
+void app_task(void *ignored){}
+
+void app_event_power_button_down(void){}
+void app_event_power_button_up(void){}
+void app_event_power_button_click(void){}
+void app_event_power_button_double_click(void){}
+void app_event_power_button_long_click(void){}
+void app_event_volup_button_down(void){}
+void app_event_volup_button_up(void){}
+void app_event_volup_button_click(void){}
+void app_event_voldn_button_down(void){}
+void app_event_voldn_button_up(void){}
+void app_event_voldn_button_click(void){}
+void app_event_ble_therapy_start(therapy_type_t therapy){}
+void app_event_ble_activity(void){}
+void app_event_button_activity(void){}
+void app_event_shell_activity(void){}
+void app_event_power_off_timeout(void){}
+void app_event_ble_off_timeout(void){}
+void app_event_charger_plugged(void){}
+void app_event_charger_unplugged(void){}
+void app_event_charge_complete(void){}
+void app_event_charge_fault(void){}
+
+
+#endif // (defined(ENABLE_APP_TASK) && (ENABLE_APP_TASK > 0U))

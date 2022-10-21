@@ -55,7 +55,7 @@ static void
 task_init()
 {
   // Any post-scheduler init goes here.
-  LOGV(TAG, "Task launched. Entering event loop.");
+  LOGV(TAG, "Task launched. Entering event loop.\n\r");
 }
 
 /* RTOS task implementation */
