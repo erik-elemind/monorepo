@@ -20,7 +20,8 @@
 #include "fsl_spi.h"
 #include "fsl_spi_dma.h"
 #include "fsl_sctimer.h"
-#include "fsl_gpio.h"
+#include "fsl_i2s.h"
+#include "fsl_i2s_dma.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -32,6 +33,12 @@ extern "C" {
 /* Definitions for BOARD_InitPeripherals functional group */
 /* Used DMA device. */
 #define DMA0_DMA_BASEADDR DMA0
+/* DMA0 interrupt vector ID (number). */
+#define DMA0_IRQN DMA0_IRQn
+/* DMA0 interrupt vector priority. */
+#define DMA0_IRQ_PRIORITY 2
+/* DMA0 interrupt handler identifier. */
+#define DMA0_DriverIRQHandler DMA0_IRQHandler
 /* BOARD_InitPeripherals defines for FLEXCOMM2 */
 /* Definition of peripheral ID */
 #define FC2_BATT_I2C_PERIPHERAL ((I2C_Type *)FLEXCOMM2)
@@ -48,6 +55,8 @@ extern "C" {
 #define FC3_SENSOR_I2C_CLOCK_SOURCE 16000000UL
 /* FC3_SENSOR_I2C interrupt vector ID (number). */
 #define FC3_SENSOR_I2C_FLEXCOMM_IRQN FLEXCOMM3_IRQn
+/* FC3_SENSOR_I2C interrupt vector priority. */
+#define FC3_SENSOR_I2C_FLEXCOMM_IRQ_PRIORITY 5
 /* Definition of peripheral ID */
 #define FC5_DEBUG_UART_PERIPHERAL ((USART_Type *)FLEXCOMM5)
 /* Definition of the clock source frequency */
@@ -111,8 +120,15 @@ extern "C" {
 #define SCT0_IRQ_PRIORITY 2
 /* SCT0 interrupt handler identifier. */
 #define SCT0_IRQHANDLER SCT0_IRQHandler
+/* BOARD_InitPeripherals defines for FLEXCOMM4 */
 /* Definition of peripheral ID */
-#define GPIO_GPIO GPIO
+#define FC4_AUDIO_I2S_PERIPHERAL ((I2S_Type *)FLEXCOMM4)
+/* Definition of the clock source frequency */
+#define FC4_AUDIO_I2S_CLOCK_SOURCE 2847667UL
+/* Selected DMA channel number. */
+#define FC4_AUDIO_I2S_TX_DMA_CHANNEL 9
+/* Used DMA device. */
+#define FC4_AUDIO_I2S_TX_DMA_BASEADDR DMA0
 
 /***********************************************************************************************************************
  * Global variables
@@ -134,6 +150,9 @@ extern spi_dma_handle_t FC1_EEG_SPI_DMA_Handle;
 extern const sctimer_config_t SCT0_initConfig;
 extern const sctimer_pwm_signal_param_t SCT0_pwmSignalsConfig[3];
 extern uint32_t SCT0_pwmEvent[3];
+extern const i2s_config_t FC4_AUDIO_I2S_config;
+extern dma_handle_t FC4_AUDIO_I2S_TX_Handle;
+extern i2s_dma_handle_t FC4_AUDIO_I2S_Tx_DMA_Handle;
 
 /***********************************************************************************************************************
  * Callback functions
@@ -152,6 +171,8 @@ extern void user_button2_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 extern void eeg_drdy_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 /* SPI DMA callback function for the FC1_EEG_SPI component (init. function BOARD_InitPeripherals)*/
 extern void eeg_dma_rx_complete_isr(SPI_Type *,spi_dma_handle_t *,status_t ,void *);
+/* I2S DMA callback function for the FC4_AUDIO_I2S component (init. function BOARD_InitPeripherals)*/
+extern void audio_i2s_isr(I2S_Type *,i2s_dma_handle_t *,status_t ,void *);
 
 /***********************************************************************************************************************
  * Initialization functions

@@ -10,7 +10,7 @@
 
 #ifndef F_CPU
 #if defined(CPU_MIMXRT685SFVKB)
-#define F_CPU 198000000
+#define F_CPU 250000000
 //#define F_CPU 100000000
 #endif
 #endif

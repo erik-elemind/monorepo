@@ -7,7 +7,7 @@
  */
 
 #ifndef DSP_IMAGE_COPY_TO_RAM
-#define DSP_IMAGE_COPY_TO_RAM 1
+#define DSP_IMAGE_COPY_TO_RAM 0
 #endif
 
 #if DSP_IMAGE_COPY_TO_RAM

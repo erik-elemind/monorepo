@@ -24,6 +24,8 @@
 #include "syscalls.h"   // for shell/shell.c and printf()
 #include "eeg_reader.h"
 #include "eeg_processor.h"
+#include "audio.h"
+#include "wavbuf.h"
 
 /*******************************************************************************
  * Definitions
@@ -66,6 +68,16 @@ StaticTask_t eeg_reader_task_struct;
 StackType_t eeg_processor_task_array[ EEG_PROCESSOR_TASK_STACK_SIZE ];
 StaticTask_t eeg_processor_task_struct;
 
+#define WAVBUF_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*6) // 8
+#define WAVBUF_TASK_PRIORITY 3 // used to be 4
+StackType_t wavbuf_task_array[ WAVBUF_TASK_STACK_SIZE ];
+StaticTask_t wavbuf_task_struct;
+
+#define AUDIO_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*4) // 5
+#define AUDIO_TASK_PRIORITY 3 // used to be 4
+StackType_t audio_task_array[ AUDIO_TASK_STACK_SIZE ];
+StaticTask_t audio_task_struct;
+
 #define SHELL_RECV_TASK_STACK_SIZE                (configMINIMAL_STACK_SIZE*8) // 8
 #define SHELL_RECV_TASK_PRIORITY 1
 StackType_t shell_recv_task_array[ SHELL_RECV_TASK_STACK_SIZE ];
@@ -107,7 +119,6 @@ static void system_boot_up(void)
 	BOARD_InitDebugConsole();
 
 	BOARD_DSP_Init();
-
 }
 
 int main(void)
@@ -154,6 +165,18 @@ int main(void)
 	task_handle = xTaskCreateStatic(&eeg_processor_task,
 	  "eeg_processor", EEG_PROCESSOR_TASK_STACK_SIZE, NULL, EEG_PROCESSOR_TASK_PRIORITY, eeg_processor_task_array, &eeg_processor_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)EEG_PROCESSOR_TASK_STACK_SIZE );
+
+	LOGV(TAG, "Launching audio task...");
+	audio_pretask_init();
+	task_handle = xTaskCreateStatic(&audio_task,
+	  "audio", AUDIO_TASK_STACK_SIZE, NULL, AUDIO_TASK_PRIORITY, audio_task_array, &audio_task_struct);
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)AUDIO_TASK_STACK_SIZE );
+
+	LOGV(TAG, "Launching wavbuf task...");
+	wavbuf_pretask_init();
+	task_handle = xTaskCreateStatic(&wavbuf_task,
+	  "wavbuf", WAVBUF_TASK_STACK_SIZE, NULL, WAVBUF_TASK_PRIORITY, wavbuf_task_array, &wavbuf_task_struct);
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)WAVBUF_TASK_STACK_SIZE );
 
 	/* Shell task */
 	LOGV(TAG, "Launching shell recv task...");
