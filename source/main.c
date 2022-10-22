@@ -21,6 +21,8 @@
 #include "ble_uart_recv.h"
 #include "utils.h"
 #include "led.h"
+#include "dhara_utils.h"
+#include "fatfs_utils.h"
 #include "syscalls.h"   // for shell/shell.c and printf()
 #include "eeg_reader.h"
 #include "eeg_processor.h"
@@ -133,6 +135,10 @@ int main(void)
 
 	// Initialize NAND SPI driver
 	nand_init();
+	// Initialize dhara flash translation layer
+	dhara_pretask_init();
+	// Filesystem init
+	mount_fatfs_drive_and_format_if_needed();
 
 	// Initialize RTOS tasks
 	TaskHandle_t task_handle;

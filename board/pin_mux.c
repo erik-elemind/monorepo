@@ -114,10 +114,10 @@ BOARD_InitPins:
 - pin_list:
   - {pin_num: T9, peripheral: FLEXSPI, signal: FLEXSPI_A_SCLK, pin_signal: PIO1_18/FLEXSPI0A_SCLK/SCT0_GPI0/CTIMER3_MAT3}
   - {pin_num: T4, peripheral: FLEXSPI, signal: FLEXSPI_A_SS0_B, pin_signal: PIO1_19/FLEXSPI0A_SS0_N/SCT0_OUT0/CTIMER4_MAT0}
-  - {pin_num: T5, peripheral: FLEXSPI, signal: FLEXSPI_A_DATA0, pin_signal: PIO1_20/FLEXSPI0A_DATA0/SCT0_GPI1/CTIMER4_MAT1, ibena: enabled}
-  - {pin_num: U5, peripheral: FLEXSPI, signal: FLEXSPI_A_DATA1, pin_signal: PIO1_21/FLEXSPI0A_DATA1/SCT0_OUT1/CTIMER4_MAT2, ibena: enabled}
-  - {pin_num: P6, peripheral: FLEXSPI, signal: FLEXSPI_A_DATA2, pin_signal: PIO1_22/FLEXSPI0A_DATA2/SCT0_GPI2/CTIMER4_MAT3, ibena: enabled}
-  - {pin_num: P7, peripheral: FLEXSPI, signal: FLEXSPI_A_DATA3, pin_signal: PIO1_23/FLEXSPI0A_DATA3/SCT0_OUT2/CTIMER_INP8, ibena: enabled}
+  - {pin_num: T5, peripheral: FLEXSPI, signal: FLEXSPI_A_DATA0, pin_signal: PIO1_20/FLEXSPI0A_DATA0/SCT0_GPI1/CTIMER4_MAT1, pupdsel: pullDown, ibena: enabled, drive: normal}
+  - {pin_num: U5, peripheral: FLEXSPI, signal: FLEXSPI_A_DATA1, pin_signal: PIO1_21/FLEXSPI0A_DATA1/SCT0_OUT1/CTIMER4_MAT2, pupdsel: pullDown, ibena: enabled, drive: normal}
+  - {pin_num: P6, peripheral: FLEXSPI, signal: FLEXSPI_A_DATA2, pin_signal: PIO1_22/FLEXSPI0A_DATA2/SCT0_GPI2/CTIMER4_MAT3, pupdsel: pullDown, ibena: enabled, drive: normal}
+  - {pin_num: P7, peripheral: FLEXSPI, signal: FLEXSPI_A_DATA3, pin_signal: PIO1_23/FLEXSPI0A_DATA3/SCT0_OUT2/CTIMER_INP8, pupdsel: pullDown, ibena: enabled, drive: normal}
   - {pin_num: G3, peripheral: PINT, signal: 'PINT, 0', pin_signal: PIO0_13/FC1_SSEL3/SCT0_GPI3/SCT0_OUT3/CTIMER0_MAT1/SEC_PIO0_13/ADC0_9, identifier: '', pupdena: disabled,
     pupdsel: pullDown, ibena: enabled}
   - {pin_num: E1, peripheral: GPIO, signal: 'PIO0, 6', pin_signal: PIO0_6/FC0_SSEL3/SCT0_GPI1/SCT0_OUT1/CTIMER0_MAT0/SEC_PIO0_6/ADC0_8}

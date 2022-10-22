@@ -77,22 +77,6 @@ typedef struct nand_user_data {
   #define NAND_ECC_SAFE_CORRECTED_BIT_COUNT 6
 #endif
 
-// ECC Data Correction:
-//
-// How many bits can the NAND chip correct with ECC?
-// This driver supports 8 ECC bits (modern chips) or 1 ECC bit (cheap/old chips).
-// If not defined, we try to determine it based on the SAFE bit count above
-// (either 8 bits or 1 bit).
-//
-#ifndef NAND_ECC_MAX_CORRECTED_BIT_COUNT
-  #if NAND_ECC_SAFE_CORRECTED_BIT_COUNT == 0
-    #define NAND_ECC_MAX_CORRECTED_BIT_COUNT 1
-  #else
-    #define NAND_ECC_MAX_CORRECTED_BIT_COUNT 8
-  #endif
-#endif
-
-
 // For convenience, these functions return int results compatible with UFFS.
 // These codes are not typedef'd because UFFS's callbacks also use raw ints.
 // NOTE: Any hard errors are <0 in order to remain compatible with uffs_flash.h:
@@ -126,18 +110,6 @@ typedef enum {
  */
 int
 nand_init();
-
-/** Evaluate the status register ECC bits for data safety analysis.
-
-  WARNING: Not all chips report the number of ECC bits in the status register.
-  Further work is be necessary for chips which do not report 
-  this status field, including the Macronix MX35LF1 family.
-
-  @param status_register_byte  The NAND status register byte to evaluate.
-  @return                      One of NO_ERR (0), ECC_OK (1), or ECC_FAIL (-2)
-*/
-int
-nand_ecc_result(uint8_t status_register_byte);
 
 /** Read and evaluate the status register ECC bits for data safety analysis.
 

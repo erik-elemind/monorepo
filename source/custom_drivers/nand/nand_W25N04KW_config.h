@@ -49,51 +49,14 @@
 /** Page address mask (no offset). */
 #define NAND_PAGE_ADDR_MASK 0x00003F
 
-/** Number of bits used for ECC (in the status register)*/
-#define NAND_ECC_STATUS_REG_BIT_COUNT 3 // ???????
-
 /** Maximum number of bits allowed before moving data and marking this block as bad: */
 //
 // This says how many bit flips to ignore. More ECC bits than this will trigger
 // the UFFS file system to move the entire block to a fresh block, and will
 // mark this block as a bad block:
-#define NAND_ECC_SAFE_CORRECTED_BIT_COUNT 2 // ???????
+#define NAND_ECC_SAFE_CORRECTED_BIT_COUNT 4
 
 /** Number of bit errors that can be corrected by this NAND chip */
-#define NAND_ECC_MAX_CORRECTED_BIT_COUNT 4 // ???????
-
-/** Returns the number of bits corrected given the status register*/
-inline static uint32_t
-ecc_bits_map(uint8_t status_register_byte)
-{
-  uint32_t ecc_bits_corrected;
-  // Get only ECC bits from status register
-  uint8_t ecc_bits = (status_register_byte >> 4) & 0x07;
-
-  // Assume GigaDevices-style mapping of bits to count:
-  // Keeping the switch below for consistency with other headers
-  switch (ecc_bits) {
-    case 0x0:
-      ecc_bits_corrected = 0;
-      break;
-    case 0x1:
-      ecc_bits_corrected = 1;
-      break;
-    case 0x2:
-      ecc_bits_corrected = 2;
-      break;
-    case 0x3:
-      ecc_bits_corrected = 3;
-      break;
-    case 0x4:
-      ecc_bits_corrected = 4;
-      break;
-    default:
-      ecc_bits_corrected = 5;  // 4 or more, too many to correct
-      break;
-  }
-
-  return ecc_bits_corrected;
-}
+#define NAND_ECC_MAX_CORRECTED_BIT_COUNT 7
 
 #endif  // NAND_GD5F4GQ6_H

@@ -855,6 +855,7 @@ flash_test_spi(int argc, char **argv)
       data, NAND_PAGE_SIZE);
     if (status != kStatus_Success) {
       printf("Flash write page cache error: %d\n", status);
+      free(data);
       return;
     }
 
@@ -866,6 +867,7 @@ flash_test_spi(int argc, char **argv)
       data, NAND_PAGE_SIZE);
     if (status != kStatus_Success) {
       printf("Flash read page cache error: %d\n", status);
+      free(data);
       return;
     }
 
@@ -877,6 +879,7 @@ flash_test_spi(int argc, char **argv)
       if (p_data16[i] != expected) {
         printf("Error: Address %06x: expected %06x, read %06x\n",
           address, expected, p_data16[i]);
+        free(data);
         return;
       }
     }
@@ -889,6 +892,7 @@ flash_test_spi(int argc, char **argv)
 
     count++;
   }
+  free(data);
   #endif
 }
 

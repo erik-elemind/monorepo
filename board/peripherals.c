@@ -935,7 +935,7 @@ const flexspi_config_t NAND_FLEXSPI_config = {
   }
 };
 flexspi_device_config_t NAND_FLEXSPI_config_NAND = {
-  .flexspiRootClk = 55578900UL,
+  .flexspiRootClk = 48000000UL,
   .isSck2Enabled = false,
   .flashSize = 0x80000UL,
   .CSIntervalUnit = kFLEXSPI_CsIntervalUnit1SckCycle,

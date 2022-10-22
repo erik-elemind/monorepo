@@ -84,6 +84,9 @@ void ble_shell_task(void *params)
 
     rc = ble_shell_getchar(0);
 
+    // The following code was added to test zmodem, but interferes with reliable ble communication
+    // Specifically, it causes the command "ble_filehash_sha256" to fail.
+#if 0
     // TODO: Modify the Zmodem protocol or introduce new test protocol 
     // so this hack is not required to test zmodem.
     if(rc=='s')
@@ -94,6 +97,7 @@ void ble_shell_task(void *params)
     {
       fs_zmodem_recv_test_command(1, &rstr);
     }
+#endif
 
 
     if (rc == EOF) {

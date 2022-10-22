@@ -39,10 +39,11 @@ static const char* TAG = "nand";
 #define NAND_CMD_LUT_SEQ_IDX_QUAD_LOAD_RANDOM 8
 #define NAND_CMD_LUT_SEQ_IDX_PROGRAM_EXECUTE  9
 #define NAND_CMD_LUT_SEQ_IDX_PAGE_READ        10
-#define NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUAD   11
-#define NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUADIO 12
-#define NAND_CMD_LUT_SEQ_IDX_POWER_DOWN       13
-#define NAND_CMD_LUT_SEQ_IDX_POWER_UP         14
+#define NAND_CMD_LUT_SEQ_IDX_FAST_READ        11
+#define NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUAD   12
+#define NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUADIO 13
+#define NAND_CMD_LUT_SEQ_IDX_POWER_DOWN       14
+#define NAND_CMD_LUT_SEQ_IDX_POWER_UP         15
 
 
 /* LUT for the W25N04KW NAND Flash*/
@@ -105,6 +106,12 @@ const uint32_t NAND_FLEXSPI_LUT[NAND_FLEXSPI_LUT_LENGTH] = {
 	[4 * NAND_CMD_LUT_SEQ_IDX_PAGE_READ] =
 	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x13, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x18), //24
 
+	/* Fast Read Output (0Bh) */
+	[4 * NAND_CMD_LUT_SEQ_IDX_FAST_READ] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x0B, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x10), //16
+	[4 * NAND_CMD_LUT_SEQ_IDX_FAST_READ + 1] =
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_1PAD, 0x08, kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 0x00),
+
 	/* Fast Read Quad Output (6Bh) */
 	[4 * NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUAD] =
 	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x6B, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x10), //16
@@ -113,7 +120,7 @@ const uint32_t NAND_FLEXSPI_LUT[NAND_FLEXSPI_LUT_LENGTH] = {
 
 	/* Fast Read Quad I/0) (ECh) */ // ????????????????
 	[4 * NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUADIO] =
-	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0xEC, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_4PAD, 0x10), //16 ???
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0xEC, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_4PAD, 0x10), //16
 	[4 * NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUADIO + 1] =
 	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_1PAD, 0x0A, kFLEXSPI_Command_READ_SDR, kFLEXSPI_4PAD, 0x00),
 
@@ -126,11 +133,6 @@ const uint32_t NAND_FLEXSPI_LUT[NAND_FLEXSPI_LUT_LENGTH] = {
 	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0xAB, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
 
 };
-
-// Check for a define with the number of ECC bits in the status register
-#ifndef NAND_ECC_STATUS_REG_BIT_COUNT
-#error "Must define NAND_ECC_STATUS_REG_BIT_COUNT"
-#endif
 
 /** Convert 24-bit page address (in a uint32_t) to 3-byte MSB-first array.
 
@@ -289,6 +291,8 @@ typedef union {
 
 #pragma pack(pop)
 
+// PROTOTYPES
+static int nand_ecc_result(nand_status_reg_t status_reg);
 
 DMA_ALLOCATE_DATA_TRANSFER_BUFFER(static uint32_t feature_buff[1], sizeof(uint32_t)) = {0};
 
@@ -329,36 +333,26 @@ nand_command(
 
 int
 nand_init(){
-  //  // Initialize FlexSPI peripheral configuration
-  //  flexspi_device_config_t deviceconfig = {
-  //  	    .flexspiRootClk       = 6000000,
-  //  		.isSck2Enabled        = false,
-  //  	    .flashSize            = 0x80000,
-  //  	    .CSIntervalUnit       = kFLEXSPI_CsIntervalUnit1SckCycle,
-  //  	    .CSInterval           = 2,
-  //  	    .CSHoldTime           = 3,
-  //  	    .CSSetupTime          = 3,
-  //  	    .dataValidTime        = 2,
-  //  	    .columnspace          = 0,
-  //  	    .enableWordAddress    = 0,
-  //  	    .AWRSeqIndex          = 0,
-  //  	    .AWRSeqNumber         = 0,
-  //  	    .ARDSeqIndex          = 0,
-  //  	    .ARDSeqNumber         = 0,
-  //  	    .AHBWriteWaitUnit     = kFLEXSPI_AhbWriteWaitUnit2AhbCycle,
-  //  	    .AHBWriteWaitInterval = 0,
-  //  		.enableWriteMask      = false
-  //  	};
-  //  FLEXSPI_SetFlashConfig(FLEXSPI, &deviceconfig, kFLEXSPI_PortA1);
+  int status = 0;
 
   // Update LUT
   FLEXSPI_UpdateLUT(FLEXSPI, 0, NAND_FLEXSPI_LUT, 64);
 
   FLEXSPI_SoftwareReset(FLEXSPI);
 
+  // enable ecc
   nand_ecc_enable(NULL, true);
 
-  int status = nand_platform_init();
+  // set bit fit count detection
+  nand_bit_flip_count_reg_t ecc1_reg;
+  ecc1_reg.raw = 0;
+  ecc1_reg.bfd = NAND_ECC_SAFE_CORRECTED_BIT_COUNT;
+  status = nand_set_feature_reg(NULL, FEATURE_REG_ECC1, &ecc1_reg.raw);
+  if (status!= 0){
+	  return status;
+  }
+
+  status = nand_platform_init();
   return status;
 }
 
@@ -725,19 +719,21 @@ nand_read_page_from_cache(
   uint16_t data_len
   )
 {
-  LOGV(TAG, "nand_read_page_from_cache: page_offset %d, p_data %p (%d B)",
-    (int)page_offset, p_data, (int)data_len);
+  LOGV(TAG, "nand_read_page_from_cache: page_offset %d, p_data 0x%lX... (%d B)",
+    (int)page_offset, *(uint32_t *)p_data, (int)data_len);
 
   int status;
   flexspi_transfer_t flashXfer;
 
-#if 0
+#if 1
+  uint8_t seqIndex = NAND_CMD_LUT_SEQ_IDX_FAST_READ;
+#elif 0
   uint8_t seqIndex = NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUAD;
 #else
   uint8_t seqIndex = NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUADIO;
 #endif
 
-  flashXfer.deviceAddress = page_offset; // TODO: Is this just the page_offset ????
+  flashXfer.deviceAddress = page_offset;
   flashXfer.port = kFLEXSPI_PortA1;
   flashXfer.cmdType = kFLEXSPI_Read;
   flashXfer.SeqNumber = 1;
@@ -793,7 +789,7 @@ nand_read_page_into_cache(
 
   // Check ECCS bits after read from cache operation. Note that ECC failures
   // are expected normal behavior as the chip wears out.
-  return nand_ecc_result((uint8_t)status_reg.raw);
+  return nand_ecc_result(status_reg);
 
   return 0;
 }
@@ -812,6 +808,14 @@ nand_write_into_page_cache(
 
   int status;
   flexspi_transfer_t flashXfer;
+
+  // Set write enable latch
+  status = nand_write_enable(user_data, true);
+  if (status < 0) {
+    LOGE(TAG, "nand_write_page(): COMMAND_WRITE_ENABLE error: %d",
+      status);
+    return status;
+  }
 
 #if 1
   uint8_t seqIndex = NAND_CMD_LUT_SEQ_IDX_QUAD_LOAD_ZEROED;
@@ -840,14 +844,6 @@ int nand_program_page_cache(
 {
   int status;
   nand_status_reg_t status_reg;
-
-  // Set write enable latch
-  status = nand_write_enable(user_data, true);
-  if (status < 0) {
-    LOGE(TAG, "nand_write_page(): COMMAND_WRITE_ENABLE error: %d",
-      status);
-    return status;
-  }
 
   // Program data from cache into flash page
   status = nand_command(user_data, COMMAND_PROGRAM_EXECUTE, page_addr); // TODO: Use page_addr directly???
@@ -896,25 +892,26 @@ nand_block_status(
 
   int status;
 
-  // check if ECC is enabled
-  // according to the documentation, ecc should be disabled when checking the bad page mark.
-  nand_configuration_reg_t config_reg;
-  status = nand_get_feature_reg(user_data,
-		  FEATURE_REG_CONFIGURATION, &config_reg.raw);
-  if (status != 0) {
-    return status;
-  }
-  bool ecc_enabled = config_reg.ecce;
-
-  // disable ECC
-  if(ecc_enabled){
-    config_reg.ecce = false;
-    status = nand_set_feature_reg(user_data,
-    		FEATURE_REG_CONFIGURATION, config_reg.raw);
-    if (status != 0) {
-      return status;
-    }
-  }
+  // TODO: Not sure if disabling ECC is necessary for the Winbond Flash.
+//  // check if ECC is enabled
+//  // according to the documentation, ecc should be disabled when checking the bad page mark.
+//  nand_configuration_reg_t config_reg;
+//  status = nand_get_feature_reg(user_data,
+//		  FEATURE_REG_CONFIGURATION, &config_reg.raw);
+//  if (status != 0) {
+//    return status;
+//  }
+//  bool ecc_enabled = config_reg.ecce;
+//
+//  // disable ECC
+//  if(ecc_enabled){
+//    config_reg.ecce = false;
+//    status = nand_set_feature_reg(user_data,
+//    		FEATURE_REG_CONFIGURATION, config_reg.raw);
+//    if (status != 0) {
+//      return status;
+//    }
+//  }
 
   // Get block and page numbers
   uint32_t block, page;
@@ -938,15 +935,16 @@ nand_block_status(
     *p_good = false;
   }
 
+  // TODO: Not sure if disabling ECC is necessary for the Winbond Flash.
   // enable ECC
-  if(ecc_enabled){
-	config_reg.ecce = true;
-    status = nand_set_feature_reg(user_data,
-    		FEATURE_REG_CONFIGURATION, config_reg.raw);
-    if (status != 0) {
-      return status;
-    }
-  }
+//  if(ecc_enabled){
+//	config_reg.ecce = true;
+//    status = nand_set_feature_reg(user_data,
+//    		FEATURE_REG_CONFIGURATION, config_reg.raw);
+//    if (status != 0) {
+//      return status;
+//    }
+//  }
 
   return status;
 }
@@ -1150,41 +1148,47 @@ nand_print_detailed_status(
 }
 
 
-/** Evaluate the status register ECC bits for data safety analysis. */
-int
-nand_ecc_result(uint8_t status_register_byte)
+/** Evaluate the status register ECC bits for data safety analysis.
+
+  WARNING: Not all chips report the number of ECC bits in the status register.
+  Further work is be necessary for chips which do not report
+  this status field, including the Macronix MX35LF1 family.
+
+  @param status_reg  The NAND status register byte to evaluate.
+  @return            One of NO_ERR (0), ECC_OK (1), or ECC_FAIL (-2)
+*/
+static int
+nand_ecc_result(nand_status_reg_t status_reg)
 {
-  int result;
-  uint32_t ecc_bits_corrected = ecc_bits_map(status_register_byte);
-//  printf("nand_ecc_result: ecc_bits_corrected: %lu\n", ecc_bits_corrected);
-
-  if (ecc_bits_corrected == 0) {
-    result = NAND_NO_ERR;  // Clean data :)
+  switch (status_reg.ecc){
+  case 0: return NAND_NO_ERR;
+  case 1: return NAND_NO_ERR;
+  case 2: return NAND_ECC_FAIL;
+  case 3: return NAND_ECC_OK;
+  default: return NAND_ECC_FAIL;
   }
-  else if (ecc_bits_corrected <= NAND_ECC_SAFE_CORRECTED_BIT_COUNT) {
-    result = NAND_NO_ERR;  // Fib to minimize bad block flagging
-  }
-  else if (ecc_bits_corrected <= NAND_ECC_MAX_CORRECTED_BIT_COUNT) {
-    result = NAND_ECC_OK; // The end draws nigh...
-  }
-  else {
-    result = NAND_ECC_FAIL;      // Bad data :(
-  }
-
-  return result;
 }
 
 /** Read and evaluate the status register ECC bits for data safety analysis. */
 int nand_ecc_bits(nand_user_data_t *user_data, uint32_t* num_bits)
 {
-  nand_status_reg_t status_reg;
-  // Read the status register
-  int status = nand_get_status_reg(user_data, &status_reg);
-  if (status == 0) {
-    // Decode the status register, and return
-    // the actual number of ECC corrected bits.
-    *num_bits = ecc_bits_map(status_reg.raw);
+  int status = 0;
+  *num_bits = 0xFFFFFFFF;
+
+  nand_bit_flip_count_sec01_reg_t ecc_sec01_reg;
+  status = nand_get_feature_reg(user_data, FEATURE_REG_ECC4, &ecc_sec01_reg.raw);
+  if (status != 0) {
+	  return status;
   }
+
+  nand_bit_flip_count_sec23_reg_t ecc_sec23_reg;
+  status = nand_get_feature_reg(user_data, FEATURE_REG_ECC5, &ecc_sec23_reg.raw);
+  if (status != 0) {
+	  return status;
+  }
+
+  *num_bits = ecc_sec01_reg.bfr_sec0 + ecc_sec01_reg.bfr_sec1 +  ecc_sec23_reg.bfr_sec2 + ecc_sec23_reg.bfr_sec3;
+
   return status;
 }
 
