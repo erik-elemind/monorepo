@@ -149,7 +149,7 @@
 
 // Enable stress-testing for Dhara. See
 // source_code/dhara_interface/dhara_ppstress.h for more details
-// #define ENABLE_DHARA_PPSTRESS
+#define ENABLE_DHARA_PPSTRESS
 
 // Enable memory unit tests
 #define ENABLE_STREAM_MEMORY_TEST_COMMANDS (0U)

@@ -24,6 +24,19 @@
 /// Logging prefix
 static const char* TAG = "nand";
 
+/* NAND Flash transaction buffer
+ * The 'nand_read_buff' buffer is used when a FLEXSPI command type "kFLEXSPI_Read" operation is executed.
+ * The FLEXSPI read operation clobbers 4 bytes at a time. That is to say, the data-pointer passed to a read
+ * operation will be treated as if it points to multiples of 4 bytes. Even when reading 1 byte,
+ * the subsequent 3 bytes will have zeros written to them.
+ *
+ * The 'nand_read_buff' is only used when the user-provided (uint8_t* p_data argument) is not a multiple of 4.
+ * It is currently only used in feature/status register READs, and 'read_page_from_cache' READ.
+ *
+ * The 'nand_read_buff' size is large enough to hold one page of data + spare, because that is the
+ * EXPECTED largest transation that could ever occur in the 'read_page_from_cache' READ.
+ */
+DMA_ALLOCATE_DATA_TRANSFER_BUFFER(static uint32_t nand_read_buff[(NAND_PAGE_PLUS_SPARE_SIZE >> 2)], sizeof(uint32_t)) = {0};
 
 /* RESET_NOW - reset NAND immediately.
  * ENABLE_RESET and ACTIVATE RESET are used together.
@@ -291,11 +304,8 @@ typedef union {
 
 #pragma pack(pop)
 
-// PROTOTYPES
+/** PROTOTYPES */
 static int nand_ecc_result(nand_status_reg_t status_reg);
-
-DMA_ALLOCATE_DATA_TRANSFER_BUFFER(static uint32_t feature_buff[1], sizeof(uint32_t)) = {0};
-
 
 /** Send command (no response data).
 
@@ -347,7 +357,7 @@ nand_init(){
   nand_bit_flip_count_reg_t ecc1_reg;
   ecc1_reg.raw = 0;
   ecc1_reg.bfd = NAND_ECC_SAFE_CORRECTED_BIT_COUNT;
-  status = nand_set_feature_reg(NULL, FEATURE_REG_ECC1, &ecc1_reg.raw);
+  status = nand_set_feature_reg(NULL, FEATURE_REG_ECC1, (uint8_t) ecc1_reg.raw);
   if (status!= 0){
 	  return status;
   }
@@ -399,19 +409,22 @@ nand_get_id(
   status_t status;
   read_id_response_t response;
 
-  memset(feature_buff, 0, sizeof(feature_buff));
+  memset(nand_read_buff, 0, sizeof(nand_read_buff));
 
   flashXfer.deviceAddress = 0;
   flashXfer.port = kFLEXSPI_PortA1;
   flashXfer.cmdType = kFLEXSPI_Read;
   flashXfer.SeqNumber = 1;
   flashXfer.seqIndex = NAND_CMD_LUT_SEQ_IDX_READ_ID;
-  flashXfer.data = feature_buff;
+  flashXfer.data = nand_read_buff;
   flashXfer.dataSize = 3;
+
+  // check that we're WRITING within feature_buff size
+  configASSERT(flashXfer.dataSize <= sizeof(nand_read_buff));
 
   status = FLEXSPI_TransferBlocking(NAND_FLEXSPI_PERIPHERAL, &flashXfer);
 
-  memcpy(response.raw, &(feature_buff[0]), 3);
+  memcpy(response.raw, &(nand_read_buff[0]), 3);
   *p_mfg_id = response.mfg_id;
   *p_device_id = (response.device_id[0] << 8) | (response.device_id[1]);
 
@@ -436,19 +449,22 @@ nand_get_feature_reg(
   flexspi_transfer_t flashXfer;
   status_t status;
 
-  memset(feature_buff, 0, sizeof(feature_buff));
+  memset(nand_read_buff, 0, sizeof(nand_read_buff));
 
   flashXfer.deviceAddress = feature_reg;
   flashXfer.port = kFLEXSPI_PortA1;
   flashXfer.cmdType = kFLEXSPI_Read;
   flashXfer.SeqNumber = 1;
   flashXfer.seqIndex = NAND_CMD_LUT_SEQ_IDX_READ_STATUS;
-  flashXfer.data = feature_buff;
+  flashXfer.data = nand_read_buff;
   flashXfer.dataSize = 1;
+
+  // check that we're WRITING within feature_buff size
+  configASSERT(flashXfer.dataSize <= sizeof(nand_read_buff));
 
   status = FLEXSPI_TransferBlocking(NAND_FLEXSPI_PERIPHERAL, &flashXfer);
 
-  *data = feature_buff[0] & 0xFF;
+  *data = nand_read_buff[0] & 0xFF;
 
   LOGV(TAG, "nand_get_feature_reg: feature_reg 0x%X (1 B) in: 0x%X (1 B)", feature_reg, data);
 
@@ -476,15 +492,12 @@ nand_set_feature_reg(
   flexspi_transfer_t flashXfer;
   status_t status;
 
-  memset(feature_buff, 0, sizeof(feature_buff));
-  feature_buff[0] = data;
-
   flashXfer.deviceAddress = feature_reg;
   flashXfer.port = kFLEXSPI_PortA1;
   flashXfer.cmdType = kFLEXSPI_Write;
   flashXfer.SeqNumber = 1;
   flashXfer.seqIndex = NAND_CMD_LUT_SEQ_IDX_WRITE_STATUS;
-  flashXfer.data = feature_buff;
+  flashXfer.data = &data;
   flashXfer.dataSize = 1;
 
   status = FLEXSPI_TransferBlocking(NAND_FLEXSPI_PERIPHERAL, &flashXfer);
@@ -725,6 +738,19 @@ nand_read_page_from_cache(
   int status;
   flexspi_transfer_t flashXfer;
 
+  // Create a temporary data pointer and flag.
+  // These are used when the 'p_data' pointer passed in is not a multiple of 4 bytes
+  // This is because the FLEXSPI driver always reads in 4 byte increments,
+  // even if only 1 byte is read, the remaining 3 bytes will be zeroed.
+  configASSERT(data_len <= sizeof(nand_read_buff));
+  uint8_t* p_data_temp = p_data;
+  bool use_data_temp = (data_len % sizeof(uint32_t)) != 0;
+
+  if (use_data_temp){
+	  p_data_temp = (uint8_t*) &(nand_read_buff[0]);
+  }
+
+
 #if 1
   uint8_t seqIndex = NAND_CMD_LUT_SEQ_IDX_FAST_READ;
 #elif 0
@@ -738,10 +764,14 @@ nand_read_page_from_cache(
   flashXfer.cmdType = kFLEXSPI_Read;
   flashXfer.SeqNumber = 1;
   flashXfer.seqIndex = seqIndex;
-  flashXfer.data = (uint32_t*) p_data;
+  flashXfer.data = (uint32_t*) p_data_temp;
   flashXfer.dataSize = data_len;
 
   status = FLEXSPI_TransferBlocking(NAND_FLEXSPI_PERIPHERAL, &flashXfer);
+
+  if(status == kStatus_Success &&use_data_temp ){
+	  memcpy(p_data, p_data_temp, data_len);
+  }
 
   return status;
 }
@@ -929,7 +959,7 @@ nand_block_status(
   uint8_t data;
   status = nand_read_page(user_data,
     block, page, GOOD_BLOCK_MARKER_ADDR, &data, sizeof(data));
-  if (status == 0) {
+  if (status == kStatus_Success) {
     *p_good = (data == GOOD_BLOCK_MARKER);
   }else{
     *p_good = false;
