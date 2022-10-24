@@ -121,7 +121,7 @@ static void system_boot_up(void)
 	BOARD_InitBootPeripherals();
 	BOARD_InitDebugConsole();
 
-	BOARD_DSP_Init();
+	//BOARD_DSP_Init();
 }
 
 int main(void)
@@ -195,7 +195,7 @@ int main(void)
 	  "shell_recv", SHELL_RECV_TASK_STACK_SIZE, NULL, SHELL_RECV_TASK_PRIORITY, shell_recv_task_array, &shell_recv_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)SHELL_RECV_TASK_STACK_SIZE );
 
-	DSP_Start();
+	//DSP_Start();
 
 	vTaskStartScheduler();
 

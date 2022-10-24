@@ -30,7 +30,7 @@
 								<option id="gnu.cpp.compiler.option.preprocessor.preprocess.1145014647" name="Preprocess only (-E)" superClass="gnu.cpp.compiler.option.preprocessor.preprocess" useByScannerDiscovery="false"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1095423131" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__NEWLIB__"/>
-									<listOptionValue builtIn="false" value="DSP_IMAGE_COPY_TO_RAM=1"/>
+									<listOptionValue builtIn="false" value="DSP_IMAGE_COPY_TO_RAM=0"/>
 									<listOptionValue builtIn="false" value="__MCUXPRESSO"/>
 									<listOptionValue builtIn="false" value="__USE_CMSIS"/>
 									<listOptionValue builtIn="false" value="CPU_MIMXRT685SFVKB"/>
@@ -207,7 +207,7 @@
 								<option id="com.crt.advproject.gcc.hdrlib.1899239975" name="Library headers" superClass="com.crt.advproject.gcc.hdrlib" useByScannerDiscovery="false" value="com.crt.advproject.gcc.hdrlib.newlibnano" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.1739721294" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="CPU_MIMXRT685SFVKB"/>
-									<listOptionValue builtIn="false" value="DSP_IMAGE_COPY_TO_RAM=1"/>
+									<listOptionValue builtIn="false" value="DSP_IMAGE_COPY_TO_RAM=0"/>
 									<listOptionValue builtIn="false" value="CPU_MIMXRT685SFVKB_cm33"/>
 									<listOptionValue builtIn="false" value="BOOT_HEADER_ENABLE=1"/>
 									<listOptionValue builtIn="false" value="FSL_SDK_DRIVER_QUICK_ACCESS_ENABLE=1"/>

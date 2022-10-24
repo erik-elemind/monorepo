@@ -39,7 +39,7 @@ enum {
 #define LOG_COLOR_D       LOG_COLOR(LOG_COLOR_CYAN)
 #define LOG_COLOR_V       LOG_COLOR(LOG_COLOR_PURPLE)
 
-#define LOG_FORMAT(letter, format)  LOG_COLOR_ ## letter #letter " (%lu) %s: " format LOG_RESET_COLOR "\n"
+#define LOG_FORMAT(letter, format)  LOG_COLOR_ ## letter #letter " (%lu) %s: " format LOG_RESET_COLOR "\n\r"
 #define LOG_LEVEL(level, tag, format, ...) do {                     \
         if (level==LOG_ERROR )          { printf(LOG_FORMAT(E, format), xTaskGetTickCount(), tag, ##__VA_ARGS__); } \
         else if (level==LOG_WARN )      { printf(LOG_FORMAT(W, format), xTaskGetTickCount(), tag, ##__VA_ARGS__); } \

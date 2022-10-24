@@ -339,7 +339,7 @@ led_task(void *ignored)
 
   while (1) {
 
-#if 1
+#if 0
 	// ToDo: Replace/Delete the following debug code ----->
 	vTaskDelay(200);
 
