@@ -141,7 +141,7 @@ const shell_command_t commands[] = {
     { P_ALL, "dhara_clear", dhara_clear_command, "Delete all logical sectors" },
 #endif // DHARA_COMMANDS_H
 
-#ifdef ENABLE_DHARA_PPSTRESS
+#if (defined(ENABLE_DHARA_PPSTRESS) && (ENABLE_DHARA_PPSTRESS > 0U))
     { P_ALL, "dhara_stat", dhara_cmd_stat, "Show dhara map/journal status" },
     { P_ALL, "dhara_ppstress", dhara_cmd_ppstress, "Run FTL stress test" },
     { P_ALL, "dhara_ppnand", dhara_cmd_ppnand, "Run FTL nand driver test" },

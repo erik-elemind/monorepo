@@ -78,6 +78,7 @@
 // 1U - enable the task, ble_uart_send_buf() pushes messages onto stream buf
 #define ENABLE_BLE_UART_SEND_TASK (0U)
 
+#define ENABLE_INTERPRETER_TASK (1U) // TODO: Reenable when interpreter task is thoughtfully added
 #define ENABLE_APP_TASK (0U) // TODO: Reenable when app task is thoughtfully added
 #define ENABLE_AUDIO_TASK (1U)
 #define ENABLE_AUDIO_MP3_TASK (0U) //(0U)
@@ -149,7 +150,7 @@
 
 // Enable stress-testing for Dhara. See
 // source_code/dhara_interface/dhara_ppstress.h for more details
-#define ENABLE_DHARA_PPSTRESS
+#define ENABLE_DHARA_PPSTRESS (1U)
 
 // Enable memory unit tests
 #define ENABLE_STREAM_MEMORY_TEST_COMMANDS (0U)

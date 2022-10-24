@@ -416,13 +416,21 @@ return_arg:
 
    From https://gist.github.com/ccbrown/9722406, with
    improvements. Used under WTFPL (public domain).
+
+   Modified by David Wang - To allow printing whole rows
+   of 16 bytes only if that row intersects with the range
+   start_offset to end_offset.
  */
 void
-hex_dump(const uint8_t* data, size_t size, size_t offset) {
+hex_dump(const uint8_t* data, size_t end_offset, size_t start_offset) {
   char ascii[17] = {'\0'};
 
-  printf("%04x: ", offset);
-  for (size_t i = offset; i < size; ++i) {
+  if((end_offset-start_offset) == 0){
+	  return;
+  }
+
+  printf("%04x: ", start_offset);
+  for (size_t i = start_offset; i < end_offset; ++i) {
     printf("%02X ", data[i]);
     if (isprint(data[i])) {
       ascii[i % 16] = data[i];
@@ -430,13 +438,13 @@ hex_dump(const uint8_t* data, size_t size, size_t offset) {
     else {
       ascii[i % 16] = '.';
     }
-    if ((i+1) % 8 == 0 || i+1 == size) {
+    if ((i+1) % 8 == 0 || i+1 == end_offset) {
       printf(" ");
-      if ((i+1) % 16 == 0) {
+      if ((i+1) % 16 == 0 && (i+1) < end_offset) {
         printf("|  %s \n", ascii);
         printf("%04x: ", i+1);
       }
-      else if (i+1 == size) {
+      else if (i+1 == end_offset) {
         ascii[(i+1) % 16] = '\0';
         if ((i+1) % 16 <= 8) {
           printf(" ");

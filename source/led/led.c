@@ -124,7 +124,7 @@ log_event(led_event_t *event)
 {
   switch (event->type) {
     default:
-      LOGV(TAG, "[%s] Event: %s\n\r", led_state_name(g_context.state), led_event_type_name(event->type));
+//      LOGV(TAG, "[%s] Event: %s\n\r", led_state_name(g_context.state), led_event_type_name(event->type));
       break;
   }
 }
@@ -138,7 +138,7 @@ log_event_ignored(led_event_t *event)
 static void
 set_state(led_state_t state)
 {
-  LOGD(TAG, "[%s] -> [%s]\n\r", led_state_name(g_context.state), led_state_name(state));
+//  LOGD(TAG, "[%s] -> [%s]\n\r", led_state_name(g_context.state), led_state_name(state));
 
   g_context.state = state;
 

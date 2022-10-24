@@ -32,6 +32,8 @@
 #include "erp.h"
 #include "rtc.h"
 
+#if (defined(ENABLE_INTERPRETER_TASK) && (ENABLE_INTERPRETER_TASK > 0U))
+
 static const char *TAG = "interpreter";	// Logging prefix for this module
 
 #define INTERPRETER_EVENT_QUEUE_SIZE (10)
@@ -952,3 +954,26 @@ interpreter_task (void *ignored)
   }
 
 }
+
+#else // (defined(ENABLE_INTERPRETER_TASK) && (ENABLE_INTERPRETER_TASK > 0U))
+
+void interpreter_pretask_init(void){}
+void interpreter_task(void *ignored){}
+
+void interpreter_event_start_script(const char* filepath){}
+void interpreter_event_stop_script(bool start_electrode_quality){}
+
+void interpreter_event_delay(unsigned long time_ms){}
+void interpreter_event_start_timer1(unsigned long time_ms){}
+void interpreter_event_wait_timer1(){}
+
+// Send various event types to this task:
+void interpreter_event_start_therapy(therapy_type_t therapy_type){}
+void interpreter_event_natural_stop_therapy(void){}
+void interpreter_event_forced_stop_therapy(void){}
+
+void interpreter_event_blink_start_test(){}
+void interpreter_event_blink_stop_test(){}
+void interpreter_event_blink_detected(){}
+
+#endif // (defined(ENABLE_INTERPRETER_TASK) && (ENABLE_INTERPRETER_TASK > 0U))

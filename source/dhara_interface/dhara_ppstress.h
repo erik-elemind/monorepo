@@ -31,7 +31,7 @@
  * This is preferable to a full erase, but it works only if the FTL is
  * in a valid state.
  */
-#ifdef ENABLE_DHARA_PPSTRESS
+#if (defined(ENABLE_DHARA_PPSTRESS) && (ENABLE_DHARA_PPSTRESS > 0U))
 
 /* General diagnostics */
 void dhara_cmd_stat(int argc, char **argv);
@@ -46,6 +46,6 @@ void dhara_cmd_blkerase(int argc, char **argv);
 void dhara_cmd_blkmark(int argc, char **argv);
 void dhara_cmd_eraseall(int argc, char **argv);
 
-#endif
+#endif // (defined(ENABLE_DHARA_PPSTRESS) && (ENABLE_DHARA_PPSTRESS > 0U))
 
 #endif

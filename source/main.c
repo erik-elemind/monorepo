@@ -24,6 +24,7 @@
 #include "dhara_utils.h"
 #include "fatfs_utils.h"
 #include "syscalls.h"   // for shell/shell.c and printf()
+#include "interpreter.h"
 #include "eeg_reader.h"
 #include "eeg_processor.h"
 #include "audio.h"
@@ -37,6 +38,13 @@
 #include "task.h"
 
 static const char *TAG = "main";  // Logging prefix for this module
+
+#if (defined(ENABLE_DATA_LOG_TASK) && (ENABLE_DATA_LOG_TASK > 0U))
+#define DATA_LOG_TASK_PRIORITY 2 // was 2
+#define DATA_LOG_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*(/*6+30*/ 7 )) // 6
+StackType_t data_log_task_array[ DATA_LOG_TASK_STACK_SIZE];
+StaticTask_t data_log_task_struct;
+#endif // (defined(ENABLE_DATA_LOG_TASK) && (ENABLE_DATA_LOG_TASK > 0U))
 
 #define BLE_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*5) // 5
 #define BLE_TASK_PRIORITY 1
@@ -79,6 +87,20 @@ StaticTask_t wavbuf_task_struct;
 #define AUDIO_TASK_PRIORITY 3 // used to be 4
 StackType_t audio_task_array[ AUDIO_TASK_STACK_SIZE ];
 StaticTask_t audio_task_struct;
+
+#if (defined(ENABLE_INTERPRETER_TASK) && (ENABLE_INTERPRETER_TASK > 0U))
+#define INTERPRETER_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*6) // 8
+#define INTERPRETER_TASK_PRIORITY 1
+StackType_t interpreter_task_array[ INTERPRETER_TASK_STACK_SIZE ];
+StaticTask_t interpreter_task_struct;
+#endif // (defined(ENABLE_INTREPTER_TASK) && (ENABLE_INTREPTER_TASK > 0U))
+
+#if (defined(ENABLE_FS_WRITER) && (ENABLE_FS_WRITER > 0U))
+#define FATFS_WRITER_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*6)
+#define FATFS_WRITER_TASK_PRIORITY 2
+StackType_t fatfs_writer_task_array[ FATFS_WRITER_TASK_STACK_SIZE ];
+StaticTask_t fatfs_writer_task_struct;
+#endif // (defined(ENABLE_FS_WRITER) && (ENABLE_FS_WRITER > 0U))
 
 #define SHELL_RECV_TASK_STACK_SIZE                (configMINIMAL_STACK_SIZE*8) // 8
 #define SHELL_RECV_TASK_PRIORITY 1
@@ -143,6 +165,23 @@ int main(void)
 	// Initialize RTOS tasks
 	TaskHandle_t task_handle;
 
+#if (defined(ENABLE_FS_WRITER) && (ENABLE_FS_WRITER > 0U))
+  LOGV(TAG, "Launching fatfs_writer task...");
+  fatfs_writer_pretask_init();
+  task_handle = xTaskCreateStatic(&fatfs_writer_task,
+      "fatfs_writer", FATFS_WRITER_TASK_STACK_SIZE, NULL, FATFS_WRITER_TASK_PRIORITY, fatfs_writer_task_array, &fatfs_writer_task_struct);
+  vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)FATFS_WRITER_TASK_STACK_SIZE );
+#endif
+
+#if (defined(ENABLE_DATA_LOG_TASK) && (ENABLE_DATA_LOG_TASK > 0U))
+  LOGV(TAG, "Launching data log task...");
+  data_log_pretask_init();
+  task_handle = xTaskCreateStatic(&data_log_task,
+      "data_log", DATA_LOG_TASK_STACK_SIZE, NULL, DATA_LOG_TASK_PRIORITY, data_log_task_array, &data_log_task_struct);
+  vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)DATA_LOG_TASK_STACK_SIZE );
+#endif
+
+#if 0
 	/* BLE tasks */
 	LOGV(TAG, "Launching BLE task...");
 	ble_pretask_init();
@@ -163,6 +202,8 @@ int main(void)
 	  "led", LED_TASK_STACK_SIZE, NULL, LED_TASK_PRIORITY, led_task_array, &led_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)LED_TASK_STACK_SIZE );
 
+#endif
+
 	/* EEG tasks */
 	LOGV(TAG, "Launching eeg_reader task...");
 	eeg_reader_pretask_init();
@@ -176,6 +217,7 @@ int main(void)
 	  "eeg_processor", EEG_PROCESSOR_TASK_STACK_SIZE, NULL, EEG_PROCESSOR_TASK_PRIORITY, eeg_processor_task_array, &eeg_processor_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)EEG_PROCESSOR_TASK_STACK_SIZE );
 
+	/* Audio tasks */
 	LOGV(TAG, "Launching audio task...");
 	audio_pretask_init();
 	task_handle = xTaskCreateStatic(&audio_task,
@@ -187,6 +229,15 @@ int main(void)
 	task_handle = xTaskCreateStatic(&wavbuf_task,
 	  "wavbuf", WAVBUF_TASK_STACK_SIZE, NULL, WAVBUF_TASK_PRIORITY, wavbuf_task_array, &wavbuf_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)WAVBUF_TASK_STACK_SIZE );
+
+	/* Interpreter task */
+#if (defined(ENABLE_INTERPRETER_TASK) && (ENABLE_INTERPRETER_TASK > 0U))
+    LOGV(TAG, "Launching interpreter task...");
+    interpreter_pretask_init();
+    task_handle = xTaskCreateStatic(&interpreter_task,
+      "interpreter", INTERPRETER_TASK_STACK_SIZE, NULL, INTERPRETER_TASK_PRIORITY, interpreter_task_array, &interpreter_task_struct);
+    vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)INTERPRETER_TASK_STACK_SIZE );
+#endif
 
 	/* Shell task */
 	LOGV(TAG, "Launching shell recv task...");
