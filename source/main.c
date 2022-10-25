@@ -95,12 +95,12 @@ StackType_t interpreter_task_array[ INTERPRETER_TASK_STACK_SIZE ];
 StaticTask_t interpreter_task_struct;
 #endif // (defined(ENABLE_INTREPTER_TASK) && (ENABLE_INTREPTER_TASK > 0U))
 
-#if (defined(ENABLE_FS_WRITER) && (ENABLE_FS_WRITER > 0U))
+#if (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
 #define FATFS_WRITER_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*6)
 #define FATFS_WRITER_TASK_PRIORITY 2
 StackType_t fatfs_writer_task_array[ FATFS_WRITER_TASK_STACK_SIZE ];
 StaticTask_t fatfs_writer_task_struct;
-#endif // (defined(ENABLE_FS_WRITER) && (ENABLE_FS_WRITER > 0U))
+#endif // (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
 
 #define SHELL_RECV_TASK_STACK_SIZE                (configMINIMAL_STACK_SIZE*8) // 8
 #define SHELL_RECV_TASK_PRIORITY 1
@@ -165,13 +165,13 @@ int main(void)
 	// Initialize RTOS tasks
 	TaskHandle_t task_handle;
 
-#if (defined(ENABLE_FS_WRITER) && (ENABLE_FS_WRITER > 0U))
+#if (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
   LOGV(TAG, "Launching fatfs_writer task...");
   fatfs_writer_pretask_init();
   task_handle = xTaskCreateStatic(&fatfs_writer_task,
       "fatfs_writer", FATFS_WRITER_TASK_STACK_SIZE, NULL, FATFS_WRITER_TASK_PRIORITY, fatfs_writer_task_array, &fatfs_writer_task_struct);
   vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)FATFS_WRITER_TASK_STACK_SIZE );
-#endif
+#endif // (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
 
 #if (defined(ENABLE_DATA_LOG_TASK) && (ENABLE_DATA_LOG_TASK > 0U))
   LOGV(TAG, "Launching data log task...");

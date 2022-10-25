@@ -33,7 +33,7 @@ static const char* TAG = "fatfs_writer";  // Logging prefix for this module
 #define FATFS_FSYNC_FLUSH_TIMEOUT_MS 1000
 #define FATFS_FSYNC_FLUSH_DELAY_MS 10
 
-#if (defined(ENABLE_FS_WRITER) && (ENABLE_FS_WRITER > 0U))
+#if (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
 static uint8_t g_stream_buffer_array[FATFS_NOWAIT_STREAM_BUFFER_SIZE];
 static StaticStreamBuffer_t g_stream_buffer_struct;
 static StreamBufferHandle_t g_stream_buffer_handle;
@@ -41,7 +41,7 @@ static StreamBufferHandle_t g_stream_buffer_handle;
 static FRESULT last_result = FR_OK;  // Returned on the next call
 
 static FIL* g_current_file_pointer;
-#endif
+#endif // (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
 
 static FRESULT f_delayed_sync(FIL* fp, UINT bw)
 {
@@ -69,7 +69,7 @@ static FRESULT f_delayed_sync(FIL* fp, UINT bw)
 
 FRESULT f_write_nowait(FIL* fp, const void* buff, UINT btw, UINT* bw)
 {
-#if (defined(ENABLE_FS_WRITER) && (ENABLE_FS_WRITER > 0U))
+#if (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
   // Only one task may write at a time, so this g_current_file_pointer
   // should (normally) remain consistent during a given session of writes.
   // We re-assign it to g_current_file_pointer every time just to keep the API
@@ -91,17 +91,17 @@ FRESULT f_write_nowait(FIL* fp, const void* buff, UINT btw, UINT* bw)
   // We return the result of the last call to f_write(), so that the writing
   // task has a chance to see than something when wrong during its streaming.
   return last_result;
-#else
+#else // (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
   // Task disabled, call write directly.
   FRESULT result = f_write(fp, buff, btw, bw);
   f_delayed_sync(fp, *bw);
   return result;
-#endif
+#endif // (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
 }
 
 FRESULT f_sync_wait(FIL* fp)
 {
-#if (defined(ENABLE_FS_WRITER) && (ENABLE_FS_WRITER > 0U))
+#if (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
   uint32_t time0_ms = (uint32_t)xTaskGetTickCount();
   uint32_t delta_t = 0;
 
@@ -122,15 +122,15 @@ FRESULT f_sync_wait(FIL* fp)
 
   LOGV(TAG, "f_sync_wait(): Flushing FatFS internal buffer to disk");
   return f_sync(fp);  // f_sync() is a blocking call and will sync FatFS buffers to disk
-#else
+#else // (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
   LOGV(TAG, "f_sync_wait(): Flushing FatFS internal buffer to disk");
   return f_sync(fp);  // f_sync() is a blocking call and will sync FatFS buffers to disk
-#endif
+#endif // (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
 }
 
 void fatfs_writer_pretask_init(void)
 {
-#if (defined(ENABLE_FS_WRITER) && (ENABLE_FS_WRITER > 0U))
+#if (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
   static const size_t FATFS_STREAM_TRIGGER_LEVEL_BYTES = 1;
 
   // Any pre-scheduler init goes here.
@@ -139,10 +139,10 @@ void fatfs_writer_pretask_init(void)
       FATFS_STREAM_TRIGGER_LEVEL_BYTES,
       g_stream_buffer_array,
       &(g_stream_buffer_struct) );
-#endif
+#endif // (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
 }
 
-#if (defined(ENABLE_FS_WRITER) && (ENABLE_FS_WRITER > 0U))
+#if (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
 // Execute any deferred bad-block relocations
 static void try_relocate(void)
 {
@@ -169,11 +169,11 @@ static void try_relocate(void)
 
   fatfs_unlock();
 }
-#endif // (defined(ENABLE_FS_WRITER) && (ENABLE_FS_WRITER > 0U))
+#endif // (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
 
 void fatfs_writer_task(void* ignored)
 {
-#if (defined(ENABLE_FS_WRITER) && (ENABLE_FS_WRITER > 0U))
+#if (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
   size_t byte_count;
   UINT bytes_written;
   static uint8_t buffer[FF_MIN_SS];  // f_write() up to one FatFS sector at a time
@@ -196,5 +196,5 @@ void fatfs_writer_task(void* ignored)
       try_relocate();
     }
   }  // while(1)
-#endif // (defined(ENABLE_FS_WRITER) && (ENABLE_FS_WRITER > 0U))
+#endif // (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
 }

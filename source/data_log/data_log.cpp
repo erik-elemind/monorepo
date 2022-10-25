@@ -59,11 +59,11 @@ static const char *TAG = "data_log";  // Logging prefix for this module
 
 #define USE_SRAMX_DATA_LOG_BUFFER (0U)
 
-#if (defined(ENABLE_FS_WRITER) && (ENABLE_FS_WRITER > 0U))
+#if (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
 #define DATA_LOG_NUM_MSG 270 //300
 #else
 #define DATA_LOG_NUM_MSG 800
-#endif
+#endif // (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
 
 #define DATA_LOG_EVENT_QUEUE_SIZE DATA_LOG_NUM_MSG
 
