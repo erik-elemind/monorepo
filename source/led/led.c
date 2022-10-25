@@ -332,11 +332,6 @@ led_task(void *ignored)
   led_event_t event;
   int flag = 0;
 
-  // Kick off for power testing
-  vTaskDelay(200);
-//  eeg_reader_event_start();
-//  audio_test();
-
   while (1) {
 
 #if 0

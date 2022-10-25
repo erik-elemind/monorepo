@@ -602,14 +602,6 @@ static void eeg_processor_receive_eeg_data(void* data) {
   }
 #endif
 
-  //ToDo: Disable once testing
-  sample_counter++;
-  if(sample_counter == 200)
-  {
-	  sample_counter = 0;
-//	  LOGV(TAG, "eeg %ld, %ld, %ld", f_sample.eeg_channels[0], f_sample.eeg_channels[1], f_sample.eeg_channels[2]);
-  }
-
 #if 1
   g_eeg_processor_context.eegp.process(&f_sample);
 #else
