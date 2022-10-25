@@ -1021,7 +1021,7 @@ ble_task(void *ignored)
   }
 }
 
-#else (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
+#else // (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
 
 void ble_pretask_init(void){}
 void ble_task(void *ignored){}
@@ -1062,9 +1062,9 @@ void ble_time_command(uint64_t unix_epoch_time_sec){}
 void ble_time_update(uint64_t unix_epoch_time_sec){}
 void ble_addr_command(uint8_t* addr){}
 
-uint8_t* ble_get_addr(){}
+uint8_t* ble_get_addr(){ static uint8_t addr[] = {0xFF}; return addr; }
 
 void ble_power_off(void){}
 void ble_power_on(void){}
 
-#endif (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
+#endif // (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))

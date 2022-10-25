@@ -13,9 +13,6 @@
 /* Freescale includes. */
 #include "fsl_device_registers.h"
 #include "fsl_debug_console.h"
-//#include "pin_mux.h"
-//#include "clock_config.h"
-//#include "board_ff4.h"
 
 /* Project includes */
 #include "config.h"
@@ -53,6 +50,13 @@ static const char *TAG = "main";  // Logging prefix for this module
 //
 // Set task stack sizes and priorities:
 //
+#if (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
+#define FATFS_WRITER_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*6)
+#define FATFS_WRITER_TASK_PRIORITY 2
+StackType_t fatfs_writer_task_array[ FATFS_WRITER_TASK_STACK_SIZE ];
+StaticTask_t fatfs_writer_task_struct;
+#endif
+
 #if (defined(ENABLE_DATA_LOG_TASK) && (ENABLE_DATA_LOG_TASK > 0U))
 #define DATA_LOG_TASK_PRIORITY 2 // was 2
 #define DATA_LOG_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*(/*6+30*/ 7 )) // 6
@@ -60,42 +64,46 @@ StackType_t data_log_task_array[ DATA_LOG_TASK_STACK_SIZE];
 StaticTask_t data_log_task_struct;
 #endif
 
-#define WAVBUF_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*6) // 8
-#define WAVBUF_TASK_PRIORITY 3 // used to be 4
-StackType_t wavbuf_task_array[ WAVBUF_TASK_STACK_SIZE ];
-StaticTask_t wavbuf_task_struct;
+#if (defined(ENABLE_LED_TASK) && (ENABLE_LED_TASK > 0U))
+#define LED_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*2)
+#define LED_TASK_PRIORITY 1
+StackType_t led_task_array[ LED_TASK_STACK_SIZE ];
+StaticTask_t led_task_struct;
+#endif
 
+// ToDo: Add Button Task definitions
+
+#if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
 #define AUDIO_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*4) // 5
 #define AUDIO_TASK_PRIORITY 3 // used to be 4
 StackType_t audio_task_array[ AUDIO_TASK_STACK_SIZE ];
 StaticTask_t audio_task_struct;
-
-#define BLE_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*5) // 5
-#define BLE_TASK_PRIORITY 1
-StackType_t ble_task_array[ BLE_TASK_STACK_SIZE ];
-StaticTask_t ble_task_struct;
-
-#define BLE_UART_RECV_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*5) // 6
-#define BLE_UART_RECV_TASK_PRIORITY 1
-StackType_t ble_uart_recv_task_array[ BLE_UART_RECV_TASK_STACK_SIZE ];
-StaticTask_t ble_uart_recv_task_struct;
-
-#if (defined(ENABLE_BLE_UART_SEND_TASK) && (ENABLE_BLE_UART_SEND_TASK > 0U))
-#define BLE_UART_SEND_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*4) //6
-#define BLE_UART_SEND_TASK_PRIORITY 1
-StackType_t ble_uart_send_task_array[ BLE_UART_SEND_TASK_STACK_SIZE ];
-StaticTask_t ble_uart_send_task_struct;
 #endif
 
+#if (defined(ENABLE_WAVBUF_TASK) && (ENABLE_WAVBUF_TASK > 0U))
+#define WAVBUF_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*6) // 8
+#define WAVBUF_TASK_PRIORITY 3 // used to be 4
+StackType_t wavbuf_task_array[ WAVBUF_TASK_STACK_SIZE ];
+StaticTask_t wavbuf_task_struct;
+#endif
+
+#if (defined(ENABLE_MP3_TASK) && (ENABLE_MP3_TASK > 0U))
+// ToDo: Add MP3 Task definitions
+#endif
+
+#if (defined(ENABLE_EEG_READER_TASK) && (ENABLE_EEG_READER_TASK > 0U))
 #define EEG_READER_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*3) //6
 #define EEG_READER_TASK_PRIORITY 4 // used to be 5
 StackType_t eeg_reader_task_array[ EEG_READER_TASK_STACK_SIZE ];
 StaticTask_t eeg_reader_task_struct;
+#endif
 
+#if (defined(ENABLE_EEG_PROCESSOR_TASK) && (ENABLE_EEG_PROCESSOR_TASK > 0U))
 #define EEG_PROCESSOR_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*(5+10)) //5 orig, added 110 for compression algo using float (not double)
 #define EEG_PROCESSOR_TASK_PRIORITY 3
 StackType_t eeg_processor_task_array[ EEG_PROCESSOR_TASK_STACK_SIZE ];
 StaticTask_t eeg_processor_task_struct;
+#endif
 
 #if (defined(ENABLE_HRM_TASK) && (ENABLE_HRM_TASK > 0U))
 #define HRM_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*3)
@@ -111,18 +119,6 @@ StackType_t accel_task_array[ ACCEL_TASK_STACK_SIZE ];
 StaticTask_t accel_task_struct;
 #endif
 
-#define LED_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*2)
-#define LED_TASK_PRIORITY 1
-StackType_t led_task_array[ LED_TASK_STACK_SIZE ];
-StaticTask_t led_task_struct;
-
-#if (defined(ENABLE_INTERPRETER_TASK) && (ENABLE_INTERPRETER_TASK > 0U))
-#define INTERPRETER_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*6) // 8
-#define INTERPRETER_TASK_PRIORITY 1
-StackType_t interpreter_task_array[ INTERPRETER_TASK_STACK_SIZE ];
-StaticTask_t interpreter_task_struct;
-#endif // (defined(ENABLE_INTREPTER_TASK) && (ENABLE_INTREPTER_TASK > 0U))
-
 #if (defined(ENABLE_SYSTEM_MONITOR_TASK) && (ENABLE_SYSTEM_MONITOR_TASK > 0U))
 #define SYSTEM_MONITOR_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*4)
 #define SYSTEM_MONITOR_TASK_PRIORITY 2
@@ -130,23 +126,54 @@ StackType_t system_monitor_task_array[ SYSTEM_MONITOR_TASK_STACK_SIZE ];
 StaticTask_t system_monitor_task_struct;
 #endif
 
-#if (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
-#define FATFS_WRITER_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*6)
-#define FATFS_WRITER_TASK_PRIORITY 2
-StackType_t fatfs_writer_task_array[ FATFS_WRITER_TASK_STACK_SIZE ];
-StaticTask_t fatfs_writer_task_struct;
+#if (defined(ENABLE_INTERPRETER_TASK) && (ENABLE_INTERPRETER_TASK > 0U))
+#define INTERPRETER_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*6) // 8
+#define INTERPRETER_TASK_PRIORITY 1
+StackType_t interpreter_task_array[ INTERPRETER_TASK_STACK_SIZE ];
+StaticTask_t interpreter_task_struct;
 #endif
 
+#if (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
+#define BLE_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*5) // 5
+#define BLE_TASK_PRIORITY 1
+StackType_t ble_task_array[ BLE_TASK_STACK_SIZE ];
+StaticTask_t ble_task_struct;
+#endif
+
+#if (defined(ENABLE_BLE_UART_RECV_TASK) && (ENABLE_BLE_UART_RECV_TASK > 0U))
+#define BLE_UART_RECV_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*5) // 6
+#define BLE_UART_RECV_TASK_PRIORITY 1
+StackType_t ble_uart_recv_task_array[ BLE_UART_RECV_TASK_STACK_SIZE ];
+StaticTask_t ble_uart_recv_task_struct;
+#endif
+
+#if (defined(ENABLE_BLE_UART_SEND_TASK) && (ENABLE_BLE_UART_SEND_TASK > 0U))
+#define BLE_UART_SEND_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*4) //6
+#define BLE_UART_SEND_TASK_PRIORITY 1
+StackType_t ble_uart_send_task_array[ BLE_UART_SEND_TASK_STACK_SIZE ];
+StaticTask_t ble_uart_send_task_struct;
+#endif
+
+#if (defined(ENABLE_BLE_SHELL_TASK) && (ENABLE_BLE_SHELL_TASK > 0U))
+// ToDo: Add BLE Shell Task definitions
+#endif
+
+#if (defined(ENABLE_SHELL_RECV_TASK) && (ENABLE_SHELL_RECV_TASK > 0U))
 #define SHELL_RECV_TASK_STACK_SIZE                (configMINIMAL_STACK_SIZE*8) // 8
 #define SHELL_RECV_TASK_PRIORITY 1
 StackType_t shell_recv_task_array[ SHELL_RECV_TASK_STACK_SIZE ];
 StaticTask_t shell_recv_task_struct;
+#endif
 
 #if (defined(ENABLE_ERP_TASK) && (ENABLE_ERP_TASK > 0U))
 #define ERP_TASK_STACK_SIZE                (configMINIMAL_STACK_SIZE*8) // 8
 #define ERP_TASK_PRIORITY 1
 StackType_t erp_task_array[ ERP_TASK_STACK_SIZE ];
 StaticTask_t erp_task_struct;
+#endif
+
+#if (defined(ENABLE_APP_TASK) && (ENABLE_APP_TASK > 0U))
+// ToDo: Add App Task definitions
 #endif
 
 /*******************************************************************************
@@ -195,20 +222,18 @@ int main(void)
 
 	syscalls_pretask_init();  // for printf()'s _write() and getchar()'s _read()
 
+	print_version();
+
 	// Initialize NAND SPI driver
 	nand_init();
 	// Initialize dhara flash translation layer
 	dhara_pretask_init();
 	// Filesystem init
 	mount_fatfs_drive_and_format_if_needed();
-}
 
-int main(void)
-{
-	// Boot up MCU
-	system_boot_up();
-
-	print_version();
+    //
+    // Launch all Tasks:
+    //
 
 	// Initialize RTOS tasks
 	TaskHandle_t task_handle;
@@ -231,55 +256,61 @@ int main(void)
   vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)DATA_LOG_TASK_STACK_SIZE );
 #endif
 
-    /* BLE tasks */
-#if (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
-	LOGV(TAG, "Launching BLE task...");
-	ble_pretask_init();
-	task_handle = xTaskCreateStatic(&ble_task,
-			"ble", BLE_TASK_STACK_SIZE, NULL, BLE_TASK_PRIORITY, ble_task_array, &ble_task_struct);
-	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *) BLE_TASK_STACK_SIZE );
-
-	LOGV(TAG, "Launching BLE uart_recv task...");
-	ble_uart_recv_pretask_init();
-	task_handle = xTaskCreateStatic(&ble_uart_recv_task,
-	      "ble_uart_recv", BLE_UART_RECV_TASK_STACK_SIZE, NULL, BLE_UART_RECV_TASK_PRIORITY, ble_uart_recv_task_array, &ble_uart_recv_task_struct);
-	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *) BLE_UART_RECV_TASK_STACK_SIZE );
-
-	// ToDo: Invoke BLE SHELL TASK here...
-#endif
-
 	/* LED task */
+#if (defined(ENABLE_LED_TASK) && (ENABLE_LED_TASK > 0U))
 	LOGV(TAG, "Launching led task...");
 	led_pretask_init();
 	task_handle = xTaskCreateStatic(&led_task,
 	  "led", LED_TASK_STACK_SIZE, NULL, LED_TASK_PRIORITY, led_task_array, &led_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)LED_TASK_STACK_SIZE );
+#endif
 
-	/* EEG tasks */
-	LOGV(TAG, "Launching eeg_reader task...");
-	eeg_reader_pretask_init();
-	task_handle = xTaskCreateStatic(&eeg_reader_task,
-	  "eeg_reader", EEG_READER_TASK_STACK_SIZE, NULL, EEG_READER_TASK_PRIORITY, eeg_reader_task_array, &eeg_reader_task_struct);
-	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)EEG_READER_TASK_STACK_SIZE );
-
-	LOGV(TAG, "Launching eeg_processor task...");
-	eeg_processor_pretask_init();
-	task_handle = xTaskCreateStatic(&eeg_processor_task,
-	  "eeg_processor", EEG_PROCESSOR_TASK_STACK_SIZE, NULL, EEG_PROCESSOR_TASK_PRIORITY, eeg_processor_task_array, &eeg_processor_task_struct);
-	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)EEG_PROCESSOR_TASK_STACK_SIZE );
+	/* Button task */
+#if (defined(ENABLE_BUTTON_TASK) && (ENABLE_BUTTON_TASK > 0U))
+	// ToDo: Add Button TASK here...
+#endif
 
 	/* Audio tasks */
+#if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
 	LOGV(TAG, "Launching audio task...");
 	audio_pretask_init();
 	task_handle = xTaskCreateStatic(&audio_task,
 	  "audio", AUDIO_TASK_STACK_SIZE, NULL, AUDIO_TASK_PRIORITY, audio_task_array, &audio_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)AUDIO_TASK_STACK_SIZE );
+#endif
 
+#if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
+#if (defined(ENABLE_WAVBUF_TASK) && (ENABLE_WAVBUF_TASK > 0U))
 	LOGV(TAG, "Launching wavbuf task...");
 	wavbuf_pretask_init();
 	task_handle = xTaskCreateStatic(&wavbuf_task,
 	  "wavbuf", WAVBUF_TASK_STACK_SIZE, NULL, WAVBUF_TASK_PRIORITY, wavbuf_task_array, &wavbuf_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)WAVBUF_TASK_STACK_SIZE );
+#endif
+#endif
+
+#if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
+#if (defined(ENABLE_AUDIO_MP3_TASK) && (ENABLE_AUDIO_MP3_TASK > 0U))
+	// ToDo: Add MP3 Task here
+#endif
+#endif
+
+	/* EEG tasks */
+#if (defined(ENABLE_EEG_READER_TASK) && (ENABLE_EEG_READER_TASK > 0U))
+	LOGV(TAG, "Launching eeg_reader task...");
+	eeg_reader_pretask_init();
+	task_handle = xTaskCreateStatic(&eeg_reader_task,
+	  "eeg_reader", EEG_READER_TASK_STACK_SIZE, NULL, EEG_READER_TASK_PRIORITY, eeg_reader_task_array, &eeg_reader_task_struct);
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)EEG_READER_TASK_STACK_SIZE );
+#endif
+
+#if (defined(ENABLE_EEG_PROCESSOR_TASK) && (ENABLE_EEG_PROCESSOR_TASK > 0U))
+	LOGV(TAG, "Launching eeg_processor task...");
+	eeg_processor_pretask_init();
+	task_handle = xTaskCreateStatic(&eeg_processor_task,
+	  "eeg_processor", EEG_PROCESSOR_TASK_STACK_SIZE, NULL, EEG_PROCESSOR_TASK_PRIORITY, eeg_processor_task_array, &eeg_processor_task_struct);
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)EEG_PROCESSOR_TASK_STACK_SIZE );
+#endif
 
 	/* Heart Rate Monitor Task */
 #if (defined(ENABLE_HRM_TASK) && (ENABLE_HRM_TASK > 0U))
@@ -299,6 +330,15 @@ int main(void)
   vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)ACCEL_TASK_STACK_SIZE );
 #endif
 
+	/* System Monitor task */
+#if (defined(ENABLE_SYSTEM_MONITOR_TASK) && (ENABLE_SYSTEM_MONITOR_TASK > 0U))
+    LOGV(TAG, "Launching system_monitor task...");
+    system_monitor_pretask_init();
+    task_handle = xTaskCreateStatic(&system_monitor_task,
+        "system_monitor", SYSTEM_MONITOR_TASK_STACK_SIZE, NULL, SYSTEM_MONITOR_TASK_PRIORITY, system_monitor_task_array, &system_monitor_task_struct);
+    vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)SYSTEM_MONITOR_TASK_STACK_SIZE );
+#endif
+
 	/* Interpreter task */
 #if (defined(ENABLE_INTERPRETER_TASK) && (ENABLE_INTERPRETER_TASK > 0U))
     LOGV(TAG, "Launching interpreter task...");
@@ -308,23 +348,39 @@ int main(void)
     vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)INTERPRETER_TASK_STACK_SIZE );
 #endif
 
-#if (defined(ENABLE_SYSTEM_MONITOR_TASK) && (ENABLE_SYSTEM_MONITOR_TASK > 0U))
-    LOGV(TAG, "Launching system_monitor task...");
-    system_monitor_pretask_init();
-    task_handle = xTaskCreateStatic(&system_monitor_task,
-        "system_monitor", SYSTEM_MONITOR_TASK_STACK_SIZE, NULL, SYSTEM_MONITOR_TASK_PRIORITY, system_monitor_task_array, &system_monitor_task_struct);
-    vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)SYSTEM_MONITOR_TASK_STACK_SIZE );
+    /* BLE tasks */
+#if (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
+	LOGV(TAG, "Launching BLE task...");
+	ble_pretask_init();
+	task_handle = xTaskCreateStatic(&ble_task,
+			"ble", BLE_TASK_STACK_SIZE, NULL, BLE_TASK_PRIORITY, ble_task_array, &ble_task_struct);
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *) BLE_TASK_STACK_SIZE );
 #endif
 
-    /* App task */
+#if (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
+#if (defined(ENABLE_BLE_UART_RECV_TASK) && (ENABLE_BLE_UART_RECV_TASK > 0U))
+	LOGV(TAG, "Launching BLE uart_recv task...");
+	ble_uart_recv_pretask_init();
+	task_handle = xTaskCreateStatic(&ble_uart_recv_task,
+	      "ble_uart_recv", BLE_UART_RECV_TASK_STACK_SIZE, NULL, BLE_UART_RECV_TASK_PRIORITY, ble_uart_recv_task_array, &ble_uart_recv_task_struct);
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *) BLE_UART_RECV_TASK_STACK_SIZE );
+#endif
+#endif
 
+#if (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
+#if (defined(ENABLE_BLE_SHELL_TASK) && (ENABLE_BLE_SHELL_TASK > 0U))
+	// ToDo: Add BLE Shell TASK here...
+#endif
+#endif
 
 	/* Shell task */
+#if (defined(ENABLE_SHELL_RECV_TASK) && (ENABLE_SHELL_RECV_TASK > 0U))
 	LOGV(TAG, "Launching shell recv task...");
 	shell_recv_pretask_init();
 	task_handle = xTaskCreateStatic(&shell_recv_task,
 	  "shell_recv", SHELL_RECV_TASK_STACK_SIZE, NULL, SHELL_RECV_TASK_PRIORITY, shell_recv_task_array, &shell_recv_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)SHELL_RECV_TASK_STACK_SIZE );
+#endif
 
 	/* ERP task */
 #if (defined(ENABLE_ERP_TASK) && (ENABLE_ERP_TASK > 0U))
@@ -333,6 +389,11 @@ int main(void)
     task_handle = xTaskCreateStatic(&erp_task,
       "erp", ERP_TASK_STACK_SIZE, NULL, ERP_TASK_PRIORITY, erp_task_array, &erp_task_struct);
     vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)ERP_TASK_STACK_SIZE );
+#endif
+
+    /* App task */
+#if (defined(ENABLE_APP_TASK) && (ENABLE_APP_TASK > 0U))
+    // ToDo: Add App Task here
 #endif
 
 	//DSP_Start();

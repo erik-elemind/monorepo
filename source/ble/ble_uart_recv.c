@@ -43,7 +43,7 @@
 
 #include "loglevels.h"
 
-#if (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
+#if (defined(ENABLE_BLE_UART_RECV_TASK) && (ENABLE_BLE_UART_RECV_TASK > 0U))
 
 //static const char *TAG = "ble_uart_recv"; // Logging prefix for this module
 
@@ -99,10 +99,10 @@ ble_uart_recv_task(void *ignored)
   }
 }
 
-#else (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
+#else // (defined(ENABLE_BLE_UART_RECV_TASK) && (ENABLE_BLE_UART_RECV_TASK > 0U))
 
 void ble_uart_recv_pretask_init(void){}
 void ble_uart_recv_task(void *ignored){}
 void ble_uart_handle_input_buf(char* buf, size_t buf_size){}
 
-#endif (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
+#endif // (defined(ENABLE_BLE_UART_RECV_TASK) && (ENABLE_BLE_UART_RECV_TASK > 0U))
