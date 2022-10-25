@@ -37,7 +37,7 @@
 // The 4* multiple assumes 2 channel audio data is stored on buffer.
 #define WAV_BUFFER_MSG_LEN     (4*AUDIO_BLOCK_SAMPLES) // bytes
 // The number of audio blocks on the buffer.
-#define WAV_BUFFER_NUM_MSGS    40 //was 40
+#define WAV_BUFFER_NUM_MSGS    100 //was 40
 // The total number of audio bytes to be buffered.
 #define WAV_BUFFER_SIZE_BYTES  WAV_BUFFER_MSG_LEN * WAV_BUFFER_NUM_MSGS // bytes
 #endif

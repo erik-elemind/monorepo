@@ -693,7 +693,8 @@ nand_can_copy_page_from_cache(nand_user_data_t *user_data, uint32_t src_page_add
   // if the copy is done within a main array. There are two main arrays,
   // one main array is addressed by page_address bit 17 (zero-indexed) equal to 0,
   // the other array is addressed by page_address bit 17 (zero-indexed) equal to 1.
-  return ((src_page_addr>>17) & 0x00000001) == ((dest_page_addr>>17) & 0x00000001);
+  //return ((src_page_addr>>17) & 0x00000001) == ((dest_page_addr>>17) & 0x00000001);
+  return false;
 }
 
 /** Copy page: Copy a page into another address using internal cache.
