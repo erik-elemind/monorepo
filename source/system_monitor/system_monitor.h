@@ -27,9 +27,6 @@ void system_monitor_event_battery(void);
 
 // Battery charger event (triggered by interrupt)
 void system_monitor_event_battery_from_isr(void);
-  
-// Battery charger event (called by app)
-void system_monitor_event_battery(void);
 
 // Power off
 void system_monitor_event_power_off(void);

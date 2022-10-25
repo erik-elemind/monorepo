@@ -25,6 +25,8 @@
 #include "peripherals.h"
 #include "hrm.h"
 
+#if (defined(ENABLE_HRM_TASK) && (ENABLE_HRM_TASK > 0U))
+
 #define HRM_EVENT_QUEUE_SIZE 10
 
 static const char *TAG = "hrm";	// Logging prefix for this module
@@ -532,3 +534,14 @@ void hrm_sample_timer_cb( TimerHandle_t xTimer )
   // Do wait forever here due to the repeated nature of this event.
   xQueueSend(g_event_queue, &event, 0);
 }
+
+#else // (defined(ENABLE_HRM_TASK) && (ENABLE_HRM_TASK > 0U))
+
+void hrm_pretask_init(void){}
+void hrm_task(void *ignored){}
+void hrm_event_turn_off(void){}
+void hrm_event_turn_on(void){}
+
+void hrm_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status){}
+
+#endif // (defined(ENABLE_HRM_TASK) && (ENABLE_HRM_TASK > 0U))

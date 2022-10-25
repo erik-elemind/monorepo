@@ -21,6 +21,8 @@
 #include "interpreter.h"
 #include "settings.h"
 
+#if (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
+
 #define BLE_EVENT_QUEUE_SIZE 10
 
 static const char *TAG = "ble";	// Logging prefix for this module
@@ -1018,3 +1020,51 @@ ble_task(void *ignored)
 
   }
 }
+
+#else (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
+
+void ble_pretask_init(void){}
+void ble_task(void *ignored){}
+
+void ble_battery_level_request(void){}
+void ble_battery_level_update(uint8_t battery_level){}
+void ble_serial_number_request(void){}
+void ble_software_version_request(void){}
+void ble_dfu_request(void){}
+
+void ble_electrode_quality_request(void){}
+void ble_electrode_quality_update(uint8_t qualities[ELECTRODE_NUM]){}
+void ble_volume_request(void){}
+void ble_volume_command(uint8_t volume){}
+void ble_volume_update(uint8_t volume){}
+void ble_power_request(void){}
+void ble_power_command(uint8_t power){}
+void ble_power_update(uint8_t power){}
+void ble_therapy_request(void){}
+void ble_therapy_command(uint8_t therapy){}
+void ble_therapy_update(uint8_t therapy){}
+void ble_heart_rate_request(void){}
+void ble_heart_rate_update(uint8_t heart_rate){}
+void ble_reset(void){}
+void ble_blink_status_request(void){}
+void ble_blink_status_update(uint8_t status[BLINK_NUM]){}
+void ble_quality_check_request(void){}
+void ble_quality_check_command(uint8_t quality_check){}
+void ble_quality_check_update(uint8_t quality_check){}
+void ble_alarm_request(void){}
+void ble_alarm_command(alarm_params_t *params){}
+void ble_alarm_update(alarm_params_t *params){}
+void ble_sound_request(void){}
+void ble_sound_command(uint8_t sound){}
+void ble_sound_update(uint8_t sound){}
+void ble_time_request(void){}
+void ble_time_command(uint64_t unix_epoch_time_sec){}
+void ble_time_update(uint64_t unix_epoch_time_sec){}
+void ble_addr_command(uint8_t* addr){}
+
+uint8_t* ble_get_addr(){}
+
+void ble_power_off(void){}
+void ble_power_on(void){}
+
+#endif (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
