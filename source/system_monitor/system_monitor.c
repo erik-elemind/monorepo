@@ -30,6 +30,9 @@
 #include "loglevels.h"
 #include "utils.h"
 
+
+#if (defined(ENABLE_SYSTEM_MONITOR_TASK) && (ENABLE_SYSTEM_MONITOR_TASK > 0U))
+
 #define SYSTEM_MONITOR_EVENT_QUEUE_SIZE 50
 
 // Power off constants
@@ -750,4 +753,24 @@ system_monitor_task(void *ignored)
   }
 }
 
+#else // (defined(ENABLE_SYSTEM_MONITOR_TASK) && (ENABLE_SYSTEM_MONITOR_TASK > 0U))
 
+/// Battery charger handle
+battery_charger_handle_t g_battery_charger_handle;
+
+void system_monitor_pretask_init(void){}
+void system_monitor_task(void *ignored){}
+void system_monitor_event_battery(void){}
+void system_monitor_event_battery_from_isr(void){}
+void system_monitor_event_power_off(void){}
+
+void system_monitor_event_als_start_sample(unsigned int sample_period_ms){}
+void system_monitor_event_als_stop(void){}
+
+void system_monitor_event_mic_start_sample(unsigned int sample_period_ms){}
+void system_monitor_event_mic_start_thresh(unsigned int sample_period_ms, unsigned int sample_num){}
+void system_monitor_event_mic_stop(void){}
+int32_t system_monitor_event_mic_read_once(void){ return 0; }
+void system_monitor_event_mic_from_isr(void){}
+
+#endif // (defined(ENABLE_SYSTEM_MONITOR_TASK) && (ENABLE_SYSTEM_MONITOR_TASK > 0U))

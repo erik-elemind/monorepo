@@ -659,7 +659,7 @@ static void arrange_and_send_eeg_channels_from_isr(BaseType_t *pxHigherPriorityT
 }
 
 void handle_eeg_temp_sample(int32_t temp) {
- //data_log_temp(temp); //ToDo: Enable once data log is setup
+  data_log_temp(temp);
 }
 
 #else

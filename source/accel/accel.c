@@ -26,6 +26,8 @@
 #include "timers.h"
 #include "queue.h"
 
+#if (defined(ENABLE_ACCEL_TASK) && (ENABLE_ACCEL_TASK > 0U))
+
 static const char *TAG = "accel"; // Logging prefix for this module
 
 //
@@ -496,3 +498,15 @@ accel_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status)
   // Always do this when calling a FreeRTOS "...FromISR()" function:
   portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
+
+#else // (defined(ENABLE_ACCEL_TASK) && (ENABLE_ACCEL_TASK > 0U))
+
+void accel_pretask_init(i2c_rtos_handle_t* i2c_handle){}
+void accel_task(void *ignored){}
+void accel_turn_off(void){}
+void accel_start_sample(void){}
+void accel_start_motion_detect(void){}
+
+void accel_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status){}
+
+#endif // (defined(ENABLE_ACCEL_TASK) && (ENABLE_ACCEL_TASK > 0U))

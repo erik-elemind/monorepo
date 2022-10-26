@@ -550,9 +550,9 @@ nand_read_all_blocks_command(int argc, char **argv)
   const uint32_t data_size = (NAND_PAGE_SIZE + NAND_SPARE_SIZE);
 #ifdef NAND_TESTS_USE_MALLOC  // use static ram if your heap is low
   uint8_t *data = malloc(data_size);
-
   if (data == NULL) {
     LOGE("nand_read_all_blocks", "malloc failure, returned NULL");
+    return;
   }
 #else
   // If these are not static, you'll need a huge Task stack size to push them.
@@ -560,8 +560,7 @@ nand_read_all_blocks_command(int argc, char **argv)
 #endif
   uint8_t marker;
 
-//  for (block = 0 ; block < NAND_BLOCK_COUNT; block++) {
-  for (block = 0 ; block < 20; block++) {
+  for (block = 0 ; block < NAND_BLOCK_COUNT; block++) {
 
     page_offset = 0;  // Read the entire page
 

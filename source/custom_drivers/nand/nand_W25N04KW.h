@@ -285,6 +285,17 @@ nand_write_page(
   uint16_t data_len
   );
 
+/** Determines if possible to copy from page to page internal to NAND
+
+    @param user_data Platform/user data handle
+    @param src_page_addr Source 24-bit page address (incl. block shifted over some bits)
+    @param dest_page_addr Destination 24-bit page address (incl. block shifted over some bits)
+
+    @return 0 if it is possible to copy from src_page_addr to dest_page_addr.
+ */
+int
+nand_can_copy_page_from_cache(nand_user_data_t *user_data, uint32_t src_page_addr, uint32_t dest_page_addr);
+
 /** Copy page: Copy a page into another address using internal cache.
 
     @param user_data Platform/user data handle
@@ -302,7 +313,6 @@ nand_copy_page_from_cache(
   uint32_t src_page_addr,
   uint32_t dest_page_addr
   );
-
 
 /** Read flash page cache.
 

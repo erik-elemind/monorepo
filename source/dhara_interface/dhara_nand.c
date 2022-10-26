@@ -379,16 +379,22 @@ int dhara_nand_copy(const struct dhara_nand *nand,
   int status = 0;
   int ret = 0;
 
-  // This chip (GD5F4GQ6xExxG) has an internal data move operation.
-  // However, Gigadevice have told us that it's only usable when both
-  // the source and destination pages belong to the same plane (odd
-  // blocks form one plane and even blocks another), and to the same die
-  // (two contiguous 256 MB regions make up two dies).
-  //
-  // The test below checks that the page addresses have the same die
-  // (0x20000) and same plane (0x40). If so, IDM is used. Otherwise, we
-  // use the software fallback.
-  if ((src ^ dst) & 0x20040) {
+  if ( nand_can_copy_page_from_cache(user_data, (uint32_t)src, (uint32_t)dst) ){
+  	
+    status = nand_copy_page_from_cache(user_data, (uint32_t)src, (uint32_t)dst);
+    if (status != NAND_NO_ERR && status != NAND_ECC_OK) {
+      LOGE(TAG, "dhara_nand_copy: status %d, returning -1 (err: DHARA_E_BAD_BLOCK)", status);
+      dhara_set_error(err, DHARA_E_BAD_BLOCK);
+      return -1;
+    }
+
+    if (status == NAND_ECC_OK) {
+      ret = -1;
+      dhara_set_error(err, DHARA_E_ECC_WARNING);
+    }
+    
+  } else {
+
     uint8_t *layout_buffer = user_data->layout_buffer;
     size_t layout_size_bytes = user_data->layout_size_bytes;
     uint32_t block;
@@ -428,18 +434,6 @@ int dhara_nand_copy(const struct dhara_nand *nand,
     // more likely to be a useful cache tag. The source is probably at the
     // tail of the journal and likely to be erased soon.
     user_data->layout_page_addr = (uint32_t)dst;
-  } else {
-    status = nand_copy_page_from_cache(user_data, (uint32_t)src, (uint32_t)dst);
-    if (status != NAND_NO_ERR && status != NAND_ECC_OK) {
-      LOGE(TAG, "dhara_nand_copy: status %d, returning -1 (err: DHARA_E_BAD_BLOCK)", status);
-      dhara_set_error(err, DHARA_E_BAD_BLOCK);
-      return -1;
-    }
-
-    if (status == NAND_ECC_OK) {
-      ret = -1;
-      dhara_set_error(err, DHARA_E_ECC_WARNING);
-    }
   }
 
   return ret;

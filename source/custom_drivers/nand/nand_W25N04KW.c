@@ -497,7 +497,7 @@ nand_set_feature_reg(
   flashXfer.cmdType = kFLEXSPI_Write;
   flashXfer.SeqNumber = 1;
   flashXfer.seqIndex = NAND_CMD_LUT_SEQ_IDX_WRITE_STATUS;
-  flashXfer.data = &data;
+  flashXfer.data = (uint32_t*) &data; // TODO: verify that it's okay to pass a 1 bit pointer to a 4 bit pointer field.
   flashXfer.dataSize = 1;
 
   status = FLEXSPI_TransferBlocking(NAND_FLEXSPI_PERIPHERAL, &flashXfer);
@@ -664,6 +664,37 @@ nand_write_page(
   status = nand_program_page_cache(user_data, page_addr);
   LOGV(TAG, "nand_program_page_cache: status: %d", (int) status);
   return status;
+}
+
+/** Determines if possible to copy from page to page internal to NAND
+
+    @param user_data Platform/user data handle
+    @param src_page_addr Source 24-bit page address (incl. block shifted over some bits)
+    @param dest_page_addr Destination 24-bit page address (incl. block shifted over some bits)
+
+    @return 0 if it is possible to copy from src_page_addr to dest_page_addr.
+ */
+int
+nand_can_copy_page_from_cache(nand_user_data_t *user_data, uint32_t src_page_addr, uint32_t dest_page_addr){
+#if 0
+  // This chip (GD5F4GQ6xExxG) has an internal data move operation.
+  // However, Gigadevice have told us that it's only usable when both
+  // the source and destination pages belong to the same plane (odd
+  // blocks form one plane and even blocks another), and to the same die
+  // (two contiguous 256 MB regions make up two dies).
+  //
+  // The test below checks that the page addresses have the same die
+  // (0x20000) and same plane (0x40). If so, IDM is used. Otherwise, we
+  // use the software fallback.
+  return !((src_page_addr ^ dest_page_addr) & 0x20040)
+#endif
+
+  // The chip (W25N04KW) can only do an internal data move operation
+  // if the copy is done within a main array. There are two main arrays,
+  // one main array is addressed by page_address bit 17 (zero-indexed) equal to 0,
+  // the other array is addressed by page_address bit 17 (zero-indexed) equal to 1.
+  //return ((src_page_addr>>17) & 0x00000001) == ((dest_page_addr>>17) & 0x00000001);
+  return false;
 }
 
 /** Copy page: Copy a page into another address using internal cache.
@@ -842,7 +873,7 @@ nand_write_into_page_cache(
   // Set write enable latch
   status = nand_write_enable(user_data, true);
   if (status < 0) {
-    LOGE(TAG, "nand_write_page(): COMMAND_WRITE_ENABLE error: %d",
+    LOGE(TAG, "nand_write_into_page_cache(): COMMAND_WRITE_ENABLE error: %d",
       status);
     return status;
   }
@@ -875,10 +906,18 @@ int nand_program_page_cache(
   int status;
   nand_status_reg_t status_reg;
 
+  // Set write enable latch
+  status = nand_write_enable(user_data, true);
+  if (status < 0) {
+    LOGE(TAG, "nand_program_page_cache(): COMMAND_WRITE_ENABLE error: %d",
+      status);
+    return status;
+  }
+
   // Program data from cache into flash page
   status = nand_command(user_data, COMMAND_PROGRAM_EXECUTE, page_addr); // TODO: Use page_addr directly???
   if (status < 0) {
-    LOGE(TAG, "nand_write_page(): COMMAND_PROGRAM_EXECUTE error: %d",
+    LOGE(TAG, "nand_program_page_cache(): COMMAND_PROGRAM_EXECUTE error: %d",
       status);
     return status;
   }

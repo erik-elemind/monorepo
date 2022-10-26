@@ -73,22 +73,34 @@
 // 1U - enable timer-based auto power-off (production default)
 #define ENABLE_BLE_POWER_OFF_TIMER (0U)
 
+
+#define ENABLE_FS_WRITER_TASK      (1U)
+#define ENABLE_DATA_LOG_TASK       (1U)
+#define ENABLE_LED_TASK            (1U)
+#define ENABLE_BUTTON_TASK         (0U) // TODO: Reenable when app task is thoughtfully added
+
+#define ENABLE_AUDIO_TASK          (1U)
+#define ENABLE_WAVBUF_TASK         (1U)
+#define ENABLE_AUDIO_MP3_TASK      (0U) // TODO: Low Priority, Reenable when ALL other tasks are running.
+
+#define ENABLE_BLE_TASK            (0U) // TODO: Reenable when BLE task is thoughtfully added
 // Enable the BLE_UART_SEND task, affects how ble_uart_send_buf() operates.
 // 0U - disable the task, ble_uart_send_buf() calls USART_RTOS_Send
 // 1U - enable the task, ble_uart_send_buf() pushes messages onto stream buf
-#define ENABLE_BLE_UART_SEND_TASK (0U)
+#define ENABLE_BLE_UART_RECV_TASK  (1U)
+#define ENABLE_BLE_UART_SEND_TASK  (0U) // Not Used, leave disabled
 
-#define ENABLE_APP_TASK (0U) // TODO: Reenable when app task is thoughtfully added
-#define ENABLE_AUDIO_TASK (1U)
-#define ENABLE_AUDIO_MP3_TASK (0U) //(0U)
-#define ENABLE_DATA_LOG_TASK (0U) // TODO: Reenable when data log task is thoughtfully added
-#define ENABLE_EEG_READER_TASK (1U)
-#define ENABLE_EEG_PROCESSOR_TASK (1U)
-#define ENABLE_HRM_TASK (1U)
-#define ENABLE_ACCEL_TASK (1U)
+#define ENABLE_EEG_READER_TASK     (1U)
+#define ENABLE_EEG_PROCESSOR_TASK  (1U)
+#define ENABLE_HRM_TASK            (0U) // TODO: Reenable when HRM task is thoughtfully added
+#define ENABLE_ACCEL_TASK          (0U) // TODO: Reenable when Accel task is thoughtfully added
 
+#define ENABLE_SYSTEM_MONITOR_TASK (0U) // TODO: Reenable when Sys Mon task is thoughtfully added
+#define ENABLE_INTERPRETER_TASK    (1U)
 
-#define ENABLE_WAVBUF_TASK (1U)
+#define ENABLE_ERP_TASK            (0U) // TODO: Reenable when ERP task is thoughtfully added
+#define ENABLE_SHELL_RECV_TASK     (1U)
+#define ENABLE_APP_TASK            (0U) // TODO: Reenable when App task is thoughtfully added
 
 #define USE_EEG_INTERRUPT_INITIATED_DMA (0U)
 
@@ -99,8 +111,6 @@
 #ifndef CONFIG_STREAMING_LOG_DATA
 #define CONFIG_STREAMING_LOG_DATA 1U
 #endif
-
-#define ENABLE_FS_WRITER (1U)
 
 #define ENABLE_USB_DEBUGGING (0U)
 
@@ -149,7 +159,7 @@
 
 // Enable stress-testing for Dhara. See
 // source_code/dhara_interface/dhara_ppstress.h for more details
-#define ENABLE_DHARA_PPSTRESS
+#define ENABLE_DHARA_PPSTRESS (1U)
 
 // Enable memory unit tests
 #define ENABLE_STREAM_MEMORY_TEST_COMMANDS (0U)

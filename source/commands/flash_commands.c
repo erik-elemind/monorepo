@@ -95,19 +95,41 @@ flash_unlock(int argc, char **argv)
   }
 }
 
+static inline uint32_t min(uint32_t a, uint32_t b){
+	return a<b ? a : b;
+}
+
+static inline uint32_t max(uint32_t a, uint32_t b){
+	return a>b ? a : b;
+}
+
 void
 flash_read_page(int argc, char **argv)
 {
-  if (argc != 2) {
+  if (argc != 2 && argc != 3 && argc != 4) {
     printf("Error: Missing page address\n");
-    printf("Usage: %s <page_addr>\n", argv[0]);
+    printf("Usage: %s <page_addr> <page_offset> <num_bytes>\n", argv[0]);
     return;
   }
 
   // Get address
-  uint32_t address;
-  if (!parse_uint32_arg_max(argv[0], argv[1],
+  uint32_t address = 0;
+  if (argc > 1 && !parse_uint32_arg_max(argv[0], argv[1],
       NAND_PAGE_ADDR_MAX, &address)) {
+    return;
+  }
+
+  // Get page offset
+  uint32_t page_offset = 0;
+  if (argc > 2 && !parse_uint32_arg_max(argv[0], argv[2],
+      NAND_PAGE_PLUS_SPARE_SIZE, &page_offset)) {
+    return;
+  }
+
+  // Get num bytes to read from page offset
+  uint32_t num_bytes = NAND_PAGE_PLUS_SPARE_SIZE - page_offset;
+  if (argc > 3 && !parse_uint32_arg_max(argv[0], argv[3],
+      NAND_PAGE_PLUS_SPARE_SIZE, &num_bytes)) {
     return;
   }
 
@@ -116,20 +138,30 @@ flash_read_page(int argc, char **argv)
   nand_page_addr_to_block_page(
     address, g_nand_handle.chipinfo->block_addr_offset, &block, &page);
 
-  uint8_t* data = malloc(NAND_PAGE_SIZE + NAND_SPARE_SIZE);
+  uint8_t* data = malloc(NAND_PAGE_PLUS_SPARE_SIZE);
   if (data == NULL) {
     printf("Unable to allocate data buffer!\n");
     return;
   }
+  memset(data,0,NAND_PAGE_PLUS_SPARE_SIZE);
 
-  int status = nand_read_page(&g_nand_handle, block, page, 0, data,
-      NAND_PAGE_SIZE + NAND_SPARE_SIZE);
+  int status = nand_read_page(&g_nand_handle, block, page, page_offset, data+page_offset,
+		  num_bytes);
   if (0 == status) {
+    // floor of "page_offset" with 16 byte multiples
+    uint32_t start_by16 = (page_offset/16)*16;
+    // ceil of "page_offset+num_bytes" with 16 byte multiples
+    uint32_t end_by16 = ((page_offset+num_bytes+15)/16)*16;
+
     printf("Flash page data:\n");
-    hex_dump(data, NAND_PAGE_SIZE, 0);
+    if (start_by16 < NAND_PAGE_SIZE ){
+      hex_dump(data, min(end_by16, NAND_PAGE_SIZE), start_by16); // NAND_PAGE_SIZE, 0
+    }
 
     printf("Flash page spare:\n");
-    hex_dump(data, NAND_PAGE_SIZE + NAND_SPARE_SIZE, NAND_PAGE_SIZE);
+    if (end_by16 >= NAND_PAGE_SIZE ){
+      hex_dump(data, end_by16, max(NAND_PAGE_SIZE, start_by16)); // NAND_PAGE_PLUS_SPARE_SIZE, NAND_PAGE_SIZE
+    }
 
     if ((address % 64) == 0) {
       // For first page in block, first byte of spare area has "bad page" mark
