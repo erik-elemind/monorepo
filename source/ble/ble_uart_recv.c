@@ -45,18 +45,16 @@
 
 #if (defined(ENABLE_BLE_UART_RECV_TASK) && (ENABLE_BLE_UART_RECV_TASK > 0U))
 
-//static const char *TAG = "ble_uart_recv"; // Logging prefix for this module
+static const char *TAG = "ble_uart_recv"; // Logging prefix for this module
 
 static command_parser_t  ble_uart_recv;
 
 
 void
 ble_uart_handle_input_buf(char* buf, size_t buf_size){
-//  LOGV("uart_shell","uart_handle_input_buf");
   ble_uart_recv.index = buf_size;
   size_t min_buf_size = buf_size < BLE_UART_SHELL_CMD_BUFFER_LEN ? buf_size : BLE_UART_SHELL_CMD_BUFFER_LEN;
   memcpy(ble_uart_recv.buf,buf,min_buf_size);
-//  LOGV("uart_shell","%s", buf);
   ble_uart_recv.status = PARSER_LINE_FOUND;
   parse_command(&ble_uart_recv);
 }
@@ -75,6 +73,7 @@ ble_uart_recv_task(void *ignored)
   ble_uart_recv.use_prompt = false;
 
   bin_itf_init();
+  LOGV(TAG, "Task launched. Entering event loop.\n\r");
 
   while (1) {
     uint8_t byte;
@@ -88,7 +87,7 @@ ble_uart_recv_task(void *ignored)
       vTaskDelay(BLE_UART_SHELL_TASK_DELAY);  // TODO: Try bus reset / recovery?
     } else {
 
-//    LOGV("ble_uart_recv","ble_uart_recv_task: %c %d, status: %d (%d)", (char) byte, (int) byte, status, status==kStatus_Success);
+    LOGV(TAG,"ble_uart_recv_task: %c %d, status: %d (%d)", (char) byte, (int) byte, status, status==kStatus_Success);
 
 //      char buf[20];
 //      snprintf(buf, 20, "R: %d, s:%d", (int)byte, status);

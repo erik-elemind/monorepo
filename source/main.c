@@ -23,6 +23,7 @@
 #include "shell_recv.h"
 #include "ble_uart_send.h"
 #include "ble_uart_recv.h"
+#include "ble_shell.h"
 #include "utils.h"
 #include "led.h"
 
@@ -40,6 +41,7 @@
 #include "eeg_processor.h"
 #include "erp.h"
 
+#include "fsl_usart_rtos_additional.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -155,7 +157,10 @@ StaticTask_t ble_uart_send_task_struct;
 #endif
 
 #if (defined(ENABLE_BLE_SHELL_TASK) && (ENABLE_BLE_SHELL_TASK > 0U))
-// ToDo: Add BLE Shell Task definitions
+#define BLE_SHELL_TASK_STACK_SIZE         (configMINIMAL_STACK_SIZE*8) // 8
+#define BLE_SHELL_TASK_PRIORITY 1
+StackType_t ble_shell_task_array[ BLE_SHELL_TASK_STACK_SIZE ];
+StaticTask_t ble_shell_task_struct;
 #endif
 
 #if (defined(ENABLE_SHELL_RECV_TASK) && (ENABLE_SHELL_RECV_TASK > 0U))
@@ -210,6 +215,11 @@ static void system_boot_up(void)
 	BOARD_InitBootPins();
 	BOARD_InitBootClocks();
 	BOARD_InitBootPeripherals();
+	// Enable flow control in BLE UART, which is not natively supported by the USART FreeRTOS Driver.
+	// This line of code overrides the behavior of the auto-generated code in BOARD_InitBootPeripherals().
+	USART_RTOS_Init_FlowControl(&FC0_BLE_UART_rtos_handle, &FC0_BLE_UART_usart_handle, &FC0_BLE_UART_rtos_config, true);
+
+	BOARD_InitBLE();
 	BOARD_InitDebugConsole();
 
 	//BOARD_DSP_Init();
@@ -369,7 +379,11 @@ int main(void)
 
 #if (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
 #if (defined(ENABLE_BLE_SHELL_TASK) && (ENABLE_BLE_SHELL_TASK > 0U))
-	// ToDo: Add BLE Shell TASK here...
+	  LOGV(TAG, "Launching BLE shell task...");
+	  ble_shell_pretask_init();
+	  task_handle = xTaskCreateStatic(&ble_shell_task,
+	      "ble_shell", BLE_SHELL_TASK_STACK_SIZE, NULL, BLE_SHELL_TASK_PRIORITY, ble_shell_task_array, &ble_shell_task_struct);
+	  vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)BLE_SHELL_TASK_STACK_SIZE );
 #endif
 #endif
 
