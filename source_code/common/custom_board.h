@@ -63,6 +63,10 @@ extern "C" {
 #define LPC_RESETN_PIN 20
 #define LPC_ISPN_PIN 30
 
+#define ISP0N_PIN 27
+#define ISP1N_PIN 29
+#define ISP2N_PIN 31
+
 // SPI config for external flash
 #define SPIM0_SCK_PIN   (16)
 #define SPIM0_MOSI_PIN  (14)
