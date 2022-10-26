@@ -526,8 +526,8 @@
 								<option id="com.crt.advproject.link.cpp.ecrp.1436924730" name="Enhanced CRP" superClass="com.crt.advproject.link.cpp.ecrp"/>
 								<option id="com.crt.advproject.link.cpp.nanofloat.333653770" name="Enable printf float " superClass="com.crt.advproject.link.cpp.nanofloat" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option id="com.crt.advproject.link.cpp.nanofloat.scanf.1146202097" name="Enable scanf float " superClass="com.crt.advproject.link.cpp.nanofloat.scanf"/>
-								<option id="com.crt.advproject.link.cpp.toram.2061222290" name="Link application to RAM" superClass="com.crt.advproject.link.cpp.toram"/>
-								<option id="com.crt.advproject.link.memory.load.image.cpp.2021960866" name="Plain load image" superClass="com.crt.advproject.link.memory.load.image.cpp" useByScannerDiscovery="false" value="false;" valueType="string"/>
+								<option id="com.crt.advproject.link.cpp.toram.2061222290" name="Link application to RAM" superClass="com.crt.advproject.link.cpp.toram" useByScannerDiscovery="false" value="false" valueType="boolean"/>
+								<option id="com.crt.advproject.link.memory.load.image.cpp.2021960866" name="Plain load image" superClass="com.crt.advproject.link.memory.load.image.cpp" useByScannerDiscovery="false" value="true;SRAM" valueType="string"/>
 								<option defaultValue="com.crt.advproject.heapAndStack.mcuXpressoStyle.cpp" id="com.crt.advproject.link.memory.heapAndStack.style.cpp.2044678634" name="Heap and Stack placement" superClass="com.crt.advproject.link.memory.heapAndStack.style.cpp" useByScannerDiscovery="false" value="com.crt.advproject.heapAndStack.mcuXpressoStyle.cpp" valueType="enumerated"/>
 								<option id="com.crt.advproject.link.cpp.stackOffset.563340467" name="Stack offset" superClass="com.crt.advproject.link.cpp.stackOffset"/>
 								<option id="com.crt.advproject.link.memory.heapAndStack.cpp.1358498893" name="Heap and Stack options" superClass="com.crt.advproject.link.memory.heapAndStack.cpp" useByScannerDiscovery="false" value="&amp;Heap:SRAM;Post Data;0x9000&amp;Stack:Default;End;0x1000" valueType="string"/>
@@ -709,7 +709,6 @@
 						<entry excluding="portable/MemMang/heap_4.c|fatfs_interface" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="freertos_kernel"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="helix"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="libs"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="linkscripts"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="minIni"/>
 						<entry excluding="generated/usb_host_config.h|packet_serial|system_monitor|tests|accel|shell|config|custom_drivers|heatshrink|tracealyzer|utils|button|noise_test|compression|ble|erp|hrm|led|dhara_interface|signal_processing|zmodem|fatfs_interface|audio_pjrc|audio|settings|error_handling|memory_manager|commands|interpreter|interface|app|interrupts|sha256|eeg_reader|data_log" flags="LOCAL|VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/accel"/>
@@ -1367,7 +1366,6 @@
 						<entry excluding="fatfs_interface" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="freertos_kernel"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="helix"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="libs"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="linkscripts"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="minIni"/>
 						<entry excluding="packet_serial|system_monitor|tests|accel|shell|config|custom_drivers|heatshrink|tracealyzer|utils|button|noise_test|compression|ble|erp|hrm|led|dhara_interface|signal_processing|zmodem|fatfs_interface|audio_pjrc|audio|settings|error_handling|memory_manager|commands|interpreter|interface|app|interrupts|sha256|eeg_reader|data_log" flags="LOCAL|VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/accel"/>

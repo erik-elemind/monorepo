@@ -1,3 +1,0 @@
-       *startup_*.o (.rodata .rodata.* .constdata .constdata.*)
-       *system_*.o (.rodata .rodata.* .constdata .constdata.*)
-       . = ALIGN(${text_align});
