@@ -667,9 +667,19 @@ ble_elemind_init(
   // Set up LPC reset GPIO (active-low)
   // Use a pullup here since there are other drivers of this net
   nrf_gpio_cfg_input(LPC_RESETN_PIN, NRF_GPIO_PIN_PULLUP);
-  // Setup ISP GPIO (active-low)
-  nrf_gpio_pin_set(LPC_ISPN_PIN);
-  nrf_gpio_cfg_output(LPC_ISPN_PIN);
+  
+  // Setup ISP GPIOs
+  nrf_gpio_cfg_input(ISP0N_PIN, NRF_GPIO_PIN_PULLDOWN);
+  nrf_gpio_cfg_input(ISP1N_PIN, NRF_GPIO_PIN_NOPULL);
+  nrf_gpio_cfg_input(ISP2N_PIN, NRF_GPIO_PIN_PULLDOWN);
+
+  // Reset the NXP chip on bootup, the ISP pins need to be initialized for it to boot ok
+  nrf_delay_us(LPC_RESETN_HOLD_US);
+  nrf_gpio_pin_clear(LPC_RESETN_PIN);
+  nrf_gpio_cfg_output(LPC_RESETN_PIN);
+  nrf_delay_us(LPC_RESETN_HOLD_US); // Hold reset low for a little bit
+  nrf_gpio_cfg_input(LPC_RESETN_PIN, NRF_GPIO_PIN_PULLUP);
+
 
   // Create LPC ISP disable timer (used to disable ISP after an ISP reset)
   err_code = app_timer_create(&m_lpc_ispn_disable_timer_id,
