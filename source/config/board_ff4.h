@@ -46,7 +46,7 @@ extern "C" {
 #define USART_BLE_INSTANCE       0U
 #define USART_BLE_IRQn           FLEXCOMM0_IRQn
 #define USART_BLE_BASEADDR       USART0
-#define USART_BLE_CLK_FREQ       12000000U
+#define USART_BLE_CLK_FREQ       16000000U
 #define USART_BLE_BAUDRATE       115200
 #define USART_BLE_PARITY         kUSART_ParityDisabled
 #define USART_BLE_STOPBITS       kUSART_OneStopBit

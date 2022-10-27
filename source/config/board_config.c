@@ -33,7 +33,7 @@ BOARD_InitBLE()
   NVIC_SetPriority(USART_BLE_IRQn, USART_BLE_NVIC_PRIORITY);
   EnableIRQ(USART_BLE_IRQn);
 
-  RESET_ClearPeripheralReset(USART_BLE_RST);  // TODO: Is this necessary?
+  //RESET_ClearPeripheralReset(USART_BLE_RST);  // TODO: Is this necessary?
   return kStatus_Success;
 }
 

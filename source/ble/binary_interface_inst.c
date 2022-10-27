@@ -63,8 +63,8 @@ static void handle_file_commands(BinaryReader *r)
   char data_array[BUFFER_SIZE] = {0};
   ErrValUINT8 data_array_size = readSTRING(r, data_array, BUFFER_SIZE);
   if(data_array_size.error_ == ERROR_NONE){
-//    printf("BLE RX (%u): ",data_array_size.value_);
-//    printf("%.*s\n",(size_t)data_array_size.value_,data_array);
+    //printf("BLE RX (%u): ",data_array_size.value_);
+    //printf("%.*s\n",(size_t)data_array_size.value_,data_array);
 
     ble_shell_add_char_from_ble(data_array,data_array_size.value_);
   }
@@ -76,8 +76,8 @@ static void handle_ack(BinaryReader *r)
 }
 
 bool bin_itf_send_uart_command(char* buf, size_t buf_size) {
-//  printf("BLE TX (%u): ",buf_size);
-//  printf("%.*s\n",buf_size,buf);
+  //printf("BLE TX (%u): ",buf_size);
+  //printf("%.*s\n",buf_size,buf);
 
 
   BinaryWriter *bw = getWriter(&bin_itf);
