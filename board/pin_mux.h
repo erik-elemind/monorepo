@@ -156,32 +156,32 @@ void BOARD_InitBootPins(void);
 /*! @name PIO0_21 (coord C7), BAT_STATn
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_BAT_STATn_PERIPHERAL GPIO           /*!<@brief Peripheral name */
-#define BOARD_INITPINS_BAT_STATn_SIGNAL PIO0               /*!<@brief Signal name */
-#define BOARD_INITPINS_BAT_STATn_CHANNEL 21                /*!<@brief Signal channel */
+#define BOARD_INITPINS_BAT_STATn_PERIPHERAL GPIO                   /*!<@brief Peripheral name */
+#define BOARD_INITPINS_BAT_STATn_SIGNAL PIO0                       /*!<@brief Signal name */
+#define BOARD_INITPINS_BAT_STATn_CHANNEL 21                        /*!<@brief Signal channel */
 
 /* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_BAT_STATn_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_BAT_STATn_GPIO_PIN_MASK (1U << 21U) /*!<@brief GPIO pin mask */
-#define BOARD_INITPINS_BAT_STATn_PORT 0U                   /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_BAT_STATn_PIN 21U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_BAT_STATn_PIN_MASK (1U << 21U)      /*!<@brief PORT pin mask */
-                                                           /* @} */
+#define BOARD_INITPINS_BAT_STATn_GPIO GPIO                         /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_BAT_STATn_GPIO_PIN_MASK (1U << 21U)         /*!<@brief GPIO pin mask */
+#define BOARD_INITPINS_BAT_STATn_PORT 0U                           /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_BAT_STATn_PIN 21U                           /*!<@brief PORT pin number */
+#define BOARD_INITPINS_BAT_STATn_PIN_MASK (1U << 21U)              /*!<@brief PORT pin mask */
+                                                                   /* @} */
 
 /*! @name PIO0_23 (coord C9), BAT_CD
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_BAT_CD_PERIPHERAL GPIO           /*!<@brief Peripheral name */
-#define BOARD_INITPINS_BAT_CD_SIGNAL PIO0               /*!<@brief Signal name */
-#define BOARD_INITPINS_BAT_CD_CHANNEL 23                /*!<@brief Signal channel */
+#define BOARD_INITPINS_BAT_CD_PERIPHERAL GPIO                    /*!<@brief Peripheral name */
+#define BOARD_INITPINS_BAT_CD_SIGNAL PIO0                        /*!<@brief Signal name */
+#define BOARD_INITPINS_BAT_CD_CHANNEL 23                         /*!<@brief Signal channel */
 
 /* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_BAT_CD_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_BAT_CD_GPIO_PIN_MASK (1U << 23U) /*!<@brief GPIO pin mask */
-#define BOARD_INITPINS_BAT_CD_PORT 0U                   /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_BAT_CD_PIN 23U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_BAT_CD_PIN_MASK (1U << 23U)      /*!<@brief PORT pin mask */
-                                                        /* @} */
+#define BOARD_INITPINS_BAT_CD_GPIO GPIO                          /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_BAT_CD_GPIO_PIN_MASK (1U << 23U)          /*!<@brief GPIO pin mask */
+#define BOARD_INITPINS_BAT_CD_PORT 0U                            /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_BAT_CD_PIN 23U                            /*!<@brief PORT pin number */
+#define BOARD_INITPINS_BAT_CD_PIN_MASK (1U << 23U)               /*!<@brief PORT pin mask */
+                                                                 /* @} */
 
 /*! @name FC3_CTS_SDA_SSEL0 (coord B9), I2C6_SDA
   @{ */

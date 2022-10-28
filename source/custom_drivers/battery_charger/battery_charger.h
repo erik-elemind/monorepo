@@ -47,6 +47,8 @@ typedef enum {
 } battery_charger_status_t;
 
 
+void battery_charger_TEST(battery_charger_handle_t* handle);
+
 /** Initialize battery charger driver.
 
     Sets up GPIOs and BQ25618 registers for the Morpheus board, and
