@@ -170,31 +170,6 @@ battery_charger_set_charge_current(
   uint8_t ichg
   );
 
-
-// Global function definitions
-void battery_charger_TEST(battery_charger_handle_t* handle)
-{
-	uint8_t data_read = 0;
-	status_t status;
-
-	for(uint8_t i=0x00; i<=0x2C; i++)
-	{
-		status = i2c_mem_read_byte(handle->i2c_handle, BQ25618_ADDR,
-			i, &data_read);
-
-		if (status != kStatus_Success) {
-			LOGV(TAG, "Error resetting device: %ld, reg: %d", status, i);
-		  }
-		else
-		{
-			LOGV(TAG, "REG:%02X = %02X", i, data_read);
-		}
-	}
-
-
-
-}
-
 void
 battery_charger_init(
   battery_charger_handle_t* handle,
@@ -226,59 +201,57 @@ battery_charger_init(
     LOGE(TAG, "Error resetting device: %ld", status);
   }
 
-  battery_charger_TEST(handle);
-
   // Create repeating timer to tickle watchdog
-//  handle->watchdog_timer_handle = xTimerCreateStatic("BATTERY_CHARGER",
-//    pdMS_TO_TICKS(WATCHDOG_TICKLE_MS), pdTRUE, handle,
-//    battery_charger_watchdog_timer, &(handle->watchdog_timer_struct));
-//  if (xTimerStart(handle->watchdog_timer_handle, 0) == pdFAIL) {
-//    LOGE(TAG, "Unable to start watchdog timer!");
-//  }
-//
-//  // Tickle watchdog now
-//  status = battery_charger_reset_watchdog(handle);
-//  if (status != kStatus_Success) {
-//    LOGE(TAG, "Error resetting watchdog: %ld", status);
-//  }
+  handle->watchdog_timer_handle = xTimerCreateStatic("BATTERY_CHARGER",
+    pdMS_TO_TICKS(WATCHDOG_TICKLE_MS), pdTRUE, handle,
+    battery_charger_watchdog_timer, &(handle->watchdog_timer_struct));
+  if (xTimerStart(handle->watchdog_timer_handle, 0) == pdFAIL) {
+    LOGE(TAG, "Unable to start watchdog timer!");
+  }
+
+  // Tickle watchdog now
+  status = battery_charger_reset_watchdog(handle);
+  if (status != kStatus_Success) {
+    LOGE(TAG, "Error resetting watchdog: %ld", status);
+  }
 
   // Read status registers twice to verify watchdog reset
   charger_status_t charger_status;
-//  status = battery_charger_read_status_registers(handle, &charger_status);
-//  if (status == kStatus_Success) {
-//    LOGV(TAG, "Status 0: 0x%x", charger_status.status_0.raw);
-//    LOGV(TAG, "Status 1 read 1: 0x%x", charger_status.status_1_previous.raw);
-//    LOGV(TAG, "Status 1 read 2: 0x%x", charger_status.status_1_current.raw);
-//    LOGV(TAG, "Status 2 read 1: 0x%x", charger_status.status_2_previous.raw);
-//    LOGV(TAG, "Status 2 read 2: 0x%x", charger_status.status_2_current.raw);
-//  }
-//  else {
-//    LOGE(TAG, "Error reading status registers: %ld", status);
-//  }
+  status = battery_charger_read_status_registers(handle, &charger_status);
+  if (status == kStatus_Success) {
+    LOGV(TAG, "Status 0: 0x%x", charger_status.status_0.raw);
+    LOGV(TAG, "Status 1 read 1: 0x%x", charger_status.status_1_previous.raw);
+    LOGV(TAG, "Status 1 read 2: 0x%x", charger_status.status_1_current.raw);
+    LOGV(TAG, "Status 2 read 1: 0x%x", charger_status.status_2_previous.raw);
+    LOGV(TAG, "Status 2 read 2: 0x%x", charger_status.status_2_current.raw);
+  }
+  else {
+    LOGE(TAG, "Error reading status registers: %ld", status);
+  }
 
   // Set input current limit to 2400 mA
-//  status = battery_charger_set_input_current(handle, IINDPM_2400_MA);
-//  if (status != kStatus_Success) {
-//    LOGE(TAG, "Error setting input current: %ld", status);
-//  }
+  status = battery_charger_set_input_current(handle, IINDPM_2400_MA);
+  if (status != kStatus_Success) {
+    LOGE(TAG, "Error setting input current: %ld", status);
+  }
 
   // TODO: Do NOT ignore the temperature sensor in production
   // Ignore the temperature sensor
 
-//#if (defined(ENABLE_CHARGER_TEMP_SENSOR) && (ENABLE_CHARGER_TEMP_SENSOR > 0U))
-//  status = battery_charger_set_ts_ignore(handle, false);
-//#else
-//  status = battery_charger_set_ts_ignore(handle, true);
-//#endif
-//  if (status != kStatus_Success) {
-//    LOGE(TAG, "Error setting ignore temperature sensor: %ld", status);
-//  }
+#if (defined(ENABLE_CHARGER_TEMP_SENSOR) && (ENABLE_CHARGER_TEMP_SENSOR > 0U))
+  status = battery_charger_set_ts_ignore(handle, false);
+#else
+  status = battery_charger_set_ts_ignore(handle, true);
+#endif
+  if (status != kStatus_Success) {
+    LOGE(TAG, "Error setting ignore temperature sensor: %ld", status);
+  }
 
   // Set charge current limit to 700 mA
-//  status = battery_charger_set_charge_current(handle, ICHG_700_MA);
-//  if (status != kStatus_Success) {
-//    LOGE(TAG, "Error setting charge current: %ld", status);
-//  }
+  status = battery_charger_set_charge_current(handle, ICHG_700_MA);
+  if (status != kStatus_Success) {
+    LOGE(TAG, "Error setting charge current: %ld", status);
+  }
 }
 
 status_t
@@ -488,24 +461,22 @@ battery_charger_reset_device(battery_charger_handle_t* handle)
 {
 	part_information_t part_information = { .reg_rst = true };
 	status_t status = i2c_mem_write_byte(handle->i2c_handle, BQ25618_ADDR,
-		  0x25, part_information.raw);
-
-  return status;
+	  REG_PART_INFORMATION, part_information.raw);
 }
 
 static status_t
 battery_charger_reset_watchdog(battery_charger_handle_t* handle)
 {
   charger_control_0_t charger_control_0;
-  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25618_ADDR,
     REG_CHARGER_CONTROL_0, &charger_control_0.raw);
   if (status == kStatus_Success) {
     charger_control_0.wd_rst = true;
-    status = i2c_mem_write_byte(handle->i2c_handle, BQ25887_ADDR,
+    status = i2c_mem_write_byte(handle->i2c_handle, BQ25618_ADDR,
       REG_CHARGER_CONTROL_0, charger_control_0.raw);
     if (status == kStatus_Success) {
       /// @todo BH - Can't log from SW timer, apparently?
-      LOGV(TAG, "Watchdog timer successfully reset");
+      //LOGV(TAG, "Watchdog timer successfully reset");
     }
     else {
       /*LOGE(TAG, "Watchdog: Error writing Charger Control 0 register: %ld",

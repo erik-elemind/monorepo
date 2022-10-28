@@ -477,49 +477,42 @@ battery_level_get(void) {
 static void
 handle_battery_event(void)
 {
+  static battery_charger_status_t prev_status = -1;
 
-  //LOGV(TAG, "Handle battery status value");
+  battery_charger_status_t battery_status = battery_charger_get_status(
+    &g_battery_charger_handle);
 
-  battery_charger_TEST(&g_battery_charger_handle);
+  battery_level_get();
 
+  // Don't update the charger status if it is the same.
+  if (prev_status == battery_status) {
+    return;
+  }
+  prev_status = battery_status;
 
+  switch (battery_status) {
+    case BATTERY_CHARGER_STATUS_ON_BATTERY:
+      app_event_charger_unplugged();
+      break;
 
-//  static battery_charger_status_t prev_status = -1;
-//
-//  battery_charger_status_t battery_status = battery_charger_get_status(
-//    &g_battery_charger_handle);
-//
-//  battery_level_get();
-//
-//  // Don't update the charger status if it is the same.
-//  if (prev_status == battery_status) {
-//    return;
-//  }
-//  prev_status = battery_status;
-//
-//  switch (battery_status) {
-//    case BATTERY_CHARGER_STATUS_ON_BATTERY:
-//      app_event_charger_unplugged();
-//      break;
-//
-//    case BATTERY_CHARGER_STATUS_CHARGING:
-//      app_event_charger_plugged();
-//      break;
-//
-//    case BATTERY_CHARGER_STATUS_CHARGE_COMPLETE:
-//      app_event_charger_plugged();
-//      app_event_charge_complete();
-//      break;
-//
-//    case BATTERY_CHARGER_STATUS_FAULT:
-//      app_event_charger_plugged();
-//      app_event_charge_fault();
-//      break;
-//
-//    default:
-//      LOGE(TAG, "Error: Unknown battery status value");
-//      break;
-//  }
+    case BATTERY_CHARGER_STATUS_CHARGING:
+      app_event_charger_plugged();
+      break;
+
+    case BATTERY_CHARGER_STATUS_CHARGE_COMPLETE:
+      app_event_charger_plugged();
+      app_event_charge_complete();
+      break;
+
+    case BATTERY_CHARGER_STATUS_FAULT:
+      app_event_charger_plugged();
+      app_event_charge_fault();
+      break;
+
+    default:
+      LOGE(TAG, "Error: Unknown battery status value");
+      break;
+  }
 }
 
 /** Got a power off event--shut down the LPC. */
@@ -561,6 +554,50 @@ handle_state_standby(system_monitor_event_t *event)
       handle_battery_event();
       break;
 
+    case SYSTEM_MONITOR_EVENT_POWER_OFF:
+          handle_power_off_event();
+          break;
+
+	case SYSTEM_MONITOR_EVENT_WWDT_FEED_TIMEOUT:
+	#if (defined(ENABLE_SYSTEM_WATCHDOG) && (ENABLE_SYSTEM_WATCHDOG > 0U))
+	  // feed watchdog
+	  system_watchdog_feed();
+	  // restart timer
+	//    restart_wwdt_feed_timer();
+	#endif
+	  return;
+
+	case SYSTEM_MONITOR_EVENT_ALS_START_SAMPLE:
+	  handle_als_start_sample(event->data.sensor.sample_period_ms);
+	  break;
+
+	case SYSTEM_MONITOR_EVENT_ALS_STOP:
+	  handle_als_stop();
+	  break;
+
+	case SYSTEM_MONITOR_EVENT_ALS_TIMEOUT:
+	  handle_als_timeout();
+	  break;
+
+	case SYSTEM_MONITOR_EVENT_MIC_START_SAMPLE:
+	  handle_mic_start_sample(event->data.sensor.sample_period_ms);
+	  break;
+
+	case SYSTEM_MONITOR_EVENT_MIC_START_THRESH:
+	  handle_mic_start_thresh(event->data.sensor.sample_period_ms, event->data.sensor.num_samples);
+	  break;
+
+	case SYSTEM_MONITOR_EVENT_MIC_STOP:
+	  handle_mic_stop();
+	  break;
+
+	case SYSTEM_MONITOR_EVENT_MIC_WAKE:
+	  handle_mic_wakeup();
+	  break;
+
+	case SYSTEM_MONITOR_EVENT_MIC_TIMEOUT:
+	  handle_mic_timeout();
+	  break;
     default:
       log_event_ignored(event);
       break;
