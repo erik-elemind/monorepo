@@ -777,9 +777,7 @@ log_event(audio_event_t *event)
 {
   switch (event->type) {
   case AUDIO_EVENT_SOFTWARE_ISR_OCCURRED:
-	// squelch this one to avoid spamming the console
-	  //LOGV(TAG, "isr");
-	 // SDK_DelayAtLeastUs(10000, SystemCoreClock);
+    // squelch this one to avoid spamming the console
     break;
 
   case AUDIO_EVENT_SET_MUTE:
@@ -1383,6 +1381,7 @@ audio_task(void *ignored)
  * Pin change interrupt callback for audio update ISR,
  * This interrupt is NOT routed to a pin, but is intended to be software triggered.
  */
+#if defined(VARIANT_NFF1) || defined(VARIANT_FF1) || defined(VARIANT_FF2) || defined(VARIANT_FF3) || defined(VARIANT_FF4)
 
 #define HALT_IF_DEBUGGING()                              \
   do {                                                   \
@@ -1421,6 +1420,7 @@ void audio_event_update_streams_from_isr(status_t i2s_completion_status)
   TRACEALYZER_ISR_AUDIO_END( xHigherPriorityTaskWoken );
 }
 
+#endif
 
 #else // #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
 

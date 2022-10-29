@@ -43,7 +43,7 @@ typedef struct {
 
 typedef struct {
   unsigned long timestamp_ms;
-  unsigned long sample_number;
+  unsigned long eeg_sample_number;
   unsigned long status;
   int32_t eeg_channels[ADS129X_NUM_CHANNELS];
 //  union {
@@ -64,7 +64,7 @@ typedef struct {
 
 typedef struct {
 //  unsigned long timestamp_ms;
-  unsigned long sample_number;
+  unsigned long eeg_sample_number;
 //  unsigned long status;
   int32_t eeg_channels[MAX_NUM_EEG_CHANNELS];
   // TODO: record the concept of overflow and underflow
@@ -83,7 +83,7 @@ void eeg_channel_config_add(eeg_channel_config_t *config, char* name, eeg_channe
 #if 0
 typedef struct {
   unsigned long timestamp_ms;
-  unsigned long sample_number;
+  unsigned long eeg_sample_number;
   float inst_amp;
   float inst_phs;
   eeg_channel_t channel;
@@ -94,7 +94,7 @@ typedef struct {
 } echt_records_t;
 
 
-void echt_encode(sample_number, float inst_amp, float inst_phs){
+void echt_encode(eeg_sample_number, float inst_amp, float inst_phs){
 
 }
 #endif

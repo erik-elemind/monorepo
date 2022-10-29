@@ -32,7 +32,7 @@ typedef union {
   };
   DWORD dword;
 } fattime_t;
-//static_assert(sizeof(fattime_t) == sizeof(DWORD));
+static_assert(sizeof(fattime_t) == sizeof(DWORD));
 
 static const char* TAG = "fatfs_utils";  // Logging prefix for this module
 static const char my_drive_path[] = "0:";  // Use the default disk.

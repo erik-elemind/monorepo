@@ -26,22 +26,22 @@
 #include "ble_shell.h"
 #include "utils.h"
 #include "led.h"
-
 #include "audio.h"
 #include "wavbuf.h"
 #include "hrm.h"
 #include "accel.h"
-
+#include "fatfs_writer.h"  // task to handle slow writes
+#include "nand.h"
 #include "dhara_utils.h"
 #include "fatfs_utils.h"
 #include "syscalls.h"   // for shell/shell.c and printf()
-
 #include "interpreter.h"
 #include "eeg_reader.h"
 #include "eeg_processor.h"
 #include "erp.h"
 
 #include "fsl_usart_rtos_additional.h"
+
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -52,6 +52,7 @@ static const char *TAG = "main";  // Logging prefix for this module
 //
 // Set task stack sizes and priorities:
 //
+
 #if (defined(ENABLE_FS_WRITER_TASK) && (ENABLE_FS_WRITER_TASK > 0U))
 #define FATFS_WRITER_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*6)
 #define FATFS_WRITER_TASK_PRIORITY 2
@@ -202,7 +203,6 @@ static void dsp_boot_up(void);
 #include <stdio.h>
 #include "fsl_iopctl.h"
 #include "fsl_dsp.h"
-#include "nand_test.h"
 
 static void system_boot_up(void)
 {
@@ -227,11 +227,19 @@ static void system_boot_up(void)
 
 int main(void)
 {
+#if (defined(ENABLE_TRACEALYZER) && (ENABLE_TRACEALYZER > 0U))
+  /* Init Percepio Tracealyzer */
+//  vTraceEnable(TRC_START);
+  vTraceEnable(TRC_INIT);
+  init_tracealyzer_isr();
+#endif
+
 	// Boot up MCU
 	system_boot_up();
 
 	syscalls_pretask_init();  // for printf()'s _write() and getchar()'s _read()
 
+	// Do this as soon as the uart is working, in case something stalls
 	print_version();
 
 	// Initialize NAND SPI driver

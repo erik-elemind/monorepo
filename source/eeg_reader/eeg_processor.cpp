@@ -576,7 +576,6 @@ void eeg_processor_send_eeg_data_close_from_isr(uint8_t* data, size_t data_len, 
 
 static void eeg_processor_receive_eeg_data(void* data) {
   uint8_t* eegRxData = (uint8_t*) data;
-  static uint8_t sample_counter = 0;
 
   if (data == NULL) {
     return;
@@ -592,7 +591,7 @@ static void eeg_processor_receive_eeg_data(void* data) {
     ads_decode_sample(eegRxData, sizeof( eegRxData ), &sample);
     // rearrange sampled data relative to electrodes
 //    f_sample.timestamp_ms = sample.timestamp_ms;
-    f_sample.sample_number = sample.sample_number;
+    f_sample.eeg_sample_number = sample.eeg_sample_number;
 //    f_sample.status = sample.status;
     f_sample.eeg_channels[EEG_FP1] = sample.eeg_channels[EEG_CH2]; // fp1
     f_sample.eeg_channels[EEG_FPZ] = sample.eeg_channels[EEG_CH4]; // fpz
@@ -608,7 +607,7 @@ static void eeg_processor_receive_eeg_data(void* data) {
   stream_eeg(&f_sample);
 #endif
 
-  erp_set_eeg_sample_number(f_sample.sample_number);
+  erp_set_eeg_sample_number(f_sample.eeg_sample_number);
 }
 
 #else /*  (defined(ENABLE_EEG_PROCESSOR_TASK) && (ENABLE_EEG_PROCESSOR_TASK > 0U)) */

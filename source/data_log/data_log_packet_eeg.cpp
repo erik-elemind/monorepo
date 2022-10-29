@@ -29,7 +29,7 @@ stream_eeg( unsigned long sample_number, int32_t eeg_channels[] ){
 static void
 stream_eeg( ads129x_frontal_sample *f_sample ){
   // print the data
-  stream_eeg( f_sample->sample_number, f_sample->eeg_channels );
+  stream_eeg( f_sample->eeg_sample_number, f_sample->eeg_channels );
 }
 
 
@@ -57,8 +57,8 @@ void data_log_eeg( ads129x_frontal_sample *f_sample ){
   if(scratch==NULL) {return;}
   // copy packet type
   dlbuf.add(DLPT_EEG_DATA);
-  // copy timestamp
-  dlbuf.add(&(f_sample->sample_number), sizeof(f_sample->sample_number));
+  // copy sample number
+  dlbuf.add(&(f_sample->eeg_sample_number), sizeof(f_sample->eeg_sample_number));
   // copy data
   dlbuf.add(&(f_sample->eeg_channels[0]), sizeof(f_sample->eeg_channels));
   // send
@@ -107,7 +107,7 @@ void data_log_eeg(ads129x_frontal_sample *f_sample) {
   // print the data
   stream_eeg( f_sample );
 
-  g_eeg_buf.add(f_sample->sample_number, f_sample);
+  g_eeg_buf.add(f_sample->eeg_sample_number, f_sample);
 }
 
 void handle_eeg_data(uint8_t* buf, size_t size){}
@@ -290,7 +290,7 @@ data_log_eeg(ads129x_frontal_sample *f_sample) {
   stream_eeg( f_sample );
 
   // write the eeg data
-  eeg_comp_add_data_and_write(&g_eeg_comp_online, f_sample->sample_number, f_sample->eeg_channels);
+  eeg_comp_add_data_and_write(&g_eeg_comp_online, f_sample->eeg_sample_number, f_sample->eeg_channels);
 }
 
 void handle_eeg_data(uint8_t* buf, size_t size){}
@@ -321,6 +321,9 @@ void data_log_eeg_reset() {
 }
 
 void data_log_eeg( ads129x_frontal_sample *f_sample ){
+  // print the data
+  stream_eeg( f_sample );
+
 #define EEG_BUFFER_SIZE sizeof(ads129x_frontal_sample)
   uint8_t* scratch = (uint8_t*) dl_malloc_if_file_ready(EEG_BUFFER_SIZE);
   size_t scratch_offset = 0;
@@ -338,11 +341,8 @@ void handle_eeg_data(uint8_t* buf, size_t size){
 
   ads129x_frontal_sample *f_sample = (ads129x_frontal_sample *) buf;
 
-  // print the data
-  stream_eeg( f_sample );
-
   // write the eeg data
-  eeg_comp_add_data_and_write(&g_eeg_comp_online, f_sample->sample_number, f_sample->eeg_channels);
+  eeg_comp_add_data_and_write(&g_eeg_comp_online, f_sample->eeg_sample_number, f_sample->eeg_channels);
 }
 
 #endif

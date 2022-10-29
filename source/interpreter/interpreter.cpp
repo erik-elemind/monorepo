@@ -46,6 +46,16 @@ static const char *TAG = "interpreter";	// Logging prefix for this module
 #define SCRIPTNAME_MBUF_MSG_LEN (MAX_PATH_LEN+4) // bytes+4 overhead bytes
 #define SCRIPTNAME_MBUF_SIZE_BYTES ((SCRIPTNAME_MBUF_NUM_MSG*SCRIPTNAME_MBUF_MSG_LEN)+1) // bytes
 
+// When trying to set "xTimeInMs" to 26999000 (~7.5 hours), the default pdMS_TO_TICKS() macro multiplies 26999000 by 200, which is equal to 5399800000
+// 5399800000 is bigger than the value that can be stored by TickType_t (uint32_t)
+// To prevent rounding errors, we use the original multiply-then-divide order used by pdMS_TO_TICKS() if we are under some threshold.
+// If over the threshold, we reverse the order to divide-them-multiply.
+// We choose a threshold that tries to preserve accuracy, currently equal to (2^32 - 2^14)
+// Instead of 2^14, we could use the tighter bound 2^8, which is close to the multiplier 200hz, the current configTICK_RATE_HZ.
+#define pdMS_TO_TICKS_SAFE( xTimeInMs )    ( ( xTimeInMs < 262144 ) ? \
+                                             ( ( TickType_t ) ( ( ( TickType_t ) ( xTimeInMs ) * ( TickType_t ) configTICK_RATE_HZ ) / ( TickType_t ) 1000U ) ) \
+                                             : \
+                                             ( ( TickType_t ) ( ( ( TickType_t ) ( xTimeInMs ) / ( TickType_t ) 1000U ) * ( TickType_t ) configTICK_RATE_HZ ) ) )
 
 typedef enum{
   BLINK_NONE = 0,
@@ -502,7 +512,7 @@ restart_therapy_delay_timer(uint32_t timeout_ms)
 {
   // xTimerChangePeriod will start timer if it's not running already
   if (xTimerChangePeriod(g_interpreter_context.therapy_delay_timer_handle,
-      pdMS_TO_TICKS(timeout_ms), 0) == pdFAIL) {
+      pdMS_TO_TICKS_SAFE(timeout_ms), 0) == pdFAIL) {
     LOGE(TAG, "Unable to start delay timer!");
   }
 }
@@ -520,7 +530,7 @@ restart_therapy_timer1_timer(uint32_t timeout_ms)
 {
   // xTimerChangePeriod will start timer if it's not running already
   if (xTimerChangePeriod(g_interpreter_context.therapy_timer1_timer_handle,
-      pdMS_TO_TICKS(timeout_ms), 0) == pdFAIL) {
+      pdMS_TO_TICKS_SAFE(timeout_ms), 0) == pdFAIL) {
     LOGE(TAG, "Unable to start timer1 timer!");
   }
 }
@@ -923,12 +933,12 @@ task_init ()
 
   // start with a dummy time
   g_interpreter_context.therapy_delay_timer_handle = xTimerCreateStatic("THERAPY_DELAY_TIMER_HANDLE",
-    pdMS_TO_TICKS(100), pdFALSE, NULL,
+      pdMS_TO_TICKS_SAFE(100), pdFALSE, NULL,
     therapy_delay_timer_timeout, &(g_interpreter_context.therapy_delay_timer_struct));
 
   // start with a dummy time
   g_interpreter_context.therapy_timer1_timer_handle = xTimerCreateStatic("THERAPY_TIMER1_TIMER_HANDLE",
-    pdMS_TO_TICKS(100), pdFALSE, NULL,
+      pdMS_TO_TICKS_SAFE(100), pdFALSE, NULL,
     therapy_timer1_timer_timeout, &(g_interpreter_context.therapy_timer1_timer_struct));
 
   // ensure the scripts directory

@@ -12,7 +12,7 @@ const char* data_log_packet_str(data_log_packet_t type)
 {
     switch (type)
     {
-        case DLPT_EEG_START: return "DLPT_EEG_START";
+        case DLPT_EEG_INFO: return "DLPT_EEG_START";
         case DLPT_EEG_DATA: return "DLPT_EEG_DATA";
         case DLPT_INST_AMP_PHS: return "DLPT_INST_AMP_PHS";
         case DLPT_PULSE_START_STOP: return "DLPT_PULSE_START_STOP";
@@ -27,7 +27,7 @@ const char* data_log_packet_str(data_log_packet_t type)
         case DLPT_ACCEL_TEMP: return "DLPT_ACCEL_TEMP";
         case DLPT_ALS: return "DLPT_ALS";
         case DLPT_MIC: return "DLPT_MIC";
-        case DLPT_TEMP: return "DLPT_TEMP";
+        case DLPT_SKIN_TEMP: return "DLPT_TEMP";
         case DLPT_EEG_COMP_HEADER: return "DLPT_EEG_COMP_HEADER";
         case DLPT_EEG_COMP_FRAME: return "DLPT_EEG_COMP_FRAME";
         case DLPT_INST_AMP_COMP_HEADER: return "DLPT_INST_AMP_COMP_HEADER";

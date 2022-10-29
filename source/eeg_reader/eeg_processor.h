@@ -25,6 +25,8 @@ extern "C" {
 #define EEG_MSG_LEN (4+4+3+8*3) // 4 time stamp, 4 sample number, 3 status, 8 channels of 3 byte data = 35 bytes
 #endif
 
+#define TEMP_MSG_LEN (4+3) // 4 sample number, 3 bytes temp.
+
 
 // Init called before vTaskStartScheduler() launches our Task in main():
 void eeg_processor_pretask_init(void);

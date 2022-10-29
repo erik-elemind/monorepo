@@ -360,6 +360,8 @@ const shell_command_t commands[] = {
     { P_ALL, "settings_del", settings_delete_command, "Delete a setting. args: key"},
 
     // BLE commands
+    { P_ALL, "ble_ping", ble_ping_command, "Device will respond with 4 character \"pong\" followed by a newline character."},
+
     { P_ALL, "ble_reset", ble_reset_debug_command, "Reset BLE chip (no DFU)" },
     { P_ALL, "ble_dfu", ble_dfu_debug_command, "Put BLE chip into DFU mode" },
     { P_ALL, "ble_debug_electrode_quality", ble_electrode_quality_debug_command, "Send electrode quality update to BLE chip, 8 numbers 0-255" },

@@ -16,6 +16,8 @@
 extern "C" {
 #endif
 
+void ble_ping_command(int argc, char **argv);
+
 void ble_reset_debug_command(int argc, char **argv);
 void ble_dfu_debug_command(int argc, char **argv);
 

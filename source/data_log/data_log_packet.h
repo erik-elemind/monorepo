@@ -41,7 +41,11 @@ extern "C" {
 #endif
 
 typedef enum data_log_packet_t{
-  DLPT_EEG_START = 9,
+  DLPT_CMD=1,
+  DLPT_SOURCE_INFO=2,
+  DLPT_SAMPLE_TIME=3,
+  DLPT_LOST_SAMPLES=4,
+  DLPT_EEG_INFO = 9,
   DLPT_EEG_DATA = 10,
   DLPT_INST_AMP_PHS = 11,
   DLPT_PULSE_START_STOP = 12,
@@ -51,12 +55,11 @@ typedef enum data_log_packet_t{
   DLPT_SWITCH=16,
   DLPT_STIM_AMP=17,
   DLPT_STIM_AMP_PACKED=18,
-  DLPT_CMD=19,
   DLPT_ACCEL_XYZ=20,
   DLPT_ACCEL_TEMP=21,
   DLPT_ALS=22,
   DLPT_MIC=23,
-  DLPT_TEMP=24,
+  DLPT_SKIN_TEMP=24,
   DLPT_EEG_COMP_HEADER=25,
   DLPT_EEG_COMP_FRAME=26,
   DLPT_INST_AMP_COMP_HEADER=27,
@@ -67,6 +70,8 @@ typedef enum data_log_packet_t{
 
 #define SAMPLE_NUMBER_SIZE sizeof(unsigned long)
 #define PACKET_TYPE_SIZE sizeof(data_log_packet_t)
+
+#define MICRO_TIME_SIZE sizeof(uint64_t)
 
 // data packing routines
 #define EEG_PACK_NUM_SAMPLES_TO_SEND 10

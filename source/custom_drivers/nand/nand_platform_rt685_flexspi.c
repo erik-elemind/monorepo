@@ -5,7 +5,7 @@
  *      Author: Tyler Gage
  */
 
-#include "nand_W25N04KW.h"
+#include "nand.h"
 #include "nand_platform.h"
 #include "util_delay.h"
 

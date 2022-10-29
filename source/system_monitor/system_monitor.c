@@ -112,13 +112,14 @@ typedef struct
   TimerHandle_t als_timer_handle;
   StaticTimer_t als_timer_struct;
   unsigned int als_timer_ms;
+  unsigned int als_num_samples;
 
   mic_state_t mic_state;
   TimerHandle_t mic_timer_handle;
   StaticTimer_t mic_timer_struct;
   unsigned int mic_timer_ms;
   unsigned int mic_wake_max_num_samples;
-  unsigned int mic_wake_num_samples;
+  unsigned int mic_num_samples;
 
   // TODO: Other "global" vars shared between events or states goes here.
 } system_monitor_context_t;
@@ -236,10 +237,28 @@ void system_monitor_event_als_stop(void){
   xQueueSend(g_event_queue, &event, portMAX_DELAY);
 }
 
+static void sample_and_log_als(void) {
+  g_context.als_num_samples++;
+
+  int err;
+  float lux;
+  // Finished a sample.
+  err = als_get_lux(&lux);
+  if (!err) {
+    data_log_als(g_context.als_num_samples, lux);
+  }
+}
+
 static void
 handle_als_start_sample(unsigned int sample_period_ms){
+  // init als state
   g_context.als_state = ALS_STATE_SAMPLING;
+  g_context.als_num_samples = 0;
+  // power on the als
   als_start();
+  // collect first sample
+  sample_and_log_als();
+  // update and start timer
   xTimerChangePeriod(g_context.als_timer_handle, pdMS_TO_TICKS(sample_period_ms), portMAX_DELAY );
   vTimerSetReloadMode(g_context.als_timer_handle, true);
   xTimerStart(g_context.als_timer_handle, portMAX_DELAY);
@@ -247,22 +266,20 @@ handle_als_start_sample(unsigned int sample_period_ms){
 
 static void
 handle_als_stop(){
-  xTimerStop(g_context.als_timer_handle, portMAX_DELAY);
+  // init microphone state
   g_context.als_state = ALS_STATE_STOPPED;
+  g_context.als_num_samples = 0;
+  // stop the als
   als_stop();
+  // stop the timer
+  xTimerStop(g_context.als_timer_handle, portMAX_DELAY);
 }
 
 static void
 handle_als_timeout(){
-  int err;
-  float lux;
   if (g_context.als_state == ALS_STATE_SAMPLING) {
     // Finished a sample.
-    err = als_get_lux(&lux);
-    if (!err) {
-      data_log_als(lux);
-    }
-    als_stop();
+    sample_and_log_als();
   }
 }
 
@@ -320,18 +337,18 @@ system_monitor_event_mic_from_isr(void) {
 }
 
 static void sample_and_log_mic(void) {
-  g_context.mic_wake_num_samples++;
+  g_context.mic_num_samples++;
 
   int32_t mic = adc_read(ADC_MICROPHONE);
 //  LOGD(TAG, "MIC reading: %li", mic);
-  data_log_mic(mic);
+  data_log_mic(g_context.mic_num_samples, mic);
 }
 
 static void
 handle_mic_start_sample(unsigned int sample_period_ms){
   // init microphone state
   g_context.mic_state = MIC_STATE_SAMPLING;
-  g_context.mic_wake_num_samples = 0;
+  g_context.mic_num_samples = 0;
   // power on the microphone
   GPIO_PinWrite(GPIO, BOARD_INITPINS_MEMS_MODE_PORT, BOARD_INITPINS_MEMS_MODE_PIN, 0);
   vTaskDelay(pdMS_TO_TICKS(1)); // Startup delay is 100us per datasheet.
@@ -348,7 +365,7 @@ handle_mic_start_thresh(unsigned int sample_period_ms, unsigned int num_samples)
   // init microphone state
   g_context.mic_state = MIC_STATE_WAIT_WAKE;
   g_context.mic_wake_max_num_samples = num_samples;
-  g_context.mic_wake_num_samples = 0;
+  g_context.mic_num_samples = 0;
   // power off the microphone
   GPIO_PinWrite(GPIO, BOARD_INITPINS_MEMS_MODE_PORT, BOARD_INITPINS_MEMS_MODE_PIN, 1);
   // update and stop the timer
@@ -361,7 +378,7 @@ static void
 handle_mic_stop(){
   // init microphone state
   g_context.mic_state = MIC_STATE_STOPPED;
-  g_context.mic_wake_num_samples = 0;
+  g_context.mic_num_samples = 0;
   // power off the microphone
   GPIO_PinWrite(GPIO, BOARD_INITPINS_MEMS_MODE_PORT, BOARD_INITPINS_MEMS_MODE_PIN, 1);
   // stop the timer
@@ -376,8 +393,8 @@ handle_mic_timeout(void) {
     break;
   case MIC_STATE_WAIT_WAKE:
     if (g_context.mic_wake_max_num_samples != 0 &&
-        g_context.mic_wake_num_samples >= g_context.mic_wake_max_num_samples) {
-      g_context.mic_wake_num_samples = 0;
+        g_context.mic_num_samples >= g_context.mic_wake_max_num_samples) {
+      g_context.mic_num_samples = 0;
       // power off the microphone
       GPIO_PinWrite(GPIO, BOARD_INITPINS_MEMS_MODE_PORT, BOARD_INITPINS_MEMS_MODE_PIN, 1);
     } else {

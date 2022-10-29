@@ -11,7 +11,7 @@
  */
 
 #include <stdatomic.h>
-#include "nand_W25N04KW.h"
+#include "nand.h"
 #include "loglevels.h"
 
 #include "dhara_utils.h"

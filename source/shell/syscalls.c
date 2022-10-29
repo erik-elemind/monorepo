@@ -8,7 +8,6 @@
 // shipped with STM32Cube, but here we define it manually.
 //
 #include "FreeRTOS.h"
-#include "board_ff4.h"
 #include "task.h"
 #include <unistd.h>
 #include "config.h"

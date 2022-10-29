@@ -9,8 +9,6 @@
 #ifndef NAND_PLATFORM_H
 #define NAND_PLATFORM_H
 
-#include "nand_W25N04KW_config.h"
-
 // HAL
 #include "fsl_flexspi.h"
 #include "fsl_flexspi_dma.h"

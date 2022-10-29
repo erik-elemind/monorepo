@@ -97,7 +97,7 @@ typedef union {
   };
   uint8_t all;
 } reg_pmu_bw_t;
-//static_assert(sizeof(reg_pmu_bw_t) == 1, "Register must be 1 byte");
+static_assert(sizeof(reg_pmu_bw_t) == 1, "Register must be 1 byte");
 
 #define REG_DATA_BW_7_81    (0b01000)
 #define REG_DATA_BW_15_63   (0b01001)
@@ -119,8 +119,8 @@ typedef union {
   };
   uint8_t all;
 } reg_pmu_lpw_t;
-//static_assert(sizeof(reg_pmu_lpw_t) == 1,
-//  "Register must be 1 byte");
+static_assert(sizeof(reg_pmu_lpw_t) == 1,
+  "Register must be 1 byte");
 
 #define REG_DATA_SLEEP_DUR_0_5    (0b0000)
 #define REG_DATA_SLEEP_DUR_1      (0b0110)
@@ -144,8 +144,8 @@ typedef union {
   };
   uint8_t all;
 } reg_pmu_low_power_t;
-//static_assert(sizeof(reg_pmu_low_power_t) == 1,
-//  "Register must be 1 byte");
+static_assert(sizeof(reg_pmu_low_power_t) == 1,
+  "Register must be 1 byte");
 
 // REG_ADDR_INT_EN_0
 typedef union {
@@ -161,8 +161,8 @@ typedef union {
   };
   uint8_t all;
 } reg_int_en_0_t;
-//static_assert(sizeof(reg_int_en_0_t) == 1,
-//  "Register must be 1 byte");
+static_assert(sizeof(reg_int_en_0_t) == 1,
+  "Register must be 1 byte");
 
 // REG_ADDR_INT_EN_1
 typedef union {
@@ -178,8 +178,8 @@ typedef union {
   };
   uint8_t all;
 } reg_int_en_1_t;
-//static_assert(sizeof(reg_int_en_1_t) == 1,
-//  "Register must be 1 byte");
+static_assert(sizeof(reg_int_en_1_t) == 1,
+  "Register must be 1 byte");
 
 // REG_ADDR_INT_EN_2
 typedef union {
@@ -192,8 +192,8 @@ typedef union {
   };
   uint8_t all;
 } reg_int_en_2_t;
-//static_assert(sizeof(reg_int_en_2_t) == 1,
-//  "Register must be 1 byte");
+static_assert(sizeof(reg_int_en_2_t) == 1,
+  "Register must be 1 byte");
 
 // REG_ADDR_INT_MAP_0
 typedef union {
@@ -209,8 +209,8 @@ typedef union {
   };
   uint8_t all;
 } reg_int_map_0_t;
-//static_assert(sizeof(reg_int_map_0_t) == 1,
-//  "Register must be 1 byte");
+static_assert(sizeof(reg_int_map_0_t) == 1,
+  "Register must be 1 byte");
 
 // REG_ADDR_INT_MAP_1
 typedef union {
@@ -226,8 +226,8 @@ typedef union {
   };
   uint8_t all;
 } reg_int_map_1_t;
-//static_assert(sizeof(reg_int_map_1_t) == 1,
-//  "Register must be 1 byte");
+static_assert(sizeof(reg_int_map_1_t) == 1,
+  "Register must be 1 byte");
 
 // REG_ADDR_INT_5
 typedef union {
@@ -237,8 +237,8 @@ typedef union {
   };
   uint8_t all;
 } reg_int_5_t;
-//static_assert(sizeof(reg_int_5_t) == 1,
-//  "Register must be 1 byte");
+static_assert(sizeof(reg_int_5_t) == 1,
+  "Register must be 1 byte");
 
 // REG_ADDR_INT_6
 typedef union {
@@ -247,8 +247,8 @@ typedef union {
   };
   uint8_t all;
 } reg_int_6_t;
-//static_assert(sizeof(reg_int_6_t) == 1,
-//  "Register must be 1 byte");
+static_assert(sizeof(reg_int_6_t) == 1,
+  "Register must be 1 byte");
 
 // REG_ADDR_FIFO_STATUS
 typedef union {
@@ -258,8 +258,8 @@ typedef union {
   };
   uint8_t all;
 } reg_fifo_status_t;
-//static_assert(sizeof(reg_fifo_status_t) == 1,
-//  "Register must be 1 byte");
+static_assert(sizeof(reg_fifo_status_t) == 1,
+  "Register must be 1 byte");
 
 // REG_ADDR_FIFO_CONFIG_0
 typedef union {
@@ -269,8 +269,8 @@ typedef union {
   };
   uint8_t all;
 } reg_fifo_config_0_t;
-//static_assert(sizeof(reg_fifo_config_0_t) == 1,
-//  "Register must be 1 byte");
+static_assert(sizeof(reg_fifo_config_0_t) == 1,
+  "Register must be 1 byte");
 
 // REG_ADDR_FIFO_CONFIG_1
 typedef union {
@@ -281,8 +281,8 @@ typedef union {
   };
   uint8_t all;
 } reg_fifo_config_1_t;
-//static_assert(sizeof(reg_fifo_config_1_t) == 1,
-//  "Register must be 1 byte");
+static_assert(sizeof(reg_fifo_config_1_t) == 1,
+  "Register must be 1 byte");
 
 #define REG_DATA_FIFO_MODE_BYPASS   (0b00)
 #define REG_DATA_FIFO_MODE_FIFO     (0b01)
@@ -300,8 +300,8 @@ typedef union {
   };
   uint8_t all;
 } reg_pmu_range_t;
-//static_assert(sizeof(reg_pmu_range_t) == 1,
-//  "Register must be 1 byte");
+static_assert(sizeof(reg_pmu_range_t) == 1,
+  "Register must be 1 byte");
 
 #define REG_DATA_PMU_RANGE_2G   (0b0011)
 #define REG_DATA_PMU_RANGE_4G   (0b0101)

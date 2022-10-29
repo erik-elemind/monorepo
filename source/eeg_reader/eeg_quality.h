@@ -189,7 +189,7 @@ public:
       blink_init();
     }
     if(run_blink_test){
-      bool is_blink = compute_blink(f_sample->sample_number , f_sample->eeg_channels);
+      bool is_blink = compute_blink(f_sample->eeg_sample_number , f_sample->eeg_channels);
       blink_detected.backup();
       blink_detected.set(is_blink);
       if(blink_detected.F2T()){

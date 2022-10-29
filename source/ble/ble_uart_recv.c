@@ -87,7 +87,7 @@ ble_uart_recv_task(void *ignored)
       vTaskDelay(BLE_UART_SHELL_TASK_DELAY);  // TODO: Try bus reset / recovery?
     } else {
 
-    LOGV(TAG,"ble_uart_recv_task: %c %d, status: %d (%d)", (char) byte, (int) byte, status, status==kStatus_Success);
+//    LOGV("ble_uart_recv","ble_uart_recv_task: %c %d, status: %d (%d)", (char) byte, (int) byte, status, status==kStatus_Success);
 
 //      char buf[20];
 //      snprintf(buf, 20, "R: %d, s:%d", (int)byte, status);
