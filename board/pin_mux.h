@@ -450,17 +450,17 @@ void BOARD_InitBootPins(void);
 /*! @name PIO2_8 (coord U17), PS_HOLD
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_PS_HOLD_PERIPHERAL GPIO          /*!<@brief Peripheral name */
-#define BOARD_INITPINS_PS_HOLD_SIGNAL PIO2              /*!<@brief Signal name */
-#define BOARD_INITPINS_PS_HOLD_CHANNEL 8                /*!<@brief Signal channel */
+#define BOARD_INITPINS_PS_HOLD_PERIPHERAL GPIO                    /*!<@brief Peripheral name */
+#define BOARD_INITPINS_PS_HOLD_SIGNAL PIO2                        /*!<@brief Signal name */
+#define BOARD_INITPINS_PS_HOLD_CHANNEL 8                          /*!<@brief Signal channel */
 
 /* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_PS_HOLD_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_PS_HOLD_GPIO_PIN_MASK (1U << 8U) /*!<@brief GPIO pin mask */
-#define BOARD_INITPINS_PS_HOLD_PORT 2U                  /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_PS_HOLD_PIN 8U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_PS_HOLD_PIN_MASK (1U << 8U)      /*!<@brief PORT pin mask */
-                                                        /* @} */
+#define BOARD_INITPINS_PS_HOLD_GPIO GPIO                          /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_PS_HOLD_GPIO_PIN_MASK (1U << 8U)           /*!<@brief GPIO pin mask */
+#define BOARD_INITPINS_PS_HOLD_PORT 2U                            /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_PS_HOLD_PIN 8U                             /*!<@brief PORT pin number */
+#define BOARD_INITPINS_PS_HOLD_PIN_MASK (1U << 8U)                /*!<@brief PORT pin mask */
+                                                                  /* @} */
 
 /*! @name PIO0_16 (coord D6), USER_BUTTON1
   @{ */

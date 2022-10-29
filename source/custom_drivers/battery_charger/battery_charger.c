@@ -9,12 +9,16 @@
  * Description: BQ25618 Battery Charger driver implementation.
  */
 #include "battery_charger.h"
-#include "battery_charger_regs.h"
+#include "battery_charger_regs_BQ25887.h"
 
 #include "FreeRTOS.h"
 #include "utils.h"
 #include "config.h"
 #include "loglevels.h"
+
+#define CHARGER_STATUS_1_FAULTS 0x70
+#define NTS_STATUS_COLD 0x05
+#define NTS_STATUS_HOT 0x06
 
 
 /** Collected charger status registers.
@@ -23,56 +27,47 @@
     to get the previous and current values, since the fault bits latch
     until read. */
 typedef struct {
-  charger_status_0_t status_0;
-  charger_status_1_t status_1_previous;
-  charger_status_1_t status_1_current;
-  charger_status_2_t status_2_previous;
-  charger_status_2_t status_2_current;
+  charger_status_1_t charger_status_1;
+  charger_status_2_t charger_status_2;
+  ntc_status_t ntc_status;
+  fault_status_t fault_status;
 } charger_status_t;
 
 /// BQ25618 I2C address (right-aligned)
-static const uint8_t BQ25618_ADDR = 0x6A;
-static const uint8_t BQ25887_ADDR = 0x6B;
+static const uint8_t BQ25887_ADDR = 0x6A;
 
-/// Input Current Limit register
-static const uint8_t REG_INPUT_CURRENT_LIMIT = 0x00;
-static const uint8_t IINDPM_2400_MA = 0b10111;
-static const uint8_t IINDPM_MAX = 0b11111;
-
-/// Charger Control 0 register
-static const uint8_t REG_CHARGER_CONTROL_0 = 0x01;
-
-/// Charger Control 1 register
-static const uint8_t REG_CHARGER_CONTROL_1 = 0x05;
-static const uint8_t WATCHDOG_DISABLE = 0;
-
-/// Charge Current Limit register
-static const uint8_t REG_CHARGE_CURRENT_LIMIT = 0x02;
-static const uint8_t ICHG_700_MA = 0b100011;
-static const uint8_t ICHG_MAX = 0b111011;
-
-/// Charger Status 0 register
-static const uint8_t REG_CHARGER_STATUS_0 = 0x08;
-enum {
-  CHRG_STAT_NOT_CHARGING = 0,
-  CHRG_STAT_SLOW_CHARGE = 1,
-  CHRG_STAT_FAST_CHARGE = 2,
-  CHRG_STAT_DONE_CHARGING = 3
-};
+/// Charger Control 3 register
+static const uint8_t REG_CHARGER_CONTROL_3 = 0x07;
 
 /// Charger Status 1 register
-static const uint8_t REG_CHARGER_STATUS_1 = 0x09;
+static const uint8_t REG_CHARGER_STATUS_1 = 0x0B;
 
 /// Charger Status 2 register
-static const uint8_t REG_CHARGER_STATUS_2 = 0x0A;
-static const uint8_t CHARGER_STATUS_2_FAULTS = 0x70;
+static const uint8_t REG_CHARGER_STATUS_2 = 0x0C;
+
+/// NTC Status register
+static const uint8_t REG_NTC_STATUS = 0x0D;
+
+/// Fault Status register
+static const uint8_t REG_FAULT_STATUS = 0x0D;
 
 /// Part Information register
-static const uint8_t REG_PART_INFORMATION = 0x0B;
+static const uint8_t REG_PART_INFORMATION = 0x25;
 
 // Rate to tickle watchdog
 static const int MS_PER_S = 1000;
 static const int WATCHDOG_TICKLE_MS = (20 * MS_PER_S);
+
+enum {
+  CHRG_STAT_NOT_CHARGING = 0,
+  CHRG_STAT_TRICKLE_CHARGE = 1,
+  CHRG_STAT_PRE_CHARGE = 2,
+  CHRG_STAT_FAST_CHARGE = 3,
+  CHRG_STAT_TAPER_CHARGE = 4,
+  CHRG_STAT_TOPOFF_CHARGE = 5,
+  CHRG_STAT_DONE_CHARGING = 6,
+  CHRG_STAT_RESERVED = 7,
+};
 
 /// Logging prefix
 static const char* TAG = "battery_charger";
@@ -116,59 +111,7 @@ battery_charger_read_status_registers(
   charger_status_t* p_charger_status
   );
 
-/** Set input current limit.
-
-    Sets the input current in the Input Current Limit register. This
-    is reset by the charger every time an input source is detected and
-    tested, so it should be updated when a transition from battery to
-    an external input source is detected.
-
-    Note that the iindpm value provided is not in mA--it's written
-    directly to the register. See datasheet for values.
-
-    @param handle Handle from battery_charger_init()
-    @param iindpm Value for for IINDPM in Input Current Limit register
- */
-static status_t
-battery_charger_set_input_current(
-  battery_charger_handle_t* handle,
-  uint8_t iindpm
-  );
-
-/** Enables monitoring of the temperature sensor
-
-    Sets whether to monitor the temperature sensor in the
-    Input Current Limit register. This
-    is reset by the charger every time an input source is detected and
-    tested, so it should be updated when a transition from battery to
-    an external input source is detected.
-
-    @param handle Handle from battery_charger_init()
-    @param ignore true to ignore the temperature sensor, false to use it.
- */
-
-static status_t
-battery_charger_set_ts_ignore(
-  battery_charger_handle_t* handle,
-  bool ignore
-  );
-
-/** Set charge current limit.
-
-    Sets the "fast charge" current in the Charge Current Limit
-    register.
-
-    Note that the ichg value provided is not in mA--it's written
-    directly to the register. See datasheet for values.
-
-    @param handle Handle from battery_charger_init()
-    @param ichg Value for for ICHG in Charge Current Limit register
- */
-static status_t
-battery_charger_set_charge_current(
-  battery_charger_handle_t* handle,
-  uint8_t ichg
-  );
+// Global function definitions
 
 void
 battery_charger_init(
@@ -219,39 +162,15 @@ battery_charger_init(
   charger_status_t charger_status;
   status = battery_charger_read_status_registers(handle, &charger_status);
   if (status == kStatus_Success) {
-    LOGV(TAG, "Status 0: 0x%x", charger_status.status_0.raw);
-    LOGV(TAG, "Status 1 read 1: 0x%x", charger_status.status_1_previous.raw);
-    LOGV(TAG, "Status 1 read 2: 0x%x", charger_status.status_1_current.raw);
-    LOGV(TAG, "Status 2 read 1: 0x%x", charger_status.status_2_previous.raw);
-    LOGV(TAG, "Status 2 read 2: 0x%x", charger_status.status_2_current.raw);
+    LOGV(TAG, "Status 1: 0x%x", charger_status.charger_status_1.raw);
+    LOGV(TAG, "Status 2: 0x%x", charger_status.charger_status_2.raw);
+    LOGV(TAG, "Status NTC: 0x%x", charger_status.ntc_status.raw);
+    LOGV(TAG, "Status FAULT: 0x%x", charger_status.fault_status.raw);
   }
   else {
     LOGE(TAG, "Error reading status registers: %ld", status);
   }
 
-  // Set input current limit to 2400 mA
-  status = battery_charger_set_input_current(handle, IINDPM_2400_MA);
-  if (status != kStatus_Success) {
-    LOGE(TAG, "Error setting input current: %ld", status);
-  }
-
-  // TODO: Do NOT ignore the temperature sensor in production
-  // Ignore the temperature sensor
-
-#if (defined(ENABLE_CHARGER_TEMP_SENSOR) && (ENABLE_CHARGER_TEMP_SENSOR > 0U))
-  status = battery_charger_set_ts_ignore(handle, false);
-#else
-  status = battery_charger_set_ts_ignore(handle, true);
-#endif
-  if (status != kStatus_Success) {
-    LOGE(TAG, "Error setting ignore temperature sensor: %ld", status);
-  }
-
-  // Set charge current limit to 700 mA
-  status = battery_charger_set_charge_current(handle, ICHG_700_MA);
-  if (status != kStatus_Success) {
-    LOGE(TAG, "Error setting charge current: %ld", status);
-  }
 }
 
 status_t
@@ -280,14 +199,14 @@ battery_charger_disable_wdog(
   battery_charger_handle_t* handle
   )
 {
-  charger_control_1_t charger_control_1 = { .raw = 0 };
-  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25618_ADDR,
-    REG_CHARGER_CONTROL_1, &charger_control_1.raw);
+  charger_control_3_t charger_control_3 = { .raw = 0 };
+  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+    REG_CHARGER_CONTROL_3, &charger_control_3.raw);
 
   if (status == kStatus_Success) {
-    charger_control_1.watchdog = WATCHDOG_DISABLE;
-    status = i2c_mem_write_byte(handle->i2c_handle, BQ25618_ADDR,
-      REG_CHARGER_CONTROL_1, charger_control_1.raw);
+	  charger_control_3.wd_rst = 0x0;
+    status = i2c_mem_write_byte(handle->i2c_handle, BQ25887_ADDR,
+      REG_CHARGER_CONTROL_3, charger_control_3.raw);
   }
 
   return status;
@@ -314,17 +233,22 @@ battery_charger_get_status(
         will be set if the input source can't supply all 700+ mA we
         want to charge, but the battery will still charge, just
         slower. */
-    if ((charger_status.status_1_current.raw != 0) ||
-      ((charger_status.status_2_current.raw & CHARGER_STATUS_2_FAULTS) != 0)) {
+    if ((charger_status.fault_status.raw != 0) ||
+      ((charger_status.charger_status_1.raw & CHARGER_STATUS_1_FAULTS) != 0) ||
+	  ((charger_status.ntc_status.raw == NTS_STATUS_COLD) == 0) ||
+	  ((charger_status.ntc_status.raw == NTS_STATUS_HOT) == 0)) {
       battery_charger_status = BATTERY_CHARGER_STATUS_FAULT;
     }
     else {
       // No faults--check for a good input source
       /// @todo bh vbus_gd or pg_stat?
-      if (charger_status.status_0.pg_stat) {
+      if (charger_status.charger_status_2.pg_stat) {
         // Input source is good, check whether we're charging
-        if ((charger_status.status_0.chrg_stat == CHRG_STAT_SLOW_CHARGE) ||
-          (charger_status.status_0.chrg_stat == CHRG_STAT_FAST_CHARGE)) {
+        if ((charger_status.charger_status_1.chrg_status == CHRG_STAT_TRICKLE_CHARGE) ||
+			(charger_status.charger_status_1.chrg_status == CHRG_STAT_PRE_CHARGE) ||
+			(charger_status.charger_status_1.chrg_status == CHRG_STAT_FAST_CHARGE) ||
+			(charger_status.charger_status_1.chrg_status == CHRG_STAT_TAPER_CHARGE) ||
+			(charger_status.charger_status_1.chrg_status == CHRG_STAT_TOPOFF_CHARGE )) {
           // We're charging
           battery_charger_status = BATTERY_CHARGER_STATUS_CHARGING;
         }
@@ -367,88 +291,24 @@ battery_charger_print_detailed_status(
   status_t status = battery_charger_read_status_registers(handle,
     &charger_status);
   if (status == kStatus_Success) {
-    printf("  Charger Status 0 (REG08): 0x%x\n", charger_status.status_0.raw);
-    printf("    vsys_stat: %d\n", charger_status.status_0.vsys_stat);
-    printf("    therm_stat: %d\n", charger_status.status_0.therm_stat);
-    printf("    pg_stat: %d\n", charger_status.status_0.pg_stat);
-    printf("    chrg_stat: %d\n", charger_status.status_0.chrg_stat);
-    printf("    vbus_stat: %d\n", charger_status.status_0.vbus_stat);
+    printf("  Charger Status 1 (REG 0x0B): 0x%x\n", charger_status.charger_status_1.raw);
+    printf("    chrg_stat: %d\n", charger_status.charger_status_1.chrg_status);
+    printf("    wd_stat: %d\n", charger_status.charger_status_1.wd_stat);
+    printf("    treg_stat: %d\n", charger_status.charger_status_1.treg_stat);
+    printf("    vindpm_stat: %d\n", charger_status.charger_status_1.vindpm_stat);
+    printf("    iindpm_stat: %d\n", charger_status.charger_status_1.iindpm_stat);
 
-    printf("  Charger Status 1 (REG09), latched values: 0x%x\n",
-      charger_status.status_1_previous.raw);
-    printf("    ntc_fault: %d\n",
-      charger_status.status_1_previous.ntc_fault);
-    printf("    bat_fault: %d\n",
-      charger_status.status_1_previous.bat_fault);
-    printf("    chrg_fault: %d\n",
-      charger_status.status_1_previous.chrg_fault);
-    printf("    boost_fault: %d\n",
-      charger_status.status_1_previous.boost_fault);
-    printf("    watchdog_fault: %d\n",
-      charger_status.status_1_previous.watchdog_fault);
+    printf("  Charger Status 2 (REG 0x0C): 0x%x\n",charger_status.charger_status_2.raw);
+    printf("    ico_stat: %d\n", charger_status.charger_status_2.ico_stat);
+	printf("    vbus_stat: %d\n", charger_status.charger_status_2.vbus_stat);
+    printf("    pg_stat: %d\n", charger_status.charger_status_2.pg_stat);
 
-    if (charger_status.status_1_previous.raw ==
-      charger_status.status_1_current.raw) {
-      printf("  Charger Status 1 (REG09), current values: same as latched\n");
-    }
-    else {
-      printf("  Charger Status 1 (REG09), current values: 0x%x\n",
-        charger_status.status_1_current.raw);
-      printf("    ntc_fault: %d\n",
-        charger_status.status_1_current.ntc_fault);
-      printf("    bat_fault: %d\n",
-        charger_status.status_1_current.bat_fault);
-      printf("    chrg_fault: %d\n",
-        charger_status.status_1_current.chrg_fault);
-      printf("    boost_fault: %d\n",
-        charger_status.status_1_current.boost_fault);
-      printf("    watchdog_fault: %d\n",
-        charger_status.status_1_current.watchdog_fault);
-    }
+    printf("  NTC Status (REG 0x0D): 0x%x\n",charger_status.ntc_status.raw);
 
-    printf("  Charger Status 2 (REG0A), latched values: 0x%x\n",
-      charger_status.status_2_previous.raw);
-    printf("    iindpm_int_mask: %d\n",
-      charger_status.status_2_previous.iindpm_int_mask);
-    printf("    windpm_int_mask: %d\n",
-      charger_status.status_2_previous.windpm_int_mask);
-    printf("    acov_stat: %d\n",
-      charger_status.status_2_previous.acov_stat);
-    printf("    topoff_active: %d\n",
-      charger_status.status_2_previous.topoff_active);
-    printf("    batsns_stat: %d\n",
-      charger_status.status_2_previous.batsns_stat);
-    printf("    iintpm_stat: %d\n",
-      charger_status.status_2_previous.iintpm_stat);
-    printf("    vindpm_stat: %d\n",
-      charger_status.status_2_previous.vindpm_stat);
-    printf("    vbus_gd: %d\n",
-      charger_status.status_2_previous.vbus_gd);
-
-    if (charger_status.status_2_previous.raw ==
-      charger_status.status_2_current.raw) {
-      printf("  Charger Status 2 (REG0A), current values: same as latched\n");
-    }
-    else {
-      printf("  Charger Status 2 (REG0A), current values: 0x%x\n",
-        charger_status.status_2_current.raw);
-      printf("    iindpm_int_mask: %d\n",
-        charger_status.status_2_current.iindpm_int_mask);
-      printf("    windpm_int_mask: %d\n",
-        charger_status.status_2_current.windpm_int_mask);
-      printf("    acov_stat: %d\n",
-        charger_status.status_2_current.acov_stat);
-      printf("    topoff_active: %d\n",
-        charger_status.status_2_current.topoff_active);
-      printf("    batsns_stat: %d\n",
-        charger_status.status_2_current.batsns_stat);
-      printf("    iintpm_stat: %d\n",
-        charger_status.status_2_current.iintpm_stat);
-      printf("    vindpm_stat: %d\n",
-        charger_status.status_2_current.vindpm_stat);
-      printf("    vbus_gd: %d\n",
-        charger_status.status_2_current.vbus_gd);
-    }
+    printf("  Fault Status (REG 0x0E): 0x%x\n",charger_status.fault_status.raw);
+    printf("    tmr_stat: %d\n", charger_status.fault_status.tmr_stat);
+    printf("    tshut_stat: %d\n", charger_status.fault_status.tshut_stat);
+    printf("    vbus_ovp_stat: %d\n", charger_status.fault_status.vbus_ovp_stat);
   }
 
   return status;
@@ -460,20 +320,21 @@ static status_t
 battery_charger_reset_device(battery_charger_handle_t* handle)
 {
 	part_information_t part_information = { .reg_rst = true };
-	status_t status = i2c_mem_write_byte(handle->i2c_handle, BQ25618_ADDR,
+	status_t status = i2c_mem_write_byte(handle->i2c_handle, BQ25887_ADDR,
 	  REG_PART_INFORMATION, part_information.raw);
+	return status;
 }
 
 static status_t
 battery_charger_reset_watchdog(battery_charger_handle_t* handle)
 {
-  charger_control_0_t charger_control_0;
-  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25618_ADDR,
-    REG_CHARGER_CONTROL_0, &charger_control_0.raw);
+  charger_control_3_t charger_control_3;
+  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+    REG_CHARGER_CONTROL_3, &charger_control_3.raw);
   if (status == kStatus_Success) {
-    charger_control_0.wd_rst = true;
-    status = i2c_mem_write_byte(handle->i2c_handle, BQ25618_ADDR,
-      REG_CHARGER_CONTROL_0, charger_control_0.raw);
+	  charger_control_3.wd_rst = true;
+    status = i2c_mem_write_byte(handle->i2c_handle, BQ25887_ADDR,
+    		REG_CHARGER_CONTROL_3, charger_control_3.raw);
     if (status == kStatus_Success) {
       /// @todo BH - Can't log from SW timer, apparently?
       //LOGV(TAG, "Watchdog timer successfully reset");
@@ -505,116 +366,26 @@ battery_charger_read_status_registers(
   charger_status_t* p_charger_status
   )
 {
-  /* Read status registers.
+  // Read status registers.
 
-     Read status_1 and status_2 registers twice, to get both previous
-     and current status values. */
-
-  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25618_ADDR,
-    REG_CHARGER_STATUS_0, &p_charger_status->status_0.raw);
+  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+    REG_CHARGER_STATUS_1, &p_charger_status->charger_status_1.raw);
 
   if (status == kStatus_Success) {
-    status = i2c_mem_read_byte(handle->i2c_handle, BQ25618_ADDR,
-      REG_CHARGER_STATUS_1, &p_charger_status->status_1_previous.raw);
+    status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+      REG_CHARGER_STATUS_2, &p_charger_status->charger_status_2.raw);
   }
 
   if (status == kStatus_Success) {
-    status = i2c_mem_read_byte(handle->i2c_handle, BQ25618_ADDR,
-      REG_CHARGER_STATUS_1, &p_charger_status->status_1_current.raw);
+    status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+      REG_NTC_STATUS, &p_charger_status->ntc_status.raw);
   }
 
   if (status == kStatus_Success) {
-    status = i2c_mem_read_byte(handle->i2c_handle, BQ25618_ADDR,
-      REG_CHARGER_STATUS_2, &p_charger_status->status_2_previous.raw);
-  }
-
-  if (status == kStatus_Success) {
-    status = i2c_mem_read_byte(handle->i2c_handle, BQ25618_ADDR,
-      REG_CHARGER_STATUS_2, &p_charger_status->status_2_current.raw);
+    status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+      REG_FAULT_STATUS, &p_charger_status->fault_status.raw);
   }
 
   return status;
 }
 
-static status_t
-battery_charger_set_input_current(
-  battery_charger_handle_t* handle,
-  uint8_t iindpm
-  )
-{
-  if (iindpm > IINDPM_MAX) {
-    LOGE(TAG, "Error: Invalid IINDPM value: 0x%x > 0x%x", iindpm, IINDPM_MAX);
-    return kStatus_Fail;
-  }
-
-  input_current_limit_t input_current_limit;
-  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25618_ADDR,
-    REG_INPUT_CURRENT_LIMIT, &input_current_limit.raw);
-  if (status == kStatus_Success) {
-    input_current_limit.iindpm = iindpm;
-    status = i2c_mem_write_byte(handle->i2c_handle, BQ25618_ADDR,
-      REG_INPUT_CURRENT_LIMIT, input_current_limit.raw);
-    if (status != kStatus_Success) {
-      LOGE(TAG, "Error writing Input Current Limit register: %ld", status);
-    }
-  }
-  else {
-    LOGE(TAG, "Error reading Input Current Limit register: %ld", status);
-  }
-
-  return status;
-}
-
-static status_t
-battery_charger_set_ts_ignore(
-  battery_charger_handle_t* handle,
-  bool ignore
-  )
-{
-
-  input_current_limit_t input_current_limit;
-  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25618_ADDR,
-    REG_INPUT_CURRENT_LIMIT, &input_current_limit.raw);
-  if (status == kStatus_Success) {
-    input_current_limit.ts_ignore = ignore;
-    status = i2c_mem_write_byte(handle->i2c_handle, BQ25618_ADDR,
-      REG_INPUT_CURRENT_LIMIT, input_current_limit.raw);
-    if (status != kStatus_Success) {
-      LOGE(TAG, "Error writing Input Current Limit register: %ld", status);
-    }
-  }
-  else {
-    LOGE(TAG, "Error reading Input Current Limit register: %ld", status);
-  }
-
-  return status;
-}
-
-static status_t
-battery_charger_set_charge_current(
-  battery_charger_handle_t* handle,
-  uint8_t ichg
-  )
-{
-  if (ichg > ICHG_MAX) {
-    LOGE(TAG, "Error: Invalid ICHG value: 0x%x > 0x%x", ichg, ICHG_MAX);
-    return kStatus_Fail;
-  }
-
-  charger_current_limit_t charge_current_limit;
-  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25618_ADDR,
-    REG_CHARGE_CURRENT_LIMIT, &charge_current_limit.raw);
-  if (status == kStatus_Success) {
-    charge_current_limit.ichg = ichg;
-    status = i2c_mem_write_byte(handle->i2c_handle, BQ25618_ADDR,
-      REG_CHARGE_CURRENT_LIMIT, charge_current_limit.raw);
-    if (status != kStatus_Success) {
-      LOGE(TAG, "Error writing Charge Current Limit register: %ld", status);
-    }
-  }
-  else {
-    LOGE(TAG, "Error reading Charge Current Limit register: %ld", status);
-  }
-
-  return status;
-}
