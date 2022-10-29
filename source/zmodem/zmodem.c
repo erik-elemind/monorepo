@@ -30,7 +30,7 @@
 #include "crctab.h"
 #include "zmdm.h"
 #include "utils.h"
-//#include "board_config.h" //ToDo: port
+#include "board_config.h"
 #include "zmodem_transfer.h"
 #include "config.h"
 #include "ble_shell.h"

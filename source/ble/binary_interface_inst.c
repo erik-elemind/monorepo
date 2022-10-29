@@ -12,11 +12,6 @@ BinaryInterface bin_itf;
 static SemaphoreHandle_t itf_mutex = NULL;
 static StaticSemaphore_t itf_mutex_static_buffer;
 
-static void handle_shake_response(BinaryReader *r)
-{
-  // do nothing - deprecated
-}
-
 static void handle_commands(BinaryReader *r)
 {
     static char data_array[BUFFER_SIZE] = {0};
@@ -49,7 +44,7 @@ bool bin_itf_send_command(char* buf, size_t size){
 
   xSemaphoreTake(itf_mutex, portMAX_DELAY);
   // TODO: these two writes need to be atomic and protected by a semaphore/mutex.
-  success &= writeUINT8(bw, CC_COMMANDS);
+  success &= writeUINT8(bw, CC_CHARACTERISTIC);
   success &= writeSTRING(bw, (char*) buf, size);
 //  success &= writeSTRING(bw, "\r\n", 2);
   success &= bw_send(bw);
@@ -63,21 +58,16 @@ static void handle_file_commands(BinaryReader *r)
   char data_array[BUFFER_SIZE] = {0};
   ErrValUINT8 data_array_size = readSTRING(r, data_array, BUFFER_SIZE);
   if(data_array_size.error_ == ERROR_NONE){
-    //printf("BLE RX (%u): ",data_array_size.value_);
-    //printf("%.*s\n",(size_t)data_array_size.value_,data_array);
+//    printf("BLE RX (%u): ",data_array_size.value_);
+//    printf("%.*s\n",(size_t)data_array_size.value_,data_array);
 
     ble_shell_add_char_from_ble(data_array,data_array_size.value_);
   }
 }
 
-static void handle_ack(BinaryReader *r)
-{
-  // do nothing - deprecated
-}
-
 bool bin_itf_send_uart_command(char* buf, size_t buf_size) {
-  //printf("BLE TX (%u): ",buf_size);
-  //printf("%.*s\n",buf_size,buf);
+//  printf("BLE TX (%u): ",buf_size);
+//  printf("%.*s\n",buf_size,buf);
 
 
   BinaryWriter *bw = getWriter(&bin_itf);
@@ -86,7 +76,7 @@ bool bin_itf_send_uart_command(char* buf, size_t buf_size) {
 
   xSemaphoreTake(itf_mutex, portMAX_DELAY);
   // These two writes need to be atomic and protected by a semaphore/mutex.
-  success &= writeUINT8(bw, CC_UART);
+  success &= writeUINT8(bw, CC_NUS);
   success &= writeSTRING(bw, buf, buf_size);
   success &= bw_send(bw);
   xSemaphoreGive(itf_mutex);
@@ -108,11 +98,10 @@ size_t serial_write_buffer(const char *buffer, size_t size){
 
 static const Command bin_itf_commands[] = {
     {CC_NONE    , NULL},
-    {CC_SHKREQ  , NULL},
-    {CC_SHKRSP  , handle_shake_response},
-    {CC_UART    , handle_file_commands},
-    {CC_COMMANDS, handle_commands},
-    {CC_ACK     , handle_ack}};
+    {CC_UNUSED1  , NULL},
+    {CC_UNUSED2  , NULL},
+    {CC_NUS    , handle_file_commands},
+    {CC_CHARACTERISTIC, handle_commands}};
 
 void bin_itf_init()
 {

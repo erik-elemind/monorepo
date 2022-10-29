@@ -202,7 +202,6 @@ static void dsp_boot_up(void);
 #include <stdio.h>
 #include "fsl_iopctl.h"
 #include "fsl_dsp.h"
-#include "nand_test.h"
 
 static void system_boot_up(void)
 {

@@ -14,7 +14,7 @@ void ads_decode_sample(uint8_t* data, size_t data_len, ads129x_sample *sample){
   int offset = 0;
   memcpy(&(sample->timestamp_ms),data+offset,TIMESTAMP_SIZE_IN_BYTES);
   offset += TIMESTAMP_SIZE_IN_BYTES;
-  memcpy(&(sample->sample_number),data+offset,SAMPLE_NUMBER_SIZE_IN_BYTES);
+  memcpy(&(sample->eeg_sample_number),data+offset,SAMPLE_NUMBER_SIZE_IN_BYTES);
   offset += SAMPLE_NUMBER_SIZE_IN_BYTES;
   memcpy(&(sample->status),data+offset,3);
   // save off eeg channel data
@@ -42,7 +42,7 @@ void ads_decode_sample(uint8_t* data, size_t data_len, ads129x_sample *sample){
 void ads_decode_frontal_sample(uint8_t* data, size_t data_len, ads129x_frontal_sample *sample){
   memset(sample,0,sizeof(*sample));
   int offset = 0;
-  memcpy(&(sample->sample_number),data+offset,SAMPLE_NUMBER_SIZE_IN_BYTES);
+  memcpy(&(sample->eeg_sample_number),data+offset,SAMPLE_NUMBER_SIZE_IN_BYTES);
   offset += SAMPLE_NUMBER_SIZE_IN_BYTES;
   int eeg_channel_index = 0;
   for (register int i = offset; i < data_len; i+=3) {

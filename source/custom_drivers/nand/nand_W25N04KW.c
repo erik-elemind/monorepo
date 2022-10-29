@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "fsl_dma.h"
+
 #include "config.h"
 
 #include "nand_W25N04KW.h"
@@ -676,19 +678,6 @@ nand_write_page(
  */
 int
 nand_can_copy_page_from_cache(nand_user_data_t *user_data, uint32_t src_page_addr, uint32_t dest_page_addr){
-#if 0
-  // This chip (GD5F4GQ6xExxG) has an internal data move operation.
-  // However, Gigadevice have told us that it's only usable when both
-  // the source and destination pages belong to the same plane (odd
-  // blocks form one plane and even blocks another), and to the same die
-  // (two contiguous 256 MB regions make up two dies).
-  //
-  // The test below checks that the page addresses have the same die
-  // (0x20000) and same plane (0x40). If so, IDM is used. Otherwise, we
-  // use the software fallback.
-  return !((src_page_addr ^ dest_page_addr) & 0x20040)
-#endif
-
   // The chip (W25N04KW) can only do an internal data move operation
   // if the copy is done within a main array. There are two main arrays,
   // one main array is addressed by page_address bit 17 (zero-indexed) equal to 0,

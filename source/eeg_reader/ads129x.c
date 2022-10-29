@@ -323,12 +323,25 @@ void ads_set_gain(ads129x* ads, uint8_t gain) {
     return;
   }
 
+#if defined(VARIANT_FF2)
+  // set eeg gain
+  ads_wreg(CH1SET, gain_reg_val);
+  ads_wreg(CH2SET, gain_reg_val);
+  ads_wreg(CH3SET, gain_reg_val);
+  ads_wreg(CH4SET, gain_reg_val);
+  ads_wreg(CH5SET, gain_reg_val);
+  ads_wreg(CH6SET, gain_reg_val);
+  ads_wreg(CH7SET, gain_reg_val);
+  ads_wreg(CH8SET, gain_reg_val);
+#elif defined(VARIANT_FF3) || defined(VARIANT_FF4)
   // set eeg gain
   ads_wreg(CH1SET, gain_reg_val);
   ads_wreg(CH2SET, gain_reg_val);
   ads_wreg(CH3SET, gain_reg_val);
   // Set gain on skin temp sensor channel to 1.
   ads_wreg(CH4SET, ADS1298_GAIN_1X);
+#endif
+
 }
 
 void ads_init(ads129x* ads){
@@ -339,7 +352,9 @@ void ads_init(ads129x* ads){
       .outputLogic = 0U
   };
   /* Initialize GPIO functionality on pin PIO1_13 (pin 2)  */
-  //GPIO_PinInit(BOARD_INITPINS_EEG_CP_EN_GPIO, BOARD_INITPINS_EEG_CP_EN_PORT, BOARD_INITPINS_EEG_CP_EN_PIN, &EEG_CP_EN_config);
+#if defined(VARIANT_FF2) || defined(VARIANT_FF3)
+  GPIO_PinInit(BOARD_INITPINS_EEG_CP_EN_GPIO, BOARD_INITPINS_EEG_CP_EN_PORT, BOARD_INITPINS_EEG_CP_EN_PIN, &EEG_CP_EN_config);
+#endif
 #endif
 
 #if defined(EEG_LDO_CONTROL) && (EEG_LDO_CONTROL > 0)
@@ -356,7 +371,9 @@ void ads_init(ads129x* ads){
 ads_status ads_on(ads129x* ads) {
 #if defined(EEG_CP_CONTROL) && (EEG_CP_CONTROL > 0)
   // Power ON EEG negative charge pump
-  //GPIO_PinWrite(BOARD_INITPINS_EEG_CP_EN_GPIO, BOARD_INITPINS_EEG_CP_EN_PORT, BOARD_INITPINS_EEG_CP_EN_PIN, EEG_CP_ENABLE_LEVEL);
+#if defined(VARIANT_FF2) || defined(VARIANT_FF3)
+  GPIO_PinWrite(BOARD_INITPINS_EEG_CP_EN_GPIO, BOARD_INITPINS_EEG_CP_EN_PORT, BOARD_INITPINS_EEG_CP_EN_PIN, EEG_CP_ENABLE_LEVEL);
+#endif
 #endif
 
 #if defined(EEG_LDO_CONTROL) && (EEG_LDO_CONTROL > 0)

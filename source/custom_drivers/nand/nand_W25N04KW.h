@@ -8,13 +8,15 @@
  *
  * Description: Generic NAND flash driver.
 */
-#ifndef NAND_H
-#define NAND_H
+#ifndef NAND_W25N04KW_H
+#define NAND_W25N04KW_H
 
 #include "config.h"
 #include <stdint.h>
 #include <stdbool.h>
-#include "nand_platform.h"
+
+// System specific NAND header
+#include "nand_W25N04KW_config.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -431,4 +433,4 @@ nand_print_detailed_status(nand_user_data_t *user_data);
 }
 #endif
 
-#endif  // NAND_H
+#endif  // NAND_W25N04KW_H

@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include "nand_W25N04KW.h"
+#include "nand.h"
 #include "dhara_utils.h"
 #include "dhara_ppstress.h"
 

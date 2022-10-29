@@ -11,7 +11,7 @@
  */
 
 #include "dhara_nand.h"
-#include "nand_W25N04KW.h"
+#include "nand.h"
 #include "dhara_metadata_cache.h"
 #include "dhara_utils.h"
 #include <string.h>

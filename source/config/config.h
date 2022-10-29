@@ -105,6 +105,11 @@
 
 #define USE_EEG_INTERRUPT_INITIATED_DMA (0U)
 
+// Use the new flash chip
+#define USE_NAND_GD5F4GQ4_4KPAGE (0U)
+#define USE_NAND_GD5F4GQ6_2KPAGE (0U)
+#define USE_NAND_W25N04KW        (1U)
+
 // Config Streaming Log Data (used in data_log.c)
 // 0U - stream NO logged data
 // 1U - stream ALL logged data

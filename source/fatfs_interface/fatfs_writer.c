@@ -18,13 +18,13 @@
 
 #include "config.h"
 #include "ffconf.h"
-#include "nand_W25N04KW.h"
+#include "nand.h"
 #include "loglevels.h"
 
 // Check sizes. FatFS must be configured with a sector size greater than
 // the NAND eraseable size
-//static_assert(FF_MIN_SS >= NAND_PAGE_SIZE, "test");
-//static_assert(FF_MAX_SS >= NAND_PAGE_SIZE, "Test");
+static_assert(FF_MIN_SS >= NAND_PAGE_SIZE, "FatFS must be configured with a sector size greater than the NAND eraseable size");
+static_assert(FF_MAX_SS >= NAND_PAGE_SIZE, "FatFS must be configured with a sector size greater than the NAND eraseable size");
 
 static const char* TAG = "fatfs_writer";  // Logging prefix for this module
 

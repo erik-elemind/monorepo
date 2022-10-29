@@ -291,7 +291,6 @@ static bool open_data_log(const char* filename, BYTE mode) {
   UINT bytes_written;
   uint8_t comp[] = {0x00, 0x02};
   f_write_nowait(&g_data_log_context.open_log_file, &(comp[0]), 2, &bytes_written);
-  // write the eeg gain
 
   return true;
 }
@@ -644,6 +643,8 @@ handle_state_opened(data_log_event_t *event)
         // initialize the heatshrink encoder
         heatshrink_encoder_reset(&(g_data_log_context.hse));
         set_file_ready(true);
+        // write the eeg gain
+        data_log_eeg_info();
       }else{
         LOGE(TAG, "Failed to open data log");
         set_state(DATA_LOG_STATE_CLOSED);

@@ -15,11 +15,10 @@ extern BinaryInterface bin_itf;
 typedef enum COMMAND_CODES
 {
     CC_NONE = 0,
-    CC_SHKREQ = 1,
-    CC_SHKRSP = 2,
-    CC_UART = 3,
-    CC_COMMANDS = 4,
-    CC_ACK = 5
+    CC_UNUSED1 = 1,
+    CC_UNUSED2 = 2,
+    CC_NUS = 3,
+    CC_CHARACTERISTIC = 4
 }COMMAND_CODES;
 
 void bin_itf_init();

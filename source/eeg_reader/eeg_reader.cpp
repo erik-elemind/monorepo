@@ -28,6 +28,7 @@
 #include "eeg_reader.h"
 #include "eeg_processor.h"
 #include "interpreter.h"
+#include "skin_temp_reader.h"
 
 #include "data_log.h"
 
@@ -71,7 +72,7 @@ typedef struct
   eeg_reader_event_type_t type;
   union{
     uint8_t ads_gain;
-    int32_t temp;
+    skin_temp_sample_t skin_temp;
   } data;
 } eeg_reader_event_t;
 
@@ -119,7 +120,7 @@ static spi_master_handle_t g_spi_handle;
 static void eeg_spi_rx_complete_isr(SPI_Type *base, spi_master_handle_t *handle, status_t status, void *userData);
 static void handle_eeg_drdy_pint_isr();
 #endif
-static void handle_eeg_temp_sample(int32_t temp);
+static void handle_skin_temp_sample(eeg_reader_event_t *event);
 
 // For logging and debug:
 static const char *
@@ -315,14 +316,22 @@ handle_state_standby(eeg_reader_event_t *event)
 
 static void stop_spi_dma(){
   // Disable eeg_drdy_pint_isr callback
+#if defined(VARIANT_FF2) || defined(VARIANT_FF3) 
+  PINT_DisableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt4);
+#elif defined(VARIANT_FF4)
   PINT_DisableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt0);
+#endif
 
   vTaskDelay(pdMS_TO_TICKS(8)); // delay twice the period of the 250Hz sampling rate.
 }
 
 static void start_spi_dma(){
   // Enable eeg_drdy_pint_isr callback
-  PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt0);
+#if defined(VARIANT_FF2) || defined(VARIANT_FF3) 
+	PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt4);
+#elif defined(VARIANT_FF4)
+	PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt0);
+#endif
 }
 
 
@@ -331,7 +340,7 @@ handle_state_sampling(eeg_reader_event_t *event)
 {
   switch (event->type) {
     case EEG_READER_EVENT_ENTER_STATE:
-      // Stop continuous sampling mode of ADS1299.
+      // Stop continuous sampling mode of ADS129x.
       stop_spi_dma();
       ads_sdatac_command( &(g_eeg_reader_context.ads) );
 
@@ -343,13 +352,13 @@ handle_state_sampling(eeg_reader_event_t *event)
       // initialize eeg processing
       eeg_processor_init();
 
-      // Start continuous sampling mode of ADS1299.
+      // Start continuous sampling mode of ADS129x.
       ads_rdatac_command( &(g_eeg_reader_context.ads) );
       start_spi_dma();
       break;
 
     case EEG_READER_EVENT_POWER_OFF:
-      // Stop continuous sampling mode of ADS1299.
+      // Stop continuous sampling mode of ADS129x.
       stop_spi_dma();
       ads_sdatac_command( &(g_eeg_reader_context.ads) );
 
@@ -357,7 +366,7 @@ handle_state_sampling(eeg_reader_event_t *event)
       break;
 
     case EEG_READER_EVENT_STOP:
-      // Stop continuous sampling mode of ADS1299.
+      // Stop continuous sampling mode of ADS129x.
       stop_spi_dma();
       ads_sdatac_command( &(g_eeg_reader_context.ads) );
 
@@ -366,7 +375,7 @@ handle_state_sampling(eeg_reader_event_t *event)
 
 #if 0
     case EEG_READER_EVENT_SET_ADS_GAIN:
-      // Stop continuous sampling mode of ADS1298.
+      // Stop continuous sampling mode of ADS129x.
       stop_spi_dma();
       ads_sdatac_command( &(g_eeg_reader_context.ads) );
 
@@ -401,7 +410,7 @@ handle_event(eeg_reader_event_t *event)
 #endif
 
   case EEG_READER_EVENT_TEMP_SAMPLE:
-    handle_eeg_temp_sample(event->data.temp);
+    handle_skin_temp_sample(event);
     return;
 
   default:
@@ -463,7 +472,11 @@ task_init()
   set_state(EEG_READER_STATE_OFF);
 
   // disable eeg data ready interrupt, which is automatically enabled in peripherals.c
+#if defined(VARIANT_FF2) || defined(VARIANT_FF3) 
+  PINT_DisableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt4);
+#elif defined(VARIANT_FF4)
   PINT_DisableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt0);
+#endif
 
   // power up (high on power down pin)
   eeg_reader_event_power_on();
@@ -556,19 +569,25 @@ void eeg_drdy_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status)
 }
 
 static void handle_eeg_drdy_pint_isr(){
-
-	ads129x *ads = &(g_eeg_reader_context.ads);
+  ads129x *ads = &(g_eeg_reader_context.ads);
 
 //  g_timestamp_union.timestamp = xTaskGetTickCountFromISR() * portTICK_PERIOD_MS;
 //  g_spi_bytes[0] = g_timestamp_union.timestamp_bytes[0];
 //  g_spi_bytes[1] = g_timestamp_union.timestamp_bytes[1];
 //  g_spi_bytes[2] = g_timestamp_union.timestamp_bytes[2];
 //  g_spi_bytes[3] = g_timestamp_union.timestamp_bytes[3];
-  g_spi_bytes[4] = g_sample_number_union.sample_number_bytes[0];
-  g_spi_bytes[5] = g_sample_number_union.sample_number_bytes[1];
-  g_spi_bytes[6] = g_sample_number_union.sample_number_bytes[2];
-  g_spi_bytes[7] = g_sample_number_union.sample_number_bytes[3];
-  g_sample_number_union.sample_number++;
+
+//  g_spi_bytes[4] = g_sample_number_union.sample_number_bytes[0];
+//  g_spi_bytes[5] = g_sample_number_union.sample_number_bytes[1];
+//  g_spi_bytes[6] = g_sample_number_union.sample_number_bytes[2];
+//  g_spi_bytes[7] = g_sample_number_union.sample_number_bytes[3];
+//  g_sample_number_union.sample_number++;
+
+  uint64_t time_us = micros();
+  g_spi_bytes[4] = (time_us >> 0) & 0x000000FF;
+  g_spi_bytes[5] = (time_us >> 8) & 0x000000FF;
+  g_spi_bytes[6] = (time_us >> 16) & 0x000000FF;
+  g_spi_bytes[7] = (time_us >> 24) & 0x000000FF;
 
   // Prepare the DMA SPI Transfer
   g_eeg_spi_transfer.txData   = NULL;
@@ -609,6 +628,8 @@ void eeg_dma_rx_complete_isr(SPI_Type *base, spi_dma_handle_t *handle, status_t 
 static void arrange_and_send_eeg_channels_from_isr(BaseType_t *pxHigherPriorityTaskWoken){
   BaseType_t xHigherPriorityTaskWoken1 = pdFALSE;
   BaseType_t xHigherPriorityTaskWoken2 = pdFALSE;
+  BaseType_t xHigherPriorityTaskWoken3 = pdFALSE;
+  uint32_t eeg_sample_num = 0;
 
   // decode
   uint8_t* buffer = eeg_processor_send_eeg_data_open_from_isr(EEG_MSG_LEN, &xHigherPriorityTaskWoken1);
@@ -619,10 +640,22 @@ static void arrange_and_send_eeg_channels_from_isr(BaseType_t *pxHigherPriorityT
     src_offset += 4;
     // copy off sample number
     memcpy(buffer+dst_offset,g_spi_bytes+src_offset,SAMPLE_NUMBER_SIZE_IN_BYTES);
+    memcpy(&eeg_sample_num,g_spi_bytes+src_offset,SAMPLE_NUMBER_SIZE_IN_BYTES);
     src_offset += 4;
     dst_offset += 4;
     // skip status
     src_offset += 3;
+#if defined(VARIANT_FF2)
+    // copy off FP1
+    memcpy(buffer+dst_offset,g_spi_bytes+src_offset+EEG_CH2*3,3); // 2
+    dst_offset += 3;
+    // copy off FPZ
+    memcpy(buffer+dst_offset,g_spi_bytes+src_offset+EEG_CH4*3,3); // 4
+    dst_offset += 3;
+    // copy off FP2
+    memcpy(buffer+dst_offset,g_spi_bytes+src_offset+EEG_CH1*3,3); // 1
+    dst_offset += 3;
+#elif defined(VARIANT_FF3)
     // copy off FP1
     memcpy(buffer+dst_offset,g_spi_bytes+src_offset+EEG_CH2*3,3);
     dst_offset += 3;
@@ -632,34 +665,40 @@ static void arrange_and_send_eeg_channels_from_isr(BaseType_t *pxHigherPriorityT
     // copy off FP2
     memcpy(buffer+dst_offset,g_spi_bytes+src_offset+EEG_CH3*3,3);
     dst_offset += 3;
+#endif
 
     eeg_processor_send_eeg_data_close_from_isr( buffer , EEG_MSG_LEN , &xHigherPriorityTaskWoken2 );
   }
 
+  // Send skin temperature
+#if defined(VARIANT_FF3) || defined(VARIANT_FF4)
+  static uint32_t temp_sample_num = 0;
   static uint32_t temp_sample_rate = 0;
-  
+
+  if (eeg_sample_num == 0){
+    temp_sample_num = 0;
+  }
+
   if (temp_sample_rate++ > TEMP_SENSOR_SAMPLE_RATE) {
     // Save the skin temp sensor data.
-    int32_t temp;
     uint8_t* temp_bytes = &g_spi_bytes[4 /* timestamp */ + 4 /* sample number */ + 3 /* status */ + TEMP_SENSOR_CHANNEL*3];
     temp_sample_rate = 0;
 
-    // Convert 24bit 2's complement to 32 bit 2's complement.
-    temp = (temp_bytes[0] << 24
-	    | temp_bytes[1] << 16
-	    | temp_bytes[2] << 8) >> 8;
-
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     eeg_reader_event_t event = {.type = EEG_READER_EVENT_TEMP_SAMPLE, 0};
-    event.data.temp = temp;
-    xQueueSendFromISR(g_event_queue, &event, &xHigherPriorityTaskWoken);
-  }
 
-  *pxHigherPriorityTaskWoken = xHigherPriorityTaskWoken1 || xHigherPriorityTaskWoken2;
+    // save the data to the event
+    event.data.skin_temp.temp_sample_number = temp_sample_num++; // TODO: increment this value
+    memcpy(&(event.data.skin_temp.temp[0]), &temp_bytes, 3);
+
+    xQueueSendFromISR(g_event_queue, &event, &xHigherPriorityTaskWoken3);
+  }
+#endif
+
+  *pxHigherPriorityTaskWoken = xHigherPriorityTaskWoken1 || xHigherPriorityTaskWoken2 || xHigherPriorityTaskWoken3;
 }
 
-void handle_eeg_temp_sample(int32_t temp) {
-  data_log_temp(temp);
+void handle_skin_temp_sample(eeg_reader_event_t *event) {
+  data_log_skin_temp(event->data.skin_temp.temp_sample_number, event->data.skin_temp.temp);
 }
 
 #else

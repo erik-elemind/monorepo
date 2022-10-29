@@ -15,7 +15,7 @@
 
 #include "FreeRTOS.h"
 
-#include "nand_W25N04KW.h"
+#include "nand.h"
 
 #include "board_config.h"
 

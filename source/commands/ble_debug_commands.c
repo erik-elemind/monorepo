@@ -23,6 +23,17 @@
 #include "ble_debug_commands.h"
 
 void
+ble_ping_command(int argc, char **argv)
+{
+  char cbuf[10];
+  size_t cbuf_size;
+
+  cbuf_size = snprintf(cbuf,sizeof(cbuf),"pong\n");
+  bin_itf_send_uart_command(cbuf,cbuf_size);
+}
+
+
+void
 ble_reset_debug_command(int argc, char **argv)
 {
   CHK_ARGC(1,1);

@@ -30,7 +30,7 @@
 
 #include "config.h"  // for SHELL_WELCOME_STRING, CONFIG_SHELL_FREERTOS
 
-//#include "../commands/commands.h" //ToDo: port
+#include "commands.h"
 
 #ifndef SHELL_PROMPT_CHR
 #define SHELL_PROMPT_CHR  '#'

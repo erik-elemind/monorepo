@@ -103,7 +103,7 @@ typedef union {
   };
   uint8_t bytes[6];
 } bma253_sample_t;
-//static_assert(sizeof(bma253_sample_t) == 6, "x,y,z sample must be 6 bytes");
+static_assert(sizeof(bma253_sample_t) == 6, "x,y,z sample must be 6 bytes");
 
 /** Initialize accelerometer driver.
 

@@ -133,7 +133,8 @@ typedef struct
   accel_state_t state;
   i2c_rtos_handle_t* i2c_handle;
   ACCEL_SAMPLE_TYPE samples[32];    // sample buffer
-  int16_t temperature;  
+  int16_t temperature;
+  uint32_t accel_sample_num;
 } accel_context_t;
 
 static accel_context_t g_context;
@@ -258,6 +259,8 @@ handle_state_sample(const accel_event_t *event)
       // configure fifo and start sampling
       accel_range_set();
       accel_fifo_config_set();
+      // reset sample number
+      g_context.accel_sample_num = 0;
       break;
 
     case ACCEL_EVENT_ISR_DONE:
@@ -266,9 +269,14 @@ handle_state_sample(const accel_event_t *event)
         // capture the current samples
         bool status = accel_fifo_samples_get(g_context.samples, &num_samples);
         if (status) {
+
+#if 0
           for (uint32_t i=0; i<num_samples; i++) {
             // save the samples
             data_log_accel(
+              // save the sample number
+              g_context.accel_sample_num++,
+              // save the samples
               g_context.samples[i].x,
               g_context.samples[i].y,
               g_context.samples[i].z
@@ -278,7 +286,8 @@ handle_state_sample(const accel_event_t *event)
           status = accel_temp_get(&g_context.temperature);
           if (status) {
             // save the temp
-            data_log_accel_temp(g_context.temperature);
+            uint32_t accel_temp_sample_num = g_context.accel_sample_num > 0 ? g_context.accel_sample_num-1 : 0;
+            data_log_accel_temp(g_context.accel_sample_num, g_context.temperature);
             // log a summary to the console
 //            LOGD(TAG, "sample read. num_samples=%u, temp=%d, x=%d, y=%d, z=%d",
 //              num_samples, g_context.temperature,
@@ -287,6 +296,35 @@ handle_state_sample(const accel_event_t *event)
           else {
             LOGW(TAG, "temperature read failed. status=%d", status);
           }
+#else
+          uint64_t time_us = micros();
+
+          for (uint32_t i=0; i<num_samples; i++) {
+            data_log_accel(
+              // save the sample number
+              time_us - (num_samples-1-i)*40000,
+              // save the samples
+              g_context.samples[i].x,
+              g_context.samples[i].y,
+              g_context.samples[i].z
+            );
+          }
+          // read the temperature as well
+          status = accel_temp_get(&g_context.temperature);
+          if (status) {
+            // save the temp
+            data_log_accel_temp(time_us, g_context.temperature);
+            // log a summary to the console
+//            LOGD(TAG, "sample read. num_samples=%u, temp=%d, x=%d, y=%d, z=%d",
+//              num_samples, g_context.temperature,
+//              g_context.samples[0].x, g_context.samples[0].y, g_context.samples[0].z);
+          }
+          else {
+            LOGW(TAG, "temperature read failed. status=%d", status);
+          }
+
+#endif
+
           // TODO: log data to BLE and flash
         }
         else {

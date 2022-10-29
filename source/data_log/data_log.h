@@ -35,29 +35,37 @@ void data_log_close();
 
 void data_log_set_time(char *datetime_string, size_t datetime_size);
 
+// log device gain settings
+void data_log_eeg_info();
+// log eeg data
 void data_log_eeg( ads129x_frontal_sample *f_sample );
 // log amplitude and phase
-void data_log_inst_amp_phs(unsigned long sample_number, float instAmp, float instPhs);
+void data_log_inst_amp_phs(unsigned long eeg_sample_number, float instAmp, float instPhs);
 // log pulse start and stop
-void data_log_pulse(unsigned long sample_number, bool pulse);
+void data_log_pulse(unsigned long eeg_sample_number, bool pulse);
 // log echt channel
-void data_log_echt_channel(unsigned long sample_number, uint8_t echt_channel_number);
+void data_log_echt_channel(unsigned long eeg_sample_number, uint8_t echt_channel_number);
 // log stimulus switch
-void data_log_stimulus_switch(unsigned long sample_number, bool stim_on);
+void data_log_stimulus_switch(unsigned long eeg_sample_number, bool stim_on);
 // log stimulus amplitude
-void data_log_stimulus_amplitude(unsigned long sample_number, float stim_amp);
+void data_log_stimulus_amplitude(unsigned long eeg_sample_number, float stim_amp);
+
 // log acceleration
-void data_log_accel(int16_t x, int16_t y, int16_t z);
+void data_log_accel(unsigned long accel_sample_number, int16_t x, int16_t y, int16_t z);
 // log accelerometer temperature
-void data_log_accel_temp(int16_t temp);
+void data_log_accel_temp(unsigned long accel_sample_number, int16_t temp);
+
+// log als
+void data_log_als(unsigned long als_sample_number, float lux);
+
+// log mems
+void data_log_mic(unsigned long mic_sample_number, int32_t mic);
+
+// log skin temp sensor
+void data_log_skin_temp(unsigned long temp_sample_number, uint8_t* temp_bytes);
+
 // log commands
 void data_log_command(char* line);
-// log als
-void data_log_als(float lux);
-// log mems
-void data_log_mic(int32_t mic);
-// log skin temp sensor
-void data_log_temp(int32_t temp);
 
 // start compression of existing file
 void data_log_compress(char* log_filename_to_compress);

@@ -442,12 +442,12 @@ public:
       first_run = false;
       // save off initial delta parameters
 #if (defined(ECHT_ENABLE) && (ECHT_ENABLE > 0U))
-      data_log_echt_channel(f_sample->sample_number, echt_chnum.get());
+      data_log_echt_channel(f_sample->eeg_sample_number, echt_chnum.get());
 #endif
       // log stimulus on
-      data_log_stimulus_switch(f_sample->sample_number, stim_on.get());
+      data_log_stimulus_switch(f_sample->eeg_sample_number, stim_on.get());
       // log stimulus amplitude
-      data_log_stimulus_amplitude(f_sample->sample_number,stim_amp.get());
+      data_log_stimulus_amplitude(f_sample->eeg_sample_number,stim_amp.get());
     }
 
     compute_instRMS(f_sample->eeg_channels);
@@ -527,24 +527,24 @@ public:
       // log echt channel
 //      LOGV("alpha_switch","echt_channel_number: %u", echt_channel_number);
       if(echt_chnum.changed()){
-        data_log_echt_channel(f_sample->sample_number, echt_chnum.get());
+        data_log_echt_channel(f_sample->eeg_sample_number, echt_chnum.get());
       }
 
       // log stimulus on
       if(stim_on.changed()){
-        data_log_stimulus_switch(f_sample->sample_number, stim_on.get());
+        data_log_stimulus_switch(f_sample->eeg_sample_number, stim_on.get());
       }
 
       // log stimulus amplitude
       if (stim_amp.changed()){
-        data_log_stimulus_amplitude(f_sample->sample_number,stim_amp.get());
+        data_log_stimulus_amplitude(f_sample->eeg_sample_number,stim_amp.get());
       }
 
     //  LOGV(TAG,"amp: %.10f, phs: %.10f", instAmp, instPhs);
 
       // TODO: THe following call causes a virtual_com.c crash, where the USB ISR is never called.
       // log amplitude and phase
-      data_log_inst_amp_phs(f_sample->sample_number, inst_amp, inst_phs);
+      data_log_inst_amp_phs(f_sample->eeg_sample_number, inst_amp, inst_phs);
 
       // compute the pulse
       // TODO: Move these phase parameters to one global struct
@@ -568,7 +568,7 @@ public:
             // if the phase of brainwave entered the region we want to "pulse", UNPAUSE the audio
             audio_pink_mute(false);
             // log the pulse start
-            data_log_pulse(f_sample->sample_number, true);
+            data_log_pulse(f_sample->eeg_sample_number, true);
           }
 
         }else if ( /*(!pulse_trig_curr && pulse_trig_prev) ||*/ triggered_sample_count > triggered_sample_count_reset ) {
@@ -578,7 +578,7 @@ public:
             // if the phase of brainwave exists the region we want to "pulse", PAUSE the audio
             audio_pink_mute(true);
             // log the pulse end
-            data_log_pulse(f_sample->sample_number, false);
+            data_log_pulse(f_sample->eeg_sample_number, false);
           }
         }
 
