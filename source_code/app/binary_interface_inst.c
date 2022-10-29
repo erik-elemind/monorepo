@@ -23,18 +23,6 @@ static void handle_commands(BinaryReader *r)
 //    }
     // Parse command
     lpc_uart_parse_command((char *)data_array, data_array_size.value_);
-    
-    // done sending data over blue tooth, reply with ack
-//    bin_itf_send_ack();
-}
-
-static void handle_shake_request(BinaryReader *r)
-{
-    BinaryWriter *bw = getWriter(&bin_itf);
-
-    bool success = true;
-    success &= writeUINT8(bw, CC_SHKRSP);
-    success &= bw_send(bw);
 }
 
 bool bin_itf_send_command(char *buf, size_t buf_size)
@@ -42,7 +30,7 @@ bool bin_itf_send_command(char *buf, size_t buf_size)
     BinaryWriter *bw = getWriter(&bin_itf);
 
     bool success = true;
-    success &= writeUINT8(bw, CC_COMMANDS);
+    success &= writeUINT8(bw, CC_CHARACTERISTIC);
     success &= writeSTRING(bw, (char *)buf, buf_size);
     // For efficiency, return line must be incorporated into command.
     // success &= writeSTRING(bw, "\n", 1);
@@ -75,9 +63,6 @@ static void handle_file_command(BinaryReader *r)
 
     // send data over bluetooth
     ble_nus_send_data_wrapper((char *)data_array,data_array_size.value_);
-    
-    // done sending data over blue tooth, reply with ack
-//    bin_itf_send_ack();
 }
 
 bool bin_itf_send_file_command(const uint8_t *buf, size_t buf_size)
@@ -85,22 +70,9 @@ bool bin_itf_send_file_command(const uint8_t *buf, size_t buf_size)
     BinaryWriter *bw = getWriter(&bin_itf);
 
     bool success = true;
-    success &= writeUINT8(bw, CC_FILE);
+    success &= writeUINT8(bw, CC_NUS);
     success &= writeSTRING(bw, (char *)buf, buf_size);
     success &= bw_send(bw);
-    return success;
-}
-
-bool bin_itf_send_ack()
-{
-    BinaryWriter *bw = getWriter(&bin_itf);
-
-    bool success = true;
-    success &= writeUINT8(bw, CC_ACK);
-    success &= bw_send(bw);
-    
-    //NRF_LOG_INFO("ack sent");
-    
     return success;
 }
 
@@ -140,11 +112,10 @@ size_t serial_write_buffer(const char *buffer, size_t size)
 
 Command bin_itf_commands[] = {
     {CC_NONE, NULL},
-    {CC_SHKREQ, handle_shake_request},
-    {CC_SHKRSP, NULL},
-    {CC_FILE, handle_file_command},
-    {CC_COMMANDS, handle_commands},
-    {CC_ACK, NULL}};
+    {CC_UNUSED1, NULL},
+    {CC_UNUSED2, NULL},
+    {CC_NUS, handle_file_command},
+    {CC_CHARACTERISTIC, handle_commands}};
 
 void bin_itf_init()
 {
@@ -155,7 +126,7 @@ void bin_itf_init()
     bin_itf.pSerial.serial_write_f = serial_write;
     bin_itf.pSerial.serial_write_buffer_f = serial_write_buffer;
     
-    bin_itf.on_packet_f = bin_itf_send_ack;
+    bin_itf.on_packet_f = NULL;
 
     bi_init(&bin_itf, bin_itf_commands, ARRAY_SIZE(bin_itf_commands));
 }

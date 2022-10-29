@@ -30,7 +30,7 @@ static void onPacketFunction(void *context, const uint8_t *buffer, size_t size)
     
     // callback on packet function
     if( bi->on_packet_f != NULL){
-      bi->on_packet_f();
+      //bi->on_packet_f();
     }   
     
     // initialize reader.
