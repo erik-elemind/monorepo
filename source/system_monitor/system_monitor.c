@@ -26,7 +26,7 @@
 #include "pin_mux.h"
 
 // Reduce log level for this module
-//#define LOG_LEVEL_MODULE LOG_DEBUG
+#define LOG_LEVEL_MODULE LOG_DEBUG
 #include "loglevels.h"
 #include "utils.h"
 
