@@ -235,8 +235,8 @@ battery_charger_get_status(
         slower. */
     if ((charger_status.fault_status.raw != 0) ||
       ((charger_status.charger_status_1.raw & CHARGER_STATUS_1_FAULTS) != 0) ||
-	  ((charger_status.ntc_status.raw == NTS_STATUS_COLD) == 0) ||
-	  ((charger_status.ntc_status.raw == NTS_STATUS_HOT) == 0)) {
+	  (charger_status.ntc_status.raw == NTS_STATUS_COLD) ||
+	  (charger_status.ntc_status.raw == NTS_STATUS_HOT)) {
       battery_charger_status = BATTERY_CHARGER_STATUS_FAULT;
     }
     else {

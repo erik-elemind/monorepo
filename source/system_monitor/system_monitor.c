@@ -482,7 +482,7 @@ handle_battery_event(void)
   battery_charger_status_t battery_status = battery_charger_get_status(
     &g_battery_charger_handle);
 
-  battery_level_get();
+  //battery_level_get(); // ToDo: Need to bring up proper battery reading
 
   // Don't update the charger status if it is the same.
   if (prev_status == battery_status) {
@@ -718,7 +718,7 @@ task_init()
   battery_charger_enable(&g_battery_charger_handle, true);
 
   // Initialize ADC for battery level reads
-  adc_init();
+  //adc_init(); // ToDo: Need to bring up ADC for battery and sensors
 
   // Force a battery event to get power-on battery state
   handle_battery_event();
