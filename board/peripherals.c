@@ -114,8 +114,9 @@ instance:
       - IRQn: 'DMA1_IRQn'
       - enable_interrrupt: 'enabled'
       - enable_priority: 'true'
-      - priority: '0'
-      - enable_custom_name: 'false'
+      - priority: '5'
+      - enable_custom_name: 'true'
+      - handler_custom_name: 'DMA1_DriverIRQHandler'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
@@ -804,12 +805,14 @@ instance:
             - bufferSize: '256'
             - enablePrefetch: 'true'
         - enableClearAHBBufferOpt: 'false'
-        - enableReadAddressOpt: 'false'
-        - enableAHBPrefetch: 'false'
-        - enableAHBBufferable: 'false'
-        - enableAHBCachable: 'false'
+        - enableReadAddressOpt: 'true'
+        - enableAHBPrefetch: 'true'
+        - enableAHBBufferable: 'true'
+        - enableAHBCachable: 'true'
     - flexspiInterrupt:
-      - interrupt_sel: ''
+      - interrupt_sel: 'kFLEXSPI_SequenceExecutionTimeoutFlag kFLEXSPI_AhbBusTimeoutFlag kFLEXSPI_SckStoppedBecauseTxEmptyFlag kFLEXSPI_SckStoppedBecauseRxFullFlag
+        kFLEXSPI_DataLearningFailedFlag kFLEXSPI_IpTxFifoWatermarkEmptyFlag kFLEXSPI_IpRxFifoWatermarkAvailableFlag kFLEXSPI_AhbCommandSequenceErrorFlag kFLEXSPI_IpCommandSequenceErrorFlag
+        kFLEXSPI_AhbCommandGrantTimeoutFlag kFLEXSPI_IpCommandGrantTimeoutFlag kFLEXSPI_IpCommandExecutionDoneFlag'
     - enableCustomLUT: 'false'
     - lutConfig:
       - flash: 'defaultFlash'
@@ -928,14 +931,14 @@ const flexspi_config_t NAND_FLEXSPI_config = {
       }
     },
     .enableClearAHBBufferOpt = false,
-    .enableReadAddressOpt = false,
-    .enableAHBPrefetch = false,
-    .enableAHBBufferable = false,
-    .enableAHBCachable = false
+    .enableReadAddressOpt = true,
+    .enableAHBPrefetch = true,
+    .enableAHBBufferable = true,
+    .enableAHBCachable = true
   }
 };
 flexspi_device_config_t NAND_FLEXSPI_config_NAND = {
-  .flexspiRootClk = 48000000UL,
+  .flexspiRootClk = 62526300UL,
   .isSck2Enabled = false,
   .flashSize = 0x80000UL,
   .CSIntervalUnit = kFLEXSPI_CsIntervalUnit1SckCycle,
@@ -969,6 +972,8 @@ flexspi_dma_handle_t NAND_FLEXSPI_DMA_Handle;
 static void NAND_FLEXSPI_init(void) {
   /* FLEXSPI peripheral initialization */
   FLEXSPI_Init(NAND_FLEXSPI_PERIPHERAL, &NAND_FLEXSPI_config);
+  /* Enable interrupts. */
+  FLEXSPI_EnableInterrupts(NAND_FLEXSPI_PERIPHERAL, (kFLEXSPI_SequenceExecutionTimeoutFlag | kFLEXSPI_AhbBusTimeoutFlag | kFLEXSPI_SckStoppedBecauseTxEmptyFlag | kFLEXSPI_SckStoppedBecauseRxFullFlag | kFLEXSPI_DataLearningFailedFlag | kFLEXSPI_IpTxFifoWatermarkEmptyFlag | kFLEXSPI_IpRxFifoWatermarkAvailableFlag | kFLEXSPI_AhbCommandSequenceErrorFlag | kFLEXSPI_IpCommandSequenceErrorFlag | kFLEXSPI_AhbCommandGrantTimeoutFlag | kFLEXSPI_IpCommandGrantTimeoutFlag | kFLEXSPI_IpCommandExecutionDoneFlag));
   /* Configure flash settings according to serial flash feature. */
   FLEXSPI_SetFlashConfig(NAND_FLEXSPI_PERIPHERAL, &NAND_FLEXSPI_config_NAND, kFLEXSPI_PortA1);
   /* Enable the DMA 29 channel in the DMA */
