@@ -39,6 +39,7 @@
 #include "eeg_reader.h"
 #include "eeg_processor.h"
 #include "erp.h"
+#include "system_monitor.h"
 
 #include "fsl_usart_rtos_additional.h"
 

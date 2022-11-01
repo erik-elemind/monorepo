@@ -478,11 +478,11 @@ static void
 handle_battery_event(void)
 {
   static battery_charger_status_t prev_status = -1;
-  
+
   battery_charger_status_t battery_status = battery_charger_get_status(
     &g_battery_charger_handle);
 
-  battery_level_get();
+  //battery_level_get(); // ToDo: Need to bring up proper battery reading
 
   // Don't update the charger status if it is the same.
   if (prev_status == battery_status) {
@@ -555,50 +555,49 @@ handle_state_standby(system_monitor_event_t *event)
       break;
 
     case SYSTEM_MONITOR_EVENT_POWER_OFF:
-      handle_power_off_event();
-      break;
+          handle_power_off_event();
+          break;
 
-    case SYSTEM_MONITOR_EVENT_WWDT_FEED_TIMEOUT:
-#if (defined(ENABLE_SYSTEM_WATCHDOG) && (ENABLE_SYSTEM_WATCHDOG > 0U))
-      // feed watchdog
-      system_watchdog_feed();
-      // restart timer
-  //    restart_wwdt_feed_timer();
-#endif
-      return;
+	case SYSTEM_MONITOR_EVENT_WWDT_FEED_TIMEOUT:
+	#if (defined(ENABLE_SYSTEM_WATCHDOG) && (ENABLE_SYSTEM_WATCHDOG > 0U))
+	  // feed watchdog
+	  system_watchdog_feed();
+	  // restart timer
+	//    restart_wwdt_feed_timer();
+	#endif
+	  return;
 
-    case SYSTEM_MONITOR_EVENT_ALS_START_SAMPLE:
-      handle_als_start_sample(event->data.sensor.sample_period_ms);
-      break;
+	case SYSTEM_MONITOR_EVENT_ALS_START_SAMPLE:
+	  handle_als_start_sample(event->data.sensor.sample_period_ms);
+	  break;
 
-    case SYSTEM_MONITOR_EVENT_ALS_STOP:
-      handle_als_stop();
-      break;
+	case SYSTEM_MONITOR_EVENT_ALS_STOP:
+	  handle_als_stop();
+	  break;
 
-    case SYSTEM_MONITOR_EVENT_ALS_TIMEOUT:
-      handle_als_timeout();
-      break;
+	case SYSTEM_MONITOR_EVENT_ALS_TIMEOUT:
+	  handle_als_timeout();
+	  break;
 
-    case SYSTEM_MONITOR_EVENT_MIC_START_SAMPLE:
-      handle_mic_start_sample(event->data.sensor.sample_period_ms);
-      break;
+	case SYSTEM_MONITOR_EVENT_MIC_START_SAMPLE:
+	  handle_mic_start_sample(event->data.sensor.sample_period_ms);
+	  break;
 
-    case SYSTEM_MONITOR_EVENT_MIC_START_THRESH:
-      handle_mic_start_thresh(event->data.sensor.sample_period_ms, event->data.sensor.num_samples);
-      break;
+	case SYSTEM_MONITOR_EVENT_MIC_START_THRESH:
+	  handle_mic_start_thresh(event->data.sensor.sample_period_ms, event->data.sensor.num_samples);
+	  break;
 
-    case SYSTEM_MONITOR_EVENT_MIC_STOP:
-      handle_mic_stop();
-      break;
+	case SYSTEM_MONITOR_EVENT_MIC_STOP:
+	  handle_mic_stop();
+	  break;
 
-    case SYSTEM_MONITOR_EVENT_MIC_WAKE:
-      handle_mic_wakeup();
-      break;
-      
-    case SYSTEM_MONITOR_EVENT_MIC_TIMEOUT:
-      handle_mic_timeout();
-      break;
+	case SYSTEM_MONITOR_EVENT_MIC_WAKE:
+	  handle_mic_wakeup();
+	  break;
 
+	case SYSTEM_MONITOR_EVENT_MIC_TIMEOUT:
+	  handle_mic_timeout();
+	  break;
     default:
       log_event_ignored(event);
       break;
@@ -719,7 +718,7 @@ task_init()
   battery_charger_enable(&g_battery_charger_handle, true);
 
   // Initialize ADC for battery level reads
-  adc_init();
+  //adc_init(); // ToDo: Need to bring up ADC for battery and sensors
 
   // Force a battery event to get power-on battery state
   handle_battery_event();
