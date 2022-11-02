@@ -94,8 +94,11 @@ lpc_ispn_disable_timeout_handler(void * p_context)
 {
   UNUSED_PARAMETER(p_context);
 
-  // Disable LPC ISPn line
-  nrf_gpio_pin_set(LPC_ISPN_PIN);
+  // Reset ISP lines
+  nrf_gpio_cfg_input(ISP0N_PIN, NRF_GPIO_PIN_PULLDOWN);
+  nrf_gpio_cfg_input(ISP1N_PIN, NRF_GPIO_PIN_NOPULL);
+  nrf_gpio_cfg_input(ISP2N_PIN, NRF_GPIO_PIN_PULLDOWN);
+
 }
 
 /** Handle the DFU Reset Delay timer timeout.
@@ -811,7 +814,9 @@ static void
 on_write_lpc_reset(const ble_gatts_evt_write_t* p_evt_write)
 {
   if (p_evt_write->data[0] == LPC_RESET_ISP_REQUESTED) {
-    nrf_gpio_pin_clear(LPC_ISPN_PIN);
+    nrf_gpio_cfg_input(ISP0N_PIN, NRF_GPIO_PIN_PULLDOWN);
+    nrf_gpio_cfg_input(ISP1N_PIN, NRF_GPIO_PIN_PULLDOWN);
+    nrf_gpio_cfg_input(ISP2N_PIN, NRF_GPIO_PIN_PULLDOWN);
   }
   nrf_gpio_pin_clear(LPC_RESETN_PIN);
   nrf_gpio_cfg_output(LPC_RESETN_PIN);
