@@ -131,13 +131,13 @@ const uint32_t NAND_FLEXSPI_LUT[NAND_FLEXSPI_LUT_LENGTH] = {
 	[4 * NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUAD] =
 	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x6B, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x10), //16
 	[4 * NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUAD + 1] =
-	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_1PAD, 0x08, kFLEXSPI_Command_READ_SDR, kFLEXSPI_4PAD, 0x00),
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_4PAD, 0x08, kFLEXSPI_Command_READ_SDR, kFLEXSPI_4PAD, 0x00),
 
-	/* Fast Read Quad I/0) (ECh) */ // ????????????????
+	/* Fast Read Quad I/0) (ECh) */
 	[4 * NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUADIO] =
 	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0xEC, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_4PAD, 0x10), //16
 	[4 * NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUADIO + 1] =
-	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_1PAD, 0x0A, kFLEXSPI_Command_READ_SDR, kFLEXSPI_4PAD, 0x00),
+	FLEXSPI_LUT_SEQ(kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_4PAD, 0x0A, kFLEXSPI_Command_READ_SDR, kFLEXSPI_4PAD, 0x00),
 
 	/* Deep Power Down (B9h) */
 	[4 * NAND_CMD_LUT_SEQ_IDX_POWER_DOWN] =
@@ -363,6 +363,18 @@ nand_init(){
   if (status!= 0){
 	  return status;
   }
+
+//  // enable high output driver strength
+//    nand_configuration_reg_t configuration_reg;
+//    status = nand_get_feature_reg(NULL,
+//        FEATURE_REG_CONFIGURATION, &configuration_reg.raw);
+//    if (status != 0) {
+//      return status;
+//    }
+//
+//    configuration_reg.ods = 0x03;
+//    status = nand_set_feature_reg(NULL,
+//        FEATURE_REG_CONFIGURATION, configuration_reg.raw);
 
   status = nand_platform_init();
   return status;
@@ -771,7 +783,7 @@ nand_read_page_from_cache(
   }
 
 
-#if 1
+#if 0
   uint8_t seqIndex = NAND_CMD_LUT_SEQ_IDX_FAST_READ;
 #elif 0
   uint8_t seqIndex = NAND_CMD_LUT_SEQ_IDX_FAST_READ_QUAD;
@@ -789,7 +801,7 @@ nand_read_page_from_cache(
 
   status = FLEXSPI_TransferBlocking(NAND_FLEXSPI_PERIPHERAL, &flashXfer);
 
-  if(status == kStatus_Success &&use_data_temp ){
+  if(status == kStatus_Success && use_data_temp ){
 	  memcpy(p_data, p_data_temp, data_len);
   }
 

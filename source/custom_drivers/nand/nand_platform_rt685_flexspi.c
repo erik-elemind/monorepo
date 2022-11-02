@@ -179,9 +179,10 @@ FLEXSPI_MasterTransferDMA_Blocking(nand_platform_handle_t *handle, const flexspi
 		printf("DMAstatus = %d\r\n", status);
 	}while(status != kStatus_Success);
 
-//	while(!g_flexspi_done){
-//
-//	}
+	while(!g_flexspi_done){
+
+	}
+	g_flexspi_done = false;
 
 
 	printf("DMAstatus = %d\r\n", status);

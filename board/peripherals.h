@@ -46,9 +46,9 @@ extern "C" {
 /* DMA1 interrupt vector ID (number). */
 #define DMA1_IRQN DMA1_IRQn
 /* DMA1 interrupt vector priority. */
-#define DMA1_IRQ_PRIORITY 0
+#define DMA1_IRQ_PRIORITY 5
 /* DMA1 interrupt handler identifier. */
-#define DMA1_IRQHANDLER DMA1_IRQHandler
+#define DMA1_DriverIRQHandler DMA1_IRQHandler
 /* BOARD_InitPeripherals defines for FLEXCOMM2 */
 /* Definition of peripheral ID */
 #define FC2_BATT_I2C_PERIPHERAL ((I2C_Type *)FLEXCOMM2)

@@ -442,7 +442,7 @@
                   <clock_source id="SYSCON.XTAL.outFreq" value="24 MHz" locked="false" enabled="true"/>
                </clock_sources>
                <clock_outputs>
-                  <clock_output id="FLEXSPI_clock.outFreq" value="48 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FLEXSPI_clock.outFreq" value="1188/19 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM0_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM1_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM2_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
@@ -466,8 +466,8 @@
                   <setting id="SYSCON.FC3FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
                   <setting id="SYSCON.FC4FCLKSEL.sel" value="SYSCON.FRG4" locked="false"/>
                   <setting id="SYSCON.FC5FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
-                  <setting id="SYSCON.FLEXSPIFCLKDIV.scale" value="1" locked="true"/>
-                  <setting id="SYSCON.FLEXSPIFCLKSEL.sel" value="SYSCON.ffro" locked="false"/>
+                  <setting id="SYSCON.FLEXSPIFCLKDIV.scale" value="8" locked="true"/>
+                  <setting id="SYSCON.FLEXSPIFCLKSEL.sel" value="SYSCON.MAINCLKSELB" locked="false"/>
                   <setting id="SYSCON.FRG4CLKSEL.sel" value="SYSCON.FRGPLLCLKDIV" locked="false"/>
                   <setting id="SYSCON.FRG4_DIV.scale" value="511" locked="false"/>
                   <setting id="SYSCON.FRGPLLCLKDIV.scale" value="88" locked="true"/>
@@ -1215,8 +1215,9 @@
                            <setting name="IRQn" value="DMA1_IRQn"/>
                            <setting name="enable_interrrupt" value="enabled"/>
                            <setting name="enable_priority" value="true"/>
-                           <setting name="priority" value="0"/>
-                           <setting name="enable_custom_name" value="false"/>
+                           <setting name="priority" value="5"/>
+                           <setting name="enable_custom_name" value="true"/>
+                           <setting name="handler_custom_name" value="DMA1_DriverIRQHandler"/>
                         </struct>
                      </config_set>
                   </instance>
@@ -1290,15 +1291,28 @@
                                  </struct>
                               </array>
                               <setting name="enableClearAHBBufferOpt" value="false"/>
-                              <setting name="enableReadAddressOpt" value="false"/>
-                              <setting name="enableAHBPrefetch" value="false"/>
-                              <setting name="enableAHBBufferable" value="false"/>
-                              <setting name="enableAHBCachable" value="false"/>
+                              <setting name="enableReadAddressOpt" value="true"/>
+                              <setting name="enableAHBPrefetch" value="true"/>
+                              <setting name="enableAHBBufferable" value="true"/>
+                              <setting name="enableAHBCachable" value="true"/>
                            </struct>
                         </struct>
                         <struct name="flexspiInterrupt">
                            <set name="interrupt_sel">
-                              <selected/>
+                              <selected>
+                                 <id>kFLEXSPI_SequenceExecutionTimeoutFlag</id>
+                                 <id>kFLEXSPI_AhbBusTimeoutFlag</id>
+                                 <id>kFLEXSPI_SckStoppedBecauseTxEmptyFlag</id>
+                                 <id>kFLEXSPI_SckStoppedBecauseRxFullFlag</id>
+                                 <id>kFLEXSPI_DataLearningFailedFlag</id>
+                                 <id>kFLEXSPI_IpTxFifoWatermarkEmptyFlag</id>
+                                 <id>kFLEXSPI_IpRxFifoWatermarkAvailableFlag</id>
+                                 <id>kFLEXSPI_AhbCommandSequenceErrorFlag</id>
+                                 <id>kFLEXSPI_IpCommandSequenceErrorFlag</id>
+                                 <id>kFLEXSPI_AhbCommandGrantTimeoutFlag</id>
+                                 <id>kFLEXSPI_IpCommandGrantTimeoutFlag</id>
+                                 <id>kFLEXSPI_IpCommandExecutionDoneFlag</id>
+                              </selected>
                            </set>
                         </struct>
                         <setting name="enableCustomLUT" value="false"/>
