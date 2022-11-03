@@ -29,6 +29,7 @@
 
 # Executables
 *.exe
+!blhost.exe
 *.out
 *.app
 *.i*86
