@@ -180,7 +180,10 @@ StaticTask_t erp_task_struct;
 #endif
 
 #if (defined(ENABLE_APP_TASK) && (ENABLE_APP_TASK > 0U))
-// ToDo: Add App Task definitions
+#define APP_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*3)
+#define APP_TASK_PRIORITY 1
+StackType_t app_task_array[ APP_TASK_STACK_SIZE ];
+StaticTask_t app_task_struct;
 #endif
 
 /*******************************************************************************
@@ -416,7 +419,11 @@ int main(void)
 
     /* App task */
 #if (defined(ENABLE_APP_TASK) && (ENABLE_APP_TASK > 0U))
-    // ToDo: Add App Task here
+    LOGV(TAG, "Launching app task...");
+    app_pretask_init();
+    task_handle = xTaskCreateStatic(&app_task,
+        "app", APP_TASK_STACK_SIZE, NULL, APP_TASK_PRIORITY, app_task_array, &app_task_struct);
+    vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)APP_TASK_STACK_SIZE );
 #endif
 
 	//DSP_Start();

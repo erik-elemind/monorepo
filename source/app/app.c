@@ -54,9 +54,6 @@ static const char *TAG = "app";	// Logging prefix for this module
 //
 // Application events (high-level events for business logic):
 //
-//
-// Application events (high-level events for business logic):
-//
 typedef enum
 {
   APP_EVENT_ENTER_STATE,    // (used for state transitions)
@@ -99,9 +96,6 @@ typedef struct
 } app_event_t;
 
 
-//
-// Application state machine states:
-//
 //
 // Application state machine states:
 //
@@ -541,7 +535,7 @@ handle_state_boot_up(app_event_t *event)
     case APP_EVENT_ENTER_STATE:
       // For some reason this initial delay is needed for the BLE IC to be reset properly when the system first powers on (i.e. after reprogramming firmware).
       vTaskDelay(100);
-      ble_power_on();
+      //ble_power_on();
 
       // Advance to the next state.
       set_state(APP_STATE_ON);
@@ -561,16 +555,18 @@ handle_state_on(app_event_t *event)
       case APP_EVENT_ENTER_STATE:
         restart_power_off_timer(POWER_OFF_TIMEOUT_MS);
         stop_ble_off_timer();
-        ble_power_on();
+        //ble_power_on();
 
-        if(battery_get_percent() >= POWER_GOOD_BATT_THRESHOLD)
-        {
-          set_led_state(LED_POWER_GOOD);
-        }
-        else
-        {
-          set_led_state(LED_POWER_LOW);
-        }
+        // re-enable when ADC brought up
+//        if(battery_get_percent() >= POWER_GOOD_BATT_THRESHOLD)
+//        {
+//          set_led_state(LED_POWER_GOOD);
+//        }
+//        else
+//        {
+//          set_led_state(LED_POWER_LOW);
+//        }
+        set_led_state(LED_POWER_GOOD);
 
         restart_led_off_timer();
         break;
@@ -623,7 +619,7 @@ handle_state_charger_attached(app_event_t *event)
      case APP_EVENT_ENTER_STATE:
        stop_power_off_timer();
        stop_ble_off_timer();
-       ble_power_on();
+       //ble_power_on();
        break;
 
      case APP_EVENT_CHARGER_UNPLUGGED:
