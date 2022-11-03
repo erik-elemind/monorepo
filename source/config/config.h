@@ -101,7 +101,7 @@
 
 #define ENABLE_ERP_TASK            (0U) // TODO: Reenable when ERP task is thoughtfully added
 #define ENABLE_SHELL_RECV_TASK     (1U)
-#define ENABLE_APP_TASK            (0U) // TODO: Reenable when App task is thoughtfully added
+#define ENABLE_APP_TASK            (1U) // TODO: Reenable when App task is thoughtfully added
 
 #define USE_EEG_INTERRUPT_INITIATED_DMA (0U)
 
