@@ -33,8 +33,8 @@ typedef struct button_state_t
 
 typedef struct button_param_t
 {
-  const uint8_t   port;         // GPIO and GINT port
-  const uint8_t   pin;          // GPIO and GINT pin
+  const uint8_t   port;
+  const uint8_t   pin;
   const bool      up_level;     // value when button NOT pressed, 1 or 0.
   button_cb_t     cb_up;
   button_cb_t     cb_down;
@@ -64,9 +64,7 @@ typedef struct button_params_t
 
 
 void button_task(void *button_params);
-//bool button_down(button_param_t *button);
 void button_isr(uint32_t button_id);
-
 
 #ifdef __cplusplus
 }

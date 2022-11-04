@@ -40,6 +40,8 @@
 #include "eeg_processor.h"
 #include "erp.h"
 #include "system_monitor.h"
+#include "button.h"
+#include "button_config.h"
 
 #include "fsl_usart_rtos_additional.h"
 
@@ -75,7 +77,12 @@ StackType_t led_task_array[ LED_TASK_STACK_SIZE ];
 StaticTask_t led_task_struct;
 #endif
 
-// ToDo: Add Button Task definitions
+#if (defined(ENABLE_BUTTON_TASK) && (ENABLE_BUTTON_TASK > 0U))
+#define BUTTON_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*1) // 2
+#define BUTTON_TASK_PRIORITY 1
+StackType_t button_task_array[ BUTTON_TASK_STACK_SIZE ];
+StaticTask_t button_task_struct;
+#endif
 
 #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
 #define AUDIO_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*4) // 5
@@ -289,7 +296,13 @@ int main(void)
 
 	/* Button task */
 #if (defined(ENABLE_BUTTON_TASK) && (ENABLE_BUTTON_TASK > 0U))
-	// ToDo: Add Button TASK here...
+	  LOGV(TAG, "Launching button task...");
+	  // Initialize Buttons
+	  button_params_t* button_params = button_pretask_init();
+	  task_handle = xTaskCreateStatic(&button_task,
+	      "button", BUTTON_TASK_STACK_SIZE, button_params, BUTTON_TASK_PRIORITY, button_task_array, &button_task_struct);
+
+	  vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)BUTTON_TASK_STACK_SIZE );
 #endif
 
 	/* Audio tasks */

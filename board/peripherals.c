@@ -151,6 +151,9 @@ instance:
       - 5: []
       - 6: []
       - 7: []
+      - 8: []
+      - 9: []
+      - 10: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -349,9 +352,9 @@ instance:
       - 3:
         - interrupt_id: 'INT_5'
         - interrupt_selection: 'PINT.5'
-        - interrupt_type: 'kPINT_PinIntEnableNone'
+        - interrupt_type: 'kPINT_PinIntEnableBothEdges'
         - callback_function: 'user_button1_isr'
-        - enable_callback: 'false'
+        - enable_callback: 'true'
         - interrupt:
           - IRQn: 'PIN_INT5_IRQn'
           - enable_priority: 'false'
@@ -359,9 +362,9 @@ instance:
       - 4:
         - interrupt_id: 'INT_6'
         - interrupt_selection: 'PINT.6'
-        - interrupt_type: 'kPINT_PinIntEnableNone'
+        - interrupt_type: 'kPINT_PinIntEnableBothEdges'
         - callback_function: 'user_button2_isr'
-        - enable_callback: 'false'
+        - enable_callback: 'true'
         - interrupt:
           - IRQn: 'PIN_INT6_IRQn'
           - enable_priority: 'false'
@@ -376,6 +379,16 @@ instance:
           - IRQn: 'PIN_INT0_IRQn'
           - enable_priority: 'true'
           - priority: '3'
+      - 6:
+        - interrupt_id: 'INT_7'
+        - interrupt_selection: 'PINT.7'
+        - interrupt_type: 'kPINT_PinIntEnableFallEdge'
+        - callback_function: 'power_button_isr'
+        - enable_callback: 'true'
+        - interrupt:
+          - IRQn: 'PIN_INT7_IRQn'
+          - enable_priority: 'false'
+          - priority: '0'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
@@ -391,13 +404,21 @@ static void PINT_init(void) {
   /* PINT PINT.4 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_4, kPINT_PinIntEnableNone, accel_pint_isr);
   /* PINT PINT.5 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_5, kPINT_PinIntEnableNone, user_button1_isr);
+  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_5, kPINT_PinIntEnableBothEdges, user_button1_isr);
   /* PINT PINT.6 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_6, kPINT_PinIntEnableNone, user_button2_isr);
+  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_6, kPINT_PinIntEnableBothEdges, user_button2_isr);
   /* PINT PINT.0 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_0, kPINT_PinIntEnableFallEdge, eeg_drdy_pint_isr);
+  /* PINT PINT.7 configuration */
+  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_7, kPINT_PinIntEnableFallEdge, power_button_isr);
+  /* Enable PINT PINT.5 callback */
+  PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt5);
+  /* Enable PINT PINT.6 callback */
+  PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt6);
   /* Enable PINT PINT.0 callback */
   PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt0);
+  /* Enable PINT PINT.7 callback */
+  PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt7);
 }
 
 /***********************************************************************************************************************

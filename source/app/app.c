@@ -593,14 +593,14 @@ handle_state_on(app_event_t *event)
 
       case APP_EVENT_BUTTON_ACTIVITY:
             restart_power_off_timer(POWER_OFF_TIMEOUT_MS);
-            if(battery_get_percent() >= POWER_GOOD_BATT_THRESHOLD)
-              {
-                set_led_state(LED_POWER_GOOD);
-              }
-              else
-              {
-                set_led_state(LED_POWER_LOW);
-              }
+//            if(battery_get_percent() >= POWER_GOOD_BATT_THRESHOLD)
+//              {
+//                set_led_state(LED_POWER_GOOD);
+//              }
+//              else
+//              {
+//                set_led_state(LED_POWER_LOW);
+//              }
 
               restart_led_off_timer();
               break;
@@ -648,14 +648,14 @@ handle_event(app_event_t *event)
       return;
     case APP_EVENT_BUTTON_ACTIVITY:
       restart_power_off_timer(POWER_OFF_TIMEOUT_MS);
-      if(battery_get_percent() >= POWER_GOOD_BATT_THRESHOLD)
-      {
-        set_led_state(LED_POWER_GOOD);
-      }
-      else
-      {
-        set_led_state(LED_POWER_LOW);
-      }
+//      if(battery_get_percent() >= POWER_GOOD_BATT_THRESHOLD)
+//      {
+//        set_led_state(LED_POWER_GOOD);
+//      }
+//      else
+//      {
+//        set_led_state(LED_POWER_LOW);
+//      }
 
       restart_led_off_timer();
       return;
