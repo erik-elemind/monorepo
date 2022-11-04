@@ -688,7 +688,7 @@ static void arrange_and_send_eeg_channels_from_isr(BaseType_t *pxHigherPriorityT
 
     // save the data to the event
     event.data.skin_temp.temp_sample_number = temp_sample_num++; // TODO: increment this value
-    memcpy(&(event.data.skin_temp.temp[0]), &temp_bytes, 3);
+    memcpy(&(event.data.skin_temp.temp[0]), temp_bytes, 3);
 
     xQueueSendFromISR(g_event_queue, &event, &xHigherPriorityTaskWoken3);
   }

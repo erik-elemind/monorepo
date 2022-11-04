@@ -13,6 +13,7 @@
 /* Freescale includes. */
 #include "fsl_device_registers.h"
 #include "fsl_debug_console.h"
+#include "fsl_powerquad.h"
 
 /* Project includes */
 #include "config.h"
@@ -42,6 +43,7 @@
 #include "system_monitor.h"
 #include "button.h"
 #include "button_config.h"
+#include "powerquad_helper.h"
 
 #include "fsl_usart_rtos_additional.h"
 
@@ -234,6 +236,9 @@ static void system_boot_up(void)
 	BOARD_InitDebugConsole();
 
 	//BOARD_DSP_Init();
+	
+	  pqhelper_init();
+
 }
 
 int main(void)
