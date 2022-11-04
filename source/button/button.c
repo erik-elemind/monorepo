@@ -188,6 +188,7 @@ button_held_timeout(TimerHandle_t timer_handle){
 
 void button_task(void *button_params)
 {
+  LOGV(TAG, "Task launched. Entering event loop.\n\r");
   g_button_task_handle = xTaskGetCurrentTaskHandle();
 
   button_params_t *bparams = (button_params_t*) button_params;
@@ -198,7 +199,6 @@ void button_task(void *button_params)
 						     &(g_context.button_timer_struct));
   
   while(1) {
-
     // Wait for an interrupt
     xTaskNotifyWait( pdFALSE,        /* Clear bits on entry. */
                      UINT32_MAX,     /* Clear all bits on exit. */
@@ -222,9 +222,8 @@ void button_task(void *button_params)
       }
     }
 
-  }  // while(1)
+  }
 }
-
 
 void button_isr(uint32_t button_id)
 {
@@ -241,5 +240,5 @@ void button_isr(uint32_t button_id)
     // Always do this when calling a FreeRTOS "...FromISR()" function:
     portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
   }
-
 }
+

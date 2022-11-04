@@ -13,7 +13,6 @@
 #ifndef BUTTON_CONFIG_H_INC
 #define BUTTON_CONFIG_H_INC
 
-#include "gint_pin_interrupt.h"
 #include "button.h"
 
 #ifdef __cplusplus

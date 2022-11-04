@@ -280,9 +280,21 @@
                         <pin_feature name="ibena" value="enabled"/>
                      </pin_features>
                   </pin>
-                  <pin peripheral="PINT" signal="PINT, 5" pin_num="D6" pin_signal="PIO0_16/FC2_RXD_SDA_MOSI_DATA/SCT0_GPI2/SCT0_OUT2/CTIMER2_MAT2/I2S_BRIDGE_DATA_IN/SEC_PIO0_16"/>
-                  <pin peripheral="PINT" signal="PINT, 6" pin_num="B2" pin_signal="PIO0_20/FC2_SSEL3/SCT0_GPI5/SCT0_OUT5/CTIMER0_MAT2/CTIMER_INP11/SEC_PIO0_20/ADC0_10"/>
-                  <pin peripheral="PINT" signal="PINT, 7" pin_num="D8" pin_signal="PIO0_22/FC3_TXD_SCL_MISO_WS/CTIMER3_MAT1/TRACEDATA(0)/SEC_PIO0_22"/>
+                  <pin peripheral="PINT" signal="PINT, 5" pin_num="D6" pin_signal="PIO0_16/FC2_RXD_SDA_MOSI_DATA/SCT0_GPI2/SCT0_OUT2/CTIMER2_MAT2/I2S_BRIDGE_DATA_IN/SEC_PIO0_16">
+                     <pin_features>
+                        <pin_feature name="ibena" value="enabled"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="PINT" signal="PINT, 6" pin_num="B2" pin_signal="PIO0_20/FC2_SSEL3/SCT0_GPI5/SCT0_OUT5/CTIMER0_MAT2/CTIMER_INP11/SEC_PIO0_20/ADC0_10">
+                     <pin_features>
+                        <pin_feature name="ibena" value="enabled"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="PINT" signal="PINT, 7" pin_num="D8" pin_signal="PIO0_22/FC3_TXD_SCL_MISO_WS/CTIMER3_MAT1/TRACEDATA(0)/SEC_PIO0_22">
+                     <pin_features>
+                        <pin_feature name="ibena" value="disabled"/>
+                     </pin_features>
+                  </pin>
                   <pin peripheral="GPIO" signal="PIO1, 1" pin_num="G15" pin_signal="PIO1_1/FC4_SSEL2/SCT0_GPI2/SCT0_OUT8/CTIMER1_MAT0"/>
                   <pin peripheral="GPIO" signal="PIO2, 13" pin_num="T1" pin_signal="PIO2_13/SCT0_OUT7/CTIMER2_MAT3/CMP0_OUT"/>
                   <pin peripheral="FLEXCOMM0" signal="TXD_SCL_MISO_WS" pin_num="G2" pin_signal="PIO0_1/FC0_TXD_SCL_MISO_WS/CTIMER0_MAT1/I2S_BRIDGE_WS_IN/SEC_PIO0_1">
@@ -699,6 +711,11 @@
                         <data type="Boolean">true</data>
                      </feature>
                   </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="PINT.pint.7" description="Signal PINT, 7 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
                   <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXCOMM0.usart_txd" description="Signal TX is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
                      <feature name="routed" evaluation="equal">
                         <data type="Boolean">true</data>
@@ -867,6 +884,9 @@
                            <struct name="5"/>
                            <struct name="6"/>
                            <struct name="7"/>
+                           <struct name="8"/>
+                           <struct name="9"/>
+                           <struct name="10"/>
                         </array>
                         <array name="interrupts"/>
                      </config_set>
@@ -991,9 +1011,9 @@
                            <struct name="3">
                               <setting name="interrupt_id" value="INT_5"/>
                               <setting name="interrupt_selection" value="PINT.5"/>
-                              <setting name="interrupt_type" value="kPINT_PinIntEnableNone"/>
+                              <setting name="interrupt_type" value="kPINT_PinIntEnableBothEdges"/>
                               <setting name="callback_function" value="user_button1_isr"/>
-                              <setting name="enable_callback" value="false"/>
+                              <setting name="enable_callback" value="true"/>
                               <struct name="interrupt">
                                  <setting name="IRQn" value="PIN_INT5_IRQn"/>
                                  <setting name="enable_priority" value="false"/>
@@ -1003,9 +1023,9 @@
                            <struct name="4">
                               <setting name="interrupt_id" value="INT_6"/>
                               <setting name="interrupt_selection" value="PINT.6"/>
-                              <setting name="interrupt_type" value="kPINT_PinIntEnableNone"/>
+                              <setting name="interrupt_type" value="kPINT_PinIntEnableBothEdges"/>
                               <setting name="callback_function" value="user_button2_isr"/>
-                              <setting name="enable_callback" value="false"/>
+                              <setting name="enable_callback" value="true"/>
                               <struct name="interrupt">
                                  <setting name="IRQn" value="PIN_INT6_IRQn"/>
                                  <setting name="enable_priority" value="false"/>
@@ -1022,6 +1042,18 @@
                                  <setting name="IRQn" value="PIN_INT0_IRQn"/>
                                  <setting name="enable_priority" value="true"/>
                                  <setting name="priority" value="3"/>
+                              </struct>
+                           </struct>
+                           <struct name="6">
+                              <setting name="interrupt_id" value="INT_7"/>
+                              <setting name="interrupt_selection" value="PINT.7"/>
+                              <setting name="interrupt_type" value="kPINT_PinIntEnableFallEdge"/>
+                              <setting name="callback_function" value="power_button_isr"/>
+                              <setting name="enable_callback" value="true"/>
+                              <struct name="interrupt">
+                                 <setting name="IRQn" value="PIN_INT7_IRQn"/>
+                                 <setting name="enable_priority" value="false"/>
+                                 <setting name="priority" value="0"/>
                               </struct>
                            </struct>
                         </array>

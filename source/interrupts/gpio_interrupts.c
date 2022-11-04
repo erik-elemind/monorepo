@@ -34,12 +34,17 @@ void mems_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status) {
   system_monitor_event_mic_from_isr();
 }
 
+void power_button_isr(pint_pin_int_t pintr, uint32_t pmatch_status)
+{
+	// TODO: Implement
+}
+
 void user_button1_isr(pint_pin_int_t pintr, uint32_t pmatch_status)
 {
-  // ToDo: Implement
+	button_isr(1);
 }
 
 void user_button2_isr(pint_pin_int_t pintr, uint32_t pmatch_status)
 {
-	// ToDo: Implement
+	button_isr(2);
 }

@@ -77,13 +77,13 @@
 #define ENABLE_FS_WRITER_TASK      (1U)
 #define ENABLE_DATA_LOG_TASK       (1U)
 #define ENABLE_LED_TASK            (1U)
-#define ENABLE_BUTTON_TASK         (0U) // TODO: Reenable when app task is thoughtfully added
+#define ENABLE_BUTTON_TASK         (1U)
 
 #define ENABLE_AUDIO_TASK          (1U)
 #define ENABLE_WAVBUF_TASK         (1U)
 #define ENABLE_AUDIO_MP3_TASK      (0U) // TODO: Low Priority, Reenable when ALL other tasks are running.
 
-#define ENABLE_BLE_TASK            (1U) // TODO: Reenable when BLE task is thoughtfully added
+#define ENABLE_BLE_TASK            (1U)
 // Enable the BLE_UART_SEND task, affects how ble_uart_send_buf() operates.
 // 0U - disable the task, ble_uart_send_buf() calls USART_RTOS_Send
 // 1U - enable the task, ble_uart_send_buf() pushes messages onto stream buf
@@ -101,7 +101,7 @@
 
 #define ENABLE_ERP_TASK            (0U) // TODO: Reenable when ERP task is thoughtfully added
 #define ENABLE_SHELL_RECV_TASK     (1U)
-#define ENABLE_APP_TASK            (1U) // TODO: Reenable when App task is thoughtfully added
+#define ENABLE_APP_TASK            (1U)
 
 #define USE_EEG_INTERRUPT_INITIATED_DMA (0U)
 
