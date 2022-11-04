@@ -36,9 +36,18 @@
 extern uint8_t USB_EnterLowpowerMode(void);
 #endif
 #include "fsl_power.h"
+
+#include "FreeRTOS.h"
+#include "stream_buffer.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+/* Receive buffer size, in bytes. Holds 2 HS or 8 FS packets. */
+#define RECV_STREAM_BUFFER_SIZE (2048+1)
+
+/* Receive buffer trigger level. Since this is for interactive use, we
+   want to trigger on a single byte. */
+#define RECV_STREAM_BUFFER_TRIGGER_LEVEL 1
 
 /*******************************************************************************
  * Prototypes
@@ -58,6 +67,14 @@ usb_status_t USB_DeviceCallback(usb_device_handle handle, uint32_t event, void *
 /*******************************************************************************
  * Variables
  ******************************************************************************/
+static volatile bool g_sendFinished = 0;
+SemaphoreHandle_t xSemaphore = NULL;
+StaticSemaphore_t xMutexBuffer;
+static uint8_t s_recvStreamArray[ RECV_STREAM_BUFFER_SIZE ];
+static StaticStreamBuffer_t s_recvStreamStruct;
+static StreamBufferHandle_t s_recvStreamBuffer = NULL;
+
+
 extern usb_device_endpoint_struct_t g_UsbDeviceCdcVcomDicEndpoints[];
 extern usb_device_class_struct_t g_UsbDeviceCdcVcomConfig;
 /* Data structure of virtual com device */
@@ -237,7 +254,9 @@ usb_status_t USB_DeviceCdcVcomCallback(class_handle_t handle, uint32_t event, vo
                 if ((epCbParam->buffer != NULL) || ((epCbParam->buffer == NULL) && (epCbParam->length == 0)))
                 {
                     /* User: add your own code for send complete event */
-                    /* Schedule buffer for next receive event */
+                	g_sendFinished = true;
+
+                	/* Schedule buffer for next receive event */// ToDo: Remove this?
                     error = USB_DeviceCdcAcmRecv(handle, USB_CDC_VCOM_BULK_OUT_ENDPOINT, s_currRecvBuf,
                                                  g_UsbDeviceCdcVcomDicEndpoints[1].maxPacketSize);
 #if defined(FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED) && (FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED > 0U) && \
@@ -589,6 +608,54 @@ static void CDC_VCOM_BMExitCritical(uint32_t sr)
     EnableGlobalIRQ(sr);
 }
 
+/* Write data to virtual serial port. */
+// buf - a pointer to s_currSendBuf
+// count - the number of bytes to send from buf
+static usb_status_t
+virtual_com_write_direct(uint8_t* buf, size_t count)
+{
+    usb_status_t error = kStatus_USB_Success;
+    if (buf==NULL || count == 0 || count >= DATA_BUFF_SIZE )
+    {
+         error = kStatus_USB_InvalidParameter;
+    }
+    else
+    {
+         if ((1 != s_cdcVcom.attach) || (1 != s_cdcVcom.startTransactions))
+         {
+              error = kStatus_USB_ControllerNotFound;
+         }
+         else
+         {
+//               char cbuf[40];
+//               snprintf(cbuf,sizeof(cbuf),"%d [", count);
+//               debug_uart_puts( cbuf );
+
+               g_sendFinished = false;
+               // (class_handle_t handle, uint8_t ep, uint8_t *buffer, uint32_t length)
+               if (USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, buf, count) != kStatus_USB_Success)
+               {
+//                 debug_uart_puts("ERROR");
+                    /* Failure to send Data Handling code here */
+                 error = kStatus_USB_Error;
+               } else {
+                    /* Wait until transmission are done */
+                    while (!g_sendFinished && s_cdcVcom.startTransactions==1 && s_cdcVcom.attach==1) {
+//                      snprintf(cbuf,sizeof(cbuf), "finished: %d start: %d attach: %d", g_sendFinished, s_cdcVcom.startTransactions, s_cdcVcom.attach);
+//                      debug_uart_puts( cbuf );
+                      };
+                    g_sendFinished = false;
+//                    debug_uart_puts( "]" );
+               }
+           }
+    }
+    return error;
+}
+
+static inline size_t min(size_t a, size_t b){
+  return a<b ? a : b;
+}
+
 /*!
  * @brief Application initialization function.
  *
@@ -596,7 +663,7 @@ static void CDC_VCOM_BMExitCritical(uint32_t sr)
  *
  * @return None.
  */
-void USBTestInit(void)
+void virtual_com_init(void)
 {
     USB_DeviceClockInit();
 #if (defined(FSL_FEATURE_SOC_SYSMPU_COUNT) && (FSL_FEATURE_SOC_SYSMPU_COUNT > 0U))
@@ -618,6 +685,15 @@ void USBTestInit(void)
         s_cdcVcom.cdcAcmHandle = s_cdcAcmConfigList.config->classHandle;
     }
 
+    /* Create stream buffer for ISR->read data flow. */
+      s_recvStreamBuffer = xStreamBufferCreateStatic(sizeof(s_recvStreamArray),
+        RECV_STREAM_BUFFER_TRIGGER_LEVEL, s_recvStreamArray, &s_recvStreamStruct );
+      if (s_recvStreamBuffer == NULL) {
+        //LOGE(TAG, "s_recvStreamBuffer creation failed!");
+        return;
+      }
+
+
     USB_DeviceIsrEnable();
 
     /*Add one delay here to make the DP pull down long enough to allow host to detect the previous disconnection.*/
@@ -625,101 +701,51 @@ void USBTestInit(void)
     USB_DeviceRun(s_cdcVcom.deviceHandle);
 }
 
-/*!
- * @brief Application task function.
- *
- * This function runs the task for application.
- *
- * @return None.
+/*
+ * We use 1 less than the DATA_BUFF_SIZE, because when we use the full DATA_BUFF_SIZE, the USB hangs.
  */
-void USBTestTask(void)
+#define MAX_SEND_SIZE (DATA_BUFF_SIZE-1)
+static size_t s_currSendBuf_offset = 0;
+
+ssize_t virtual_com_write(char* buf, size_t size)
 {
-    usb_status_t error = kStatus_USB_Error;
-    uint32_t usbOsaCurrentSr;
+	  size_t buf_offset = 0;
 
-    if ((1U == s_cdcVcom.attach) && (1U == s_cdcVcom.startTransactions))
-    {
-        /* Enter critical can not be added here because of the loop */
-        /* endpoint callback length is USB_CANCELLED_TRANSFER_LENGTH (0xFFFFFFFFU) when transfer is canceled */
-        if ((0 != s_recvSize) && (USB_CANCELLED_TRANSFER_LENGTH != s_recvSize))
-        {
-            /* The operating timing sequence has guaranteed there is no conflict to access the s_recvSize between USB
-               ISR and this task. Therefore, the following code of Enter/Exit ctitical mode is useless,
-               only to mention users the exclusive access of s_recvSize if users implement their own
-               application referred to this SDK demo */
-            CDC_VCOM_BMEnterCritical(&usbOsaCurrentSr);
-            if ((0U != s_recvSize) && (USB_CANCELLED_TRANSFER_LENGTH != s_recvSize))
-            {
-                /* Copy Buffer to Send Buff */
-                memcpy(s_currSendBuf, s_currRecvBuf, s_recvSize);
-                s_sendSize = s_recvSize;
-                s_recvSize = 0;
-            }
-            CDC_VCOM_BMExitCritical(usbOsaCurrentSr);
-        }
+	  /*
+	   * We don't wait to take the semaphore. In the case virtual_com_write_direct is hung,
+	   * we want the other tasks to continue running.
+	   *
+	   */
+	  if (xSemaphoreTake(xSemaphore, portMAX_DELAY) == pdPASS){ // portMAX_DELAY
 
-        if (0U != s_sendSize)
-        {
-            uint32_t size = s_sendSize;
-            s_sendSize    = 0;
+	    while ( (size - buf_offset) > 0 ){  //len_remaining <= (MAX_SEND_SIZE - s_currSendBuf_count
+	      size_t copy_len = min( MAX_SEND_SIZE - s_currSendBuf_offset, size - buf_offset);
+	      memcpy( &(s_currSendBuf[s_currSendBuf_offset]), &(buf[buf_offset]), copy_len );
+	      buf_offset += copy_len;
+	      s_currSendBuf_offset += copy_len;
 
-            error = USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_currSendBuf, size);
+	#if (defined(VIRTUAL_COM_AGGREGATE_WRITES) && (VIRTUAL_COM_AGGREGATE_WRITES > 0U))
+	      if ( s_currSendBuf_offset == MAX_SEND_SIZE ){
+	#endif
+	        usb_status_t write_status = virtual_com_write_direct(s_currSendBuf, s_currSendBuf_offset);
+	        if(write_status == kStatus_USB_Success){
+	          s_currSendBuf_offset = 0;
+	        }else{
+	          s_currSendBuf_offset -= copy_len;
+	          buf_offset -= copy_len;
+	          break;
+	        }
+	      }
+	#if (defined(VIRTUAL_COM_AGGREGATE_WRITES) && (VIRTUAL_COM_AGGREGATE_WRITES > 0U))
+	    }
+	#endif
 
-            if (error != kStatus_USB_Success)
-            {
-                /* Failure to send Data Handling code here */
-            }
-        }
-#if defined(FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED) && (FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED > 0U) && \
-    defined(USB_DEVICE_CONFIG_KEEP_ALIVE_MODE) && (USB_DEVICE_CONFIG_KEEP_ALIVE_MODE > 0U) &&             \
-    defined(FSL_FEATURE_USB_KHCI_USB_RAM) && (FSL_FEATURE_USB_KHCI_USB_RAM > 0U)
-        if ((s_waitForDataReceive))
-        {
-            if (s_comOpen == 1)
-            {
-                /* Wait for all the packets been sent during opening the com port. Otherwise these packets may
-                 * wake up the system.
-                 */
-                usb_echo("Waiting to enter lowpower ...\r\n");
-                for (uint32_t i = 0U; i < 16000000U; ++i)
-                {
-                    __NOP(); /* delay */
-                }
-
-                s_comOpen = 0;
-            }
-            usb_echo("Enter lowpower\r\n");
-            BOARD_DbgConsole_Deinit();
-            USB0->INTEN &= ~USB_INTEN_TOKDNEEN_MASK;
-            USB_EnterLowpowerMode();
-
-            s_waitForDataReceive = 0;
-            USB0->INTEN |= USB_INTEN_TOKDNEEN_MASK;
-            BOARD_DbgConsole_Init();
-            usb_echo("Exit  lowpower\r\n");
-        }
-#endif
-    }
+	    xSemaphoreGive(xSemaphore);
+	  }
+	  return buf_offset; // TODO: update this value
 }
 
-//#if defined(__CC_ARM) || (defined(__ARMCC_VERSION)) || defined(__GNUC__)
-//int main(void)
-//#else
-//void main(void)
-//#endif
-//{
-//    BOARD_InitBootPins();
-//    BOARD_InitBootClocks();
-//    BOARD_InitDebugConsole();
-//
-//    APPInit();
-//
-//    while (1)
-//    {
-//        APPTask();
-//
-//#if USB_DEVICE_CONFIG_USE_TASK
-//        USB_DeviceTaskFn(s_cdcVcom.deviceHandle);
-//#endif
-//    }
-//}
+ssize_t virtual_com_read(char* buf, size_t len)
+{
+
+}
