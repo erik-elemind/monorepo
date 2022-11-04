@@ -28,7 +28,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <virtual_com.h>
+#include <virtual_com_OLD.h>
 #include "ble_shell.h"
 
 #include "app.h"

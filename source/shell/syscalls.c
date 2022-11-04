@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include "config.h"
 #include <stdio.h>
-#include <virtual_com.h>
+#include <virtual_com_OLD.h>
 #include "semphr.h"
 #include "utils.h"
 #include "syscalls.h"
@@ -106,18 +106,18 @@ int _write(int file, char *ptr, int len)
     }
   }
   if (g_syscall_write_loc & SYSCALL_USB){
-    if(virtual_com_attached()){
-      // If the com port is attached, then write over the com port.
-
-        // write the virtual com
-        result = virtual_com_write(ptr, len);
-        // check the result
-        if(result == len){
-  //        debug_uart_puts("syscalls _write: SUCCESS WRITING");
-        }else{
-  //        debug_uart_puts("syscalls _write: ERROR WRITING");
-        }
-    }
+//    if(virtual_com_attached()){
+//      // If the com port is attached, then write over the com port.
+//
+//        // write the virtual com
+//        result = virtual_com_write(ptr, len);
+//        // check the result
+//        if(result == len){
+//  //        debug_uart_puts("syscalls _write: SUCCESS WRITING");
+//        }else{
+//  //        debug_uart_puts("syscalls _write: ERROR WRITING");
+//        }
+//    }
 
 
     // TODO: Replace this with a call to USART NON Write Blocking
@@ -183,7 +183,7 @@ int _read(int file, char *ptr, int len)
       }
     }
     if (g_syscall_read_loc & SYSCALL_USB){
-      result = virtual_com_read(ptr, len);
+     // result = virtual_com_read(ptr, len);
     }
 //    if (g_syscall_read_loc == SYSCALL_NONE){
 //      #error "Morpheus debug shell device not specified!"

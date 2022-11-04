@@ -29,8 +29,8 @@
 #include <shell_recv.h>
 #include <stdio.h>
 #include <string.h>
+#include <virtual_com_OLD.h>
 
-#include <virtual_com.h>
 #include "app.h"
 #include "utils.h"
 #include "command_parser.h"
