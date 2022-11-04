@@ -269,6 +269,7 @@ int main(void)
     //
     // Launch all Tasks:
     //
+	USBTestInit();
 
 	// Initialize RTOS tasks
 	TaskHandle_t task_handle;
