@@ -94,8 +94,10 @@ typedef struct _usb_cdc_acm_info
     uint16_t uartState;       /* UART state of the CDC device.                      */
 } usb_cdc_acm_info_t;
 
-void USBTestInit(void);
-void USBTestTask(void);
+
+void virtual_com_init(void);
+ssize_t virtual_com_write(char* buf, size_t len);
+ssize_t virtual_com_read(char* buf, size_t len);
 
 #ifdef __cplusplus
 }
