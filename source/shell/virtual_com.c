@@ -274,10 +274,27 @@ usb_status_t USB_DeviceCdcVcomCallback(class_handle_t handle, uint32_t event, vo
         break;
         case kUSB_DeviceCdcEventRecvResponse:
         {
+        	BaseType_t higherPriorityTaskWoken = pdFALSE;
+
             if ((1U == s_cdcVcom.attach) && (1U == s_cdcVcom.startTransactions))
             {
                 s_recvSize = epCbParam->length;
                 error      = kStatus_USB_Success;
+
+                // Copy received data into stream buffer
+				size_t bytesSent = xStreamBufferSendFromISR(s_recvStreamBuffer,
+					epCbParam->buffer, epCbParam->length, &higherPriorityTaskWoken);
+
+				if (bytesSent != epCbParam->length) {
+				  // Not enough space in stream buffer for received data
+				  // Note: Can't call LOGx() functions from ISR context (malloc in printf)
+				  debug_uart_puts("rerr:");
+				  debug_uart_puti(epCbParam->length);
+				  debug_uart_puti(bytesSent);
+				}
+				else {
+				  error = kStatus_USB_Success;
+				}
 
 #if defined(FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED) && (FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED > 0U) && \
     defined(USB_DEVICE_CONFIG_KEEP_ALIVE_MODE) && (USB_DEVICE_CONFIG_KEEP_ALIVE_MODE > 0U) &&             \
@@ -298,6 +315,7 @@ usb_status_t USB_DeviceCdcVcomCallback(class_handle_t handle, uint32_t event, vo
 #endif
                 }
             }
+            portYIELD_FROM_ISR(higherPriorityTaskWoken);
         }
         break;
         case kUSB_DeviceCdcEventSerialStateNotif:

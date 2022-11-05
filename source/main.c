@@ -44,7 +44,6 @@
 #include "button.h"
 #include "button_config.h"
 #include "powerquad_helper.h"
-#include "virtual_com.h"
 
 #include "fsl_usart_rtos_additional.h"
 
