@@ -655,7 +655,7 @@ static void arrange_and_send_eeg_channels_from_isr(BaseType_t *pxHigherPriorityT
     // copy off FP2
     memcpy(buffer+dst_offset,g_spi_bytes+src_offset+EEG_CH1*3,3); // 1
     dst_offset += 3;
-#elif defined(VARIANT_FF3)
+#elif defined(VARIANT_FF3) || defined(VARIANT_FF4)
     // copy off FP1
     memcpy(buffer+dst_offset,g_spi_bytes+src_offset+EEG_CH2*3,3);
     dst_offset += 3;
