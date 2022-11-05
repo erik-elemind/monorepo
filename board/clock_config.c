@@ -84,6 +84,7 @@ void BOARD_InitBootClocks(void)
 name: BOARD_BootClockRUN
 called_from_default_init: true
 outputs:
+- {id: CTIMER0_clock.outFreq, value: 16 MHz}
 - {id: FLEXSPI_clock.outFreq, value: 1188/19 MHz}
 - {id: FXCOM0_clock.outFreq, value: 16 MHz}
 - {id: FXCOM1_clock.outFreq, value: 16 MHz}
@@ -101,6 +102,7 @@ settings:
 - {id: SYSCON.AUDIOPLL0CLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.AUDIOPLL0_PFD0_DIV.scale, value: '23', locked: true}
 - {id: SYSCON.AUDIO_PLL0_PFD0_MUL.scale, value: '18', locked: true}
+- {id: SYSCON.CT32BIT0FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC0FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC1FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC2FCLKSEL.sel, value: SYSCON.sfro}
@@ -195,6 +197,7 @@ void BOARD_BootClockRUN(void)
 
     /* Set up clock selectors - Attach clocks to the peripheries */
     CLOCK_AttachClk(kMAIN_PLL_to_MAIN_CLK);                 /* Switch MAIN_CLK to MAIN_PLL */
+    CLOCK_AttachClk(kSFRO_to_CTIMER0);                 /* Switch CTIMER0 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM0);                 /* Switch FLEXCOMM0 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM1);                 /* Switch FLEXCOMM1 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM2);                 /* Switch FLEXCOMM2 to SFRO */

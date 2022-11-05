@@ -81,15 +81,33 @@ extern "C" {
 /* Definition of peripheral ID */
 #define PINT_PERIPHERAL ((PINT_Type *) PINT_BASE)
 /* PINT interrupt vector ID (number). */
+#define PINT_PINT_1_IRQN PIN_INT1_IRQn
+/* PINT interrupt vector priority. */
+#define PINT_PINT_1_IRQ_PRIORITY 5
+/* PINT interrupt vector ID (number). */
+#define PINT_PINT_3_IRQN PIN_INT3_IRQn
+/* PINT interrupt vector priority. */
+#define PINT_PINT_3_IRQ_PRIORITY 5
+/* PINT interrupt vector ID (number). */
+#define PINT_PINT_4_IRQN PIN_INT4_IRQn
+/* PINT interrupt vector priority. */
+#define PINT_PINT_4_IRQ_PRIORITY 5
+/* PINT interrupt vector ID (number). */
 #define PINT_PINT_5_IRQN PIN_INT5_IRQn
+/* PINT interrupt vector priority. */
+#define PINT_PINT_5_IRQ_PRIORITY 5
 /* PINT interrupt vector ID (number). */
 #define PINT_PINT_6_IRQN PIN_INT6_IRQn
+/* PINT interrupt vector priority. */
+#define PINT_PINT_6_IRQ_PRIORITY 5
 /* PINT interrupt vector ID (number). */
 #define PINT_PINT_0_IRQN PIN_INT0_IRQn
 /* PINT interrupt vector priority. */
 #define PINT_PINT_0_IRQ_PRIORITY 3
 /* PINT interrupt vector ID (number). */
 #define PINT_PINT_7_IRQN PIN_INT7_IRQn
+/* PINT interrupt vector priority. */
+#define PINT_PINT_7_IRQ_PRIORITY 5
 /* Definition of PINT interrupt ID for interrupt 1  */
 #define PINT_INT_1 kPINT_PinInt1
 /* Definition of PINT interrupt ID for interrupt 3  */
@@ -135,7 +153,7 @@ extern "C" {
 /* SCT0 interrupt vector ID (number). */
 #define SCT0_IRQN SCT0_IRQn
 /* SCT0 interrupt vector priority. */
-#define SCT0_IRQ_PRIORITY 2
+#define SCT0_IRQ_PRIORITY 5
 /* SCT0 interrupt handler identifier. */
 #define SCT0_IRQHANDLER SCT0_IRQHandler
 /* BOARD_InitPeripherals defines for FLEXCOMM4 */
