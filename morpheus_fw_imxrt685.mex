@@ -460,7 +460,7 @@
                   <clock_output id="FXCOM1_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM2_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM3_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
-                  <clock_output id="FXCOM4_clock.outFreq" value="27648/9709 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FXCOM4_clock.outFreq" value="3168/1121 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM5_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="LPOSC1M_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
                   <clock_output id="OSTIMER_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
@@ -483,8 +483,9 @@
                   <setting id="SYSCON.FLEXSPIFCLKDIV.scale" value="8" locked="true"/>
                   <setting id="SYSCON.FLEXSPIFCLKSEL.sel" value="SYSCON.MAINCLKSELB" locked="false"/>
                   <setting id="SYSCON.FRG4CLKSEL.sel" value="SYSCON.FRGPLLCLKDIV" locked="false"/>
-                  <setting id="SYSCON.FRG4_DIV.scale" value="511" locked="false"/>
-                  <setting id="SYSCON.FRGPLLCLKDIV.scale" value="88" locked="true"/>
+                  <setting id="SYSCON.FRG4_DIV.scale" value="256" locked="true"/>
+                  <setting id="SYSCON.FRG4_MUL.scale" value="256" locked="true"/>
+                  <setting id="SYSCON.FRGPLLCLKDIV.scale" value="177" locked="true"/>
                   <setting id="SYSCON.MAINCLKSELB.sel" value="SYSCON.MAINPLLCLKDIV" locked="false"/>
                   <setting id="SYSCON.MAINPLLCLKDIV.scale" value="1" locked="true"/>
                   <setting id="SYSCON.PLL0.denom" value="1" locked="false"/>
@@ -1234,7 +1235,7 @@
                         </struct>
                         <struct name="i2s_dma_handle">
                            <setting name="enable_custom_name" value="false"/>
-                           <setting name="init_callback" value="true"/>
+                           <setting name="init_callback" value="false"/>
                            <setting name="callback_fcn" value="audio_i2s_isr"/>
                            <setting name="user_data" value=""/>
                         </struct>

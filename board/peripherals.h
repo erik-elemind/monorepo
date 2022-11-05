@@ -160,7 +160,7 @@ extern "C" {
 /* Definition of peripheral ID */
 #define FC4_AUDIO_I2S_PERIPHERAL ((I2S_Type *)FLEXCOMM4)
 /* Definition of the clock source frequency */
-#define FC4_AUDIO_I2S_CLOCK_SOURCE 2847667UL
+#define FC4_AUDIO_I2S_CLOCK_SOURCE 2826048UL
 /* Selected DMA channel number. */
 #define FC4_AUDIO_I2S_TX_DMA_CHANNEL 9
 /* Used DMA device. */
@@ -227,8 +227,6 @@ extern void eeg_drdy_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 extern void power_button_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 /* SPI DMA callback function for the FC1_EEG_SPI component (init. function BOARD_InitPeripherals)*/
 extern void eeg_dma_rx_complete_isr(SPI_Type *,spi_dma_handle_t *,status_t ,void *);
-/* I2S DMA callback function for the FC4_AUDIO_I2S component (init. function BOARD_InitPeripherals)*/
-extern void audio_i2s_isr(I2S_Type *,i2s_dma_handle_t *,status_t ,void *);
 /* FLEXSPI DMA callback function for the NAND_FLEXSPI component (init. function BOARD_InitPeripherals)*/
 extern void nand_flexspi_isr(FLEXSPI_Type *, flexspi_dma_handle_t *, status_t, void *);
 

@@ -735,7 +735,7 @@ instance:
         - enable_custom_name: 'false'
     - i2s_dma_handle:
       - enable_custom_name: 'false'
-      - init_callback: 'true'
+      - init_callback: 'false'
       - callback_fcn: 'audio_i2s_isr'
       - user_data: ''
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
@@ -770,7 +770,7 @@ static void FC4_AUDIO_I2S_init(void) {
   /* Create the DMA FC4_AUDIO_I2S_TX_Handle handle */
   DMA_CreateHandle(&FC4_AUDIO_I2S_TX_Handle, FC4_AUDIO_I2S_TX_DMA_BASEADDR, FC4_AUDIO_I2S_TX_DMA_CHANNEL);
   /* Create the I2S DMA handle */
-  I2S_TxTransferCreateHandleDMA(FC4_AUDIO_I2S_PERIPHERAL, &FC4_AUDIO_I2S_Tx_DMA_Handle, &FC4_AUDIO_I2S_TX_Handle, audio_i2s_isr, NULL);
+  I2S_TxTransferCreateHandleDMA(FC4_AUDIO_I2S_PERIPHERAL, &FC4_AUDIO_I2S_Tx_DMA_Handle, &FC4_AUDIO_I2S_TX_Handle, NULL, NULL);
 }
 
 /***********************************************************************************************************************
