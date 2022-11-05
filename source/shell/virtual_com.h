@@ -98,6 +98,7 @@ typedef struct _usb_cdc_acm_info
 void virtual_com_init(void);
 ssize_t virtual_com_write(char* buf, size_t len);
 ssize_t virtual_com_read(char* buf, size_t len);
+bool virtual_com_attached();
 
 #ifdef __cplusplus
 }

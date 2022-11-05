@@ -693,6 +693,7 @@ void virtual_com_init(void)
         return;
       }
 
+    xSemaphore = xSemaphoreCreateMutexStatic( &xMutexBuffer );
 
     USB_DeviceIsrEnable();
 
@@ -747,5 +748,11 @@ ssize_t virtual_com_write(char* buf, size_t size)
 
 ssize_t virtual_com_read(char* buf, size_t len)
 {
+	USB_DeviceCdcAcmRecv(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_OUT_ENDPOINT, s_currRecvBuf, g_UsbDeviceCdcVcomDicEndpoints[1].maxPacketSize);
+	  return xStreamBufferReceive(s_recvStreamBuffer, buf, len, portMAX_DELAY);
+}
 
+/* Returns true if the virtual com port is attached (i.e. USB cable is plugged in) */
+bool virtual_com_attached(){
+  return s_cdcVcom.attach;
 }

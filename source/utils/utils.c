@@ -1,4 +1,4 @@
-#include <virtual_com_OLD.h>
+#include "virtual_com.h"
 #include "utils.h"
 #include "reset_reason.h"
 //#include "prebuild.h" //ToDo: port
@@ -82,13 +82,13 @@ debug_uart_puts_nnl(char* str)
 void
 debug_uart_puts(char* str)
 {
-//  virtual_com_write(str, strlen(str));
-//  virtual_com_write("\n", 1);
+  virtual_com_write(str, strlen(str));
+  virtual_com_write("\n", 1);
 }
 void
 debug_uart_puts_nnl(char* str)
 {
-//  virtual_com_write(str, strlen(str));
+  virtual_com_write(str, strlen(str));
 }
 #endif
 
