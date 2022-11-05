@@ -45,7 +45,7 @@ void AudioPlayUffsWavBufferRTOS::pretask_init(void)
 {
 #if (defined(ENABLE_NO_COPY_WAV_BUFFER) && (ENABLE_NO_COPY_WAV_BUFFER > 0U))
   // create the stream buffer
-  smem_rtos_init (&smr, smr_array, WAV_BUFFER_SIZE_BYTES, 4*AUDIO_BLOCK_SAMPLES);
+  smem_rtos_init (&smr, smr_array, WAV_BUFFER_SIZE_BYTES, WAV_BUFFER_MAX_READ_MSG_LEN);
 #else
   // create the audio buffer
 //  memset(sbuf_array, 0, WAV_BUFFER_SIZE_BYTES); // memset happens in xStreamBufferCreateStatic
