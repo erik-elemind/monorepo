@@ -464,7 +464,11 @@ usb_status_t USB_DeviceCdcVcomCallback(class_handle_t handle, uint32_t event, vo
 
             if (1U == s_cdcVcom.attach)
             {
+              if( (acmInfo->uartState & USB_DEVICE_CDC_UART_STATE_RX_CARRIER) != 0){
                 s_cdcVcom.startTransactions = 1;
+              }else{
+                s_cdcVcom.startTransactions = 0;
+              }
 #if defined(FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED) && (FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED > 0U) && \
     defined(USB_DEVICE_CONFIG_KEEP_ALIVE_MODE) && (USB_DEVICE_CONFIG_KEEP_ALIVE_MODE > 0U) &&             \
     defined(FSL_FEATURE_USB_KHCI_USB_RAM) && (FSL_FEATURE_USB_KHCI_USB_RAM > 0U)
