@@ -81,15 +81,33 @@ extern "C" {
 /* Definition of peripheral ID */
 #define PINT_PERIPHERAL ((PINT_Type *) PINT_BASE)
 /* PINT interrupt vector ID (number). */
+#define PINT_PINT_1_IRQN PIN_INT1_IRQn
+/* PINT interrupt vector priority. */
+#define PINT_PINT_1_IRQ_PRIORITY 5
+/* PINT interrupt vector ID (number). */
+#define PINT_PINT_3_IRQN PIN_INT3_IRQn
+/* PINT interrupt vector priority. */
+#define PINT_PINT_3_IRQ_PRIORITY 5
+/* PINT interrupt vector ID (number). */
+#define PINT_PINT_4_IRQN PIN_INT4_IRQn
+/* PINT interrupt vector priority. */
+#define PINT_PINT_4_IRQ_PRIORITY 5
+/* PINT interrupt vector ID (number). */
 #define PINT_PINT_5_IRQN PIN_INT5_IRQn
+/* PINT interrupt vector priority. */
+#define PINT_PINT_5_IRQ_PRIORITY 5
 /* PINT interrupt vector ID (number). */
 #define PINT_PINT_6_IRQN PIN_INT6_IRQn
+/* PINT interrupt vector priority. */
+#define PINT_PINT_6_IRQ_PRIORITY 5
 /* PINT interrupt vector ID (number). */
 #define PINT_PINT_0_IRQN PIN_INT0_IRQn
 /* PINT interrupt vector priority. */
 #define PINT_PINT_0_IRQ_PRIORITY 3
 /* PINT interrupt vector ID (number). */
 #define PINT_PINT_7_IRQN PIN_INT7_IRQn
+/* PINT interrupt vector priority. */
+#define PINT_PINT_7_IRQ_PRIORITY 5
 /* Definition of PINT interrupt ID for interrupt 1  */
 #define PINT_INT_1 kPINT_PinInt1
 /* Definition of PINT interrupt ID for interrupt 3  */
@@ -135,14 +153,14 @@ extern "C" {
 /* SCT0 interrupt vector ID (number). */
 #define SCT0_IRQN SCT0_IRQn
 /* SCT0 interrupt vector priority. */
-#define SCT0_IRQ_PRIORITY 2
+#define SCT0_IRQ_PRIORITY 5
 /* SCT0 interrupt handler identifier. */
 #define SCT0_IRQHANDLER SCT0_IRQHandler
 /* BOARD_InitPeripherals defines for FLEXCOMM4 */
 /* Definition of peripheral ID */
 #define FC4_AUDIO_I2S_PERIPHERAL ((I2S_Type *)FLEXCOMM4)
 /* Definition of the clock source frequency */
-#define FC4_AUDIO_I2S_CLOCK_SOURCE 2847667UL
+#define FC4_AUDIO_I2S_CLOCK_SOURCE 2826048UL
 /* Selected DMA channel number. */
 #define FC4_AUDIO_I2S_TX_DMA_CHANNEL 9
 /* Used DMA device. */
@@ -209,8 +227,6 @@ extern void eeg_drdy_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 extern void power_button_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 /* SPI DMA callback function for the FC1_EEG_SPI component (init. function BOARD_InitPeripherals)*/
 extern void eeg_dma_rx_complete_isr(SPI_Type *,spi_dma_handle_t *,status_t ,void *);
-/* I2S DMA callback function for the FC4_AUDIO_I2S component (init. function BOARD_InitPeripherals)*/
-extern void audio_i2s_isr(I2S_Type *,i2s_dma_handle_t *,status_t ,void *);
 /* FLEXSPI DMA callback function for the NAND_FLEXSPI component (init. function BOARD_InitPeripherals)*/
 extern void nand_flexspi_isr(FLEXSPI_Type *, flexspi_dma_handle_t *, status_t, void *);
 

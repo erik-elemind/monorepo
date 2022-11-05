@@ -21,9 +21,14 @@
 #define CTIMER            CTIMER0
 #define CTIMER_CLK_SRC    kSFRO_to_CTIMER0
 #define CTIMER_MATCH      kCTIMER_Match_0
-#define CTIMER_CLK_FREQ   (1000000U)
+#define CTIMER_CLK_FREQ   (16000000U)
 #define CTIMER_IRQn       CTIMER0_IRQn
 #define CTIMER_INT_PRIO   MICRO_CLOCK_NVIC_PRIORITY // must be equal to or below min FreeRTOS priority.
+
+#define MICRO_CLOCK_TICK_FREQ (1000000U) // 1Mhz tick to support 1 microsecond clock
+#if (CTIMER_CLK_FREQ < MICRO_CLOCK_TICK_FREQ)
+#error The clock frequency driving CTIMER0 must be equal to or greater than 1Mhz.
+#endif
 
 /*******************************************************************************
  * Prototypes
@@ -49,7 +54,7 @@ static uint64_t g_total_micros = 0;
 
 static void ctimer_overflow_callback(uint32_t flags)
 {
-  g_total_micros += 0xFFFFFFFF;
+  g_total_micros += (((uint64_t)0xFFFFFFFF) * MICRO_CLOCK_TICK_FREQ) / CTIMER_CLK_FREQ;
 }
 
 
@@ -90,7 +95,8 @@ void deinit_micro_clock(void){
 
 uint64_t micros(void){
   NVIC_DisableIRQ(CTIMER_IRQn);
-  uint64_t total_micros = (g_total_micros + CTIMER_GetTimerCountValue(CTIMER));
+  uint64_t total_micros =  (((uint64_t)CTIMER_GetTimerCountValue(CTIMER)) * MICRO_CLOCK_TICK_FREQ) / CTIMER_CLK_FREQ;
+  total_micros = (g_total_micros + total_micros);
   NVIC_EnableIRQ(CTIMER_IRQn);
   return total_micros;
 }

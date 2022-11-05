@@ -154,6 +154,9 @@ instance:
       - 8: []
       - 9: []
       - 10: []
+      - 11: []
+      - 12: []
+      - 13: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -324,31 +327,31 @@ instance:
         - interrupt_selection: 'PINT.1'
         - interrupt_type: 'kPINT_PinIntEnableNone'
         - callback_function: 'charger_pint_isr'
-        - enable_callback: 'false'
+        - enable_callback: 'true'
         - interrupt:
           - IRQn: 'PIN_INT1_IRQn'
-          - enable_priority: 'false'
-          - priority: '0'
+          - enable_priority: 'true'
+          - priority: '5'
       - 1:
         - interrupt_id: 'INT_3'
         - interrupt_selection: 'PINT.3'
         - interrupt_type: 'kPINT_PinIntEnableNone'
         - callback_function: 'hrm_pint_isr'
-        - enable_callback: 'false'
+        - enable_callback: 'true'
         - interrupt:
           - IRQn: 'PIN_INT3_IRQn'
-          - enable_priority: 'false'
-          - priority: '0'
+          - enable_priority: 'true'
+          - priority: '5'
       - 2:
         - interrupt_id: 'INT_4'
         - interrupt_selection: 'PINT.4'
         - interrupt_type: 'kPINT_PinIntEnableNone'
         - callback_function: 'accel_pint_isr'
-        - enable_callback: 'false'
+        - enable_callback: 'true'
         - interrupt:
           - IRQn: 'PIN_INT4_IRQn'
-          - enable_priority: 'false'
-          - priority: '0'
+          - enable_priority: 'true'
+          - priority: '5'
       - 3:
         - interrupt_id: 'INT_5'
         - interrupt_selection: 'PINT.5'
@@ -357,8 +360,8 @@ instance:
         - enable_callback: 'true'
         - interrupt:
           - IRQn: 'PIN_INT5_IRQn'
-          - enable_priority: 'false'
-          - priority: '0'
+          - enable_priority: 'true'
+          - priority: '5'
       - 4:
         - interrupt_id: 'INT_6'
         - interrupt_selection: 'PINT.6'
@@ -367,8 +370,8 @@ instance:
         - enable_callback: 'true'
         - interrupt:
           - IRQn: 'PIN_INT6_IRQn'
-          - enable_priority: 'false'
-          - priority: '0'
+          - enable_priority: 'true'
+          - priority: '5'
       - 5:
         - interrupt_id: 'INT_0'
         - interrupt_selection: 'PINT.0'
@@ -387,16 +390,28 @@ instance:
         - enable_callback: 'true'
         - interrupt:
           - IRQn: 'PIN_INT7_IRQn'
-          - enable_priority: 'false'
-          - priority: '0'
+          - enable_priority: 'true'
+          - priority: '5'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
 static void PINT_init(void) {
   /* PINT initiation  */
   PINT_Init(PINT_PERIPHERAL);
+  /* Interrupt vector PIN_INT1_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(PINT_PINT_1_IRQN, PINT_PINT_1_IRQ_PRIORITY);
+  /* Interrupt vector PIN_INT3_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(PINT_PINT_3_IRQN, PINT_PINT_3_IRQ_PRIORITY);
+  /* Interrupt vector PIN_INT4_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(PINT_PINT_4_IRQN, PINT_PINT_4_IRQ_PRIORITY);
+  /* Interrupt vector PIN_INT5_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(PINT_PINT_5_IRQN, PINT_PINT_5_IRQ_PRIORITY);
+  /* Interrupt vector PIN_INT6_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(PINT_PINT_6_IRQN, PINT_PINT_6_IRQ_PRIORITY);
   /* Interrupt vector PIN_INT0_IRQn priority settings in the NVIC. */
   NVIC_SetPriority(PINT_PINT_0_IRQN, PINT_PINT_0_IRQ_PRIORITY);
+  /* Interrupt vector PIN_INT7_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(PINT_PINT_7_IRQN, PINT_PINT_7_IRQ_PRIORITY);
   /* PINT PINT.1 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_1, kPINT_PinIntEnableNone, charger_pint_isr);
   /* PINT PINT.3 configuration */
@@ -411,6 +426,12 @@ static void PINT_init(void) {
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_0, kPINT_PinIntEnableFallEdge, eeg_drdy_pint_isr);
   /* PINT PINT.7 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_7, kPINT_PinIntEnableFallEdge, power_button_isr);
+  /* Enable PINT PINT.1 callback */
+  PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt1);
+  /* Enable PINT PINT.3 callback */
+  PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt3);
+  /* Enable PINT PINT.4 callback */
+  PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt4);
   /* Enable PINT PINT.5 callback */
   PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt5);
   /* Enable PINT PINT.6 callback */
@@ -601,7 +622,7 @@ instance:
       - IRQn: 'SCT0_IRQn'
       - enable_interrrupt: 'enabled'
       - enable_priority: 'true'
-      - priority: '2'
+      - priority: '5'
       - enable_custom_name: 'false'
     - enableLTimer: 'false'
     - enableHTimer: 'false'
@@ -714,7 +735,7 @@ instance:
         - enable_custom_name: 'false'
     - i2s_dma_handle:
       - enable_custom_name: 'false'
-      - init_callback: 'true'
+      - init_callback: 'false'
       - callback_fcn: 'audio_i2s_isr'
       - user_data: ''
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
@@ -749,7 +770,7 @@ static void FC4_AUDIO_I2S_init(void) {
   /* Create the DMA FC4_AUDIO_I2S_TX_Handle handle */
   DMA_CreateHandle(&FC4_AUDIO_I2S_TX_Handle, FC4_AUDIO_I2S_TX_DMA_BASEADDR, FC4_AUDIO_I2S_TX_DMA_CHANNEL);
   /* Create the I2S DMA handle */
-  I2S_TxTransferCreateHandleDMA(FC4_AUDIO_I2S_PERIPHERAL, &FC4_AUDIO_I2S_Tx_DMA_Handle, &FC4_AUDIO_I2S_TX_Handle, audio_i2s_isr, NULL);
+  I2S_TxTransferCreateHandleDMA(FC4_AUDIO_I2S_PERIPHERAL, &FC4_AUDIO_I2S_Tx_DMA_Handle, &FC4_AUDIO_I2S_TX_Handle, NULL, NULL);
 }
 
 /***********************************************************************************************************************
@@ -851,10 +872,10 @@ instance:
           - dataValidTimeString: '2'
           - columnspace: '0'
           - enableWordAddress: 'false'
-          - AWRSeqIndex: '0'
-          - AWRSeqNumber: '0'
-          - ARDSeqIndex: '0'
-          - ARDSeqNumber: '0'
+          - AWRSeqIndex: '7'
+          - AWRSeqNumber: '1'
+          - ARDSeqIndex: '13'
+          - ARDSeqNumber: '1'
           - AHBWriteWaitUnit: 'kFLEXSPI_AhbWriteWaitUnit2AhbCycle'
           - AHBWriteWaitIntervalString: '0'
           - enableWriteMask: 'false'
@@ -969,10 +990,10 @@ flexspi_device_config_t NAND_FLEXSPI_config_NAND = {
   .dataValidTime = 2,
   .columnspace = 0U,
   .enableWordAddress = false,
-  .AWRSeqIndex = 0U,
-  .AWRSeqNumber = 0U,
-  .ARDSeqIndex = 0U,
-  .ARDSeqNumber = 0U,
+  .AWRSeqIndex = 7U,
+  .AWRSeqNumber = 1U,
+  .ARDSeqIndex = 13U,
+  .ARDSeqNumber = 1U,
   .AHBWriteWaitUnit = kFLEXSPI_AhbWriteWaitUnit2AhbCycle,
   .AHBWriteWaitInterval = 0,
   .enableWriteMask = false

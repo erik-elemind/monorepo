@@ -454,12 +454,13 @@
                   <clock_source id="SYSCON.XTAL.outFreq" value="24 MHz" locked="false" enabled="true"/>
                </clock_sources>
                <clock_outputs>
+                  <clock_output id="CTIMER0_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="FLEXSPI_clock.outFreq" value="1188/19 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM0_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM1_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM2_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM3_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
-                  <clock_output id="FXCOM4_clock.outFreq" value="27648/9709 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FXCOM4_clock.outFreq" value="3168/1121 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM5_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="LPOSC1M_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
                   <clock_output id="OSTIMER_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
@@ -472,6 +473,7 @@
                   <setting id="SYSCON.AUDIOPLL0CLKSEL.sel" value="SYSCON.sfro" locked="false"/>
                   <setting id="SYSCON.AUDIOPLL0_PFD0_DIV.scale" value="23" locked="true"/>
                   <setting id="SYSCON.AUDIO_PLL0_PFD0_MUL.scale" value="18" locked="true"/>
+                  <setting id="SYSCON.CT32BIT0FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
                   <setting id="SYSCON.FC0FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
                   <setting id="SYSCON.FC1FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
                   <setting id="SYSCON.FC2FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
@@ -481,8 +483,9 @@
                   <setting id="SYSCON.FLEXSPIFCLKDIV.scale" value="8" locked="true"/>
                   <setting id="SYSCON.FLEXSPIFCLKSEL.sel" value="SYSCON.MAINCLKSELB" locked="false"/>
                   <setting id="SYSCON.FRG4CLKSEL.sel" value="SYSCON.FRGPLLCLKDIV" locked="false"/>
-                  <setting id="SYSCON.FRG4_DIV.scale" value="511" locked="false"/>
-                  <setting id="SYSCON.FRGPLLCLKDIV.scale" value="88" locked="true"/>
+                  <setting id="SYSCON.FRG4_DIV.scale" value="256" locked="true"/>
+                  <setting id="SYSCON.FRG4_MUL.scale" value="256" locked="true"/>
+                  <setting id="SYSCON.FRGPLLCLKDIV.scale" value="177" locked="true"/>
                   <setting id="SYSCON.MAINCLKSELB.sel" value="SYSCON.MAINPLLCLKDIV" locked="false"/>
                   <setting id="SYSCON.MAINPLLCLKDIV.scale" value="1" locked="true"/>
                   <setting id="SYSCON.PLL0.denom" value="1" locked="false"/>
@@ -887,6 +890,9 @@
                            <struct name="8"/>
                            <struct name="9"/>
                            <struct name="10"/>
+                           <struct name="11"/>
+                           <struct name="12"/>
+                           <struct name="13"/>
                         </array>
                         <array name="interrupts"/>
                      </config_set>
@@ -977,11 +983,11 @@
                               <setting name="interrupt_selection" value="PINT.1"/>
                               <setting name="interrupt_type" value="kPINT_PinIntEnableNone"/>
                               <setting name="callback_function" value="charger_pint_isr"/>
-                              <setting name="enable_callback" value="false"/>
+                              <setting name="enable_callback" value="true"/>
                               <struct name="interrupt">
                                  <setting name="IRQn" value="PIN_INT1_IRQn"/>
-                                 <setting name="enable_priority" value="false"/>
-                                 <setting name="priority" value="0"/>
+                                 <setting name="enable_priority" value="true"/>
+                                 <setting name="priority" value="5"/>
                               </struct>
                            </struct>
                            <struct name="1">
@@ -989,11 +995,11 @@
                               <setting name="interrupt_selection" value="PINT.3"/>
                               <setting name="interrupt_type" value="kPINT_PinIntEnableNone"/>
                               <setting name="callback_function" value="hrm_pint_isr"/>
-                              <setting name="enable_callback" value="false"/>
+                              <setting name="enable_callback" value="true"/>
                               <struct name="interrupt">
                                  <setting name="IRQn" value="PIN_INT3_IRQn"/>
-                                 <setting name="enable_priority" value="false"/>
-                                 <setting name="priority" value="0"/>
+                                 <setting name="enable_priority" value="true"/>
+                                 <setting name="priority" value="5"/>
                               </struct>
                            </struct>
                            <struct name="2">
@@ -1001,11 +1007,11 @@
                               <setting name="interrupt_selection" value="PINT.4"/>
                               <setting name="interrupt_type" value="kPINT_PinIntEnableNone"/>
                               <setting name="callback_function" value="accel_pint_isr"/>
-                              <setting name="enable_callback" value="false"/>
+                              <setting name="enable_callback" value="true"/>
                               <struct name="interrupt">
                                  <setting name="IRQn" value="PIN_INT4_IRQn"/>
-                                 <setting name="enable_priority" value="false"/>
-                                 <setting name="priority" value="0"/>
+                                 <setting name="enable_priority" value="true"/>
+                                 <setting name="priority" value="5"/>
                               </struct>
                            </struct>
                            <struct name="3">
@@ -1016,8 +1022,8 @@
                               <setting name="enable_callback" value="true"/>
                               <struct name="interrupt">
                                  <setting name="IRQn" value="PIN_INT5_IRQn"/>
-                                 <setting name="enable_priority" value="false"/>
-                                 <setting name="priority" value="0"/>
+                                 <setting name="enable_priority" value="true"/>
+                                 <setting name="priority" value="5"/>
                               </struct>
                            </struct>
                            <struct name="4">
@@ -1028,8 +1034,8 @@
                               <setting name="enable_callback" value="true"/>
                               <struct name="interrupt">
                                  <setting name="IRQn" value="PIN_INT6_IRQn"/>
-                                 <setting name="enable_priority" value="false"/>
-                                 <setting name="priority" value="0"/>
+                                 <setting name="enable_priority" value="true"/>
+                                 <setting name="priority" value="5"/>
                               </struct>
                            </struct>
                            <struct name="5">
@@ -1052,8 +1058,8 @@
                               <setting name="enable_callback" value="true"/>
                               <struct name="interrupt">
                                  <setting name="IRQn" value="PIN_INT7_IRQn"/>
-                                 <setting name="enable_priority" value="false"/>
-                                 <setting name="priority" value="0"/>
+                                 <setting name="enable_priority" value="true"/>
+                                 <setting name="priority" value="5"/>
                               </struct>
                            </struct>
                         </array>
@@ -1153,7 +1159,7 @@
                            <setting name="IRQn" value="SCT0_IRQn"/>
                            <setting name="enable_interrrupt" value="enabled"/>
                            <setting name="enable_priority" value="true"/>
-                           <setting name="priority" value="2"/>
+                           <setting name="priority" value="5"/>
                            <setting name="enable_custom_name" value="false"/>
                         </struct>
                         <setting name="enableLTimer" value="false"/>
@@ -1229,7 +1235,7 @@
                         </struct>
                         <struct name="i2s_dma_handle">
                            <setting name="enable_custom_name" value="false"/>
-                           <setting name="init_callback" value="true"/>
+                           <setting name="init_callback" value="false"/>
                            <setting name="callback_fcn" value="audio_i2s_isr"/>
                            <setting name="user_data" value=""/>
                         </struct>
@@ -1365,10 +1371,10 @@
                                  <setting name="dataValidTimeString" value="2"/>
                                  <setting name="columnspace" value="0"/>
                                  <setting name="enableWordAddress" value="false"/>
-                                 <setting name="AWRSeqIndex" value="0"/>
-                                 <setting name="AWRSeqNumber" value="0"/>
-                                 <setting name="ARDSeqIndex" value="0"/>
-                                 <setting name="ARDSeqNumber" value="0"/>
+                                 <setting name="AWRSeqIndex" value="7"/>
+                                 <setting name="AWRSeqNumber" value="1"/>
+                                 <setting name="ARDSeqIndex" value="13"/>
+                                 <setting name="ARDSeqNumber" value="1"/>
                                  <setting name="AHBWriteWaitUnit" value="kFLEXSPI_AhbWriteWaitUnit2AhbCycle"/>
                                  <setting name="AHBWriteWaitIntervalString" value="0"/>
                                  <setting name="enableWriteMask" value="false"/>

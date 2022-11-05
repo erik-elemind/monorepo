@@ -27,9 +27,6 @@ typedef uint8_t eeg_order_t;
 enum {EEG_CH1=0, EEG_CH2, EEG_CH3, EEG_CH4, EEG_CH5, EEG_CH6, EEG_CH7, EEG_CH8};
 enum {EEG_FP1=0, EEG_FPZ, EEG_FP2};
 
-#define TEMP_SENSOR_CHANNEL EEG_CH4
-/* Sample every 10th sample of the EEG */
-#define TEMP_SENSOR_SAMPLE_RATE 10
 
 typedef struct {
   char          name[CHANNEL_NAME_MAX_NUM_CHARS];

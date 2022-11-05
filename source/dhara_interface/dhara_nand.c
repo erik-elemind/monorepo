@@ -422,7 +422,7 @@ int dhara_nand_copy(const struct dhara_nand *nand,
     // markers, which should be 0xff and 0x00 respectively).
     dhara_page_addr_to_block_page(nand, dst, &block, &page);
     status = nand_write_page(user_data, block, page, 0, layout_buffer,
-        (1 << (nand->log2_page_size + 2)));
+    		((1 << nand->log2_page_size) + 2));
     if (status != NAND_NO_ERR) {
       LOGE(TAG, "dhara_nand_copy: blk %d, pg %d data: "
 	"nand_write_page() error: %d", (int)block, (int)page, status);

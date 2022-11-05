@@ -15,8 +15,8 @@
 #define TEMP_SENSOR_CHANNEL EEG_CH4
 
 /* Sample every 250th sample of the EEG */
-// TODO: Make this value 1HZ, and calculated based on EEG sample rate
-#define TEMP_SENSOR_SAMPLE_RATE 250
+// TODO: Make this an actual rate value. At the moment the rate is (EEG sample rate)/TEMP_SENSOR_SAMPLE_RATE HZ
+#define TEMP_SENSOR_SAMPLE_RATE 10
 
 typedef struct{
   unsigned int temp_sample_number;

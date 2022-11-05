@@ -84,12 +84,13 @@ void BOARD_InitBootClocks(void)
 name: BOARD_BootClockRUN
 called_from_default_init: true
 outputs:
+- {id: CTIMER0_clock.outFreq, value: 16 MHz}
 - {id: FLEXSPI_clock.outFreq, value: 1188/19 MHz}
 - {id: FXCOM0_clock.outFreq, value: 16 MHz}
 - {id: FXCOM1_clock.outFreq, value: 16 MHz}
 - {id: FXCOM2_clock.outFreq, value: 16 MHz}
 - {id: FXCOM3_clock.outFreq, value: 16 MHz}
-- {id: FXCOM4_clock.outFreq, value: 27648/9709 MHz}
+- {id: FXCOM4_clock.outFreq, value: 3168/1121 MHz}
 - {id: FXCOM5_clock.outFreq, value: 16 MHz}
 - {id: LPOSC1M_clock.outFreq, value: 1 MHz}
 - {id: OSTIMER_clock.outFreq, value: 1 MHz}
@@ -101,6 +102,7 @@ settings:
 - {id: SYSCON.AUDIOPLL0CLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.AUDIOPLL0_PFD0_DIV.scale, value: '23', locked: true}
 - {id: SYSCON.AUDIO_PLL0_PFD0_MUL.scale, value: '18', locked: true}
+- {id: SYSCON.CT32BIT0FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC0FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC1FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC2FCLKSEL.sel, value: SYSCON.sfro}
@@ -110,8 +112,9 @@ settings:
 - {id: SYSCON.FLEXSPIFCLKDIV.scale, value: '8', locked: true}
 - {id: SYSCON.FLEXSPIFCLKSEL.sel, value: SYSCON.MAINCLKSELB}
 - {id: SYSCON.FRG4CLKSEL.sel, value: SYSCON.FRGPLLCLKDIV}
-- {id: SYSCON.FRG4_DIV.scale, value: '511'}
-- {id: SYSCON.FRGPLLCLKDIV.scale, value: '88', locked: true}
+- {id: SYSCON.FRG4_DIV.scale, value: '256', locked: true}
+- {id: SYSCON.FRG4_MUL.scale, value: '256', locked: true}
+- {id: SYSCON.FRGPLLCLKDIV.scale, value: '177', locked: true}
 - {id: SYSCON.MAINCLKSELB.sel, value: SYSCON.MAINPLLCLKDIV}
 - {id: SYSCON.MAINPLLCLKDIV.scale, value: '1', locked: true}
 - {id: SYSCON.PLL0.denom, value: '1'}
@@ -149,7 +152,7 @@ const clock_frg_clk_config_t g_frg4Config_BOARD_BootClockRUN =
         .num = 4,
         .sfg_clock_src = kCLOCK_FrgPllDiv,
         .divider = 255U,
-        .mult = 255
+        .mult = 0
     };
 /*******************************************************************************
  * Code for BOARD_BootClockRUN configuration
@@ -195,6 +198,7 @@ void BOARD_BootClockRUN(void)
 
     /* Set up clock selectors - Attach clocks to the peripheries */
     CLOCK_AttachClk(kMAIN_PLL_to_MAIN_CLK);                 /* Switch MAIN_CLK to MAIN_PLL */
+    CLOCK_AttachClk(kSFRO_to_CTIMER0);                 /* Switch CTIMER0 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM0);                 /* Switch FLEXCOMM0 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM1);                 /* Switch FLEXCOMM1 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM2);                 /* Switch FLEXCOMM2 to SFRO */
@@ -203,7 +207,7 @@ void BOARD_BootClockRUN(void)
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM5);                 /* Switch FLEXCOMM5 to SFRO */
 
     /* Set up dividers */
-    CLOCK_SetClkDiv(kCLOCK_DivPllFrgClk, 88U);         /* Set FRGPLLCLKDIV divider to value 88 */
+    CLOCK_SetClkDiv(kCLOCK_DivPllFrgClk, 177U);         /* Set FRGPLLCLKDIV divider to value 177 */
 
     /* Call weak function BOARD_SetFlexspiClock() to set user configured clock source/divider for FLEXSPI. */
     BOARD_SetFlexspiClock(0U, 8U);

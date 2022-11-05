@@ -35,11 +35,11 @@
 #else
 // The number of bytes removed from the buffer during an update() call.
 // The 4* multiple assumes 2 channel audio data is stored on buffer.
-#define WAV_BUFFER_MSG_LEN     (4*AUDIO_BLOCK_SAMPLES) // bytes
+#define WAV_BUFFER_MAX_READ_MSG_LEN    (4*AUDIO_BLOCK_SAMPLES) // bytes
 // The number of audio blocks on the buffer.
-#define WAV_BUFFER_NUM_MSGS    100 //was 40
+#define WAV_BUFFER_NUM_MSGS    40 // TODO: Determine why Audio task was crashing when this number was 100.
 // The total number of audio bytes to be buffered.
-#define WAV_BUFFER_SIZE_BYTES  WAV_BUFFER_MSG_LEN * WAV_BUFFER_NUM_MSGS // bytes
+#define WAV_BUFFER_SIZE_BYTES  WAV_BUFFER_MAX_READ_MSG_LEN * WAV_BUFFER_NUM_MSGS // bytes
 #endif
 
 // Start: Tell C++ compiler to include this C header.

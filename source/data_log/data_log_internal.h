@@ -86,7 +86,7 @@ typedef struct
 #endif
 
 #ifndef ENABLE_DATA_LOG_STREAM_EEG
-#define ENABLE_DATA_LOG_STREAM_EEG (0U) // (0U)
+#define ENABLE_DATA_LOG_STREAM_EEG (1U) // (0U)
 #endif
 
 #ifndef ENABLE_DATA_LOG_STREAM_INST

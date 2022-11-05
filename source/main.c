@@ -17,10 +17,14 @@
 
 /* Project includes */
 #include "config.h"
+#include "micro_clock.h"
+#include "loglevels.h"
 #include "dsp_support.h"
-
 #include "app.h"
 #include "data_log.h"
+#include "button.h"
+#include "button_config.h"
+#include "system_monitor.h"
 #include "shell_recv.h"
 #include "ble_uart_send.h"
 #include "ble_uart_recv.h"
@@ -40,12 +44,20 @@
 #include "eeg_reader.h"
 #include "eeg_processor.h"
 #include "erp.h"
-#include "system_monitor.h"
-#include "button.h"
-#include "button_config.h"
+
 #include "powerquad_helper.h"
 
 #include "fsl_usart_rtos_additional.h"
+
+
+#include "main.h"
+#include "rt_nonfinite.h"
+#include "sleepstagescorer.h"
+#include "sleepstagescorer_terminate.h"
+#include <stdio.h>
+#include "fsl_iopctl.h"
+#include "fsl_dsp.h"
+
 
 /*******************************************************************************
  * Definitions
@@ -207,15 +219,7 @@ static void dsp_boot_up(void);
 /*!
  * @brief Main function
  */
-#include "main.h"
-#include "rt_nonfinite.h"
-#include "sleepstagescorer.h"
-#include "sleepstagescorer_terminate.h"
-#include "fatfs_writer.h"
-#include "loglevels.h"
-#include <stdio.h>
-#include "fsl_iopctl.h"
-#include "fsl_dsp.h"
+
 
 static void system_boot_up(void)
 {
@@ -236,8 +240,12 @@ static void system_boot_up(void)
 	BOARD_InitDebugConsole();
 
 	//BOARD_DSP_Init();
-	
-	  pqhelper_init();
+
+    // Enable PowerQuad - Needed for ecHT computation in eeg_processor.h
+    pqhelper_init();
+
+    // init micro clock
+    init_micro_clock(); // TODO: Fix this clock to compensate for the 16Mhz clock input.
 
 }
 
@@ -306,7 +314,6 @@ int main(void)
 	  button_params_t* button_params = button_pretask_init();
 	  task_handle = xTaskCreateStatic(&button_task,
 	      "button", BUTTON_TASK_STACK_SIZE, button_params, BUTTON_TASK_PRIORITY, button_task_array, &button_task_struct);
-
 	  vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)BUTTON_TASK_STACK_SIZE );
 #endif
 
