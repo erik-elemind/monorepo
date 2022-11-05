@@ -8,13 +8,10 @@
 #ifndef _USB_CDC_VCOM_H_
 #define _USB_CDC_VCOM_H_ 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "usb.h"
-#include "usb_device_class.h"
 #include "usb_device_descriptor.h"
+#include "usb_device_config.h"
+
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -73,11 +70,11 @@ typedef struct _usb_cdc_vcom_struct
 {
     usb_device_handle deviceHandle; /* USB device handle. */
     class_handle_t cdcAcmHandle; /* USB CDC ACM class handle.                                                         */
-    volatile uint8_t attach;     /* A flag to indicate whether a usb device is attached. 1: attached, 0: not attached */
-    uint8_t speed;               /* Speed of USB device. USB_SPEED_FULL/USB_SPEED_LOW/USB_SPEED_HIGH.                 */
+    volatile uint8_t attach; /* A flag to indicate whether a usb device is attached. 1: attached, 0: not attached */
+    uint8_t speed;           /* Speed of USB device. USB_SPEED_FULL/USB_SPEED_LOW/USB_SPEED_HIGH.                 */
     volatile uint8_t
         startTransactions; /* A flag to indicate whether a CDC device is ready to transmit and receive data.    */
-    uint8_t currentConfiguration;                                           /* Current configuration value. */
+    uint8_t currentConfiguration; /* Current configuration value. */
     uint8_t currentInterfaceAlternateSetting[USB_CDC_VCOM_INTERFACE_COUNT]; /* Current alternate setting value for each
                                                                                interface. */
 } usb_cdc_vcom_struct_t;
@@ -94,13 +91,15 @@ typedef struct _usb_cdc_acm_info
     uint16_t uartState;       /* UART state of the CDC device.                      */
 } usb_cdc_acm_info_t;
 
-
 void virtual_com_init(void);
+void virtual_com_delayed_start(void);
+//ssize_t virtual_com_write_direct(char* buf, size_t len);
 ssize_t virtual_com_write(char* buf, size_t len);
 ssize_t virtual_com_read(char* buf, size_t len);
 bool virtual_com_attached();
 
-#ifdef __cplusplus
-}
-#endif
+void shell_send_pretask_init(void);
+
+void shell_send_task(void *params);
+
 #endif /* _USB_CDC_VCOM_H_ */

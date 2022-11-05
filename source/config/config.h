@@ -42,7 +42,8 @@
 //#define CONFIG_USE_SEMIHOSTING 1
 
 // Shell output device (only define one)
-#define CONFIG_SHELL_UART
+#define CONFIG_SHELL_USB
+//#define CONFIG_SHELL_UART
 
 // Enable the System Watchdog Timer
 // 0U - disable the timer

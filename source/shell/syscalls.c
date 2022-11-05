@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include "config.h"
 #include <stdio.h>
-#include <virtual_com.h>
+#include "virtual_com.h"
 #include "semphr.h"
 #include "utils.h"
 #include "syscalls.h"
@@ -183,7 +183,7 @@ int _read(int file, char *ptr, int len)
       }
     }
     if (g_syscall_read_loc & SYSCALL_USB){
-      result = virtual_com_read(ptr, len);
+     result = virtual_com_read(ptr, len);
     }
 //    if (g_syscall_read_loc == SYSCALL_NONE){
 //      #error "Morpheus debug shell device not specified!"
