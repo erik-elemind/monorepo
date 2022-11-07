@@ -82,6 +82,11 @@ void pqhelper_init(){
 
   // Enable clock for powerquad.
   PQ_Init(POWERQUAD);
+
+  // Setting PowerQuad Interrupt Priority
+  // ToDo: This setting was NOT used on FF2/FF3, confirm whether or not it IS needed or not.
+  NVIC_SetPriority(POWERQUAD_IRQn, POWERQUAD_INTERRUPT_PRIORITY);
+  EnableIRQ(POWERQUAD_IRQn);
 #endif
 
 }
