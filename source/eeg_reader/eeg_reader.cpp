@@ -63,6 +63,7 @@ typedef enum
   EEG_READER_EVENT_GET_GAIN,
   EEG_READER_EVENT_DRDY,
   EEG_READER_EVENT_TEMP_SAMPLE,
+  EEG_READER_EVENT_EEG_SAMPLE,
 } eeg_reader_event_type_t;
 
 // Events are passed to the g_event_queue with an optional 
@@ -73,6 +74,10 @@ typedef struct
   union{
     uint8_t ads_gain;
     skin_temp_sample_t skin_temp;
+#if (defined(ENABLE_EEG_PROCESSOR_TASK) && (ENABLE_EEG_PROCESSOR_TASK > 0U))
+#else
+    uint8_t eeg_buffer[EEG_MSG_LEN];
+#endif
   } data;
 } eeg_reader_event_t;
 
@@ -121,6 +126,7 @@ static void eeg_spi_rx_complete_isr(SPI_Type *base, spi_master_handle_t *handle,
 static void handle_eeg_drdy_pint_isr();
 #endif
 static void handle_skin_temp_sample(eeg_reader_event_t *event);
+static void handle_eeg_sample(eeg_reader_event_t *event);
 
 // For logging and debug:
 static const char *
@@ -150,6 +156,7 @@ eeg_reader_event_type_name(eeg_reader_event_type_t event_type)
     case EEG_READER_EVENT_GET_GAIN:     return "EEG_READER_EVENT_GET_GAIN";
     case EEG_READER_EVENT_DRDY:         return "EEG_READER_EVENT_DRDY";
     case EEG_READER_EVENT_TEMP_SAMPLE:  return "EEG_READER_EVENT_TEMP_SAMPLE";
+    case EEG_READER_EVENT_EEG_SAMPLE:   return "EEG_READER_EVENT_EEG_SAMPLE";
     default:
       break;
   }
@@ -215,6 +222,7 @@ log_event(eeg_reader_event_t *event)
   switch (event->type) {
     case EEG_READER_EVENT_DRDY:
     case EEG_READER_EVENT_TEMP_SAMPLE:
+    case EEG_READER_EVENT_EEG_SAMPLE:
       // do nothing -- suppress printing EEG MSG events
       break;
     default:
@@ -229,6 +237,7 @@ log_event_ignored(eeg_reader_event_t *event)
   switch(event->type){
     case EEG_READER_EVENT_DRDY:
     case EEG_READER_EVENT_TEMP_SAMPLE:
+    case EEG_READER_EVENT_EEG_SAMPLE:
       // do nothing -- suppress printing EEG MSG events
       break;
     default:
@@ -413,6 +422,9 @@ handle_event(eeg_reader_event_t *event)
     handle_skin_temp_sample(event);
     return;
 
+  case EEG_READER_EVENT_EEG_SAMPLE:
+	 handle_eeg_sample(event);
+
   default:
     break;
   }
@@ -503,28 +515,39 @@ eeg_reader_task(void *ignored)
   }
 }
 
+static void eeg_prepare_spi_transfer(){
+	  ads129x *ads = &(g_eeg_reader_context.ads);
+
+	//  g_timestamp_union.timestamp = xTaskGetTickCountFromISR() * portTICK_PERIOD_MS;
+	//  g_spi_bytes[0] = g_timestamp_union.timestamp_bytes[0];
+	//  g_spi_bytes[1] = g_timestamp_union.timestamp_bytes[1];
+	//  g_spi_bytes[2] = g_timestamp_union.timestamp_bytes[2];
+	//  g_spi_bytes[3] = g_timestamp_union.timestamp_bytes[3];
+
+	//  g_spi_bytes[4] = g_sample_number_union.sample_number_bytes[0];
+	//  g_spi_bytes[5] = g_sample_number_union.sample_number_bytes[1];
+	//  g_spi_bytes[6] = g_sample_number_union.sample_number_bytes[2];
+	//  g_spi_bytes[7] = g_sample_number_union.sample_number_bytes[3];
+	//  g_sample_number_union.sample_number++;
+
+	  uint64_t time_us = micros();
+	  g_spi_bytes[4] = (time_us >> 0) & 0x000000FF;
+	  g_spi_bytes[5] = (time_us >> 8) & 0x000000FF;
+	  g_spi_bytes[6] = (time_us >> 16) & 0x000000FF;
+	  g_spi_bytes[7] = (time_us >> 24) & 0x000000FF;
+
+	  // Prepare the DMA SPI Transfer
+	  g_eeg_spi_transfer.txData   = NULL;
+	  g_eeg_spi_transfer.dataSize = ads->num_spi_bytes;
+	  g_eeg_spi_transfer.rxData   = g_spi_bytes + TIMESTAMP_SIZE_IN_BYTES + SAMPLE_NUMBER_SIZE_IN_BYTES;
+	  g_eeg_spi_transfer.configFlags |= kSPI_FrameAssert;
+}
+
 
 #if (defined(USE_EEG_INTERRUPT_INITIATED_DMA) && (USE_EEG_INTERRUPT_INITIATED_DMA > 0U))
 
 void eeg_drdy_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status){
-  ads129x *ads = &(g_eeg_reader_context.ads);
-
-//  g_timestamp_union.timestamp = xTaskGetTickCountFromISR() * portTICK_PERIOD_MS;
-//  g_spi_bytes[0] = g_timestamp_union.timestamp_bytes[0];
-//  g_spi_bytes[1] = g_timestamp_union.timestamp_bytes[1];
-//  g_spi_bytes[2] = g_timestamp_union.timestamp_bytes[2];
-//  g_spi_bytes[3] = g_timestamp_union.timestamp_bytes[3];
-  g_spi_bytes[4] = g_sample_number_union.sample_number_bytes[0];
-  g_spi_bytes[5] = g_sample_number_union.sample_number_bytes[1];
-  g_spi_bytes[6] = g_sample_number_union.sample_number_bytes[2];
-  g_spi_bytes[7] = g_sample_number_union.sample_number_bytes[3];
-  g_sample_number_union.sample_number++;
-
-  // Prepare the DMA SPI Transfer
-  g_eeg_spi_transfer.txData   = NULL;
-  g_eeg_spi_transfer.dataSize = ads->num_spi_bytes;
-  g_eeg_spi_transfer.rxData   = g_spi_bytes + TIMESTAMP_SIZE_IN_BYTES + SAMPLE_NUMBER_SIZE_IN_BYTES;
-  g_eeg_spi_transfer.configFlags |= kSPI_FrameAssert;
+  eeg_prepare_spi_transfer();
 
   // NOTE: g_eeg_spi_transfer must have already been init'd.
   // We can do that in task_init() because the values never change.
@@ -546,7 +569,11 @@ void eeg_dma_rx_complete_isr(SPI_Type *base, spi_dma_handle_t *handle, status_t 
   TRACEALYZER_ISR_EEG_BEGIN( EEG_DRDY_PINT_ISR_TRACE );
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-  arrange_and_send_eeg_channels_from_isr(&xHigherPriorityTaskWoken);
+//  if(status == kStatus_SPI_Idle){
+    arrange_and_send_eeg_channels_from_isr(&xHigherPriorityTaskWoken);
+//  }else{
+//    debug_uart_puts((char*)"missed eeg_dma_rx_complete_isr");
+//  }
 
   portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
   TRACEALYZER_ISR_EEG_END( xHigherPriorityTaskWoken );
@@ -569,31 +596,7 @@ void eeg_drdy_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status)
 }
 
 static void handle_eeg_drdy_pint_isr(){
-  ads129x *ads = &(g_eeg_reader_context.ads);
-
-//  g_timestamp_union.timestamp = xTaskGetTickCountFromISR() * portTICK_PERIOD_MS;
-//  g_spi_bytes[0] = g_timestamp_union.timestamp_bytes[0];
-//  g_spi_bytes[1] = g_timestamp_union.timestamp_bytes[1];
-//  g_spi_bytes[2] = g_timestamp_union.timestamp_bytes[2];
-//  g_spi_bytes[3] = g_timestamp_union.timestamp_bytes[3];
-
-//  g_spi_bytes[4] = g_sample_number_union.sample_number_bytes[0];
-//  g_spi_bytes[5] = g_sample_number_union.sample_number_bytes[1];
-//  g_spi_bytes[6] = g_sample_number_union.sample_number_bytes[2];
-//  g_spi_bytes[7] = g_sample_number_union.sample_number_bytes[3];
-//  g_sample_number_union.sample_number++;
-
-  uint64_t time_us = micros();
-  g_spi_bytes[4] = (time_us >> 0) & 0x000000FF;
-  g_spi_bytes[5] = (time_us >> 8) & 0x000000FF;
-  g_spi_bytes[6] = (time_us >> 16) & 0x000000FF;
-  g_spi_bytes[7] = (time_us >> 24) & 0x000000FF;
-
-  // Prepare the DMA SPI Transfer
-  g_eeg_spi_transfer.txData   = NULL;
-  g_eeg_spi_transfer.dataSize = ads->num_spi_bytes;
-  g_eeg_spi_transfer.rxData   = g_spi_bytes + TIMESTAMP_SIZE_IN_BYTES + SAMPLE_NUMBER_SIZE_IN_BYTES;
-  g_eeg_spi_transfer.configFlags |= kSPI_FrameAssert;
+  eeg_prepare_spi_transfer();
 
   // NOTE: g_eeg_spi_transfer must have already been init'd.
   // We can do that in task_init() because the values never change.
@@ -626,13 +629,23 @@ void eeg_dma_rx_complete_isr(SPI_Type *base, spi_dma_handle_t *handle, status_t 
 #endif // (defined(USE_EEG_INTERRUPT_INITIATED_DMA) && (USE_EEG_INTERRUPT_INITIATED_DMA > 0U))
 
 static void arrange_and_send_eeg_channels_from_isr(BaseType_t *pxHigherPriorityTaskWoken){
+	if(xPortIsInsideInterrupt()){
+		debug_uart_puts("eeg BB");
+	}
+
   BaseType_t xHigherPriorityTaskWoken1 = pdFALSE;
   BaseType_t xHigherPriorityTaskWoken2 = pdFALSE;
   BaseType_t xHigherPriorityTaskWoken3 = pdFALSE;
+  BaseType_t xHigherPriorityTaskWoken4 = pdFALSE;
   uint32_t eeg_sample_num = 0;
 
   // decode
+#if (defined(ENABLE_EEG_PROCESSOR_TASK) && (ENABLE_EEG_PROCESSOR_TASK > 0U))
   uint8_t* buffer = eeg_processor_send_eeg_data_open_from_isr(EEG_MSG_LEN, &xHigherPriorityTaskWoken1);
+#else
+  static uint8_t buffer_array[EEG_MSG_LEN] = {0} ;
+  static uint8_t* buffer = buffer_array;
+#endif
   if(buffer != NULL){
     size_t src_offset = 0;
     size_t dst_offset = 0;
@@ -667,7 +680,14 @@ static void arrange_and_send_eeg_channels_from_isr(BaseType_t *pxHigherPriorityT
     dst_offset += 3;
 #endif
 
+#if (defined(ENABLE_EEG_PROCESSOR_TASK) && (ENABLE_EEG_PROCESSOR_TASK > 0U))
     eeg_processor_send_eeg_data_close_from_isr( buffer , EEG_MSG_LEN , &xHigherPriorityTaskWoken2 );
+#else
+    eeg_reader_event_t event = {.type = EEG_READER_EVENT_EEG_SAMPLE};
+    memcpy(event.data.eeg_buffer,buffer,EEG_MSG_LEN);
+//    xQueueSendFromISR(g_event_queue, &event, &xHigherPriorityTaskWoken3);
+    debug_uart_puts("eeg AA");
+#endif
   }
 
   // Send skin temperature
@@ -690,16 +710,27 @@ static void arrange_and_send_eeg_channels_from_isr(BaseType_t *pxHigherPriorityT
     event.data.skin_temp.temp_sample_number = temp_sample_num++; // TODO: increment this value
     memcpy(&(event.data.skin_temp.temp[0]), temp_bytes, 3);
 
-    xQueueSendFromISR(g_event_queue, &event, &xHigherPriorityTaskWoken3);
+//    xQueueSendFromISR(g_event_queue, &event, &xHigherPriorityTaskWoken4);
   }
 #endif
 
-  *pxHigherPriorityTaskWoken = xHigherPriorityTaskWoken1 || xHigherPriorityTaskWoken2 || xHigherPriorityTaskWoken3;
+  *pxHigherPriorityTaskWoken = xHigherPriorityTaskWoken1 || xHigherPriorityTaskWoken2 || xHigherPriorityTaskWoken3 || xHigherPriorityTaskWoken4;
 }
 
 void handle_skin_temp_sample(eeg_reader_event_t *event) {
   data_log_skin_temp(event->data.skin_temp.temp_sample_number, event->data.skin_temp.temp);
 }
+
+#if (defined(ENABLE_EEG_PROCESSOR_TASK) && (ENABLE_EEG_PROCESSOR_TASK > 0U))
+void handle_eeg_sample(eeg_reader_event_t *event) {}
+#else
+void handle_eeg_sample(eeg_reader_event_t *event) {
+  ads129x_frontal_sample f_sample;
+  ads_decode_frontal_sample(event->data.eeg_buffer, EEG_MSG_LEN, &f_sample);
+  data_log_eeg( &f_sample );
+}
+#endif
+
 
 #else
 
