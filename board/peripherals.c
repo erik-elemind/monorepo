@@ -69,8 +69,6 @@ instance:
   - fsl_dma:
     - dma_table:
       - 0: []
-      - 1: []
-      - 2: []
     - dma_channels: []
     - init_interrupt: 'true'
     - dma_interrupt:
@@ -157,6 +155,7 @@ instance:
       - 11: []
       - 12: []
       - 13: []
+      - 14: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -499,12 +498,20 @@ static void FC0_BLE_UART_init(void) {
 instance:
 - name: 'FC1_EEG_SPI'
 - type: 'flexcomm_spi'
-- mode: 'dma'
+- mode: 'SPI_Interrupt'
 - custom_name_enabled: 'true'
 - type_id: 'flexcomm_spi_481dadba00035f986f31ed9ac95af181'
 - functional_group: 'BOARD_InitPeripherals'
 - peripheral: 'FLEXCOMM1'
 - config_sets:
+  - interrupt:
+    - interrupt_sel: 'kSPI_RxLvlIrq kSPI_TxLvlIrq'
+    - interrupt:
+      - IRQn: 'FLEXCOMM1_IRQn'
+      - enable_interrrupt: 'enabled'
+      - enable_priority: 'true'
+      - priority: '2'
+      - enable_custom_name: 'false'
   - fsl_spi:
     - spi_mode: 'kSPI_Master'
     - clockSource: 'FXCOMFunctionClock'
@@ -526,25 +533,6 @@ instance:
         - postDelay: '5'
         - frameDelay: '0'
         - transferDelay: '0'
-  - dmaCfg:
-    - dma_channels:
-      - enable_rx_dma_channel: 'true'
-      - dma_rx_channel:
-        - DMA_source: 'kDma0RequestFlexcomm1Rx'
-        - init_channel_priority: 'true'
-        - dma_priority: 'kDMA_ChannelPriority3'
-        - enable_custom_name: 'false'
-      - enable_tx_dma_channel: 'true'
-      - dma_tx_channel:
-        - DMA_source: 'kDma0RequestFlexcomm1Tx'
-        - init_channel_priority: 'true'
-        - dma_priority: 'kDMA_ChannelPriority4'
-        - enable_custom_name: 'false'
-    - spi_dma_handle:
-      - enable_custom_name: 'false'
-      - init_callback: 'true'
-      - callback_fcn: 'eeg_dma_rx_complete_isr'
-      - user_data: ''
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 const spi_master_config_t FC1_EEG_SPI_config = {
@@ -566,27 +554,16 @@ const spi_master_config_t FC1_EEG_SPI_config = {
     .transferDelay = 0U
   }
 };
-dma_handle_t FC1_EEG_SPI_RX_Handle;
-dma_handle_t FC1_EEG_SPI_TX_Handle;
-spi_dma_handle_t FC1_EEG_SPI_DMA_Handle;
 
 static void FC1_EEG_SPI_init(void) {
   /* Initialization function */
   SPI_MasterInit(FC1_EEG_SPI_PERIPHERAL, &FC1_EEG_SPI_config, FC1_EEG_SPI_CLOCK_SOURCE);
-  /* Enable the DMA 2 channel in the DMA */
-  DMA_EnableChannel(FC1_EEG_SPI_RX_DMA_BASEADDR, FC1_EEG_SPI_RX_DMA_CHANNEL);
-  /* Set the DMA 2 channel priority */
-  DMA_SetChannelPriority(FC1_EEG_SPI_RX_DMA_BASEADDR, FC1_EEG_SPI_RX_DMA_CHANNEL, kDMA_ChannelPriority3);
-  /* Create the DMA FC1_EEG_SPI_RX_Handle handle */
-  DMA_CreateHandle(&FC1_EEG_SPI_RX_Handle, FC1_EEG_SPI_RX_DMA_BASEADDR, FC1_EEG_SPI_RX_DMA_CHANNEL);
-  /* Enable the DMA 3 channel in the DMA */
-  DMA_EnableChannel(FC1_EEG_SPI_TX_DMA_BASEADDR, FC1_EEG_SPI_TX_DMA_CHANNEL);
-  /* Set the DMA 3 channel priority */
-  DMA_SetChannelPriority(FC1_EEG_SPI_TX_DMA_BASEADDR, FC1_EEG_SPI_TX_DMA_CHANNEL, kDMA_ChannelPriority4);
-  /* Create the DMA FC1_EEG_SPI_TX_Handle handle */
-  DMA_CreateHandle(&FC1_EEG_SPI_TX_Handle, FC1_EEG_SPI_TX_DMA_BASEADDR, FC1_EEG_SPI_TX_DMA_CHANNEL);
-  /* Create the SPI DMA handle */
-  SPI_MasterTransferCreateHandleDMA(FC1_EEG_SPI_PERIPHERAL, &FC1_EEG_SPI_DMA_Handle, eeg_dma_rx_complete_isr, NULL, &FC1_EEG_SPI_TX_Handle, &FC1_EEG_SPI_RX_Handle);
+  /* Enable interrupts */
+  SPI_EnableInterrupts(FC1_EEG_SPI_PERIPHERAL, (kSPI_RxLvlIrq | kSPI_TxLvlIrq));
+  /* Interrupt vector FLEXCOMM1_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(FC1_EEG_SPI_FLEXCOMM_IRQN, FC1_EEG_SPI_FLEXCOMM_IRQ_PRIORITY);
+  /* Enable interrupt FLEXCOMM1_IRQn request in the NVIC. */
+  EnableIRQ(FC1_EEG_SPI_FLEXCOMM_IRQN);
 }
 
 /***********************************************************************************************************************

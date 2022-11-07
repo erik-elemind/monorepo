@@ -18,7 +18,6 @@
 #include "fsl_clock.h"
 #include "fsl_pint.h"
 #include "fsl_spi.h"
-#include "fsl_spi_dma.h"
 #include "fsl_sctimer.h"
 #include "fsl_i2s.h"
 #include "fsl_i2s_dma.h"
@@ -137,14 +136,12 @@ extern "C" {
 #define FC1_EEG_SPI_PERIPHERAL ((SPI_Type *)FLEXCOMM1)
 /* Definition of the clock source frequency */
 #define FC1_EEG_SPI_CLOCK_SOURCE 16000000UL
-/* Selected DMA channel number. */
-#define FC1_EEG_SPI_RX_DMA_CHANNEL 2
-/* Used DMA device. */
-#define FC1_EEG_SPI_RX_DMA_BASEADDR DMA0
-/* Selected DMA channel number. */
-#define FC1_EEG_SPI_TX_DMA_CHANNEL 3
-/* Used DMA device. */
-#define FC1_EEG_SPI_TX_DMA_BASEADDR DMA0
+/* FC1_EEG_SPI interrupt vector ID (number). */
+#define FC1_EEG_SPI_FLEXCOMM_IRQN FLEXCOMM1_IRQn
+/* FC1_EEG_SPI interrupt vector priority. */
+#define FC1_EEG_SPI_FLEXCOMM_IRQ_PRIORITY 2
+/* FC1_EEG_SPI interrupt handler identifier. */
+#define FC1_EEG_SPI_FLEXCOMM_IRQHANDLER FLEXCOMM1_IRQHandler
 /* BOARD_InitPeripherals defines for SCT0 */
 /* Definition of peripheral ID */
 #define SCT0_PERIPHERAL SCT0
@@ -192,9 +189,6 @@ extern usart_rtos_handle_t FC0_BLE_UART_rtos_handle;
 extern usart_handle_t FC0_BLE_UART_usart_handle;
 extern struct rtos_usart_config FC0_BLE_UART_rtos_config;
 extern const spi_master_config_t FC1_EEG_SPI_config;
-extern dma_handle_t FC1_EEG_SPI_RX_Handle;
-extern dma_handle_t FC1_EEG_SPI_TX_Handle;
-extern spi_dma_handle_t FC1_EEG_SPI_DMA_Handle;
 extern const sctimer_config_t SCT0_initConfig;
 extern const sctimer_pwm_signal_param_t SCT0_pwmSignalsConfig[3];
 extern uint32_t SCT0_pwmEvent[3];
@@ -225,8 +219,6 @@ extern void user_button2_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 extern void eeg_drdy_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 /* INT_7 callback function for the PINT component */
 extern void power_button_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
-/* SPI DMA callback function for the FC1_EEG_SPI component (init. function BOARD_InitPeripherals)*/
-extern void eeg_dma_rx_complete_isr(SPI_Type *,spi_dma_handle_t *,status_t ,void *);
 /* FLEXSPI DMA callback function for the NAND_FLEXSPI component (init. function BOARD_InitPeripherals)*/
 extern void nand_flexspi_isr(FLEXSPI_Type *, flexspi_dma_handle_t *, status_t, void *);
 

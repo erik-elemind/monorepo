@@ -31,6 +31,8 @@
 #include "skin_temp_reader.h"
 
 #include "data_log.h"
+#include "micro_clock.h"
+#include "loglevels.h"
 
 
 #if (defined(ENABLE_EEG_READER_TASK) && (ENABLE_EEG_READER_TASK > 0U))
@@ -119,12 +121,9 @@ static void handle_event(eeg_reader_event_t *event);
 
 static void arrange_and_send_eeg_channels_from_isr(BaseType_t *pxHigherPriorityTaskWoken);
 
-#if (defined(USE_EEG_INTERRUPT_INITIATED_DMA) && (USE_EEG_INTERRUPT_INITIATED_DMA > 0U))
-#else
 static spi_master_handle_t g_spi_handle;
 static void eeg_spi_rx_complete_isr(SPI_Type *base, spi_master_handle_t *handle, status_t status, void *userData);
 static void handle_eeg_drdy_pint_isr();
-#endif
 static void handle_skin_temp_sample(eeg_reader_event_t *event);
 static void handle_eeg_sample(eeg_reader_event_t *event);
 
@@ -323,9 +322,9 @@ handle_state_standby(eeg_reader_event_t *event)
   }
 }
 
-static void stop_spi_dma(){
+static void stop_spi_transaction(){
   // Disable eeg_drdy_pint_isr callback
-#if defined(VARIANT_FF2) || defined(VARIANT_FF3) 
+#if defined(VARIANT_FF2) || defined(VARIANT_FF3)
   PINT_DisableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt4);
 #elif defined(VARIANT_FF4)
   PINT_DisableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt0);
@@ -334,9 +333,9 @@ static void stop_spi_dma(){
   vTaskDelay(pdMS_TO_TICKS(8)); // delay twice the period of the 250Hz sampling rate.
 }
 
-static void start_spi_dma(){
+static void start_spi_transaction(){
   // Enable eeg_drdy_pint_isr callback
-#if defined(VARIANT_FF2) || defined(VARIANT_FF3) 
+#if defined(VARIANT_FF2) || defined(VARIANT_FF3)
 	PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt4);
 #elif defined(VARIANT_FF4)
 	PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt0);
@@ -350,7 +349,7 @@ handle_state_sampling(eeg_reader_event_t *event)
   switch (event->type) {
     case EEG_READER_EVENT_ENTER_STATE:
       // Stop continuous sampling mode of ADS129x.
-      stop_spi_dma();
+      stop_spi_transaction();
       ads_sdatac_command( &(g_eeg_reader_context.ads) );
 
       // reset sample number
@@ -363,12 +362,12 @@ handle_state_sampling(eeg_reader_event_t *event)
 
       // Start continuous sampling mode of ADS129x.
       ads_rdatac_command( &(g_eeg_reader_context.ads) );
-      start_spi_dma();
+      start_spi_transaction();
       break;
 
     case EEG_READER_EVENT_POWER_OFF:
       // Stop continuous sampling mode of ADS129x.
-      stop_spi_dma();
+      stop_spi_transaction();
       ads_sdatac_command( &(g_eeg_reader_context.ads) );
 
       set_state(EEG_READER_STATE_OFF);
@@ -376,7 +375,7 @@ handle_state_sampling(eeg_reader_event_t *event)
 
     case EEG_READER_EVENT_STOP:
       // Stop continuous sampling mode of ADS129x.
-      stop_spi_dma();
+      stop_spi_transaction();
       ads_sdatac_command( &(g_eeg_reader_context.ads) );
 
       set_state(EEG_READER_STATE_STANDBY);
@@ -385,7 +384,7 @@ handle_state_sampling(eeg_reader_event_t *event)
 #if 0
     case EEG_READER_EVENT_SET_ADS_GAIN:
       // Stop continuous sampling mode of ADS129x.
-      stop_spi_dma();
+      stop_spi_transaction();
       ads_sdatac_command( &(g_eeg_reader_context.ads) );
 
       // set gain
@@ -395,7 +394,7 @@ handle_state_sampling(eeg_reader_event_t *event)
 
       // Resume continuous sampling mode of ADS1298
       ads_rdatac_command( &(g_eeg_reader_context.ads) );
-      start_spi_dma();
+      start_spi_transaction();
       break;
 #endif
 
@@ -411,12 +410,9 @@ handle_event(eeg_reader_event_t *event)
 {
   // handle stateless events
   switch (event->type) {
-#if (defined(USE_EEG_INTERRUPT_INITIATED_DMA) && (USE_EEG_INTERRUPT_INITIATED_DMA > 0U))
-#else
   case EEG_READER_EVENT_DRDY:
     handle_eeg_drdy_pint_isr();
     return;
-#endif
 
   case EEG_READER_EVENT_TEMP_SAMPLE:
     handle_skin_temp_sample(event);
@@ -424,6 +420,7 @@ handle_event(eeg_reader_event_t *event)
 
   case EEG_READER_EVENT_EEG_SAMPLE:
 	 handle_eeg_sample(event);
+	 return;
 
   default:
     break;
@@ -458,8 +455,6 @@ eeg_reader_pretask_init(void)
   g_event_queue = xQueueCreateStatic(EEG_READER_EVENT_QUEUE_SIZE,sizeof(eeg_reader_event_t),g_event_queue_array,&g_event_queue_struct);
   vQueueAddToRegistry(g_event_queue, "eeg_reader_event_queue");
 
-#if (defined(USE_EEG_INTERRUPT_INITIATED_DMA) && (USE_EEG_INTERRUPT_INITIATED_DMA > 0U))
-#else
   status_t status = SPI_MasterTransferCreateHandle(SPI_EEG_BASE,
       &g_spi_handle,
       eeg_spi_rx_complete_isr,
@@ -467,7 +462,6 @@ eeg_reader_pretask_init(void)
   if(status != kStatus_Success){
     LOGV(TAG,"Failed to initialize SPIMasterTransferHandle");
   }
-#endif
 }
 
 
@@ -515,73 +509,6 @@ eeg_reader_task(void *ignored)
   }
 }
 
-static void eeg_prepare_spi_transfer(){
-	  ads129x *ads = &(g_eeg_reader_context.ads);
-
-	//  g_timestamp_union.timestamp = xTaskGetTickCountFromISR() * portTICK_PERIOD_MS;
-	//  g_spi_bytes[0] = g_timestamp_union.timestamp_bytes[0];
-	//  g_spi_bytes[1] = g_timestamp_union.timestamp_bytes[1];
-	//  g_spi_bytes[2] = g_timestamp_union.timestamp_bytes[2];
-	//  g_spi_bytes[3] = g_timestamp_union.timestamp_bytes[3];
-
-	//  g_spi_bytes[4] = g_sample_number_union.sample_number_bytes[0];
-	//  g_spi_bytes[5] = g_sample_number_union.sample_number_bytes[1];
-	//  g_spi_bytes[6] = g_sample_number_union.sample_number_bytes[2];
-	//  g_spi_bytes[7] = g_sample_number_union.sample_number_bytes[3];
-	//  g_sample_number_union.sample_number++;
-
-	  uint64_t time_us = micros();
-	  g_spi_bytes[4] = (time_us >> 0) & 0x000000FF;
-	  g_spi_bytes[5] = (time_us >> 8) & 0x000000FF;
-	  g_spi_bytes[6] = (time_us >> 16) & 0x000000FF;
-	  g_spi_bytes[7] = (time_us >> 24) & 0x000000FF;
-
-	  // Prepare the DMA SPI Transfer
-	  g_eeg_spi_transfer.txData   = NULL;
-	  g_eeg_spi_transfer.dataSize = ads->num_spi_bytes;
-	  g_eeg_spi_transfer.rxData   = g_spi_bytes + TIMESTAMP_SIZE_IN_BYTES + SAMPLE_NUMBER_SIZE_IN_BYTES;
-	  g_eeg_spi_transfer.configFlags |= kSPI_FrameAssert;
-}
-
-
-#if (defined(USE_EEG_INTERRUPT_INITIATED_DMA) && (USE_EEG_INTERRUPT_INITIATED_DMA > 0U))
-
-void eeg_drdy_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status){
-  eeg_prepare_spi_transfer();
-
-  // NOTE: g_eeg_spi_transfer must have already been init'd.
-  // We can do that in task_init() because the values never change.
-//  taskENTER_CRITICAL(); // Calling CRITICAL section in ISR is okay on Cortex M processors
-  portDISABLE_INTERRUPTS();
-  status_t status = SPI_MasterTransferDMA(SPI_EEG_BASE, &SPI_EEG_DMA_HANDLE, &g_eeg_spi_transfer);
-  portENABLE_INTERRUPTS();
-//  taskEXIT_CRITICAL(); // Calling CRITICAL section in ISR is okay on Cortex M processors
-  if(status == kStatus_InvalidArgument){
-//    LOGV(TAG,"Failed to initiate eeg dma: kStatus_InvalidArgument.");
-  }else if(status ==  kStatus_SPI_Busy){
-//    LOGV(TAG,"Failed to initiate eeg dma: kStatus_SPI_Busy.");
-  }
-}
-
-
-void eeg_dma_rx_complete_isr(SPI_Type *base, spi_dma_handle_t *handle, status_t status, void *userData)
-{
-  TRACEALYZER_ISR_EEG_BEGIN( EEG_DRDY_PINT_ISR_TRACE );
-  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-//  if(status == kStatus_SPI_Idle){
-    arrange_and_send_eeg_channels_from_isr(&xHigherPriorityTaskWoken);
-//  }else{
-//    debug_uart_puts((char*)"missed eeg_dma_rx_complete_isr");
-//  }
-
-  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-  TRACEALYZER_ISR_EEG_END( xHigherPriorityTaskWoken );
-}
-
-
-#else // (defined(USE_EEG_INTERRUPT_INITIATED_DMA) && (USE_EEG_INTERRUPT_INITIATED_DMA > 0U))
-
 // Immediately kick off a DMA read of the SPI bytes:
 void eeg_drdy_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status)
 {
@@ -596,15 +523,41 @@ void eeg_drdy_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status)
 }
 
 static void handle_eeg_drdy_pint_isr(){
-  eeg_prepare_spi_transfer();
+  ads129x *ads = &(g_eeg_reader_context.ads);
+
+  //  g_timestamp_union.timestamp = xTaskGetTickCountFromISR() * portTICK_PERIOD_MS;
+  //  g_spi_bytes[0] = g_timestamp_union.timestamp_bytes[0];
+  //  g_spi_bytes[1] = g_timestamp_union.timestamp_bytes[1];
+  //  g_spi_bytes[2] = g_timestamp_union.timestamp_bytes[2];
+  //  g_spi_bytes[3] = g_timestamp_union.timestamp_bytes[3];
+
+  //  g_spi_bytes[4] = g_sample_number_union.sample_number_bytes[0];
+  //  g_spi_bytes[5] = g_sample_number_union.sample_number_bytes[1];
+  //  g_spi_bytes[6] = g_sample_number_union.sample_number_bytes[2];
+  //  g_spi_bytes[7] = g_sample_number_union.sample_number_bytes[3];
+  //  g_sample_number_union.sample_number++;
+
+  uint64_t time_us = micros();
+  g_spi_bytes[4] = (time_us >> 0) & 0x000000FF;
+  g_spi_bytes[5] = (time_us >> 8) & 0x000000FF;
+  g_spi_bytes[6] = (time_us >> 16) & 0x000000FF;
+  g_spi_bytes[7] = (time_us >> 24) & 0x000000FF;
+
+  // Prepare the DMA SPI Transfer
+  g_eeg_spi_transfer.txData   = NULL;
+  g_eeg_spi_transfer.dataSize = ads->num_spi_bytes;
+  g_eeg_spi_transfer.rxData   = g_spi_bytes + TIMESTAMP_SIZE_IN_BYTES + SAMPLE_NUMBER_SIZE_IN_BYTES;
+  g_eeg_spi_transfer.configFlags |= kSPI_FrameAssert;
 
   // NOTE: g_eeg_spi_transfer must have already been init'd.
   // We can do that in task_init() because the values never change.
   status_t status = SPI_MasterTransferNonBlocking(SPI_EEG_BASE, &g_spi_handle, &g_eeg_spi_transfer);
   if(status == kStatus_InvalidArgument){
-    LOGV(TAG,"Failed to initiate eeg dma: kStatus_InvalidArgument.");
+    //LOGV(TAG,"Failed to initiate eeg spi transaction: kStatus_InvalidArgument.");
+    debug_uart_puts("Failed to initiate eeg spi transaction: kStatus_InvalidArgument.");
   }else if(status ==  kStatus_SPI_Busy){
-    LOGV(TAG,"Failed to initiate eeg dma: kStatus_SPI_Busy.");
+    //LOGV(TAG,"Failed to initiate eeg spi transaction: kStatus_SPI_Busy.");
+    debug_uart_puts("Failed to initiate eeg spi transaction: kStatus_SPI_Busy.");
   }
 }
 
@@ -622,17 +575,7 @@ static void eeg_spi_rx_complete_isr(SPI_Type *base, spi_master_handle_t *handle,
   TRACEALYZER_ISR_EEG_END( xHigherPriorityTaskWoken );
 }
 
-// We still need to provide a stub for this function, as it is referenced in the MCUXpresso config tools.
-void eeg_dma_rx_complete_isr(SPI_Type *base, spi_dma_handle_t *handle, status_t status, void *userData){}
-
-
-#endif // (defined(USE_EEG_INTERRUPT_INITIATED_DMA) && (USE_EEG_INTERRUPT_INITIATED_DMA > 0U))
-
 static void arrange_and_send_eeg_channels_from_isr(BaseType_t *pxHigherPriorityTaskWoken){
-	if(xPortIsInsideInterrupt()){
-		debug_uart_puts("eeg BB");
-	}
-
   BaseType_t xHigherPriorityTaskWoken1 = pdFALSE;
   BaseType_t xHigherPriorityTaskWoken2 = pdFALSE;
   BaseType_t xHigherPriorityTaskWoken3 = pdFALSE;
@@ -643,8 +586,8 @@ static void arrange_and_send_eeg_channels_from_isr(BaseType_t *pxHigherPriorityT
 #if (defined(ENABLE_EEG_PROCESSOR_TASK) && (ENABLE_EEG_PROCESSOR_TASK > 0U))
   uint8_t* buffer = eeg_processor_send_eeg_data_open_from_isr(EEG_MSG_LEN, &xHigherPriorityTaskWoken1);
 #else
-  static uint8_t buffer_array[EEG_MSG_LEN] = {0} ;
-  static uint8_t* buffer = buffer_array;
+  eeg_reader_event_t event = {.type = EEG_READER_EVENT_EEG_SAMPLE};
+  static uint8_t* buffer = event.data.eeg_buffer;
 #endif
   if(buffer != NULL){
     size_t src_offset = 0;
@@ -683,10 +626,7 @@ static void arrange_and_send_eeg_channels_from_isr(BaseType_t *pxHigherPriorityT
 #if (defined(ENABLE_EEG_PROCESSOR_TASK) && (ENABLE_EEG_PROCESSOR_TASK > 0U))
     eeg_processor_send_eeg_data_close_from_isr( buffer , EEG_MSG_LEN , &xHigherPriorityTaskWoken2 );
 #else
-    eeg_reader_event_t event = {.type = EEG_READER_EVENT_EEG_SAMPLE};
-    memcpy(event.data.eeg_buffer,buffer,EEG_MSG_LEN);
-//    xQueueSendFromISR(g_event_queue, &event, &xHigherPriorityTaskWoken3);
-    debug_uart_puts("eeg AA");
+    xQueueSendFromISR(g_event_queue, &event, &xHigherPriorityTaskWoken3);
 #endif
   }
 
@@ -710,7 +650,7 @@ static void arrange_and_send_eeg_channels_from_isr(BaseType_t *pxHigherPriorityT
     event.data.skin_temp.temp_sample_number = temp_sample_num++; // TODO: increment this value
     memcpy(&(event.data.skin_temp.temp[0]), temp_bytes, 3);
 
-//    xQueueSendFromISR(g_event_queue, &event, &xHigherPriorityTaskWoken4);
+    xQueueSendFromISR(g_event_queue, &event, &xHigherPriorityTaskWoken4);
   }
 #endif
 
@@ -744,7 +684,6 @@ void eeg_reader_event_stop(void){}
 void eeg_reader_event_set_gain(uint8_t ads_gain){}
 
 void eeg_drdy_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status){}
-void eeg_dma_rx_complete_isr(SPI_Type *base, spi_dma_handle_t *handle, status_t status, void *userData){}
 
 #endif
 
