@@ -1436,7 +1436,7 @@ void audio_set_mute(bool m){}
 bool audio_get_mute(){return false;}
 void audio_set_volume(uint8_t vol){}
 void audio_set_volume_ble(uint8_t vol){}
-uint8_t audio_get_volume(){return 0;}
+void audio_get_volume(uint8_t* log_volume, uint8_t* lin_volume){*log_volume=0;*lin_volume=0;}
 void audio_set_volume_step(uint8_t step){}
 void audio_volume_up(){}
 void audio_volume_down(){}
@@ -1452,9 +1452,12 @@ void audio_bg_fadein(uint32_t dur_ms){}
 void audio_bg_fadeout(uint32_t dur_ms){}
 void audio_bg_script_volume(float gain){}
 void audio_bg_computed_volume(float gain){}
+void audio_bg_default_volume(){}
 
 void audio_mp3_play(const char* filename, bool loop){}
 void audio_mp3_stop(){}
+void audio_mp3_fadein(uint32_t dur_ms){}
+void audio_mp3_fadeout(uint32_t dur_ms){}
 
 void audio_pink_play(){}
 void audio_pink_stop(){}
