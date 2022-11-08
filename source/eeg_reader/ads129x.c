@@ -288,6 +288,11 @@ static ads_status ads_setup(ads129x* ads)
   // Set to max gain
   ads_set_gain(ads, 12);
 
+#if defined(VARIANT_FF4)
+  // Connect Reference Electrodes - enabling SRB1
+  ads_wreg(0x15, 0b00100000);
+#endif
+
   // Pull the start pin high
   GPIO_PinWrite(EEG_START_GPIO, EEG_START_PORT, EEG_START_PIN, true);
 
@@ -296,6 +301,7 @@ static ads_status ads_setup(ads129x* ads)
 
 void ads_set_gain(ads129x* ads, uint8_t gain) {
   uint8_t gain_reg_val = 0;
+#if defined(VARIANT_FF2) || defined(VARIANT_FF3)
   switch (gain){
   case 1:
     gain_reg_val = ADS1298_GAIN_1X;
@@ -322,6 +328,34 @@ void ads_set_gain(ads129x* ads, uint8_t gain) {
     // ToDo: Do something if gain is not recognized
     return;
   }
+#elif defined(VARIANT_FF4)
+  switch (gain){
+  case 1:
+    gain_reg_val = GAIN_1X;
+    break;
+  case 2:
+    gain_reg_val = GAIN_2X;
+    break;
+  case 4:
+    gain_reg_val = GAIN_4X;
+    break;
+  case 6:
+    gain_reg_val = GAIN_6X;
+    break;
+  case 8:
+    gain_reg_val = GAIN_8X;
+    break;
+  case 12:
+    gain_reg_val = GAIN_12X;
+    break;
+  case 24:
+    gain_reg_val = GAIN_24X;
+    break;
+  default:
+    // ToDo: Do something if gain is not recognized
+    return;
+  }
+#endif
 
 #if defined(VARIANT_FF2)
   // set eeg gain
@@ -333,13 +367,20 @@ void ads_set_gain(ads129x* ads, uint8_t gain) {
   ads_wreg(CH6SET, gain_reg_val);
   ads_wreg(CH7SET, gain_reg_val);
   ads_wreg(CH8SET, gain_reg_val);
-#elif defined(VARIANT_FF3) || defined(VARIANT_FF4)
+#elif defined(VARIANT_FF3)
   // set eeg gain
   ads_wreg(CH1SET, gain_reg_val);
   ads_wreg(CH2SET, gain_reg_val);
   ads_wreg(CH3SET, gain_reg_val);
   // Set gain on skin temp sensor channel to 1.
   ads_wreg(CH4SET, ADS1298_GAIN_1X);
+#elif defined(VARIANT_FF4)
+  // set eeg gain
+  ads_wreg(CH1SET, gain_reg_val);
+  ads_wreg(CH2SET, gain_reg_val);
+  ads_wreg(CH3SET, gain_reg_val);
+  // Set gain on skin temp sensor channel to 1.
+  ads_wreg(CH4SET, GAIN_1X);
 #endif
 
 }
