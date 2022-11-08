@@ -163,8 +163,8 @@
                   <pin peripheral="PINT" signal="PINT, 0" pin_num="G3" pin_signal="PIO0_13/FC1_SSEL3/SCT0_GPI3/SCT0_OUT3/CTIMER0_MAT1/SEC_PIO0_13/ADC0_9">
                      <pin_features>
                         <pin_feature name="identifier" value=""/>
-                        <pin_feature name="pupdena" value="disabled"/>
-                        <pin_feature name="pupdsel" value="pullDown"/>
+                        <pin_feature name="pupdena" value="enabled"/>
+                        <pin_feature name="pupdsel" value="pullUp"/>
                         <pin_feature name="ibena" value="enabled"/>
                      </pin_features>
                   </pin>
@@ -373,6 +373,7 @@
                   <pin peripheral="GPIO" signal="PIO0, 13" pin_num="G3" pin_signal="PIO0_13/FC1_SSEL3/SCT0_GPI3/SCT0_OUT3/CTIMER0_MAT1/SEC_PIO0_13/ADC0_9">
                      <pin_features>
                         <pin_feature name="direction" value="INPUT"/>
+                        <pin_feature name="pupdsel" value="pullUp"/>
                         <pin_feature name="ibena" value="enabled"/>
                      </pin_features>
                   </pin>
@@ -769,16 +770,6 @@
                         <data type="Frequency" unit="Hz">0</data>
                      </feature>
                   </dependency>
-                  <dependency resourceType="SWComponent" resourceId="platform.drivers.flexcomm_spi_dma" description="The fsl_spi_dma driver is missing in the project  (required for the DMA mode)." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="enabled" evaluation="equal">
-                        <data type="Boolean">true</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="SWComponent" resourceId="platform.drivers.flexcomm_spi_dma" description="The compatible version of the fsl_spi_dma driver is not available in the project  (required for the DMA mode)." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="version" evaluation="compatible">
-                        <data type="Version">2.1.0</data>
-                     </feature>
-                  </dependency>
                   <dependency resourceType="ClockOutput" resourceId="System_clock" description="System clock is inactive." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
                      <feature name="frequency" evaluation="greaterThan">
                         <data type="Frequency" unit="Hz">0</data>
@@ -893,6 +884,7 @@
                            <struct name="11"/>
                            <struct name="12"/>
                            <struct name="13"/>
+                           <struct name="14"/>
                         </array>
                         <array name="interrupts"/>
                      </config_set>
@@ -960,8 +952,6 @@
                      <config_set name="fsl_dma">
                         <array name="dma_table">
                            <struct name="0"/>
-                           <struct name="1"/>
-                           <struct name="2"/>
                         </array>
                         <array name="dma_channels"/>
                         <setting name="init_interrupt" value="true"/>
@@ -1082,7 +1072,22 @@
                         </struct>
                      </config_set>
                   </instance>
-                  <instance name="FC1_EEG_SPI" uuid="dd90c17b-9e9e-4331-a77f-0ac39b04ea3b" type="flexcomm_spi" type_id="flexcomm_spi_481dadba00035f986f31ed9ac95af181" mode="dma" peripheral="FLEXCOMM1" enabled="true" comment="" custom_name_enabled="true" editing_lock="false">
+                  <instance name="FC1_EEG_SPI" uuid="dd90c17b-9e9e-4331-a77f-0ac39b04ea3b" type="flexcomm_spi" type_id="flexcomm_spi_481dadba00035f986f31ed9ac95af181" mode="SPI_Interrupt" peripheral="FLEXCOMM1" enabled="true" comment="" custom_name_enabled="true" editing_lock="false">
+                     <config_set name="interrupt">
+                        <set name="interrupt_sel">
+                           <selected>
+                              <id>kSPI_RxLvlIrq</id>
+                              <id>kSPI_TxLvlIrq</id>
+                           </selected>
+                        </set>
+                        <struct name="interrupt">
+                           <setting name="IRQn" value="FLEXCOMM1_IRQn"/>
+                           <setting name="enable_interrrupt" value="enabled"/>
+                           <setting name="enable_priority" value="true"/>
+                           <setting name="priority" value="2"/>
+                           <setting name="enable_custom_name" value="false"/>
+                        </struct>
+                     </config_set>
                      <config_set name="fsl_spi">
                         <setting name="spi_mode" value="kSPI_Master"/>
                         <setting name="clockSource" value="FXCOMFunctionClock"/>
@@ -1107,30 +1112,6 @@
                               <setting name="frameDelay" value="0"/>
                               <setting name="transferDelay" value="0"/>
                            </struct>
-                        </struct>
-                     </config_set>
-                     <config_set name="dmaCfg">
-                        <struct name="dma_channels">
-                           <setting name="enable_rx_dma_channel" value="true"/>
-                           <struct name="dma_rx_channel">
-                              <setting name="DMA_source" value="kDma0RequestFlexcomm1Rx"/>
-                              <setting name="init_channel_priority" value="true"/>
-                              <setting name="dma_priority" value="kDMA_ChannelPriority3"/>
-                              <setting name="enable_custom_name" value="false"/>
-                           </struct>
-                           <setting name="enable_tx_dma_channel" value="true"/>
-                           <struct name="dma_tx_channel">
-                              <setting name="DMA_source" value="kDma0RequestFlexcomm1Tx"/>
-                              <setting name="init_channel_priority" value="true"/>
-                              <setting name="dma_priority" value="kDMA_ChannelPriority4"/>
-                              <setting name="enable_custom_name" value="false"/>
-                           </struct>
-                        </struct>
-                        <struct name="spi_dma_handle">
-                           <setting name="enable_custom_name" value="false"/>
-                           <setting name="init_callback" value="true"/>
-                           <setting name="callback_fcn" value="eeg_dma_rx_complete_isr"/>
-                           <setting name="user_data" value=""/>
                         </struct>
                      </config_set>
                   </instance>

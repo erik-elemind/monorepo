@@ -23,6 +23,9 @@
 
 #include "usb_device_descriptor.h"
 #include "virtual_com.h"
+#include "FreeRTOS.h"
+#include "stream_buffer.h"
+#include "loglevels.h"
 #if (defined(FSL_FEATURE_SOC_SYSMPU_COUNT) && (FSL_FEATURE_SOC_SYSMPU_COUNT > 0U))
 #include "fsl_sysmpu.h"
 #endif /* FSL_FEATURE_SOC_SYSMPU_COUNT */
@@ -37,18 +40,6 @@ extern uint8_t USB_EnterLowpowerMode(void);
 #endif
 #include "fsl_power.h"
 
-#include "FreeRTOS.h"
-#include "stream_buffer.h"
-/*******************************************************************************
- * Definitions
- ******************************************************************************/
-/* Receive buffer size, in bytes. Holds 2 HS or 8 FS packets. */
-#define RECV_STREAM_BUFFER_SIZE (2048+1)
-
-/* Receive buffer trigger level. Since this is for interactive use, we
-   want to trigger on a single byte. */
-#define RECV_STREAM_BUFFER_TRIGGER_LEVEL 1
-
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
@@ -61,22 +52,37 @@ void USB_DeviceTaskFn(void *deviceHandle);
 
 void BOARD_DbgConsole_Deinit(void);
 void BOARD_DbgConsole_Init(void);
+
 usb_status_t USB_DeviceCdcVcomCallback(class_handle_t handle, uint32_t event, void *param);
 usb_status_t USB_DeviceCallback(usb_device_handle handle, uint32_t event, void *param);
 
 /*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+//static const char *TAG = "vcom";  // Logging prefix for this module
+
+/* Receive buffer size, in bytes. Holds 2 HS or 8 FS packets. */
+#define RECV_STREAM_BUFFER_SIZE (2048+1)
+
+/* Receive buffer trigger level. Since this is for interactive use, we
+   want to trigger on a single byte. */
+#define RECV_STREAM_BUFFER_TRIGGER_LEVEL 1
+
+/*******************************************************************************
  * Variables
  ******************************************************************************/
+
 static volatile bool g_sendFinished = 0;
+
 SemaphoreHandle_t xSemaphore = NULL;
 StaticSemaphore_t xMutexBuffer;
 static uint8_t s_recvStreamArray[ RECV_STREAM_BUFFER_SIZE ];
 static StaticStreamBuffer_t s_recvStreamStruct;
 static StreamBufferHandle_t s_recvStreamBuffer = NULL;
 
-
 extern usb_device_endpoint_struct_t g_UsbDeviceCdcVcomDicEndpoints[];
 extern usb_device_class_struct_t g_UsbDeviceCdcVcomConfig;
+
 /* Data structure of virtual com device */
 usb_cdc_vcom_struct_t s_cdcVcom;
 
@@ -107,8 +113,10 @@ USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) static usb_cdc_acm_info_t s_usbC
 /* Data buffer for receiving and sending*/
 USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) static uint8_t s_currRecvBuf[DATA_BUFF_SIZE];
 USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) static uint8_t s_currSendBuf[DATA_BUFF_SIZE];
-volatile static uint32_t s_recvSize = 0;
-volatile static uint32_t s_sendSize = 0;
+volatile static uint32_t s_recvSize    = 0;
+volatile static uint32_t s_sendSize    = 0;
+
+
 
 /* USB device class information */
 static usb_device_class_config_struct_t s_cdcAcmConfig[1] = {{
@@ -130,6 +138,7 @@ static usb_device_class_config_list_struct_t s_cdcAcmConfigList = {
 volatile static uint8_t s_waitForDataReceive = 0;
 volatile static uint8_t s_comOpen            = 0;
 #endif
+
 /*******************************************************************************
  * Code
  ******************************************************************************/
@@ -254,11 +263,8 @@ usb_status_t USB_DeviceCdcVcomCallback(class_handle_t handle, uint32_t event, vo
                 if ((epCbParam->buffer != NULL) || ((epCbParam->buffer == NULL) && (epCbParam->length == 0)))
                 {
                     /* User: add your own code for send complete event */
-                	g_sendFinished = true;
+                    g_sendFinished = true;
 
-                	/* Schedule buffer for next receive event */// ToDo: Remove this?
-                    error = USB_DeviceCdcAcmRecv(handle, USB_CDC_VCOM_BULK_OUT_ENDPOINT, s_currRecvBuf,
-                                                 g_UsbDeviceCdcVcomDicEndpoints[1].maxPacketSize);
 #if defined(FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED) && (FSL_FEATURE_USB_KHCI_KEEP_ALIVE_ENABLED > 0U) && \
     defined(USB_DEVICE_CONFIG_KEEP_ALIVE_MODE) && (USB_DEVICE_CONFIG_KEEP_ALIVE_MODE > 0U) &&             \
     defined(FSL_FEATURE_USB_KHCI_USB_RAM) && (FSL_FEATURE_USB_KHCI_USB_RAM > 0U)
@@ -274,7 +280,7 @@ usb_status_t USB_DeviceCdcVcomCallback(class_handle_t handle, uint32_t event, vo
         break;
         case kUSB_DeviceCdcEventRecvResponse:
         {
-        	BaseType_t higherPriorityTaskWoken = pdFALSE;
+            BaseType_t higherPriorityTaskWoken = pdFALSE;
 
             if ((1U == s_cdcVcom.attach) && (1U == s_cdcVcom.startTransactions))
             {
@@ -302,8 +308,7 @@ usb_status_t USB_DeviceCdcVcomCallback(class_handle_t handle, uint32_t event, vo
                 s_waitForDataReceive = 0;
                 USB0->INTEN |= USB_INTEN_SOFTOKEN_MASK;
 #endif
-                if (0U == s_recvSize)
-                {
+
                     /* Schedule buffer for next receive event */
                     error = USB_DeviceCdcAcmRecv(handle, USB_CDC_VCOM_BULK_OUT_ENDPOINT, s_currRecvBuf,
                                                  g_UsbDeviceCdcVcomDicEndpoints[1].maxPacketSize);
@@ -313,7 +318,6 @@ usb_status_t USB_DeviceCdcVcomCallback(class_handle_t handle, uint32_t event, vo
                     s_waitForDataReceive = 1;
                     USB0->INTEN &= ~USB_INTEN_SOFTOKEN_MASK;
 #endif
-                }
             }
             portYIELD_FROM_ISR(higherPriorityTaskWoken);
         }
@@ -630,6 +634,50 @@ static void CDC_VCOM_BMExitCritical(uint32_t sr)
     EnableGlobalIRQ(sr);
 }
 
+
+/* Initialize virtual serial port. */
+void virtual_com_init_helper(void)
+{
+	    USB_DeviceClockInit();
+#if (defined(FSL_FEATURE_SOC_SYSMPU_COUNT) && (FSL_FEATURE_SOC_SYSMPU_COUNT > 0U))
+    SYSMPU_Enable(SYSMPU, 0);
+#endif /* FSL_FEATURE_SOC_SYSMPU_COUNT */
+
+    s_cdcVcom.speed        = USB_SPEED_HIGH;//USB_SPEED_FULL;
+    s_cdcVcom.attach       = 0;
+    s_cdcVcom.cdcAcmHandle = (class_handle_t)NULL;
+    s_cdcVcom.deviceHandle = NULL;
+
+    if (kStatus_USB_Success != USB_DeviceClassInit(CONTROLLER_ID, &s_cdcAcmConfigList, &s_cdcVcom.deviceHandle))
+    {
+    	usb_echo("USB device init failed\r\n");
+    }
+    else
+    {
+        usb_echo("USB device CDC virtual com demo\r\n");
+        s_cdcVcom.cdcAcmHandle = s_cdcAcmConfigList.config->classHandle;
+    }
+
+    /* Create stream buffer for ISR->read data flow. */
+      s_recvStreamBuffer = xStreamBufferCreateStatic(sizeof(s_recvStreamArray),
+        RECV_STREAM_BUFFER_TRIGGER_LEVEL, s_recvStreamArray, &s_recvStreamStruct );
+      if (s_recvStreamBuffer == NULL) {
+        //LOGE(TAG, "s_recvStreamBuffer creation failed!");
+        return;
+      }
+
+    xSemaphore = xSemaphoreCreateMutexStatic( &xMutexBuffer );
+
+    USB_DeviceIsrEnable();
+  virtual_com_delayed_start();
+}
+
+void virtual_com_delayed_start(){
+      /*Add one delay here to make the DP pull down long enough to allow host to detect the previous disconnection.*/
+    SDK_DelayAtLeastUs(5000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+    USB_DeviceRun(s_cdcVcom.deviceHandle);
+}
+
 /* Write data to virtual serial port. */
 // buf - a pointer to s_currSendBuf
 // count - the number of bytes to send from buf
@@ -678,51 +726,12 @@ static inline size_t min(size_t a, size_t b){
   return a<b ? a : b;
 }
 
-/*!
- * @brief Application initialization function.
- *
- * This function initializes the application.
- *
- * @return None.
+/*
+ * This is an experimental conditional that makes calls to virtual_com_write aggregate up to (DATA_BUFF_SIZE-1)
+ * number of bytes before sending a packet over USB.
+ * The size DATA_BUFF_SIZE-1 is used because it prevents a currently unhandled condition of sending exactly DATA_BUFF_SIZE bytes.
  */
-void virtual_com_init(void)
-{
-    USB_DeviceClockInit();
-#if (defined(FSL_FEATURE_SOC_SYSMPU_COUNT) && (FSL_FEATURE_SOC_SYSMPU_COUNT > 0U))
-    SYSMPU_Enable(SYSMPU, 0);
-#endif /* FSL_FEATURE_SOC_SYSMPU_COUNT */
-
-    s_cdcVcom.speed        = USB_SPEED_FULL;
-    s_cdcVcom.attach       = 0;
-    s_cdcVcom.cdcAcmHandle = (class_handle_t)NULL;
-    s_cdcVcom.deviceHandle = NULL;
-
-    if (kStatus_USB_Success != USB_DeviceClassInit(CONTROLLER_ID, &s_cdcAcmConfigList, &s_cdcVcom.deviceHandle))
-    {
-    	usb_echo("USB device init failed\r\n");
-    }
-    else
-    {
-        usb_echo("USB device CDC virtual com demo\r\n");
-        s_cdcVcom.cdcAcmHandle = s_cdcAcmConfigList.config->classHandle;
-    }
-
-    /* Create stream buffer for ISR->read data flow. */
-      s_recvStreamBuffer = xStreamBufferCreateStatic(sizeof(s_recvStreamArray),
-        RECV_STREAM_BUFFER_TRIGGER_LEVEL, s_recvStreamArray, &s_recvStreamStruct );
-      if (s_recvStreamBuffer == NULL) {
-        //LOGE(TAG, "s_recvStreamBuffer creation failed!");
-        return;
-      }
-
-    xSemaphore = xSemaphoreCreateMutexStatic( &xMutexBuffer );
-
-    USB_DeviceIsrEnable();
-
-    /*Add one delay here to make the DP pull down long enough to allow host to detect the previous disconnection.*/
-    SDK_DelayAtLeastUs(5000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
-    USB_DeviceRun(s_cdcVcom.deviceHandle);
-}
+#define VIRTUAL_COM_AGGREGATE_WRITES (0U)
 
 /*
  * We use 1 less than the DATA_BUFF_SIZE, because when we use the full DATA_BUFF_SIZE, the USB hangs.
@@ -730,9 +739,12 @@ void virtual_com_init(void)
 #define MAX_SEND_SIZE (DATA_BUFF_SIZE-1)
 static size_t s_currSendBuf_offset = 0;
 
-ssize_t virtual_com_write(char* buf, size_t size)
+/* Write data to virtual serial port. */
+ssize_t
+virtual_com_write(char* buf, size_t size)
 {
-	  size_t buf_offset = 0;
+  size_t buf_offset = 0;
+
 
 	  /*
 	   * We don't wait to take the semaphore. In the case virtual_com_write_direct is hung,
@@ -768,7 +780,28 @@ ssize_t virtual_com_write(char* buf, size_t size)
 	  return buf_offset; // TODO: update this value
 }
 
-ssize_t virtual_com_read(char* buf, size_t len)
+// TODO: call flush somewhere.
+void
+virtual_com_flush(){
+#if (defined(VIRTUAL_COM_AGGREGATE_WRITES) && (VIRTUAL_COM_AGGREGATE_WRITES > 0U))
+  if (xSemaphoreTake(xSemaphore, portMAX_DELAY) == pdPASS){
+    virtual_com_write_direct(s_currSendBuf, s_currSendBuf_offset);
+    s_currSendBuf_offset = 0;
+    xSemaphoreGive(xSemaphore);
+  }
+#endif
+}
+
+/* Initialize virtual serial port. */
+void virtual_com_init(void)
+{
+	virtual_com_init_helper();
+}
+
+
+/* Read data from virtual serial port. */
+ssize_t
+virtual_com_read(char* buf, size_t len)
 {
 	USB_DeviceCdcAcmRecv(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_OUT_ENDPOINT, s_currRecvBuf, g_UsbDeviceCdcVcomDicEndpoints[1].maxPacketSize);
 	  return xStreamBufferReceive(s_recvStreamBuffer, buf, len, portMAX_DELAY);
@@ -778,3 +811,4 @@ ssize_t virtual_com_read(char* buf, size_t len)
 bool virtual_com_attached(){
   return s_cdcVcom.attach;
 }
+

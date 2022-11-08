@@ -111,10 +111,10 @@ extern void BOARD_ToggleDebugLED(void);
 #define configUSE_MALLOC_FAILED_HOOK            1
 #define configUSE_DAEMON_TASK_STARTUP_HOOK      0
 
-#include "micro_clock.h"
 /* Run time and task stats gathering related definitions. */
 #define configGENERATE_RUN_TIME_STATS           0
 #if 1
+#include "micro_clock.h"
 // Choose to use a more precise clock for runtime stats
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS  init_micro_clock
 #define portGET_RUN_TIME_COUNTER_VALUE          micros
@@ -211,8 +211,12 @@ extern void BOARD_ToggleDebugLED(void);
 /* __BVIC_PRIO_BITS will be specified when CMSIS is being used. */
 #define configPRIO_BITS __NVIC_PRIO_BITS
 #else
-#define configPRIO_BITS 3 /* 8 priority levels */
+#define configPRIO_BITS 3 /* 7 priority levels */
 #endif
+
+// TODO: The following #define was added for FF4, in comparison to FreeRTOS_hello example for the RT685.
+// This #define did not exist for FF3.
+#define configSTACK_DEPTH_TYPE uint32_t
 
 /* The lowest interrupt priority that can be used in a call to a "set priority"
 function. */

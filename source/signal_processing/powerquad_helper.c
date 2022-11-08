@@ -8,7 +8,9 @@
 #include "powerquad_helper.h"
 #include "config.h"
 
+#include "fsl_power.h"
 #include "fsl_powerquad.h"
+#include "loglevels.h"
 
 #define POWERQUAD_INTERRUPT_PRIORITY (3U)
 
@@ -28,7 +30,7 @@ static StaticSemaphore_t xSemaphoreBuffer;
 
 void pqhelper_arm_rfft_q31(const arm_rfft_instance_q31 *S, q31_t *pSrc, q31_t *pDst)
 {
-    uint32_t length = S->fftLenReal;
+	uint32_t length = S->fftLenReal;
     PQ_SET_FFT_Q31_CONFIG;
 
     /* Calculation of RFFT of input */
@@ -71,8 +73,20 @@ void pqhelper_init(){
 
 #else
   // ToDo: Add power-saving logic to only have powerquad enabled when needed.
+#if defined(VARIANT_FF4)
+  /* Power up PQ RAM. */
+  SYSCTL0->PDRUNCFG1_CLR = SYSCTL0_PDRUNCFG1_PQ_SRAM_APD_MASK | SYSCTL0_PDRUNCFG1_PQ_SRAM_PPD_MASK;
+  /* Apply power setting. */
+  POWER_ApplyPD();
+#endif
+
   // Enable clock for powerquad.
   PQ_Init(POWERQUAD);
+
+  // Setting PowerQuad Interrupt Priority
+  // ToDo: This setting was NOT used on FF2/FF3, confirm whether or not it IS needed or not.
+  NVIC_SetPriority(POWERQUAD_IRQn, POWERQUAD_INTERRUPT_PRIORITY);
+  EnableIRQ(POWERQUAD_IRQn);
 #endif
 
 }

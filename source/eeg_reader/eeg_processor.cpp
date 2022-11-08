@@ -604,7 +604,7 @@ static void eeg_processor_receive_eeg_data(void* data) {
 #if 1
   g_eeg_processor_context.eegp.process(&f_sample);
 #else
-  stream_eeg(&f_sample);
+  data_log_eeg(f_sample);
 #endif
 
   erp_set_eeg_sample_number(f_sample.eeg_sample_number);
@@ -615,13 +615,16 @@ static void eeg_processor_receive_eeg_data(void* data) {
 void eeg_processor_pretask_init(void){}
 void eeg_processor_task(void *ignored){}
 
-void eeg_processor_send_eeg_data_from_isr(uint8_t* data, size_t data_len){
-#if (defined(USE_3CHANNEL_EEG) && (USE_3CHANNEL_EEG > 0U))
-  ads129x_frontal_sample f_sample;
-  ads_decode_frontal_sample(data, data_len, &f_sample);
-  data_log_eeg(&f_sample);
-#endif
+static uint8_t eeg_data[EEG_MSG_LEN] = {0};
+uint8_t* eeg_processor_send_eeg_data_open_from_isr(size_t data_len, BaseType_t *pxHigherPriorityTaskWoken){
+	configASSERT(data_len == EEG_MSG_LEN);
+	return eeg_data;
 }
+
+void eeg_processor_send_eeg_data_close_from_isr(uint8_t* data, size_t data_len, BaseType_t *pxHigherPriorityTaskWoken){
+	configASSERT(data_len == EEG_MSG_LEN);
+}
+
 void eeg_processor_init(void){}
 
 void eeg_processor_start_quality_check(void){}
