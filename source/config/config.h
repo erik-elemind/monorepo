@@ -75,25 +75,25 @@
 #define ENABLE_BLE_POWER_OFF_TIMER (0U)
 
 
-#define ENABLE_FS_WRITER_TASK      (0U)
+#define ENABLE_FS_WRITER_TASK      (1U)
 #define ENABLE_DATA_LOG_TASK       (1U)
-#define ENABLE_LED_TASK            (0U)
-#define ENABLE_BUTTON_TASK         (0U)
+#define ENABLE_LED_TASK            (1U)
+#define ENABLE_BUTTON_TASK         (1U)
 
-#define ENABLE_AUDIO_TASK          (0U)
-#define ENABLE_WAVBUF_TASK         (0U)
+#define ENABLE_AUDIO_TASK          (1U)
+#define ENABLE_WAVBUF_TASK         (1U)
 #define ENABLE_AUDIO_MP3_TASK      (0U) // TODO: Low Priority, Reenable when ALL other tasks are running.
 
-#define ENABLE_BLE_TASK            (0U)
+#define ENABLE_BLE_TASK            (1U)
 // Enable the BLE_UART_SEND task, affects how ble_uart_send_buf() operates.
 // 0U - disable the task, ble_uart_send_buf() calls USART_RTOS_Send
 // 1U - enable the task, ble_uart_send_buf() pushes messages onto stream buf
-#define ENABLE_BLE_UART_RECV_TASK  (0U)
+#define ENABLE_BLE_UART_RECV_TASK  (1U)
 #define ENABLE_BLE_UART_SEND_TASK  (0U) // Not Used, leave disabled
-#define ENABLE_BLE_SHELL_TASK      (0U)
+#define ENABLE_BLE_SHELL_TASK      (1U)
 
 #define ENABLE_EEG_READER_TASK     (1U)
-#define ENABLE_EEG_PROCESSOR_TASK  (0U)
+#define ENABLE_EEG_PROCESSOR_TASK  (1U)
 #define ENABLE_HRM_TASK            (0U) // TODO: Reenable when HRM task is thoughtfully added
 #define ENABLE_ACCEL_TASK          (0U) // TODO: Reenable when Accel task is thoughtfully added
 
@@ -102,9 +102,7 @@
 
 #define ENABLE_ERP_TASK            (0U) // TODO: Reenable when ERP task is thoughtfully added
 #define ENABLE_SHELL_RECV_TASK     (1U)
-#define ENABLE_APP_TASK            (0U)
-
-#define USE_EEG_INTERRUPT_INITIATED_DMA (0U)
+#define ENABLE_APP_TASK            (1U)
 
 // Use the new flash chip
 #define USE_NAND_GD5F4GQ4_4KPAGE (0U)
