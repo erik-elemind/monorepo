@@ -432,7 +432,7 @@ void
 hrm_pretask_init(void)
 {
   // Any pre-scheduler init goes here.
-  vcnl4020c_init(&vcnl, &I2C4_RTOS_HANDLE,
+  vcnl4020c_init(&vcnl, &HRM_I2C_RTOS_HANDLE,
       HRM_RED_ENABLE_PORT, HRM_RED_ENABLE_PIN,
       HRM_IR_ENABLE_PORT, HRM_IR_ENABLE_PIN,
       HRM_PINT_PIN, hrm_pint_isr, true);

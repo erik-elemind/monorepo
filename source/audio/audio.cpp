@@ -346,7 +346,7 @@ static void audio_set_mute_int(bool mute)
   ag_context.mute = mute;
 
   if (AUDIO_STATE_OFF != ag_context.state) {
-    SSM2518_WriteReg(&I2C4_RTOS_HANDLE, SSM2518_Volume_Mute_Control, ag_context.mute);
+    SSM2518_WriteReg(&AUDIO_I2C_RTOS_HANDLE, SSM2518_Volume_Mute_Control, ag_context.mute);
   }
 }
 
@@ -382,9 +382,9 @@ static void audio_set_volume_int(uint8_t volume, bool update_ble)
     // This ensures larger values = larger volume
     uint8_t vol_linear_uint8_inv = 255 - ag_context.lin_volume;
     // Left Channel Volume Control Register (RegAddr 5):
-    SSM2518_WriteReg(&I2C4_RTOS_HANDLE, SSM2518_Left_Volume_Control, vol_linear_uint8_inv);
+    SSM2518_WriteReg(&AUDIO_I2C_RTOS_HANDLE, SSM2518_Left_Volume_Control, vol_linear_uint8_inv);
     // Right Channel Volume Control Register (RegAddr 6):
-    SSM2518_WriteReg(&I2C4_RTOS_HANDLE, SSM2518_Right_Volume_Control, vol_linear_uint8_inv);
+    SSM2518_WriteReg(&AUDIO_I2C_RTOS_HANDLE, SSM2518_Right_Volume_Control, vol_linear_uint8_inv);
   }
 
   // Tell BLE that volume has changed
@@ -885,7 +885,7 @@ handle_state_off(audio_event_t *event)
           1);
       vTaskDelay(pdMS_TO_TICKS(10));
       // initialize the SSM2518
-      SSM2518_Init(&I2C4_RTOS_HANDLE);
+      SSM2518_Init(&AUDIO_I2C_RTOS_HANDLE);
       set_state(AUDIO_STATE_STANDBY);
 
       // Restore settings

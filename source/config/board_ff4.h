@@ -107,7 +107,11 @@ void BOARD_InitFlashSPI();
  *****************************************************************************/
 
 // This define redirects to a define from peripheral.h/c
-#define I2C4_RTOS_HANDLE      FC3_SENSOR_I2C_rtosHandle
+#define SENSOR_I2C_RTOS_HANDLE     FC3_SENSOR_I2C_rtosHandle
+#define ACCEL_I2C_RTOS_HANDLE      FC3_SENSOR_I2C_rtosHandle
+#define AUDIO_I2C_RTOS_HANDLE      FC3_SENSOR_I2C_rtosHandle
+#define ALS_I2C_RTOS_HANDLE        FC3_SENSOR_I2C_rtosHandle
+#define HRM_I2C_RTOS_HANDLE        FC3_SENSOR_I2C_rtosHandle
 
 /******************************************************************************
  * I2C on FLEXCOMM 5
@@ -116,7 +120,7 @@ void BOARD_InitFlashSPI();
  *****************************************************************************/
 
 // This define redirects to a define from peripheral.h/c
-#define I2C5_RTOS_HANDLE      FC2_BATT_I2C_rtosHandle
+#define BATT_I2C_RTOS_HANDLE      FC2_BATT_I2C_rtosHandle
 
 /******************************************************************************
  * EEG

@@ -73,8 +73,15 @@ i2c_mem_write(
    Uses the lower-level I2C API. Breaks open the I2C handle to get the
    mutex for the bus, since the normal API doesn't allow us to do a
    non-data-transfer I2C transaction.
+
+   Returns the I2C state code
+   (0U) Master Idle State Code
+   (1U) Master Receive Ready State Code
+   (2U) Master Transmit Ready State Code
+   (3U) Master NACK by slave on address State Code
+   (4U) Master NACK by slave on data State Code
  */
-status_t
+uint8_t
 i2c_is_device_ready(
   i2c_rtos_handle_t *handle,
   uint8_t slave_address
@@ -95,15 +102,10 @@ i2c_is_device_ready(
   } while ((i2c_status & I2C_STAT_MSTPENDING_MASK) == 0);
 
   // Check state--anything other than a NAK is a success
-  status_t status = kStatus_Success;
+  uint8_t code = 0;
   uint8_t i2c_master_state =
     (i2c_status & I2C_STAT_MSTSTATE_MASK) >> I2C_STAT_MSTSTATE_SHIFT;
-  if (i2c_master_state == I2C_STAT_MSTCODE_NACKADR) {
-    status = kStatus_I2C_Nak;
-  }
-  else {
-    status = kStatus_Success;
-  }
+    code = i2c_master_state;
 
   /* End transaction. We need to do this even if the slave NAKed, in
      order to get the LPC I2C state machine back to the right
@@ -113,7 +115,7 @@ i2c_is_device_ready(
   // Unlock resource mutex
   xSemaphoreGive(handle->mutex);
 
-  return status;
+  return code;
 }
 
 status_t
