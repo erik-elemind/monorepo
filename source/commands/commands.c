@@ -174,8 +174,8 @@ const shell_command_t commands[] = {
     { P_ALL, "eeg_gain?", eeg_get_gain_command, "Prints the EEG gain." },
 
     // Heart rate monitor commands:
-    { P_ALL, "hrm_off", hrm_off, "Turn on heart rate monitor" },
-    { P_ALL, "hrm_on", hrm_on, "Turn off heart rate monitor" },
+    { P_ALL, "hrm_off", hrm_off, "Turn off heart rate monitor" },
+    { P_ALL, "hrm_on", hrm_on, "Turn on heart rate monitor" },
 
     // Accel commands:
     { P_ALL, "accel_start_sample", accel_start_sample_command, "Run the accel in sample mode" },

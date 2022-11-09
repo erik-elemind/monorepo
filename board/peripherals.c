@@ -334,7 +334,7 @@ instance:
       - 1:
         - interrupt_id: 'INT_3'
         - interrupt_selection: 'PINT.3'
-        - interrupt_type: 'kPINT_PinIntEnableNone'
+        - interrupt_type: 'kPINT_PinIntEnableFallEdge'
         - callback_function: 'hrm_pint_isr'
         - enable_callback: 'true'
         - interrupt:
@@ -414,7 +414,7 @@ static void PINT_init(void) {
   /* PINT PINT.1 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_1, kPINT_PinIntEnableNone, charger_pint_isr);
   /* PINT PINT.3 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_3, kPINT_PinIntEnableNone, hrm_pint_isr);
+  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_3, kPINT_PinIntEnableFallEdge, hrm_pint_isr);
   /* PINT PINT.4 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_4, kPINT_PinIntEnableRiseEdge, accel_pint_isr);
   /* PINT PINT.5 configuration */

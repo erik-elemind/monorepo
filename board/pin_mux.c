@@ -143,7 +143,7 @@ BOARD_InitPins:
   - {pin_num: J16, peripheral: FLEXCOMM5, signal: RXD_SDA_MOSI_DATA, pin_signal: PIO1_5/FC5_RXD_SDA_MOSI_DATA, direction: INPUT, pupdsel: no_init, ibena: enabled}
   - {pin_num: B5, peripheral: ADC0, signal: 'CH, 4', pin_signal: PIO1_8/FC5_SSEL2/SCT0_GPI6/CTIMER_INP12/CTIMER1_MAT2/ADC0_4}
   - {pin_num: J17, peripheral: PINT, signal: 'PINT, 2', pin_signal: PIO1_6/FC5_CTS_SDA_SSEL0/SCT0_GPI4/SCT0_OUT4/FC4_SSEL2}
-  - {pin_num: B1, peripheral: PINT, signal: 'PINT, 3', pin_signal: PIO1_9/FC5_SSEL3/SCT0_GPI7/UTICK_CAP1/CTIMER1_MAT3/ADC0_12}
+  - {pin_num: B1, peripheral: PINT, signal: 'PINT, 3', pin_signal: PIO1_9/FC5_SSEL3/SCT0_GPI7/UTICK_CAP1/CTIMER1_MAT3/ADC0_12, ibena: enabled}
   - {pin_num: K16, peripheral: PINT, signal: 'PINT, 4', pin_signal: PIO1_10/MCLK/FREQME_GPIO_CLK/CTIMER_INP10/CLKOUT, ibena: enabled}
   - {pin_num: T7, peripheral: GPIO, signal: 'PIO1, 24', pin_signal: PIO1_24/FLEXSPI0A_DATA4/SCT0_GPI3}
   - {pin_num: U7, peripheral: GPIO, signal: 'PIO1, 25', pin_signal: PIO1_25/FLEXSPI0A_DATA5/SCT0_OUT3}
@@ -1481,8 +1481,8 @@ void BOARD_InitPins(void)
                                IOPCTL_PIO_PUPD_DI |
                                /* Enable pull-down function */
                                IOPCTL_PIO_PULLDOWN_EN |
-                               /* Disable input buffer function */
-                               IOPCTL_PIO_INBUF_DI |
+                               /* Enables input buffer function */
+                               IOPCTL_PIO_INBUF_EN |
                                /* Normal mode */
                                IOPCTL_PIO_SLEW_RATE_NORMAL |
                                /* Normal drive */
