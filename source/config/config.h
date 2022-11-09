@@ -95,7 +95,7 @@
 #define ENABLE_EEG_READER_TASK     (1U)
 #define ENABLE_EEG_PROCESSOR_TASK  (1U)
 #define ENABLE_HRM_TASK            (0U) // TODO: Reenable when HRM task is thoughtfully added
-#define ENABLE_ACCEL_TASK          (0U) // TODO: Reenable when Accel task is thoughtfully added
+#define ENABLE_ACCEL_TASK          (1U) // TODO: Reenable when Accel task is thoughtfully added
 
 #define ENABLE_SYSTEM_MONITOR_TASK (1U)
 #define ENABLE_INTERPRETER_TASK    (1U)

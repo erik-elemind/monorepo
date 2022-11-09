@@ -11,7 +11,7 @@
 
 #include "board_config.h"
 #include "accel.h"
-#if defined(VARIANT_FF3)
+#if defined(VARIANT_FF3) || defined(VARIANT_FF4)
 #include "lis2dtw12.h"
 #else
 #include "bma253.h"
@@ -59,7 +59,7 @@ typedef enum
   ACCEL_STATE_MOTION_DETECT,  // motion checking only
 } accel_state_t;
 
-#if defined(VARIANT_FF3)
+#if defined(VARIANT_FF3) || defined(VARIANT_FF4)
 #define ACCEL_SAMPLE_TYPE lis2dtw12_sample_t
 
 #define accel_softreset lis2dtw12_softreset
@@ -406,7 +406,7 @@ handle_event(const accel_event_t *event)
   }
 }
 
-#if defined(VARIANT_FF3)
+#if defined(VARIANT_FF3) || defined(VARIANT_FF4)
 static int32_t
 accel_read_reg(void* ctx, uint8_t reg_addr, uint8_t* data, uint16_t len)
 {
