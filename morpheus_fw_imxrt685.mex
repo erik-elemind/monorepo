@@ -252,7 +252,11 @@
                   </pin>
                   <pin peripheral="ADC0" signal="CH, 4" pin_num="B5" pin_signal="PIO1_8/FC5_SSEL2/SCT0_GPI6/CTIMER_INP12/CTIMER1_MAT2/ADC0_4"/>
                   <pin peripheral="PINT" signal="PINT, 2" pin_num="J17" pin_signal="PIO1_6/FC5_CTS_SDA_SSEL0/SCT0_GPI4/SCT0_OUT4/FC4_SSEL2"/>
-                  <pin peripheral="PINT" signal="PINT, 3" pin_num="B1" pin_signal="PIO1_9/FC5_SSEL3/SCT0_GPI7/UTICK_CAP1/CTIMER1_MAT3/ADC0_12"/>
+                  <pin peripheral="PINT" signal="PINT, 3" pin_num="B1" pin_signal="PIO1_9/FC5_SSEL3/SCT0_GPI7/UTICK_CAP1/CTIMER1_MAT3/ADC0_12">
+                     <pin_features>
+                        <pin_feature name="ibena" value="enabled"/>
+                     </pin_features>
+                  </pin>
                   <pin peripheral="PINT" signal="PINT, 4" pin_num="K16" pin_signal="PIO1_10/MCLK/FREQME_GPIO_CLK/CTIMER_INP10/CLKOUT">
                      <pin_features>
                         <pin_feature name="ibena" value="enabled"/>
@@ -987,7 +991,7 @@
                            <struct name="1">
                               <setting name="interrupt_id" value="INT_3"/>
                               <setting name="interrupt_selection" value="PINT.3"/>
-                              <setting name="interrupt_type" value="kPINT_PinIntEnableNone"/>
+                              <setting name="interrupt_type" value="kPINT_PinIntEnableFallEdge"/>
                               <setting name="callback_function" value="hrm_pint_isr"/>
                               <setting name="enable_callback" value="true"/>
                               <struct name="interrupt">
