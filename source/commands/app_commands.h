@@ -17,6 +17,7 @@ extern "C" {
 #endif
 
 void app_event_command(int argc, char **argv);
+void app_enter_isp_mode(int argc, char **argv);
 
 #ifdef __cplusplus
 }

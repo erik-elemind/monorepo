@@ -101,6 +101,7 @@ const shell_command_t commands[] = {
 
     // Application-specific commands
     { P_ALL, "app_event", app_event_command, "Send event to app task"},
+	{ P_ALL, "app_enter_isp_mode", app_enter_isp_mode, "Put device into ISP mode"},
 
 #ifdef FLASH_COMMANDS_H
     // Flash test commands
