@@ -11,12 +11,12 @@ extern "C" {
 // RAM and CPU Usage by Task:
 void memfree(int argc, char **argv);
 
-void i2c4_scan(int argc, char **argv);
-void i2c5_scan(int argc, char **argv);
-void i2c4_read_byte(int argc, char **argv);
-void i2c4_write_byte(int argc, char **argv);
-void i2c5_read_byte(int argc, char **argv);
-void i2c5_write_byte(int argc, char **argv);
+void i2c_sensor_scan(int argc, char **argv);
+void i2c_batt_scan(int argc, char **argv);
+void i2c_sensor_read_byte(int argc, char **argv);
+void i2c_sensor_write_byte(int argc, char **argv);
+void i2c_batt_read_byte(int argc, char **argv);
+void i2c_batt_write_byte(int argc, char **argv);
 
 void gpio_read(int argc, char **argv);
 void gpio_write(int argc, char **argv);

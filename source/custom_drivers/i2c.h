@@ -76,9 +76,14 @@ i2c_mem_write(
     @param handle I2C handle from I2C_RTOS_Init()
     @param slave_address 7-bit I2C address, right-aligned
 
-    @return kStatus_Success if device is ready
+    @return The I2C state code
+   (0U) Master Idle State Code
+   (1U) Master Receive Ready State Code
+   (2U) Master Transmit Ready State Code
+   (3U) Master NACK by slave on address State Code
+   (4U) Master NACK by slave on data State Code
  */
-status_t
+uint8_t
 i2c_is_device_ready(
   i2c_rtos_handle_t *handle,
   uint8_t slave_address

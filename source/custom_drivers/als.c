@@ -18,7 +18,7 @@ static int
 als_read_reg(uint8_t reg_addr, uint8_t* data, uint8_t len) 
 {
   status_t status = i2c_mem_read(
-    &I2C4_RTOS_HANDLE,
+    &ALS_I2C_RTOS_HANDLE,
     ALS_DPDIC17_ADDR,
     reg_addr, sizeof(reg_addr),
     data, len);
@@ -29,7 +29,7 @@ static int
 als_write_reg(uint8_t reg_addr, uint8_t data) 
 {
   status_t status = i2c_mem_write(
-    &I2C4_RTOS_HANDLE,
+    &ALS_I2C_RTOS_HANDLE,
     ALS_DPDIC17_ADDR,
     reg_addr, sizeof(reg_addr),
     &data, 1);

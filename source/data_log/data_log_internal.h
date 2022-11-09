@@ -50,7 +50,7 @@ typedef struct
  */
 
 #ifndef ENABLE_DATA_LOG_STREAM_ACCEL
-#define ENABLE_DATA_LOG_STREAM_ACCEL (0U) // (0U)
+#define ENABLE_DATA_LOG_STREAM_ACCEL (1U) // (0U)
 #endif
 
 #ifndef ENABLE_DATA_LOG_STREAM_ACCEL_TEMP
@@ -62,7 +62,7 @@ typedef struct
 #endif
 
 #ifndef ENABLE_DATA_LOG_STREAM_ALS
-#define ENABLE_DATA_LOG_STREAM_ALS (0U) // (0U)
+#define ENABLE_DATA_LOG_STREAM_ALS (1U) // (0U)
 #endif
 
 #ifndef ENABLE_DATA_LOG_STREAM_MIC

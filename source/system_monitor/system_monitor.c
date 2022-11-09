@@ -710,7 +710,7 @@ task_init()
 
 
   // Initialize battery charger driver
-  battery_charger_init(&g_battery_charger_handle, &I2C5_RTOS_HANDLE,
+  battery_charger_init(&g_battery_charger_handle, &BATT_I2C_RTOS_HANDLE,
     BATTERY_CHARGER_ENABLE_PORT, BATTERY_CHARGER_ENABLE_PIN,
     BATTERY_CHARGER_STATUS_PORT, BATTERY_CHARGER_STATUS_PIN);
 

@@ -333,12 +333,12 @@ const shell_command_t commands[] = {
 
     // Platform commands
     { P_ALL, "memfree", memfree, "Display free memory" },
-    { P_ALL, "i2c4_scan", i2c4_scan, "Scan the Flexcomm 4 I2C bus for devices" },
-    { P_ALL, "i2c5_scan", i2c5_scan, "Scan the Flexcomm 5 I2C bus for devices" },
-    { P_ALL, "i2c4_read_byte", i2c4_read_byte, "Read byte from I2C device on Flexcomm 4 bus" },
-    { P_ALL, "i2c4_write_byte", i2c4_write_byte, "Write byte to I2C device on Flexcomm 4 bus" },
-    { P_ALL, "i2c5_read_byte", i2c5_read_byte, "Read byte from I2C device on Flexcomm 5 bus" },
-    { P_ALL, "i2c5_write_byte", i2c5_write_byte, "Write byte to I2C device on Flexcomm 5 bus" },
+    { P_ALL, "i2c_sensor_scan", i2c_sensor_scan, "Scan the Flexcomm (accel, als, audio, hrm) I2C bus. Prints address and state code of active devices." },
+    { P_ALL, "i2c_batt_scan", i2c_batt_scan, "Scan the Flexcomm (batt) I2C bus. Prints address and state code of active devices." },
+    { P_ALL, "i2c_sensor_read_byte", i2c_sensor_read_byte, "Read byte from I2C device on Flexcomm (accel, als, audio, hrm) bus " },
+    { P_ALL, "i2c_sensor_write_byte", i2c_sensor_write_byte, "Write byte to I2C device on Flexcomm (accel, als, audio, hrm) bus" },
+    { P_ALL, "i2c_batt_read_byte", i2c_batt_read_byte, "Read byte from I2C device on Flexcomm (batt) bus" },
+    { P_ALL, "i2c_batt_write_byte", i2c_batt_write_byte, "Write byte to I2C device on Flexcomm (batt) bus" },
     { P_ALL, "bq_charge_enable", bq_charge_enable, "Enable battery charging on BQ25618 charge controller" },
     { P_ALL, "bq_charge_disable", bq_charge_disable, "Disable battery charging on BQ25618 charge controller" },
     { P_ALL, "bq_wdog_disable", bq_wdog_disable, "Disable watchdog timer on BQ25618 charge controller" },

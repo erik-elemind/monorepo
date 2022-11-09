@@ -104,30 +104,38 @@ void memfree(int argc, char **argv) {
 void i2c_scan(i2c_rtos_handle_t *handle) {
 
   // Print header
-  printf("     00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F\n");
+  printf("      00  01  02  03  04  05  06  07  08  09  0A  0B  0C  0D  0E  0F \n");
 
   // Valid 7-bit I2C Slave addresses are 0x07 to 0x77:
   uint8_t index = 0;
   while (index <= I2C_ADDRESS_MAX) {
 
     if ((index & 0x0F) == 0x00) { // New row
-      printf("%02X: ", index & 0xF0);
+      printf("%02X : ", index & 0xF0);
     }
 
     // I2C Address values 0x00 to 0x07 are reserved, don't probe them:
     if (index <= I2C_ADDRESS_MIN) {
-      printf("   ");
+      printf("    ");
       index++;
       continue;
     }
 
     // Check for device
-    status_t status = i2c_is_device_ready(handle, index);
-    if (status == kStatus_Success)
-    {
-      printf(" %02X", index);
-    } else {
-      printf(" --");
+    uint8_t code = i2c_is_device_ready(handle, index);
+    switch(code){
+    case I2C_STAT_MSTCODE_RXREADY:
+    	printf(" %02XR", index); break;
+    case I2C_STAT_MSTCODE_TXREADY:
+    	printf(" %02XT", index); break;
+    case I2C_STAT_MSTCODE_NACKADR:
+    	printf(" %02XN", index); break;
+    case I2C_STAT_MSTCODE_NACKDAT:
+    	printf(" %02XN", index); break;
+    case I2C_STAT_MSTCODE_IDLE:
+    default:
+    	printf(" -- ");
+    	break;
     }
 
     index++;
@@ -140,14 +148,14 @@ void i2c_scan(i2c_rtos_handle_t *handle) {
   printf("\n"); // End of row
 }
 
-void i2c4_scan(int argc, char **argv)
+void i2c_sensor_scan(int argc, char **argv)
 {
-  i2c_scan(&I2C4_RTOS_HANDLE);
+  i2c_scan(&SENSOR_I2C_RTOS_HANDLE);
 }
 
-void i2c5_scan(int argc, char **argv)
+void i2c_batt_scan(int argc, char **argv)
 {
-  i2c_scan(&I2C5_RTOS_HANDLE);
+  i2c_scan(&BATT_I2C_RTOS_HANDLE);
 }
 
 static void i2c_read_byte(i2c_rtos_handle_t *handle, int argc, char **argv)
@@ -217,24 +225,24 @@ static void i2c_write_byte(i2c_rtos_handle_t *handle, int argc, char **argv)
   }
 }
 
-void i2c4_read_byte(int argc, char **argv)
+void i2c_sensor_read_byte(int argc, char **argv)
 {
-  i2c_read_byte(&I2C4_RTOS_HANDLE, argc, argv);
+  i2c_read_byte(&SENSOR_I2C_RTOS_HANDLE, argc, argv);
 }
 
-void i2c4_write_byte(int argc, char **argv)
+void i2c_sensor_write_byte(int argc, char **argv)
 {
-  i2c_write_byte(&I2C4_RTOS_HANDLE, argc, argv);
+  i2c_write_byte(&SENSOR_I2C_RTOS_HANDLE, argc, argv);
 }
 
-void i2c5_read_byte(int argc, char **argv)
+void i2c_batt_read_byte(int argc, char **argv)
 {
-  i2c_read_byte(&I2C5_RTOS_HANDLE, argc, argv);
+  i2c_read_byte(&BATT_I2C_RTOS_HANDLE, argc, argv);
 }
 
-void i2c5_write_byte(int argc, char **argv)
+void i2c_batt_write_byte(int argc, char **argv)
 {
-  i2c_write_byte(&I2C5_RTOS_HANDLE, argc, argv);
+  i2c_write_byte(&BATT_I2C_RTOS_HANDLE, argc, argv);
 }
 
 

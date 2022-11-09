@@ -371,7 +371,7 @@ int main(void)
   /* Accelerometer Task */
 #if (defined(ENABLE_ACCEL_TASK) && (ENABLE_ACCEL_TASK > 0U))
   LOGV(TAG, "Launching accel task...");
-  accel_pretask_init(&I2C4_RTOS_HANDLE);
+  accel_pretask_init(&ACCEL_I2C_RTOS_HANDLE);
   task_handle = xTaskCreateStatic(&accel_task,
       "accel", ACCEL_TASK_STACK_SIZE, NULL, ACCEL_TASK_PRIORITY, accel_task_array, &accel_task_struct);
   vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)ACCEL_TASK_STACK_SIZE );

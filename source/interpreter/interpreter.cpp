@@ -31,6 +31,9 @@
 #include "eeg_processor.h"
 #include "erp.h"
 #include "rtc.h"
+#include "accel.h"
+#include "system_monitor.h"
+#include "hrm.h"
 
 #if (defined(ENABLE_INTERPRETER_TASK) && (ENABLE_INTERPRETER_TASK > 0U))
 
@@ -580,6 +583,11 @@ interpreter_stop_therapy(){
   eeg_reader_event_stop();
   // stop erp
   erp_event_stop();
+  // stop any sensors
+  accel_turn_off();
+  system_monitor_event_als_stop();
+  system_monitor_event_mic_stop();
+  hrm_event_turn_off();
 
   // update ble
   ble_therapy_update( THERAPY_TYPE_NONE );
