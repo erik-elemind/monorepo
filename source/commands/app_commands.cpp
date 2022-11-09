@@ -20,6 +20,7 @@
 
 
 #include "app_commands.h"
+#include "fsl_iap.h"
 
 
 void
@@ -84,5 +85,19 @@ app_event_command(int argc, char **argv) {
   else {
     printf("Unknown event!\n");
   }
+}
 
+void app_enter_isp_mode(int argc, char **argv)
+{
+	iap_boot_option_t bootOption;
+
+	// Set option for ISP mode over USB
+	bootOption.option.U = 0x00000000; // initialize
+	bootOption.option.B.bootInterface = 0x03;//RT600: 0: USART 1: I2C 2: SPI 3: USB HID 4:FlexSPI 7:SD 8:MMC
+	bootOption.option.B.mode = IAP_BOOT_OPTION_MODE_ISP;
+	bootOption.option.B.tag = IAP_BOOT_OPTION_TAG;
+
+
+	// Put device into ISP mode, should not return
+	IAP_RunBootLoader(&bootOption);
 }
