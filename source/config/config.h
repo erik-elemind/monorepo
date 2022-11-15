@@ -103,6 +103,7 @@
 #define ENABLE_ERP_TASK            (0U) // TODO: Reenable when ERP task is thoughtfully added
 #define ENABLE_SHELL_RECV_TASK     (1U)
 #define ENABLE_APP_TASK            (1U)
+#define ENABLE_ML_TASK             (1U)
 
 // Use the new flash chip
 #define USE_NAND_GD5F4GQ4_4KPAGE (0U)

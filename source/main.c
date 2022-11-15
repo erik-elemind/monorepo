@@ -44,6 +44,7 @@
 #include "eeg_reader.h"
 #include "eeg_processor.h"
 #include "erp.h"
+#include "ml.h"
 
 #include "powerquad_helper.h"
 
@@ -205,6 +206,13 @@ StaticTask_t erp_task_struct;
 #define APP_TASK_PRIORITY 1
 StackType_t app_task_array[ APP_TASK_STACK_SIZE ];
 StaticTask_t app_task_struct;
+#endif
+
+#if (defined(ENABLE_ML_TASK) && (ENABLE_ML_TASK > 0U))
+#define ML_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*10)
+#define ML_TASK_PRIORITY 3
+StackType_t ml_task_array[ ML_TASK_STACK_SIZE ];
+StaticTask_t ml_task_struct;
 #endif
 
 /*******************************************************************************
@@ -449,6 +457,15 @@ int main(void)
     task_handle = xTaskCreateStatic(&app_task,
         "app", APP_TASK_STACK_SIZE, NULL, APP_TASK_PRIORITY, app_task_array, &app_task_struct);
     vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)APP_TASK_STACK_SIZE );
+#endif
+
+    /* ML task */
+#if (defined(ENABLE_ML_TASK) && (ENABLE_ML_TASK > 0U))
+    LOGV(TAG, "Launching ML task...");
+    ml_pretask_init();
+    task_handle = xTaskCreateStatic(&ml_task,
+        "ml", ML_TASK_STACK_SIZE, NULL, ML_TASK_PRIORITY, ml_task_array, &ml_task_struct);
+    vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)ML_TASK_STACK_SIZE );
 #endif
 
 	//DSP_Start();
