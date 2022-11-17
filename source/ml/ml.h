@@ -5,12 +5,13 @@
 extern "C" {
 #endif
 
+#include "eeg_datatypes.h"
 
 void ml_pretask_init(void);
 void ml_task(void *ignored);
 
 // Send various event types to this task:
-void ml_event_input(void);
+void ml_event_input(ads129x_frontal_sample* f_sample);
 
 #ifdef __cplusplus
 }

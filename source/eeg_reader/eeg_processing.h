@@ -31,6 +31,7 @@
 #include "data_log.h"
 #include "HistoryVar.h"
 #include "eeg_constants.h"
+#include "ml.h"
 
 //static const char *TAG = "eeg_proc";  // Logging prefix for this module
 
@@ -436,6 +437,10 @@ public:
 #endif //ENABLE_EEG_FILTERS
 
     data_log_eeg( f_sample );
+
+    // send ML input data
+    ml_event_input(f_sample);
+
 
     // log initial values
     if(first_run){
