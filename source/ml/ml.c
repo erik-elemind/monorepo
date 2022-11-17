@@ -10,6 +10,10 @@
 #include "config.h"
 #include "ml.h"
 
+#include "rt_nonfinite.h"
+#include "sleepstagescorer.h"
+#include "sleepstagescorer_terminate.h"
+
 #define ML_EVENT_QUEUE_SIZE 10
 
 static const char *TAG = "ml";	// Logging prefix for this module
@@ -145,13 +149,16 @@ static void handle_state_standby(ml_event_t *event)
 
 static void handle_state_inference(ml_event_t *event)
 {
+  float output[5];
 
   switch (event->type) {
     case ML_EVENT_ENTER_STATE:
       // Generic code to always execute when entering this state goes here.
 
       // hifi_inference(constantWeight, mutableWeight, activations);
-      LOGV(TAG, "inference doodoodoo");
+    	LOGV(TAG, "starting inference");
+      sleepstagescorer(output);
+      LOGV(TAG, "Inference output: %f, %f, %f, %f, %f\n\r", output[0], output[1], output[2], output[3], output[4]);
       set_state(ML_STATE_STANDBY);
       break;
 
