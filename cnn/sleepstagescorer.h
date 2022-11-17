@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* Function Declarations */
-extern void sleepstagescorer(float out[5]);
+extern void sleepstagescorer(const float X1[1250], float out[5]);
 
 void sleepstagescorer_free(void);
 
