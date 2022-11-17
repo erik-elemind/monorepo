@@ -19,8 +19,7 @@ extern "C" {
 #endif
 
 /* Function Declarations */
-void DeepLearningNetwork_predict(c_coder_ctarget_DeepLearningNet *obj,
-                                 float varargout_1[5]);
+void DeepLearningNetwork_predict(c_coder_ctarget_DeepLearningNet *obj, const float varargin_1[1250], float varargout_1[5]);
 
 #ifdef __cplusplus
 }

@@ -19,7 +19,7 @@ static c_coder_ctarget_DeepLearningNet cnnnet;
 static boolean_T cnnnet_not_empty;
 
 /* Function Definitions */
-void sleepstagescorer(float out[5])
+void sleepstagescorer(const float X1[1250], float out[5])
 {
   if (!isInitialized_sleepstagescorer) {
     sleepstagescorer_initialize();
@@ -44,7 +44,7 @@ void sleepstagescorer(float out[5])
     cnnnet_not_empty = true;
   }
   /*  Pass in input    */
-  DeepLearningNetwork_predict(&cnnnet, out);
+  DeepLearningNetwork_predict(&cnnnet, X1, out);
 }
 
 void sleepstagescorer_free(void)
