@@ -19,6 +19,9 @@ extern "C" {
 
 void data_log_open_command(int argc, char **argv);
 void data_log_close_command(int argc, char **argv);
+void hypnogram_log_open_command(int argc, char **argv);
+void hypnogram_log_close_command(int argc, char **argv);
+void hypnogram_log_write_command(int argc, char **argv);
 
 #if (defined(ENABLE_OFFLINE_EEG_COMPRESSION) && (ENABLE_OFFLINE_EEG_COMPRESSION > 0U))
 void data_log_compress_command(int argc, char **argv);

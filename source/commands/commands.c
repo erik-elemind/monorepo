@@ -275,6 +275,9 @@ const shell_command_t commands[] = {
     // Data log commands:
     { P_ALL, "data_log_open" , data_log_open_command, "Open data log" },
     { P_ALL, "data_log_close", data_log_close_command, "Close data log" },
+	{ P_ALL, "hypnogram_log_open", hypnogram_log_open_command, "Open hypnogram log" },
+	{ P_ALL, "hypnogram_log_close", hypnogram_log_close_command, "Close hypnogram log" },
+	{ P_ALL, "hypnogram_log_write", hypnogram_log_write_command, "Write to hypnogram log" },
 #if (defined(ENABLE_OFFLINE_EEG_COMPRESSION) && (ENABLE_OFFLINE_EEG_COMPRESSION > 0U))
     { P_ALL, "data_log_compress", data_log_compress_command, "Compress existing datalog file. Takes filename of existing data log." },
     { P_ALL, "data_log_compress_status", data_log_compress_status_command, "" },
