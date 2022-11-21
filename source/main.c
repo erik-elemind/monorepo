@@ -210,7 +210,7 @@ StaticTask_t app_task_struct;
 
 #if (defined(ENABLE_ML_TASK) && (ENABLE_ML_TASK > 0U))
 #define ML_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*100) //TODO: change to more appropriate value
-#define ML_TASK_PRIORITY 3
+#define ML_TASK_PRIORITY 2
 StackType_t ml_task_array[ ML_TASK_STACK_SIZE ];
 StaticTask_t ml_task_struct;
 #endif
