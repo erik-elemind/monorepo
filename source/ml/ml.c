@@ -102,18 +102,11 @@ void ml_event_input(ads129x_frontal_sample* f_sample)
 {
   if (f_sample->eeg_sample_number % 2 == 0) // ML model expects downsampled (1/2) input
   {
-	ml_event_t event = {.type = ML_EVENT_INPUT};
-	memcpy(&(event.eeg_fpz_sample), &(f_sample->eeg_channels[EEG_FPZ]), sizeof(f_sample->eeg_channels[EEG_FPZ]));
-	xQueueSend(g_event_queue, &event, portMAX_DELAY);
+    ml_event_t event = {.type = ML_EVENT_INPUT};
+    memcpy(&(event.eeg_fpz_sample), &(f_sample->eeg_channels[EEG_FPZ]), sizeof(f_sample->eeg_channels[EEG_FPZ]));
+    xQueueSend(g_event_queue, &event, portMAX_DELAY);
   }
 }
-
-//void ml_event_output(int *output) // on output, send output to application or something to eventually log
-//{
-////  dils_event_t event = {.type = DILS_EVENT_OUTPUT, .user_data = NULL };
-////  xQueueSend(g_event_queue, &event, portMAX_DELAY);
-//	LOGV(TAG, "Output: %d", output);
-//}
 
 static void log_event(ml_event_t *event)
 {
@@ -172,10 +165,10 @@ static void handle_state_input(ml_event_t *event)
   switch (event->type) {
     case ML_EVENT_INPUT:{
       // Generic code to always execute when entering this state goes here.
-
-    	// Convert and store raw data to model input buffer (in V)
-		model_input[currentCount] = (float) event->eeg_fpz_sample * EEG_SCALAR_V;
-		currentCount++;
+      // Convert and store raw data to model input buffer (in V)
+      
+      model_input[currentCount] = (float) event->eeg_fpz_sample * EEG_SCALAR_V;
+      currentCount++;
 
     	if (currentCount == INPUT_SIZE) // raw data is downsampled by half
     	{
