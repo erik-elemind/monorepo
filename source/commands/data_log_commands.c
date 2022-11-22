@@ -48,6 +48,7 @@ void hypnogram_log_write_command(char *data, int len)
 		printf("f_write() for %s returned %u\n", "datalogs/hypnogram_log.txt", result);
 		return;
 	}
+	f_sync(&hypnogram_log);
 }
 
 #if (defined(ENABLE_OFFLINE_EEG_COMPRESSION) && (ENABLE_OFFLINE_EEG_COMPRESSION > 0U))
