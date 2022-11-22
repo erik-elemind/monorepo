@@ -22,6 +22,7 @@
 // To provide buffer size, we're allocating a queue size of 1000 events.
 #define ML_EVENT_QUEUE_SIZE 1000
 #define INPUT_SIZE 1250
+#define OUTPUT_NUM_CLASS 5
 
 static const char *TAG = "ml";	// Logging prefix for this module
 
@@ -69,7 +70,7 @@ static uint8_t g_event_queue_array[ML_EVENT_QUEUE_SIZE*sizeof(ml_event_t)];
 static StaticQueue_t g_event_queue_struct;
 static QueueHandle_t g_event_queue;
 static void handle_event(ml_event_t *event);
-float output[5];
+float output[OUTPUT_NUM_CLASS];
 float model_input[INPUT_SIZE];
 
 // For logging and debug:
@@ -197,7 +198,20 @@ static void handle_state_inference(ml_event_t *event)
 
       // hifi_inference(constantWeight, mutableWeight, activations);
       sleepstagescorer(model_input, output);
+
+      // choose highest probability as predicted class
+      float max_val = 0.0;
+      uint32_t max_idx = 0;
+      for (int i = 0; i < OUTPUT_NUM_CLASS; i++)
+      {
+    	  if (output[i] > max_val)
+    	  {
+    		  max_val = output[i];
+    		  max_idx = i;
+    	  }
+      }
       LOGV(TAG, "Inference output: %f, %f, %f, %f, %f\n\r", output[0], output[1], output[2], output[3], output[4]);
+      LOGV(TAG, "Prediction: %d", max_idx);
       set_state(ML_STATE_STANDBY);
       break;
 
