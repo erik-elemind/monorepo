@@ -14,7 +14,12 @@
 #include "sleepstagescorer.h"
 #include "sleepstagescorer_terminate.h"
 
-#define ML_EVENT_QUEUE_SIZE 10
+// Note: It looks like one "inference" takes a little less than 3 seconds.
+// During inference the event queue is not being emptied.
+// Since the event queue dominantly receives EEG sample events, which occur at 250Hz.
+// 3 seconds * 250 Hz = 750 sample events.
+// To provide buffer size, we're allocating a queue size of 1000 events.
+#define ML_EVENT_QUEUE_SIZE 1000
 #define INPUT_SIZE 1250
 
 static const char *TAG = "ml";	// Logging prefix for this module
@@ -28,12 +33,12 @@ typedef enum
   ML_EVENT_INPUT
 } ml_event_type_t;
 
-// Events are passed to the g_event_queue with an optional
+// Events are passed to the  with an optional
 // void *user_data pointer (which may be NULL).
 typedef struct
 {
   ml_event_type_t type;
-  void *user_data;
+  ads129x_frontal_sample eeg_sample;
 } ml_event_t;
 
 
@@ -92,7 +97,8 @@ static const char * ml_event_type_name(ml_event_type_t event_type)
 
 void ml_event_input(ads129x_frontal_sample* f_sample)
 {
-  ml_event_t event = {.type = ML_EVENT_INPUT, .user_data = f_sample };
+  ml_event_t event = {.type = ML_EVENT_INPUT};
+  memcpy(&(event.eeg_sample), f_sample, sizeof(event.eeg_sample));
   xQueueSend(g_event_queue, &event, portMAX_DELAY);
 }
 
@@ -158,12 +164,14 @@ static void handle_state_input(ml_event_t *event)
 
   static int currentCount = 0;
   switch (event->type) {
-    case ML_EVENT_INPUT:
+    case ML_EVENT_INPUT:{
       // Generic code to always execute when entering this state goes here.
     	// store event data to model_input buffer
-    	if ((((ads129x_frontal_sample *)event->user_data)->eeg_sample_number % 2 == 0) && (currentCount < INPUT_SIZE))
+    	ads129x_frontal_sample *eeg_sample = &(event->eeg_sample);
+    	if ((eeg_sample->eeg_sample_number % 2 == 0) && (currentCount < INPUT_SIZE))
     	{
-    		memcpy(&model_input[currentCount], &((ads129x_frontal_sample *)event->user_data)->eeg_channels[EEG_FPZ], sizeof((ads129x_frontal_sample *)event->user_data)->eeg_channels[EEG_FPZ]);
+    		// TODO: This mem copy from int32 to float looks suspicious.
+    		memcpy(&model_input[currentCount], &(eeg_sample->eeg_channels[EEG_FPZ]), sizeof(eeg_sample->eeg_channels[EEG_FPZ]) );
     		currentCount++;
     	}
 
@@ -173,6 +181,7 @@ static void handle_state_input(ml_event_t *event)
     		currentCount = 0;
     	}
       break;
+    }
 
     default:
       log_event_ignored(event);
