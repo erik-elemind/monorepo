@@ -12,6 +12,7 @@
 #include "utils.h"
 #include "config.h"
 #include "ff.h"
+#include "ml.h"
 
 FIL hypnogram_log;
 void data_log_open_command(int argc, char **argv)
@@ -34,9 +35,10 @@ void hypnogram_log_open_command(int argc, char **argv)
 	}
 }
 
-void hypnogram_log_close_command(int argc, char **argv)
+void hypnogram_log_close_command(void)
 {
 	f_close(&hypnogram_log);
+	ml_event_stop();
 }
 
 void hypnogram_log_write_command(char *data, int len)

@@ -25,6 +25,8 @@
 #define INPUT_SIZE 1250
 #define OUTPUT_NUM_CLASS 5
 
+static int num_predictions = 0;
+
 static const char *TAG = "ml";	// Logging prefix for this module
 
 //
@@ -32,8 +34,9 @@ static const char *TAG = "ml";	// Logging prefix for this module
 //
 typedef enum
 {
-  ML_EVENT_ENTER_STATE,	// (used for state transitions)
-  ML_EVENT_INPUT
+  ML_EVENT_ENTER,	// (used for state transitions)
+  ML_EVENT_INPUT,
+  ML_EVENT_STOP
 } ml_event_type_t;
 
 // Events are passed to the  with an optional
@@ -71,6 +74,7 @@ static uint8_t g_event_queue_array[ML_EVENT_QUEUE_SIZE*sizeof(ml_event_t)];
 static StaticQueue_t g_event_queue_struct;
 static QueueHandle_t g_event_queue;
 static void handle_event(ml_event_t *event);
+
 float output[OUTPUT_NUM_CLASS];
 float model_input[INPUT_SIZE];
 
@@ -90,8 +94,9 @@ static const char * ml_state_name(ml_state_t state)
 static const char * ml_event_type_name(ml_event_type_t event_type)
 {
   switch (event_type) {
-    case ML_EVENT_ENTER_STATE: return "ML_EVENT_ENTER_STATE";
+    case ML_EVENT_ENTER: return "ML_EVENT_ENTER";
     case ML_EVENT_INPUT: return "ML_EVENT_INPUT";
+    case ML_EVENT_STOP: return "ML_EVENT_STOP";
     default:
       break;
   }
@@ -106,6 +111,12 @@ void ml_event_input(ads129x_frontal_sample* f_sample)
     memcpy(&(event.eeg_fpz_sample), &(f_sample->eeg_channels[EEG_FPZ]), sizeof(f_sample->eeg_channels[EEG_FPZ]));
     xQueueSend(g_event_queue, &event, portMAX_DELAY);
   }
+}
+
+void ml_event_stop(void)
+{
+	ml_event_t event = {.type = ML_EVENT_STOP};
+	xQueueSend(g_event_queue, &event, portMAX_DELAY);
 }
 
 static void log_event(ml_event_t *event)
@@ -130,13 +141,13 @@ static void log_event_ignored(ml_event_t *event)
 //
 static void set_state(ml_state_t state)
 {
-  //LOGD(TAG, "[%s] -> [%s]", ml_state_name(g_context.state), ml_state_name(state));
+  LOGD(TAG, "[%s] -> [%s]", ml_state_name(g_context.state), ml_state_name(state));
 
   g_context.state = state;
 
   // Immediately process an ENTER_STATE event, before any other pending events.
   // This allows the app to do state-specific init/setup when changing states.
-  ml_event_t event = { ML_EVENT_ENTER_STATE, (void *) state };
+  ml_event_t event = { ML_EVENT_ENTER, (void *) state };
   handle_event(&event);
 }
 
@@ -144,13 +155,17 @@ static void handle_state_standby(ml_event_t *event)
 {
 
   switch (event->type) {
-    case ML_EVENT_ENTER_STATE:
+    case ML_EVENT_ENTER:
       // Generic code to always execute when entering this state goes here.
       break;
 
     case ML_EVENT_INPUT:
       set_state(ML_STATE_INPUT);
       break;
+
+    case ML_EVENT_STOP:
+    	num_predictions = 0;
+    	break;
 
     default:
       log_event_ignored(event);
@@ -160,9 +175,10 @@ static void handle_state_standby(ml_event_t *event)
 
 static void handle_state_input(ml_event_t *event)
 {
-
   static int currentCount = 0;
   switch (event->type) {
+    case ML_EVENT_ENTER:
+    	currentCount = 0;
     case ML_EVENT_INPUT:{
       // Generic code to always execute when entering this state goes here.
       // Convert and store raw data to model input buffer (in V)
@@ -175,7 +191,14 @@ static void handle_state_input(ml_event_t *event)
     		set_state(ML_STATE_INFERENCE);
     		currentCount = 0;
     	}
+
       break;
+    }
+    case ML_EVENT_STOP:{
+    	set_state(ML_STATE_STANDBY);
+    	currentCount = 0;
+    	num_predictions = 0;
+    	break;
     }
 
     default:
@@ -187,7 +210,7 @@ static void handle_state_input(ml_event_t *event)
 static void handle_state_inference(ml_event_t *event)
 {
   switch (event->type) {
-    case ML_EVENT_ENTER_STATE:
+    case ML_EVENT_ENTER:
       // Generic code to always execute when entering this state goes here.
 
       // hifi_inference(constantWeight, mutableWeight, activations);
@@ -206,10 +229,20 @@ static void handle_state_inference(ml_event_t *event)
       }
       LOGV(TAG, "Inference output: %f, %f, %f, %f, %f\n\r", output[0], output[1], output[2], output[3], output[4]);
       LOGV(TAG, "Prediction: %d", max_idx);
+      num_predictions++;
 
+      // basic data formatting
       char data[3];
-      sprintf(data, "%d, ", max_idx);
-      hypnogram_log_write_command((char *)&data, sizeof(data));
+      if (num_predictions == 1)
+      {
+    	  sprintf(data, "%d", max_idx);
+    	  hypnogram_log_write_command((char *)&data, 1);
+      }
+      else
+      {
+    	  sprintf(data, ", %d", max_idx);
+    	  hypnogram_log_write_command((char *)&data, sizeof(data));
+      }
       set_state(ML_STATE_STANDBY);
       break;
 
