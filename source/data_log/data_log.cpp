@@ -359,6 +359,54 @@ static bool open_data_log(){
 
 }
 
+void open_hypnogram_log(FIL *file)
+{
+  char log_fnum_buf[15];
+  size_t datalog_uid = 0;
+
+  // get log unique ID (assume data log will always be opened first)
+  // get previously used UID from settings file
+  if ( getLogFileUID(log_fnum_buf, sizeof(log_fnum_buf)) ) {
+    log_fnum_buf[sizeof(log_fnum_buf)-1] = '\0';
+    datalog_uid = atoi(log_fnum_buf);
+    }else{
+    datalog_uid = 0;
+  }
+
+  while(true){
+    snprintf ( log_fnum_buf, sizeof(log_fnum_buf), "%d", datalog_uid );
+
+    // create log file name
+    char log_fname[MAX_PATH_LENGTH];
+    size_t log_fsize = 0;
+    log_fsize = str_append2(log_fname, log_fsize, HYPNOGRAM_LOG_DIR_PATH); // directory
+    log_fsize = str_append2(log_fname, log_fsize, "/");               // path separator
+    log_fsize = str_append2(log_fname, log_fsize, "hypnogram_log");             // log file name
+    log_fsize = str_append2(log_fname, log_fsize, log_fnum_buf);      // log file number
+
+    char log_datetime[12];
+    snprintf(log_datetime, sizeof(log_datetime), "%lu", rtc_get());
+    log_fsize = str_append2(log_fname, log_fsize, "_");
+    log_fsize = str_append2(log_fname, log_fsize, log_datetime);
+
+    log_fsize = str_append2(log_fname, log_fsize, ".txt");            // log file suffix
+
+    // close the previous log file
+    f_close(file);
+
+    // ensure the data log folder exists
+    f_mkdir(HYPNOGRAM_LOG_DIR_PATH);
+
+    FRESULT result = f_open(file, log_fname, FA_CREATE_NEW | FA_WRITE);
+    if(result){
+        LOGE(TAG, "f_open() for %s returned %u\n", log_fname, result);
+        break;
+    }
+    else{
+      break;
+    }
+  } // end while loop
+}
 
 bool open_eeg_comp_data_log(const char* log_filename_to_compress) {
 

@@ -19,7 +19,7 @@ extern "C" {
 
 void data_log_open_command(int argc, char **argv);
 void data_log_close_command(int argc, char **argv);
-void hypnogram_log_open_command(int argc, char **argv);
+void hypnogram_log_open_command(void);
 void hypnogram_log_close_command(void);
 void hypnogram_log_write_command(char *data, int len);
 
