@@ -8,6 +8,7 @@
 
 #include "loglevels.h"
 #include "config.h"
+#include "eeg_constants.h"
 #include "ml.h"
 
 #include "rt_nonfinite.h"
@@ -38,7 +39,7 @@ typedef enum
 typedef struct
 {
   ml_event_type_t type;
-  ads129x_frontal_sample eeg_sample;
+  int32_t eeg_fpz_sample;
 } ml_event_t;
 
 
@@ -97,9 +98,12 @@ static const char * ml_event_type_name(ml_event_type_t event_type)
 
 void ml_event_input(ads129x_frontal_sample* f_sample)
 {
-  ml_event_t event = {.type = ML_EVENT_INPUT};
-  memcpy(&(event.eeg_sample), f_sample, sizeof(event.eeg_sample));
-  xQueueSend(g_event_queue, &event, portMAX_DELAY);
+  if (f_sample->eeg_sample_number % 2 == 0) // ML model expects downsampled (1/2) input
+  {
+	ml_event_t event = {.type = ML_EVENT_INPUT};
+	memcpy(&(event.eeg_fpz_sample), &(f_sample->eeg_channels[EEG_FPZ]), sizeof(f_sample->eeg_channels[EEG_FPZ]));
+	xQueueSend(g_event_queue, &event, portMAX_DELAY);
+  }
 }
 
 //void ml_event_output(int *output) // on output, send output to application or something to eventually log
@@ -166,14 +170,10 @@ static void handle_state_input(ml_event_t *event)
   switch (event->type) {
     case ML_EVENT_INPUT:{
       // Generic code to always execute when entering this state goes here.
-    	// store event data to model_input buffer
-    	ads129x_frontal_sample *eeg_sample = &(event->eeg_sample);
-    	if ((eeg_sample->eeg_sample_number % 2 == 0) && (currentCount < INPUT_SIZE))
-    	{
-    		// TODO: This mem copy from int32 to float looks suspicious.
-    		memcpy(&model_input[currentCount], &(eeg_sample->eeg_channels[EEG_FPZ]), sizeof(eeg_sample->eeg_channels[EEG_FPZ]) );
-    		currentCount++;
-    	}
+
+    	// Convert and store raw data to model input buffer (in V)
+		model_input[currentCount] = (float) event->eeg_fpz_sample * EEG_SCALAR_V;
+		currentCount++;
 
     	if (currentCount == INPUT_SIZE) // raw data is downsampled by half
     	{
