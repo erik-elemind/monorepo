@@ -23,6 +23,7 @@
 #include "fsl_i2s_dma.h"
 #include "fsl_flexspi.h"
 #include "fsl_flexspi_dma.h"
+#include "fsl_rtc.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -174,6 +175,14 @@ extern "C" {
 #define NAND_FLEXSPI_RX_DMA_CHANNEL 28
 /* Used DMA device. */
 #define NAND_FLEXSPI_RX_DMA_BASEADDR DMA1
+/* Definition of peripheral ID */
+#define RTC_PERIPHERAL RTC
+/* RTC interrupt vector ID (number). */
+#define RTC_IRQN RTC_IRQn
+/* RTC interrupt vector priority. */
+#define RTC_IRQ_PRIORITY 5
+/* RTC interrupt handler identifier. */
+#define RTC_IRQHANDLER RTC_IRQHandler
 
 /***********************************************************************************************************************
  * Global variables
