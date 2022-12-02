@@ -156,6 +156,7 @@ instance:
       - 12: []
       - 13: []
       - 14: []
+      - 15: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -1012,6 +1013,51 @@ static void NAND_FLEXSPI_init(void) {
 }
 
 /***********************************************************************************************************************
+ * RTC initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'RTC'
+- type: 'lpc_rtc'
+- mode: 'general'
+- custom_name_enabled: 'false'
+- type_id: 'lpc_rtc_607bd7331c2c81c0037fe4624be881b6'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'RTC'
+- config_sets:
+  - fsl_rtc:
+    - rtc_config:
+      - setDateTime: 'false'
+      - setAlarmTime: 'false'
+      - setWakeup: 'false'
+      - alarm_wake_up_enable: 'false'
+      - wake_up_enable: 'false'
+      - start: 'true'
+    - rtc_interrupt:
+      - interrupt_vectors:
+        - enable_irq: 'true'
+        - interrupt:
+          - IRQn: 'RTC_IRQn'
+          - enable_interrrupt: 'enabled'
+          - enable_priority: 'true'
+          - priority: '5'
+          - enable_custom_name: 'false'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+
+static void RTC_init(void) {
+  /* RTC initialization */
+  RTC_Init(RTC_PERIPHERAL);
+  /* Start RTC timer */
+  RTC_StartTimer(RTC_PERIPHERAL);
+  /* Interrupt vector RTC_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(RTC_IRQN, RTC_IRQ_PRIORITY);
+  /* Enable interrupt RTC_IRQn request in the NVIC. */
+  EnableIRQ(RTC_IRQN);
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 void BOARD_InitPeripherals(void)
@@ -1032,6 +1078,7 @@ void BOARD_InitPeripherals(void)
   SCT0_init();
   FC4_AUDIO_I2S_init();
   NAND_FLEXSPI_init();
+  RTC_init();
 }
 
 /***********************************************************************************************************************

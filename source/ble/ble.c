@@ -835,10 +835,7 @@ static void
 handle_time_command(ble_event_t *event)
 {
   memcpy(&(g_ble_context.time), &(event->user_data[0]), TIME_NUM);
-
-  // TODO: Save the time, reset the RTC
-//  asd
-
+  rtc_set(g_ble_context.time);
 }
 
 static void

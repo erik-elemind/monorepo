@@ -605,6 +605,16 @@
                   <data type="Version">2.2.1</data>
                </feature>
             </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.lpc_rtc" description="RTC Driver not found in the toolchain/IDE project. Project will not compile!" problem_level="2" source="Peripherals">
+               <feature name="enabled" evaluation="equal">
+                  <data type="Boolean">true</data>
+               </feature>
+            </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.lpc_rtc" description="Unsupported version of the RTC Driver in the toolchain/IDE project. Required: ${required_value}, actual: ${actual_value}. Project might not compile correctly." problem_level="1" source="Peripherals">
+               <feature name="version" evaluation="equivalent">
+                  <data type="Version">2.1.0</data>
+               </feature>
+            </dependency>
          </dependencies>
          <generated_project_files>
             <file path="board/peripherals.c" update_enabled="true"/>
@@ -893,6 +903,7 @@
                            <struct name="12"/>
                            <struct name="13"/>
                            <struct name="14"/>
+                           <struct name="15"/>
                         </array>
                         <array name="interrupts"/>
                      </config_set>
@@ -1400,6 +1411,30 @@
                            <setting name="init_callback_dma" value="true"/>
                            <setting name="callback_fcn_dma" value="nand_flexspi_isr"/>
                            <setting name="user_data_dma" value=""/>
+                        </struct>
+                     </config_set>
+                  </instance>
+                  <instance name="RTC" uuid="e487f96e-2e18-432e-b2bd-765bd1782289" type="lpc_rtc" type_id="lpc_rtc_607bd7331c2c81c0037fe4624be881b6" mode="general" peripheral="RTC" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                     <config_set name="fsl_rtc">
+                        <struct name="rtc_config">
+                           <setting name="setDateTime" value="false"/>
+                           <setting name="setAlarmTime" value="false"/>
+                           <setting name="setWakeup" value="false"/>
+                           <setting name="alarm_wake_up_enable" value="false"/>
+                           <setting name="wake_up_enable" value="false"/>
+                           <setting name="start" value="true"/>
+                        </struct>
+                        <struct name="rtc_interrupt">
+                           <struct name="interrupt_vectors">
+                              <setting name="enable_irq" value="true"/>
+                              <struct name="interrupt">
+                                 <setting name="IRQn" value="RTC_IRQn"/>
+                                 <setting name="enable_interrrupt" value="enabled"/>
+                                 <setting name="enable_priority" value="true"/>
+                                 <setting name="priority" value="5"/>
+                                 <setting name="enable_custom_name" value="false"/>
+                              </struct>
+                           </struct>
                         </struct>
                      </config_set>
                   </instance>
