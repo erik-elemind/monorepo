@@ -359,7 +359,7 @@ static bool open_data_log(){
 
 }
 
-void open_hypnogram_log(FIL *file)
+void hypnogram_log_open(FIL *file)
 {
   char log_fnum_buf[15];
   size_t datalog_uid = 0;

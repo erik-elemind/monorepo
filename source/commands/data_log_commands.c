@@ -10,12 +10,13 @@
 #include "data_log_commands.h"
 #include "command_helpers.h"
 #include "data_log.h"
+#include "loglevels.h"
 #include "utils.h"
 #include "config.h"
 #include "ff.h"
 #include "ml.h"
 
-FIL hypnogram_log;
+static FIL hypnogram_log;
 
 void data_log_open_command(int argc, char **argv)
 {
@@ -29,7 +30,7 @@ void data_log_close_command(int argc, char **argv)
 
 void hypnogram_log_open_command(void)
 {
-  open_hypnogram_log(&hypnogram_log);
+  hypnogram_log_open(&hypnogram_log);
 }
 
 void hypnogram_log_close_command(void)
@@ -44,7 +45,7 @@ void hypnogram_log_write_command(char *data, int len)
 	FRESULT result = f_write(&hypnogram_log, data, len, &bytes_written);
 	if (result)
 	{
-		printf("f_write() for %s returned %u\n", "datalogs/hypnogram_log.txt", result);
+		LOGE("hypnogram", "f_write() for %s returned %u\n", "hypnogram_log", result);
 		return;
 	}
 	f_sync(&hypnogram_log);
