@@ -18,6 +18,7 @@
 #include "ads129x.h"
 #include "eeg_datatypes.h"
 #include "config.h"
+#include "ff.h"
 
 
 // Start: Tell C++ compiler to include this C header.
@@ -32,6 +33,7 @@ void data_log_task(void *ignored);
 
 void data_log_open();
 void data_log_close();
+void hypnogram_log_open(FIL *file);
 
 void data_log_set_time(char *datetime_string, size_t datetime_size);
 

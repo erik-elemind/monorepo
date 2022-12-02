@@ -12,6 +12,7 @@ void ml_task(void *ignored);
 
 // Send various event types to this task:
 void ml_event_input(ads129x_frontal_sample* f_sample);
+void ml_event_stop(void);
 
 #ifdef __cplusplus
 }
