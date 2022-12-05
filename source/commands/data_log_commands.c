@@ -14,9 +14,8 @@
 #include "utils.h"
 #include "config.h"
 #include "ff.h"
-#include "ml.h"
 
-static FIL hypnogram_log;
+static FIL user_metrics_log;
 
 void data_log_open_command(int argc, char **argv)
 {
@@ -28,27 +27,26 @@ void data_log_close_command(int argc, char **argv)
   data_log_close();
 }
 
-void hypnogram_log_open_command(void)
+void user_metrics_log_open_command(void)
 {
-  hypnogram_log_open(&hypnogram_log);
+  user_metrics_log_open(&user_metrics_log);
 }
 
-void hypnogram_log_close_command(void)
+void user_metrics_log_close_command(void)
 {
-	f_close(&hypnogram_log);
-	ml_event_stop();
+	f_close(&user_metrics_log);
 }
 
-void hypnogram_log_write_command(char *data, int len)
+void user_metrics_log_write_command(char *data, int len)
 {
 	UINT bytes_written;
-	FRESULT result = f_write(&hypnogram_log, data, len, &bytes_written);
+	FRESULT result = f_write(&user_metrics_log, data, len, &bytes_written);
 	if (result)
 	{
-		LOGE("hypnogram", "f_write() for %s returned %u\n", "hypnogram_log", result);
+		LOGE("user_metrics", "f_write() for %s returned %u\n", "user_metrics", result);
 		return;
 	}
-	f_sync(&hypnogram_log);
+	f_sync(&user_metrics_log);
 }
 
 #if (defined(ENABLE_OFFLINE_EEG_COMPRESSION) && (ENABLE_OFFLINE_EEG_COMPRESSION > 0U))

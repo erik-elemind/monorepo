@@ -158,7 +158,7 @@ static void handle_state_standby(user_metrics_event_t *event)
       break;
 
     case USER_METRICS_EVENT_STOP:
-    	//close file
+    	user_metrics_log_close_command();
     	set_state(USER_METRICS_STATE_STANDBY);
     	break;
 
@@ -180,7 +180,7 @@ static void handle_state_input(user_metrics_event_t *event)
     	// set_state(USER_METRICS_STATE_STANDBY);
     	break;
     case USER_METRICS_EVENT_STOP:{
-    	// close file and
+    	user_metrics_log_close_command();
     	set_state(USER_METRICS_STATE_STANDBY);
     	break;
     }
@@ -196,13 +196,14 @@ static void handle_state_open(user_metrics_event_t *event)
   switch (event->type) {
   case USER_METRICS_EVENT_ENTER:
   case USER_METRICS_EVENT_OPEN:
-	  // close old file, open new file
+	  user_metrics_log_close_command();
+	  user_metrics_log_open_command();
 	  break;
   case USER_METRICS_EVENT_INPUT:
 	  set_state(USER_METRICS_STATE_INPUT);
 	  break;
   case USER_METRICS_EVENT_STOP:
-	  // close files
+	  user_metrics_log_close_command();
 	  set_state(USER_METRICS_STATE_STANDBY);
 	  break;
   default:

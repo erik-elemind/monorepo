@@ -35,6 +35,7 @@
 #include "system_monitor.h"
 #include "hrm.h"
 #include "data_log_commands.h"
+#include "ml.h"
 
 #if (defined(ENABLE_INTERPRETER_TASK) && (ENABLE_INTERPRETER_TASK > 0U))
 
@@ -565,7 +566,7 @@ interpreter_stop_therapy(){
   close_script();
   // stop logging
   data_log_close();
-  hypnogram_log_close_command();
+  user_metrics_log_close_command();
   // stop any timers
   stop_therapy_delay_timer();
   stop_therapy_timer1_timer();
@@ -590,6 +591,8 @@ interpreter_stop_therapy(){
   system_monitor_event_als_stop();
   system_monitor_event_mic_stop();
   hrm_event_turn_off();
+  // stop any ML
+  ml_event_stop();
 
   // update ble
   ble_therapy_update( THERAPY_TYPE_NONE );

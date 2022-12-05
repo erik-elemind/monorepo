@@ -359,7 +359,7 @@ static bool open_data_log(){
 
 }
 
-void hypnogram_log_open(FIL *file)
+void user_metrics_log_open(FIL *file)
 {
   char log_fnum_buf[15];
   size_t datalog_uid = 0;
@@ -379,23 +379,23 @@ void hypnogram_log_open(FIL *file)
     // create log file name
     char log_fname[MAX_PATH_LENGTH];
     size_t log_fsize = 0;
-    log_fsize = str_append2(log_fname, log_fsize, HYPNOGRAM_LOG_DIR_PATH); // directory
+    log_fsize = str_append2(log_fname, log_fsize, USER_METRICS_DIR_PATH); // directory
     log_fsize = str_append2(log_fname, log_fsize, "/");               // path separator
-    log_fsize = str_append2(log_fname, log_fsize, "hypnogram_log");             // log file name
-    log_fsize = str_append2(log_fname, log_fsize, log_fnum_buf);      // log file number
 
-    char log_datetime[12];
+    char log_datetime[12]; //timestamp
     snprintf(log_datetime, sizeof(log_datetime), "%lu", rtc_get());
     log_fsize = str_append2(log_fname, log_fsize, "_");
     log_fsize = str_append2(log_fname, log_fsize, log_datetime);
 
-    log_fsize = str_append2(log_fname, log_fsize, ".txt");            // log file suffix
+    log_fsize = str_append2(log_fname, log_fsize, "user_metrics");    // log file name
+    log_fsize = str_append2(log_fname, log_fsize, log_fnum_buf);      // log file number
+    log_fsize = str_append2(log_fname, log_fsize, ".csv");            // log file suffix
 
     // close the previous log file
     f_close(file);
 
     // ensure the data log folder exists
-    f_mkdir(HYPNOGRAM_LOG_DIR_PATH);
+    f_mkdir(USER_METRICS_DIR_PATH);
 
     FRESULT result = f_open(file, log_fname, FA_CREATE_NEW | FA_WRITE);
     if(result){

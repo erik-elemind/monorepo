@@ -25,8 +25,6 @@
 #define INPUT_SIZE 1250
 #define OUTPUT_NUM_CLASS 5
 
-static int num_predictions = 0;
-
 static const char *TAG = "ml";	// Logging prefix for this module
 
 //
@@ -164,7 +162,6 @@ static void handle_state_standby(ml_event_t *event)
       break;
 
     case ML_EVENT_STOP:
-    	num_predictions = 0;
     	break;
 
     default:
@@ -197,7 +194,6 @@ static void handle_state_input(ml_event_t *event)
     case ML_EVENT_STOP:{
     	set_state(ML_STATE_STANDBY);
     	currentCount = 0;
-    	num_predictions = 0;
     	break;
     }
 
@@ -229,20 +225,6 @@ static void handle_state_inference(ml_event_t *event)
       }
       LOGV(TAG, "Inference output: %f, %f, %f, %f, %f\n\r", output[0], output[1], output[2], output[3], output[4]);
       LOGV(TAG, "Prediction: %d", max_idx);
-      num_predictions++;
-
-      // basic data formatting
-      char data[3];
-      if (num_predictions == 1)
-      {
-    	  sprintf(data, "%d", max_idx);
-    	  hypnogram_log_write_command((char *)&data, 1);
-      }
-      else
-      {
-    	  sprintf(data, ", %d", max_idx);
-    	  hypnogram_log_write_command((char *)&data, sizeof(data));
-      }
       set_state(ML_STATE_STANDBY);
       break;
 
