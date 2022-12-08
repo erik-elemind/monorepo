@@ -138,16 +138,25 @@ static void log_event_ignored(ml_event_t *event)
 //
 // Event handlers for the various application states:
 //
-static void set_state(ml_state_t state)
+static void set_state(ml_state_t state, ml_event_t *cur_event)
 {
   LOGD(TAG, "[%s] -> [%s]", ml_state_name(g_context.state), ml_state_name(state));
 
   g_context.state = state;
 
-  // Immediately process an ENTER_STATE event, before any other pending events.
-  // This allows the app to do state-specific init/setup when changing states.
-  ml_event_t event = { ML_EVENT_ENTER, (void *) state };
-  handle_event(&event);
+  // process the first input received
+  if (cur_event->type == ML_EVENT_INPUT)
+  {
+    ml_event_t event = { .type = ML_EVENT_ENTER, .eeg_fpz_sample = cur_event->eeg_fpz_sample};
+    handle_event(&event);
+  }
+  else
+  {
+    // Immediately process an ENTER_STATE event, before any other pending events.
+    // This allows the app to do state-specific init/setup when changing states.
+    ml_event_t event = { ML_EVENT_ENTER, (void *) state };
+    handle_event(&event);
+  }
 }
 
 static void handle_state_standby(ml_event_t *event)
@@ -159,7 +168,7 @@ static void handle_state_standby(ml_event_t *event)
       break;
 
     case ML_EVENT_INPUT:
-      set_state(ML_STATE_INPUT);
+      set_state(ML_STATE_INPUT, event);
       break;
 
     case ML_EVENT_STOP:
@@ -186,14 +195,14 @@ static void handle_state_input(ml_event_t *event)
 
     	if (currentCount == INPUT_SIZE) // raw data is downsampled by half
     	{
-    		set_state(ML_STATE_INFERENCE);
+    		set_state(ML_STATE_INFERENCE, event);
     		currentCount = 0;
     	}
 
       break;
     }
     case ML_EVENT_STOP:{
-    	set_state(ML_STATE_STANDBY);
+    	set_state(ML_STATE_STANDBY, event);
     	currentCount = 0;
     	break;
     }
@@ -227,7 +236,7 @@ static void handle_state_inference(ml_event_t *event)
       LOGV(TAG, "Inference output: %f, %f, %f, %f, %f\n\r", output[0], output[1], output[2], output[3], output[4]);
       LOGV(TAG, "Prediction: %d", max_idx);
       user_metrics_event_input(max_idx, HYPNOGRAM_DATA);
-      set_state(ML_STATE_STANDBY);
+      set_state(ML_STATE_STANDBY, event);
       break;
 
     default:
@@ -272,7 +281,7 @@ void ml_pretask_init(void)
 static void task_init()
 {
   // Any post-scheduler init goes here.
-  set_state(ML_STATE_STANDBY);
+  set_state(ML_STATE_STANDBY, NULL);
   LOGV(TAG, "Task launched. Entering event loop.\n\r");
 }
 

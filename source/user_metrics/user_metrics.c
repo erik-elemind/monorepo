@@ -13,11 +13,6 @@
 #include "data_log_commands.h"
 #include "ff.h"
 
-// Note: It looks like one "inference" takes a little less than 3 seconds.
-// During inference the event queue is not being emptied.
-// Since the event queue dominantly receives EEG sample events, which occur at 250Hz.
-// 3 seconds * 250 Hz = 750 sample events.
-// To provide buffer size, we're allocating a queue size of 1000 events.
 #define USER_METRICS_EVENT_QUEUE_SIZE 10
 static const char *TAG = "user_metrics";	// Logging prefix for this module
 static FIL user_metrics_log;
@@ -44,7 +39,7 @@ typedef enum
 typedef struct
 {
   user_metrics_event_type_t type;
-  uint8_t data;
+  int data;
   user_metrics_data_t datatype;
 } user_metrics_event_t;
 
@@ -140,16 +135,25 @@ static void log_event_ignored(user_metrics_event_t *event)
 //
 // Event handlers for the various application states:
 //
-static void set_state(user_metrics_state_t state)
+static void set_state(user_metrics_state_t state, user_metrics_event_t *cur_event)
 {
   LOGD(TAG, "[%s] -> [%s]", user_metrics_state_name(g_context.state), user_metrics_state_name(state));
 
   g_context.state = state;
 
-  // Immediately process an ENTER_STATE event, before any other pending events.
-  // This allows the app to do state-specific init/setup when changing states.
-  user_metrics_event_t event = { USER_METRICS_EVENT_ENTER, (void *) state };
-  handle_event(&event);
+  // process first input
+  if (cur_event->type == USER_METRICS_EVENT_INPUT)
+  {
+    user_metrics_event_t event = { .type = USER_METRICS_EVENT_ENTER, .data = cur_event->data};
+    handle_event(&event);
+  }
+  else
+  {
+    // Immediately process an ENTER_STATE event, before any other pending events.
+    // This allows the app to do state-specific init/setup when changing states.
+    user_metrics_event_t event = { USER_METRICS_EVENT_ENTER, (void *) state };
+    handle_event(&event);
+  }
 }
 
 static void handle_state_standby(user_metrics_event_t *event)
@@ -163,19 +167,19 @@ static void handle_state_standby(user_metrics_event_t *event)
     	timestamp = 0;
       break;
     case USER_METRICS_EVENT_INPUT:
-    	set_state(USER_METRICS_STATE_INPUT);
-    	break;
+      set_state(USER_METRICS_STATE_INPUT, event);
+      break;
 
     case USER_METRICS_EVENT_OPEN:
-      set_state(USER_METRICS_STATE_OPEN);
+      set_state(USER_METRICS_STATE_OPEN, event);
       break;
 
     case USER_METRICS_EVENT_STOP:
     	f_printf(&user_metrics_log, "]}");
     	f_sync(&user_metrics_log);
     	f_close(&user_metrics_log);
-    	sample_count = 0;
-    	set_state(USER_METRICS_STATE_STANDBY);
+      sample_count = 0;
+      set_state(USER_METRICS_STATE_STANDBY, event);
     	break;
 
     default:
@@ -189,7 +193,6 @@ static void handle_state_input(user_metrics_event_t *event)
   switch (event->type) {
     case USER_METRICS_EVENT_ENTER:
     case USER_METRICS_EVENT_INPUT:
-      // Generic code to always execute when entering this state goes here.
     	switch (event->datatype) {
     		// based on the datatype, save in var
     		case HYPNOGRAM_DATA:
@@ -216,15 +219,15 @@ static void handle_state_input(user_metrics_event_t *event)
       //UINT bytes_written;
       //f_write(&user_metrics_log, data, sizeof(data), &bytes_written);
       f_sync(&user_metrics_log);
-      set_state(USER_METRICS_STATE_STANDBY);
-    	break;
+      set_state(USER_METRICS_STATE_STANDBY, event);
+      break;
     case USER_METRICS_EVENT_STOP:{
       f_printf(&user_metrics_log, "]}");
       f_sync(&user_metrics_log);
       f_close(&user_metrics_log);
       sample_count = 0;
-    	set_state(USER_METRICS_STATE_STANDBY);
-    	break;
+      set_state(USER_METRICS_STATE_STANDBY, event);
+      break;
     }
 
     default:
@@ -238,24 +241,22 @@ static void handle_state_open(user_metrics_event_t *event)
   switch (event->type) {
   case USER_METRICS_EVENT_ENTER:
   case USER_METRICS_EVENT_OPEN:
-	f_printf(&user_metrics_log, "]}");
-	f_sync(&user_metrics_log);
-	f_close(&user_metrics_log);
-	sample_count = 0;
-	  user_metrics_log_open(&user_metrics_log);
-	  break;
-  case USER_METRICS_EVENT_INPUT:
-	  set_state(USER_METRICS_STATE_INPUT);
-	  break;
+    f_printf(&user_metrics_log, "]}");
+    f_sync(&user_metrics_log);
+    f_close(&user_metrics_log);
+    sample_count = 0;
+    user_metrics_log_open(&user_metrics_log);
+    set_state(USER_METRICS_STATE_STANDBY, event);
+    break;
   case USER_METRICS_EVENT_STOP:
-  	f_printf(&user_metrics_log, "]}");
-  	f_sync(&user_metrics_log);
-  	f_close(&user_metrics_log);
-  	sample_count = 0;
-	  set_state(USER_METRICS_STATE_STANDBY);
-	  break;
+    f_printf(&user_metrics_log, "]}");
+    f_sync(&user_metrics_log);
+    f_close(&user_metrics_log);
+    sample_count = 0;
+    set_state(USER_METRICS_STATE_STANDBY, event);
+    break;
   default:
-	  log_event_ignored(event);
+    log_event_ignored(event);
 	  break;
   }
 }
@@ -296,7 +297,7 @@ void user_metrics_pretask_init(void)
 static void task_init()
 {
   // Any post-scheduler init goes here.
-  set_state(USER_METRICS_STATE_STANDBY);
+  set_state(USER_METRICS_STATE_STANDBY, NULL);
   LOGV(TAG, "Task launched. Entering event loop.\n\r");
 }
 
