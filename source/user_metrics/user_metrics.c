@@ -16,12 +16,6 @@
 #define USER_METRICS_EVENT_QUEUE_SIZE 10
 static const char *TAG = "user_metrics";	// Logging prefix for this module
 static FIL user_metrics_log;
-
-// make into struct?
-static int hypnogram = -1;
-static int bpm = -1;
-static int activity = -1;
-static uint32_t timestamp = 0;
 static int sample_count = 0;
 //
 // Task events:
@@ -161,10 +155,6 @@ static void handle_state_standby(user_metrics_event_t *event)
   switch (event->type) {
     case USER_METRICS_EVENT_ENTER:
       // Generic code to always execute when entering this state goes here.
-    	hypnogram = -1;
-    	bpm = -1;
-    	activity = -1;
-    	timestamp = 0;
       break;
     case USER_METRICS_EVENT_INPUT:
       set_state(USER_METRICS_STATE_INPUT, event);
@@ -193,31 +183,36 @@ static void handle_state_input(user_metrics_event_t *event)
   switch (event->type) {
     case USER_METRICS_EVENT_ENTER:
     case USER_METRICS_EVENT_INPUT:
-    	switch (event->datatype) {
-    		// based on the datatype, save in var
-    		case HYPNOGRAM_DATA:
-    			hypnogram = event->data;
-    			break;
-    		case HRM_DATA:
-    			bpm = event->data;
-    			break;
-    		case ACTIVITY_DATA:
-    			activity = event->data;
-    			break;
-    	}
-    	timestamp = rtc_get();
-      sample_count++;
+    	sample_count++;
+    	// dollar tree JSON
       if (sample_count == 1)
       {
-        f_printf(&user_metrics_log, "{\"timestamp\":%lu,\"hypnogram\":%d,\"bpm\":%d,\"activity\":%d}", timestamp, hypnogram, bpm, activity);
+    	  switch (event->datatype) {
+			  case HYPNOGRAM_DATA:
+				  f_printf(&user_metrics_log, "{\"ts\":%lu,\"rtss\":%d}", rtc_get(), event->data);
+				  break;
+			  case HRM_DATA:
+				  f_printf(&user_metrics_log, "{\"ts\":%lu,\"bpm\":%d}", rtc_get(), event->data);
+				  break;
+			  case ACTIVITY_DATA:
+				  f_printf(&user_metrics_log, "{\"ts\":%lu,\"act\":%d}", rtc_get(), event->data);
+    		  break;
+    	  }
       }
       else
       {
-        f_printf(&user_metrics_log, ",\n{\"timestamp\":%lu,\"hypnogram\":%d,\"bpm\":%d,\"activity\":%d}", timestamp, hypnogram, bpm, activity);
+    	  switch (event->datatype) {
+			  case HYPNOGRAM_DATA:
+				  f_printf(&user_metrics_log, ",\n{\"ts\":%lu,\"rtss\":%d}", rtc_get(), event->data);
+				  break;
+			  case HRM_DATA:
+				  f_printf(&user_metrics_log, ",\n{\"ts\":%lu,\"bpm\":%d}", rtc_get(), event->data);
+				  break;
+			  case ACTIVITY_DATA:
+				  f_printf(&user_metrics_log, ",\n{\"ts\":%lu,\"act\":%d}", rtc_get(), event->data);
+				  break;
+    	  }
       }
-
-      //UINT bytes_written;
-      //f_write(&user_metrics_log, data, sizeof(data), &bytes_written);
       f_sync(&user_metrics_log);
       set_state(USER_METRICS_STATE_STANDBY, event);
       break;
