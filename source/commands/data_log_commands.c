@@ -14,8 +14,7 @@
 #include "utils.h"
 #include "config.h"
 #include "ff.h"
-
-static FIL user_metrics_log;
+#include "user_metrics.h"
 
 void data_log_open_command(int argc, char **argv)
 {
@@ -29,24 +28,12 @@ void data_log_close_command(int argc, char **argv)
 
 void user_metrics_log_open_command(void)
 {
-  user_metrics_log_open(&user_metrics_log);
+	user_metrics_event_open();
 }
 
 void user_metrics_log_close_command(void)
 {
-	f_close(&user_metrics_log);
-}
-
-void user_metrics_log_write_command(char *data, int len)
-{
-	UINT bytes_written;
-	FRESULT result = f_write(&user_metrics_log, data, len, &bytes_written);
-	if (result)
-	{
-		LOGE("user_metrics", "f_write() for %s returned %u\n", "user_metrics", result);
-		return;
-	}
-	f_sync(&user_metrics_log);
+	user_metrics_event_stop();
 }
 
 #if (defined(ENABLE_OFFLINE_EEG_COMPRESSION) && (ENABLE_OFFLINE_EEG_COMPRESSION > 0U))

@@ -21,7 +21,6 @@ void data_log_open_command(int argc, char **argv);
 void data_log_close_command(int argc, char **argv);
 void user_metrics_log_open_command(void);
 void user_metrics_log_close_command(void);
-void user_metrics_log_write_command(char *data, int len);
 
 #if (defined(ENABLE_OFFLINE_EEG_COMPRESSION) && (ENABLE_OFFLINE_EEG_COMPRESSION > 0U))
 void data_log_compress_command(int argc, char **argv);

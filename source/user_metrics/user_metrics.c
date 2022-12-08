@@ -11,6 +11,7 @@
 #include "eeg_constants.h"
 #include "user_metrics.h"
 #include "data_log_commands.h"
+#include "ff.h"
 
 // Note: It looks like one "inference" takes a little less than 3 seconds.
 // During inference the event queue is not being emptied.
@@ -19,7 +20,14 @@
 // To provide buffer size, we're allocating a queue size of 1000 events.
 #define USER_METRICS_EVENT_QUEUE_SIZE 10
 static const char *TAG = "user_metrics";	// Logging prefix for this module
+static FIL user_metrics_log;
 
+// make into struct?
+static int hypnogram = -1;
+static int bpm = -1;
+static int activity = -1;
+static uint32_t timestamp = 0;
+static char data[13];
 //
 // Task events:
 //
@@ -36,7 +44,8 @@ typedef enum
 typedef struct
 {
   user_metrics_event_type_t type;
-  int32_t eeg_fpz_sample;
+  uint8_t data;
+  user_metrics_data_t datatype;
 } user_metrics_event_t;
 
 
@@ -99,10 +108,9 @@ void user_metrics_event_open(void)
     xQueueSend(g_event_queue, &event, portMAX_DELAY);
 }
 
-void user_metrics_event_input(void)
+void user_metrics_event_input(uint8_t data, user_metrics_data_t datatype)
 {
-    user_metrics_event_t event = {.type = USER_METRICS_EVENT_INPUT};
-    //memcpy(&(event.eeg_fpz_sample), &(f_sample->eeg_channels[EEG_FPZ]), sizeof(f_sample->eeg_channels[EEG_FPZ]));
+    user_metrics_event_t event = {.type = USER_METRICS_EVENT_INPUT, .datatype = datatype, .data=data};
     xQueueSend(g_event_queue, &event, portMAX_DELAY);
 }
 
@@ -146,19 +154,24 @@ static void set_state(user_metrics_state_t state)
 
 static void handle_state_standby(user_metrics_event_t *event)
 {
-
   switch (event->type) {
     case USER_METRICS_EVENT_ENTER:
       // Generic code to always execute when entering this state goes here.
-    	// reinit struct
+    	hypnogram = -1;
+    	bpm = -1;
+    	activity = -1;
+    	timestamp = 0;
       break;
+    case USER_METRICS_EVENT_INPUT:
+    	set_state(USER_METRICS_STATE_INPUT);
+    	break;
 
     case USER_METRICS_EVENT_OPEN:
       set_state(USER_METRICS_STATE_OPEN);
       break;
 
     case USER_METRICS_EVENT_STOP:
-    	user_metrics_log_close_command();
+    	f_close(&user_metrics_log);
     	set_state(USER_METRICS_STATE_STANDBY);
     	break;
 
@@ -174,13 +187,27 @@ static void handle_state_input(user_metrics_event_t *event)
     case USER_METRICS_EVENT_ENTER:
     case USER_METRICS_EVENT_INPUT:
       // Generic code to always execute when entering this state goes here.
-      // Check timestamp
-    	// fill in struct
-    	// if struct full, save file
-    	// set_state(USER_METRICS_STATE_STANDBY);
+    	switch (event->datatype) {
+    		// based on the datatype, save in var
+    		case HYPNOGRAM_DATA:
+    			hypnogram = event->data;
+    			break;
+    		case HRM_DATA:
+    			bpm = event->data;
+    			break;
+    		case ACTIVITY_DATA:
+    			activity = event->data;
+    			break;
+    	}
+    	timestamp = rtc_get();
+    	f_printf(&user_metrics_log, "%lu, %d, %d, %d\n", timestamp, hypnogram, bpm, activity);
+		//UINT bytes_written;
+		//f_write(&user_metrics_log, data, sizeof(data), &bytes_written);
+		f_sync(&user_metrics_log);
+		set_state(USER_METRICS_STATE_STANDBY);
     	break;
     case USER_METRICS_EVENT_STOP:{
-    	user_metrics_log_close_command();
+    	f_close(&user_metrics_log);
     	set_state(USER_METRICS_STATE_STANDBY);
     	break;
     }
@@ -196,14 +223,14 @@ static void handle_state_open(user_metrics_event_t *event)
   switch (event->type) {
   case USER_METRICS_EVENT_ENTER:
   case USER_METRICS_EVENT_OPEN:
-	  user_metrics_log_close_command();
-	  user_metrics_log_open_command();
+	  f_close(&user_metrics_log);
+	  user_metrics_log_open(&user_metrics_log);
 	  break;
   case USER_METRICS_EVENT_INPUT:
 	  set_state(USER_METRICS_STATE_INPUT);
 	  break;
   case USER_METRICS_EVENT_STOP:
-	  user_metrics_log_close_command();
+	  f_close(&user_metrics_log);
 	  set_state(USER_METRICS_STATE_STANDBY);
 	  break;
   default:

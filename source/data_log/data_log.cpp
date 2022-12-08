@@ -384,8 +384,8 @@ void user_metrics_log_open(FIL *file)
 
     char log_datetime[12]; //timestamp
     snprintf(log_datetime, sizeof(log_datetime), "%lu", rtc_get());
-    log_fsize = str_append2(log_fname, log_fsize, "_");
     log_fsize = str_append2(log_fname, log_fsize, log_datetime);
+    log_fsize = str_append2(log_fname, log_fsize, "_");
 
     log_fsize = str_append2(log_fname, log_fsize, "user_metrics");    // log file name
     log_fsize = str_append2(log_fname, log_fsize, log_fnum_buf);      // log file number
@@ -394,7 +394,7 @@ void user_metrics_log_open(FIL *file)
     // close the previous log file
     f_close(file);
 
-    // ensure the data log folder exists
+    // ensure the folder exists
     f_mkdir(USER_METRICS_DIR_PATH);
 
     FRESULT result = f_open(file, log_fname, FA_CREATE_NEW | FA_WRITE);
@@ -403,9 +403,12 @@ void user_metrics_log_open(FIL *file)
         break;
     }
     else{
+  	  // create csv header
+  	  f_printf(file, "Timestamp, Hypnogram, Bpm, Activity\n");
+  	  f_sync(file);
       break;
     }
-  } // end while loop
+  }
 }
 
 bool open_eeg_comp_data_log(const char* log_filename_to_compress) {

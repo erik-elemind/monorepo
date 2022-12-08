@@ -11,6 +11,7 @@
 #include "eeg_constants.h"
 #include "ml.h"
 #include "data_log_commands.h"
+#include "user_metrics.h"
 
 #include "rt_nonfinite.h"
 #include "sleepstagescorer.h"
@@ -214,7 +215,7 @@ static void handle_state_inference(ml_event_t *event)
 
       // choose highest probability as predicted class
       float max_val = 0.0;
-      int max_idx = 0;
+      uint8_t max_idx = 0;
       for (int i = 0; i < OUTPUT_NUM_CLASS; i++)
       {
     	  if (output[i] > max_val)
@@ -225,6 +226,7 @@ static void handle_state_inference(ml_event_t *event)
       }
       LOGV(TAG, "Inference output: %f, %f, %f, %f, %f\n\r", output[0], output[1], output[2], output[3], output[4]);
       LOGV(TAG, "Prediction: %d", max_idx);
+      user_metrics_event_input(max_idx, HYPNOGRAM_DATA);
       set_state(ML_STATE_STANDBY);
       break;
 

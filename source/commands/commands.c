@@ -277,7 +277,6 @@ const shell_command_t commands[] = {
     { P_ALL, "data_log_close", data_log_close_command, "Close data log" },
     { P_ALL, "user_metrics_log_open", user_metrics_log_open_command, "Open user metrics log" },
     { P_ALL, "user_metrics_log_close", user_metrics_log_close_command, "Close user metrics log" },
-    { P_ALL, "user_metrics_log_write", user_metrics_log_write_command, "Write to user metrics log" },
 #if (defined(ENABLE_OFFLINE_EEG_COMPRESSION) && (ENABLE_OFFLINE_EEG_COMPRESSION > 0U))
     { P_ALL, "data_log_compress", data_log_compress_command, "Compress existing datalog file. Takes filename of existing data log." },
     { P_ALL, "data_log_compress_status", data_log_compress_status_command, "" },
