@@ -215,7 +215,7 @@ static void handle_state_inference(ml_event_t *event)
 
       // choose highest probability as predicted class
       float max_val = 0.0;
-      uint8_t max_idx = 0;
+      int max_idx = 0;
       for (int i = 0; i < OUTPUT_NUM_CLASS; i++)
       {
     	  if (output[i] > max_val)

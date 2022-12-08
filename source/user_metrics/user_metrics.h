@@ -17,7 +17,7 @@ void user_metrics_task(void *ignored);
 
 // Send various event types to this task:
 void user_metrics_event_open(void);
-void user_metrics_event_input(uint8_t data, user_metrics_data_t datatype);
+void user_metrics_event_input(int data, user_metrics_data_t datatype);
 void user_metrics_event_stop(void);
 
 #ifdef __cplusplus

@@ -389,7 +389,7 @@ void user_metrics_log_open(FIL *file)
 
     log_fsize = str_append2(log_fname, log_fsize, "user_metrics");    // log file name
     log_fsize = str_append2(log_fname, log_fsize, log_fnum_buf);      // log file number
-    log_fsize = str_append2(log_fname, log_fsize, ".csv");            // log file suffix
+    log_fsize = str_append2(log_fname, log_fsize, ".json");            // log file suffix
 
     // close the previous log file
     f_close(file);
@@ -403,8 +403,13 @@ void user_metrics_log_open(FIL *file)
         break;
     }
     else{
-  	  // create csv header
-  	  f_printf(file, "Timestamp, Hypnogram, Bpm, Activity\n");
+      // // create csv header
+      // f_printf(file, "Timestamp, Hypnogram, Bpm, Activity\n");
+      // f_sync(file);
+
+      // create json header
+      int version = 0;
+      f_printf(file, "{\"log_uuid\": %d,\"version\":%d,\"user_metrics\": [\n", datalog_uid, version);
   	  f_sync(file);
       break;
     }

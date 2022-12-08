@@ -27,7 +27,7 @@ static int hypnogram = -1;
 static int bpm = -1;
 static int activity = -1;
 static uint32_t timestamp = 0;
-static char data[13];
+static int sample_count = 0;
 //
 // Task events:
 //
@@ -108,7 +108,7 @@ void user_metrics_event_open(void)
     xQueueSend(g_event_queue, &event, portMAX_DELAY);
 }
 
-void user_metrics_event_input(uint8_t data, user_metrics_data_t datatype)
+void user_metrics_event_input(int data, user_metrics_data_t datatype)
 {
     user_metrics_event_t event = {.type = USER_METRICS_EVENT_INPUT, .datatype = datatype, .data=data};
     xQueueSend(g_event_queue, &event, portMAX_DELAY);
@@ -171,7 +171,10 @@ static void handle_state_standby(user_metrics_event_t *event)
       break;
 
     case USER_METRICS_EVENT_STOP:
+    	f_printf(&user_metrics_log, "]}");
+    	f_sync(&user_metrics_log);
     	f_close(&user_metrics_log);
+    	sample_count = 0;
     	set_state(USER_METRICS_STATE_STANDBY);
     	break;
 
@@ -200,14 +203,26 @@ static void handle_state_input(user_metrics_event_t *event)
     			break;
     	}
     	timestamp = rtc_get();
-    	f_printf(&user_metrics_log, "%lu, %d, %d, %d\n", timestamp, hypnogram, bpm, activity);
-		//UINT bytes_written;
-		//f_write(&user_metrics_log, data, sizeof(data), &bytes_written);
-		f_sync(&user_metrics_log);
-		set_state(USER_METRICS_STATE_STANDBY);
+      sample_count++;
+      if (sample_count == 1)
+      {
+        f_printf(&user_metrics_log, "{\"timestamp\":%lu,\"hypnogram\":%d,\"bpm\":%d,\"activity\":%d}", timestamp, hypnogram, bpm, activity);
+      }
+      else
+      {
+        f_printf(&user_metrics_log, ",\n{\"timestamp\":%lu,\"hypnogram\":%d,\"bpm\":%d,\"activity\":%d}", timestamp, hypnogram, bpm, activity);
+      }
+
+      //UINT bytes_written;
+      //f_write(&user_metrics_log, data, sizeof(data), &bytes_written);
+      f_sync(&user_metrics_log);
+      set_state(USER_METRICS_STATE_STANDBY);
     	break;
     case USER_METRICS_EVENT_STOP:{
-    	f_close(&user_metrics_log);
+      f_printf(&user_metrics_log, "]}");
+      f_sync(&user_metrics_log);
+      f_close(&user_metrics_log);
+      sample_count = 0;
     	set_state(USER_METRICS_STATE_STANDBY);
     	break;
     }
@@ -223,14 +238,20 @@ static void handle_state_open(user_metrics_event_t *event)
   switch (event->type) {
   case USER_METRICS_EVENT_ENTER:
   case USER_METRICS_EVENT_OPEN:
-	  f_close(&user_metrics_log);
+	f_printf(&user_metrics_log, "]}");
+	f_sync(&user_metrics_log);
+	f_close(&user_metrics_log);
+	sample_count = 0;
 	  user_metrics_log_open(&user_metrics_log);
 	  break;
   case USER_METRICS_EVENT_INPUT:
 	  set_state(USER_METRICS_STATE_INPUT);
 	  break;
   case USER_METRICS_EVENT_STOP:
-	  f_close(&user_metrics_log);
+  	f_printf(&user_metrics_log, "]}");
+  	f_sync(&user_metrics_log);
+  	f_close(&user_metrics_log);
+  	sample_count = 0;
 	  set_state(USER_METRICS_STATE_STANDBY);
 	  break;
   default:
