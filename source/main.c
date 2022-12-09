@@ -133,14 +133,14 @@ StaticTask_t eeg_processor_task_struct;
 
 #if (defined(ENABLE_HRM_TASK) && (ENABLE_HRM_TASK > 0U))
 #define HRM_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*3)
-#define HRM_TASK_PRIORITY 1
+#define HRM_TASK_PRIORITY 2
 StackType_t hrm_task_array[ HRM_TASK_STACK_SIZE ];
 StaticTask_t hrm_task_struct;
 #endif
 
 #if (defined(ENABLE_ACCEL_TASK) && (ENABLE_ACCEL_TASK > 0U))
 #define ACCEL_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*2)
-#define ACCEL_TASK_PRIORITY 1
+#define ACCEL_TASK_PRIORITY 2
 StackType_t accel_task_array[ ACCEL_TASK_STACK_SIZE ];
 StaticTask_t accel_task_struct;
 #endif
