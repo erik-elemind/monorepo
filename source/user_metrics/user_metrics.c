@@ -138,7 +138,7 @@ static void set_state(user_metrics_state_t state, user_metrics_event_t *cur_even
   // process first input
   if (cur_event->type == USER_METRICS_EVENT_INPUT)
   {
-    user_metrics_event_t event = { .type = USER_METRICS_EVENT_ENTER, .data = cur_event->data};
+    user_metrics_event_t event = { .type = USER_METRICS_EVENT_ENTER, .data = cur_event->data, .datatype = cur_event->datatype};
     handle_event(&event);
   }
   else

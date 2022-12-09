@@ -25,6 +25,7 @@
 #include "task.h"
 #include "timers.h"
 #include "queue.h"
+#include "user_metrics.h"
 
 #if (defined(ENABLE_ACCEL_TASK) && (ENABLE_ACCEL_TASK > 0U))
 
@@ -248,6 +249,7 @@ handle_state_off(const accel_event_t *event)
 static void
 handle_state_sample(const accel_event_t *event)
 {
+	static int count = 0;
   switch (event->type) {
     case ACCEL_EVENT_ENTER_STATE:
       // perform a softreset of the chip to start fresh
@@ -308,6 +310,14 @@ handle_state_sample(const accel_event_t *event)
               g_context.samples[i].y,
               g_context.samples[i].z
             );
+          }
+
+          // TODO: placeholder until activity calculation figured out
+          count++;
+          if (count == 10) // 25 samples every second and each iteration
+          {
+        	  user_metrics_event_input((rand() % 3), ACTIVITY_DATA);
+        	  count = 0;
           }
           // read the temperature as well
           status = accel_temp_get(&g_context.temperature);

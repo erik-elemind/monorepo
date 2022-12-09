@@ -24,6 +24,7 @@
 #include "config.h"
 #include "peripherals.h"
 #include "hrm.h"
+#include "user_metrics.h"
 
 #if (defined(ENABLE_HRM_TASK) && (ENABLE_HRM_TASK > 0U))
 
@@ -149,7 +150,7 @@ log_event(const hrm_event_t *event)
 {
   switch (event->type) {
     default:
-      LOGV(TAG, "[%s] Event: %s", hrm_state_name(g_context.state), hrm_event_type_name(event->type));
+      //LOGV(TAG, "[%s] Event: %s", hrm_state_name(g_context.state), hrm_event_type_name(event->type));
       break;
   }
 }
@@ -163,7 +164,7 @@ log_event_ignored(const hrm_event_t *event)
 static void
 set_state(hrm_state_t state)
 {
-  LOGD(TAG, "[%s] -> [%s]", hrm_state_name(g_context.state), hrm_state_name(state));
+  //LOGD(TAG, "[%s] -> [%s]", hrm_state_name(g_context.state), hrm_state_name(state));
 
   g_context.state = state;
 
@@ -357,6 +358,7 @@ handle_state_als(const hrm_event_t *event)
 static void
 handle_state_process(const hrm_event_t *event)
 {
+	static int count = 0;
   switch (event->type) {
     case HRM_EVENT_ENTER_STATE:
       // Process the Data
@@ -365,19 +367,17 @@ handle_state_process(const hrm_event_t *event)
 
       hrm_update(&hrm, g_context.red, g_context.ir);
 
-      LOGV(TAG, "lux %%  : red %f, ir %f, als %f", g_context.red/65535.0, g_context.ir/65535.0, g_context.als/65535.0);
-      LOGV(TAG, "current: Ired %dmA, Iir %dmA", hrm.red_curr_regval*10, hrm.ir_curr_regval*10 );
+      //LOGV(TAG, "lux %%  : red %f, ir %f, als %f", g_context.red/65535.0, g_context.ir/65535.0, g_context.als/65535.0);
+      //LOGV(TAG, "current: Ired %dmA, Iir %dmA", hrm.red_curr_regval*10, hrm.ir_curr_regval*10 );
+      //ble_heart_rate_update(round(hrm_get_heart_rate(&hrm)));
 
-      // TODO: Call a function to enqueue the following data for another task:
-      //         heart rate
-      //         SPO2, and
-      //         ambient light sensor
-      //LOGV(TAG, "heart: %f", hrm_get_heart_rate(&hrm));
-      //LOGV(TAG, "spo2 : %f", hrm_get_spo2(&hrm));
-      /// @todo BH Add error handling/bounds checking
-      /// @todo BH Do we want to update every time, or only if it changes/is valid?
-      ble_heart_rate_update(round(hrm_get_heart_rate(&hrm)));
-
+      //TODO: placeholder until bpm calculation figured out
+      count++;
+      if (count == 100) // 100 samples at 10Hz is 10 seconds
+      {
+    	  user_metrics_event_input((rand() % 35)+50, HRM_DATA);
+    	  count = 0;
+      }
         // Wait for the timer to start the next sample
         set_state(HRM_STATE_STANDBY);
       break;
