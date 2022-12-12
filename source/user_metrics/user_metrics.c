@@ -187,31 +187,11 @@ static void handle_state_input(user_metrics_event_t *event)
     	// dollar tree JSON
       if (sample_count == 1)
       {
-    	  switch (event->datatype) {
-			  case HYPNOGRAM_DATA:
-				  f_printf(&user_metrics_log, "{\"ts\":%lu,\"rtss\":%d}", rtc_get(), event->data);
-				  break;
-			  case HRM_DATA:
-				  f_printf(&user_metrics_log, "{\"ts\":%lu,\"bpm\":%d}", rtc_get(), event->data);
-				  break;
-			  case ACTIVITY_DATA:
-				  f_printf(&user_metrics_log, "{\"ts\":%lu,\"act\":%d}", rtc_get(), event->data);
-    		  break;
-    	  }
+    	  f_printf(&user_metrics_log, "{\"ts\":%lu,\"evt\":%d,\"val\":%d}", rtc_get(), event->datatype, event->data);
       }
       else
       {
-    	  switch (event->datatype) {
-			  case HYPNOGRAM_DATA:
-				  f_printf(&user_metrics_log, ",\n{\"ts\":%lu,\"rtss\":%d}", rtc_get(), event->data);
-				  break;
-			  case HRM_DATA:
-				  f_printf(&user_metrics_log, ",\n{\"ts\":%lu,\"bpm\":%d}", rtc_get(), event->data);
-				  break;
-			  case ACTIVITY_DATA:
-				  f_printf(&user_metrics_log, ",\n{\"ts\":%lu,\"act\":%d}", rtc_get(), event->data);
-				  break;
-    	  }
+    	  f_printf(&user_metrics_log, ",\n{\"ts\":%lu,\"evt\":%d,\"val\":%d}", rtc_get(), event->datatype, event->data);
       }
       f_sync(&user_metrics_log);
       set_state(USER_METRICS_STATE_STANDBY, event);
