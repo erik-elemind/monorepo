@@ -29,6 +29,7 @@
 #include "micro_clock.h"
 #include "volume_scaling.h"
 #include "memman_rtos.h"
+#include "settings.h"
 
 #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
 
@@ -376,6 +377,15 @@ static void audio_set_volume_int(uint8_t volume, bool update_ble)
   ag_context.log_volume = volume;
   ag_context.lin_volume = log2lin[volume];
 
+  // save into settings file
+  char cbuf[5] = {0};
+  snprintf(cbuf, sizeof(cbuf), "%d", volume);
+  // TODO: standardize the settings file key naming.
+  if( 0 != settings_set_string("audio.volume", cbuf)) {
+    // TODO: do something in the event of error.
+	  LOGV(TAG, "error setting volume\n\r");
+  }
+
   if(AUDIO_STATE_OFF != ag_context.state) {
     // Invert the volume logic.
     // The SSM2518 considers smaller values = larger volume.
@@ -413,11 +423,19 @@ void audio_set_volume_ble(uint8_t log_volume)
   }
 }
 
-void audio_get_volume(uint8_t* log_volume, uint8_t* lin_volume)
+uint8_t audio_get_volume(void)
 {
-  // Return the volume
-  *lin_volume = ag_context.lin_volume;
-  *log_volume = ag_context.log_volume;
+  char settings_audio_vol[5] = {0};
+  // get from settings file
+  if ( 0 == settings_get_string("audio.volume", settings_audio_vol, sizeof(settings_audio_vol)) )
+  {
+	  return (uint8_t) atoi(settings_audio_vol);
+  }
+  else
+  {
+	  LOGV(TAG, "error getting volume\n\r");
+	  return 0;
+  }
 }
 
 /*

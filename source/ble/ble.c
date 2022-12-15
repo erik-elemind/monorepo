@@ -780,13 +780,9 @@ handle_sound_command(ble_event_t *event)
   }
   else
   {
-	uint8_t log_volume;
-	uint8_t lin_volume;
-
 	audio_bg_fadeout(0);
 	audio_bgwav_stop();
-	audio_get_volume(&log_volume, &lin_volume);
-	audio_set_volume(log_volume);
+	audio_set_volume(audio_get_volume());
 	audio_bg_script_volume(0.2);
 	audio_bg_fadein(0);
 

@@ -47,7 +47,48 @@ void audio_set_volume_command(int argc, char **argv)
 
   uint8_t volume;
   bool success = true;
-  success &= parse_uint8_arg(argv[0], argv[1], &volume);
+
+  char parse_var_buf[10] = {0};
+  parse_variable_return_t bg_select = PARSE_VAR_RETURN_NOTHING;
+  bg_select = parse_variable_from_string(argv[1], parse_var_buf, sizeof(parse_var_buf));
+
+  // TODO: Do something with tokens
+  token_t tokens;
+
+  parse_dot_notation(parse_var_buf, sizeof(parse_var_buf), &tokens);
+
+  switch(bg_select){
+  case PARSE_VAR_RETURN_NOTHING:
+    success &= false;
+    break;
+  case PARSE_VAR_RETURN_ARG:
+	// if argument is value
+    success &= parse_uint8_arg(argv[0], argv[1], &volume);
+    break;
+  case PARSE_VAR_RETURN_SETTINGS_VALUE:
+  {
+	// if argument is settings file, set the volume to previously saved
+    char settings_audio_vol[5] = {0};
+    // get from settings file
+    if ( 0 == settings_get_string("audio.volume", settings_audio_vol, sizeof(settings_audio_vol)) )
+    {
+      volume = (uint8_t) atoi(settings_audio_vol);
+      success &= true;
+    }
+    else
+    {
+      LOGE(TAG, "Error retrieving getting volume setting\n\r");
+      success &= false;
+    }
+    break;
+  }
+  case PARSE_VAR_RETURN_SETTINGS_KEY:
+	// TODO: default audio volume?
+	  volume = 60;
+	  success &= true;
+    // get default value
+    break;
+  }
 
   if(success){
     audio_set_volume( volume );
