@@ -106,7 +106,7 @@ bool audio_get_mute();
  */
 void audio_set_volume(uint8_t log_volume);
 void audio_set_volume_ble(uint8_t log_volume);
-void audio_get_volume(uint8_t* log_volume, uint8_t* lin_volume);
+uint8_t audio_get_volume(void);
 
 /*
  * Increment/Decrement the volume.
