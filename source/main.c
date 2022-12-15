@@ -45,6 +45,7 @@
 #include "eeg_processor.h"
 #include "erp.h"
 #include "ml.h"
+#include "user_metrics.h"
 
 #include "powerquad_helper.h"
 
@@ -213,6 +214,13 @@ StaticTask_t app_task_struct;
 #define ML_TASK_PRIORITY 2
 StackType_t ml_task_array[ ML_TASK_STACK_SIZE ];
 StaticTask_t ml_task_struct;
+#endif
+
+#if (defined(ENABLE_USER_METRICS_TASK) && (ENABLE_USER_METRICS_TASK > 0U))
+#define USER_METRICS_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*5) //TODO: change to more appropriate value
+#define USER_METRICS_TASK_PRIORITY 3
+StackType_t user_metrics_task_array[ USER_METRICS_TASK_STACK_SIZE ];
+StaticTask_t user_metrics_task_struct;
 #endif
 
 /*******************************************************************************
@@ -466,6 +474,15 @@ int main(void)
     task_handle = xTaskCreateStatic(&ml_task,
         "ml", ML_TASK_STACK_SIZE, NULL, ML_TASK_PRIORITY, ml_task_array, &ml_task_struct);
     vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)ML_TASK_STACK_SIZE );
+#endif
+
+    /* User Metrics task */
+#if (defined(ENABLE_USER_METRICS_TASK) && (ENABLE_USER_METRICS_TASK > 0U))
+    LOGV(TAG, "Launching user metrics task...");
+    user_metrics_pretask_init();
+    task_handle = xTaskCreateStatic(&user_metrics_task,
+        "user_metrics", USER_METRICS_TASK_STACK_SIZE, NULL, USER_METRICS_TASK_PRIORITY, user_metrics_task_array, &user_metrics_task_struct);
+    vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)USER_METRICS_TASK_STACK_SIZE );
 #endif
 
 	//DSP_Start();

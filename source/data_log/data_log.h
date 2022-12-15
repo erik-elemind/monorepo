@@ -33,7 +33,7 @@ void data_log_task(void *ignored);
 
 void data_log_open();
 void data_log_close();
-void hypnogram_log_open(FIL *file);
+void user_metrics_log_open(FIL *file);
 
 void data_log_set_time(char *datetime_string, size_t datetime_size);
 

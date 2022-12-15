@@ -17,7 +17,7 @@
 
 #define MAX_PATH_LENGTH 128
 #define DATA_LOG_DIR_PATH "/datalogs"
-#define HYPNOGRAM_LOG_DIR_PATH "/hypnogram_logs"
+#define USER_METRICS_DIR_PATH "/user_metrics"
 
 //
 // Task events:
