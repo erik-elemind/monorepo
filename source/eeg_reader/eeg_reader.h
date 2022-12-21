@@ -30,6 +30,8 @@ void eeg_reader_event_start(void);
 void eeg_reader_event_stop(void);
 void eeg_reader_event_set_ads_gain(uint8_t ads_gain);
 void eeg_reader_event_temp_sample(int32_t temp);
+void eeg_reader_event_ble_connected(void);
+void eeg_reader_event_ble_disconnected(void);
 
 float eeg_reader_get_total_gain();
 

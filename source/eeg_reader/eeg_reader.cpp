@@ -33,13 +33,17 @@
 #include "data_log.h"
 #include "micro_clock.h"
 #include "loglevels.h"
+#include "ble_uart_send.h"
 
 
 #if (defined(ENABLE_EEG_READER_TASK) && (ENABLE_EEG_READER_TASK > 0U))
 
 
 #define EEG_READER_EVENT_QUEUE_SIZE 20
+#define LOFF_TIMEOUT_MS 5000
 
+TimerHandle_t loff_timer_handle;
+StaticTimer_t loff_timer_struct;
 
 static const char *TAG = "eeg_reader";  // Logging prefix for this module
 
@@ -66,6 +70,9 @@ typedef enum
   EEG_READER_EVENT_DRDY,
   EEG_READER_EVENT_TEMP_SAMPLE,
   EEG_READER_EVENT_EEG_SAMPLE,
+  EEG_READER_EVENT_CHECK_LOFF,
+  EEG_READER_EVENT_BLE_CONNECTED,
+  EEG_READER_EVENT_BLE_DISCONNECTED,
 } eeg_reader_event_type_t;
 
 // Events are passed to the g_event_queue with an optional 
@@ -126,6 +133,10 @@ static void eeg_spi_rx_complete_isr(SPI_Type *base, spi_master_handle_t *handle,
 static void handle_eeg_drdy_pint_isr();
 static void handle_skin_temp_sample(eeg_reader_event_t *event);
 static void handle_eeg_sample(eeg_reader_event_t *event);
+static void handle_ble_connected(void);
+static void handle_ble_disconnected(void);
+static void handle_check_loff(void);
+static void loff_timeout(TimerHandle_t timer_handle);
 
 // For logging and debug:
 static const char *
@@ -156,6 +167,9 @@ eeg_reader_event_type_name(eeg_reader_event_type_t event_type)
     case EEG_READER_EVENT_DRDY:         return "EEG_READER_EVENT_DRDY";
     case EEG_READER_EVENT_TEMP_SAMPLE:  return "EEG_READER_EVENT_TEMP_SAMPLE";
     case EEG_READER_EVENT_EEG_SAMPLE:   return "EEG_READER_EVENT_EEG_SAMPLE";
+    case EEG_READER_EVENT_CHECK_LOFF: return "EEG_READER_EVENT_CHECK_LOFF";
+    case EEG_READER_EVENT_BLE_CONNECTED: return "EEG_READER_EVENT_BLE_CONNECTED";
+    case EEG_READER_EVENT_BLE_DISCONNECTED: return "EEG_READER_EVENT_BLE_DISCONNECTED";
     default:
       break;
   }
@@ -215,6 +229,18 @@ float eeg_reader_get_total_gain(){
   return gain;
 }
 
+void eeg_reader_event_ble_connected(void)
+{
+	eeg_reader_event_t event = {.type = EEG_READER_EVENT_BLE_CONNECTED, {0}};
+	  xQueueSend(g_event_queue, &event, portMAX_DELAY);
+}
+
+void eeg_reader_event_ble_disconnected(void)
+{
+	eeg_reader_event_t event = {.type = EEG_READER_EVENT_BLE_DISCONNECTED, {0}};
+		  xQueueSend(g_event_queue, &event, portMAX_DELAY);
+}
+
 static void
 log_event(eeg_reader_event_t *event)
 {
@@ -222,6 +248,7 @@ log_event(eeg_reader_event_t *event)
     case EEG_READER_EVENT_DRDY:
     case EEG_READER_EVENT_TEMP_SAMPLE:
     case EEG_READER_EVENT_EEG_SAMPLE:
+    case EEG_READER_EVENT_CHECK_LOFF:
       // do nothing -- suppress printing EEG MSG events
       break;
     default:
@@ -422,6 +449,18 @@ handle_event(eeg_reader_event_t *event)
 	 handle_eeg_sample(event);
 	 return;
 
+  case EEG_READER_EVENT_BLE_CONNECTED:
+	  handle_ble_connected();
+	  return;
+
+  case EEG_READER_EVENT_BLE_DISCONNECTED:
+	  handle_ble_disconnected();
+  	  return;
+
+  case EEG_READER_EVENT_CHECK_LOFF:
+	  handle_check_loff();
+	  return;
+
   default:
     break;
   }
@@ -462,6 +501,10 @@ eeg_reader_pretask_init(void)
   if(status != kStatus_Success){
     LOGV(TAG,"Failed to initialize SPIMasterTransferHandle");
   }
+
+  loff_timer_handle = xTimerCreateStatic("EEG_READER_LOFF",
+       pdMS_TO_TICKS(LOFF_TIMEOUT_MS), pdFALSE, NULL,
+       loff_timeout, &(loff_timer_struct));
 }
 
 
@@ -659,6 +702,52 @@ static void arrange_and_send_eeg_channels_from_isr(BaseType_t *pxHigherPriorityT
 
 void handle_skin_temp_sample(eeg_reader_event_t *event) {
   data_log_skin_temp(event->data.skin_temp.temp_sample_number, event->data.skin_temp.temp);
+}
+
+static void loff_timeout(TimerHandle_t timer_handle)
+{
+	eeg_reader_event_t event = {.type = EEG_READER_EVENT_CHECK_LOFF, {0}};
+	  xQueueSend(g_event_queue, &event, portMAX_DELAY);
+}
+
+static void handle_ble_connected(void)
+{
+	// Turn on impedance test on ADS1299
+	ads_turn_on_leadoff_detection();
+
+	// Do an immediate check on electrode status, and send to NRF52
+	handle_check_loff();
+}
+
+static void handle_ble_disconnected(void)
+{
+	// Stop loff check timer
+	if (xTimerStop(loff_timer_handle, 0) == pdFAIL) {
+		LOGE(TAG, "Unable to stop lead off timer!");
+	}
+
+	// Turn off impedance test on ADS1299
+	ads_turn_off_leadoff_detection();
+}
+
+static void handle_check_loff(void)
+{
+	uint8_t loff_stat = 0x00;
+
+	// Read lead-off status of electrodes
+	if(ads_get_leadoff_stat(&loff_stat) == ADS_STATUS_SUCCESS)
+	{
+		// Send lead off status to NRF52, ToDo: move this logic to BLE task?
+		uint8_t electrode_quality[ELECTRODE_NUM] = {0};
+		electrode_quality[0] = loff_stat;
+		ble_uart_send_electrode_quality(electrode_quality);
+	}
+
+	// Restart timer
+	if (xTimerChangePeriod(loff_timer_handle,
+		pdMS_TO_TICKS(LOFF_TIMEOUT_MS), 0) == pdFAIL) {
+		LOGE(TAG, "Unable to start lead off timer!");
+	}
 }
 
 #if (defined(ENABLE_EEG_PROCESSOR_TASK) && (ENABLE_EEG_PROCESSOR_TASK > 0U))

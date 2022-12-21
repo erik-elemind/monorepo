@@ -173,6 +173,53 @@ static ads_status detect_active_channels(ads129x* ads)
   return ADS_STATUS_SUCCESS;
 }
 
+ads_status ads_turn_on_leadoff_detection(void)
+{
+	// Turn on lead-off detection
+	if(ads_wreg(LOFF_SENSP, 0x07) != ADS_STATUS_SUCCESS)
+	{
+		LOGE(TAG, "LOFF_SENSP write failed");
+		return ADS_STATUS_FAIL;
+	}
+
+	if(ads_wreg(CONFIG4, 0x02) != ADS_STATUS_SUCCESS)
+	{
+		LOGE(TAG, "CONFIG4 write failed");
+		return ADS_STATUS_FAIL;
+	}
+
+	return ADS_STATUS_SUCCESS;
+}
+
+ads_status ads_turn_off_leadoff_detection(void)
+{
+	// Turn off lead-off detection
+	if(ads_wreg(LOFF_SENSP, 0x00) != ADS_STATUS_SUCCESS)
+	{
+		LOGE(TAG, "LOFF_SENSP write failed");
+		return ADS_STATUS_FAIL;
+	}
+
+	if(ads_wreg(CONFIG4, 0x00) != ADS_STATUS_SUCCESS)
+	{
+		LOGE(TAG, "CONFIG4 write failed");
+		return ADS_STATUS_FAIL;
+	}
+
+	return ADS_STATUS_SUCCESS;
+}
+
+ads_status ads_get_leadoff_stat(uint8_t* stat)
+{
+	if(ads_rreg(LOFF_STATP, stat) != ADS_STATUS_SUCCESS)
+	{
+		LOGE(TAG, "LOFF_STATP read failed");
+		return ADS_STATUS_FAIL;
+	}
+
+	return ADS_STATUS_SUCCESS;
+}
+
 #if 0
 //static inline
 ads_status ads_receive_sample(ads129x* ads, bool from_isr)

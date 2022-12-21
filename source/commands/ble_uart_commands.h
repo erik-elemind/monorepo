@@ -42,6 +42,8 @@ void time_request(int argc, char **argv);
 void time_command(int argc, char **argv);
 void addr_command(int argc, char **argv);
 void ble_print_addr_command(int argc, char **argv);
+void ble_connected(int argc, char **argv);
+void ble_disconnected(int argc, char **argv);
 
 #ifdef __cplusplus
 }

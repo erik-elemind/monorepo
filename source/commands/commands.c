@@ -382,7 +382,7 @@ const shell_command_t commands[] = {
     { P_ALL, "ble_debug_sound_check", ble_sound_debug_command, "Send sound update to BLE chip, 1 arg: [0/1/2]" },
     { P_ALL, "ble_debug_time_check", ble_time_debug_command, "Send time update to BLE chip, 1 arg: [uint64:unix-epoch-sec]" },
 
-    { P_BLE, "ble_battery_level?", battery_level_request, ""},
+	{ P_BLE, "ble_battery_level?", battery_level_request, ""},
     { P_BLE, "ble_serial_number?", serial_number_request, ""},
     { P_BLE, "ble_software_version?", software_version_request, ""},
     { P_BLE, "ble_electrode_quality?", electrode_quality_request, ""},
@@ -418,6 +418,9 @@ const shell_command_t commands[] = {
     { P_BLE, "ble_uffs_mv", ble_fs_mv_command, "(DEPRECATED) mv <oldpath> <newpath>" },
     { P_BLE, "ble_uffs_ymodem_recv", ble_fs_ymodem_recv_command, "(DEPRECATED) Receive file via ymodem" },
     { P_BLE, "ble_uffs_ymodem_send", ble_fs_ymodem_send_command, "(DEPRECATED) Send file via ymodem" },
+
+	{ P_BLE, "ble_connected", ble_connected, ""},
+	{ P_BLE, "ble_disconnected", ble_disconnected, ""},
 
     // Misc low level tests
 #if (defined(ENABLE_STREAM_MEMORY_TEST_COMMANDS) && (ENABLE_STREAM_MEMORY_TEST_COMMANDS > 0U))
