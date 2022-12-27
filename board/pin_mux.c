@@ -85,6 +85,12 @@ pin_labels:
 - {pin_num: G1, pin_signal: PIO0_0/FC0_SCK/CTIMER0_MAT0/I2S_BRIDGE_CLK_IN/GPIO_INT_BMAT/SEC_PIO0_0, label: EEG_START, identifier: EEG_START}
 - {pin_num: L1, pin_signal: PIO0_11/FC1_RTS_SCL_SSEL1/SCT0_GPI0/SCT0_OUT8/CTIMER_INP2/FC0_SSEL3/SEC_PIO0_11, label: EEG_PWDn, identifier: EEG_PWDn}
 - {pin_num: J15, pin_signal: PIO1_7/FC5_RTS_SCL_SSEL1/SCT0_GPI5/SCT0_OUT5/CTIMER_INP9/FC4_SSEL3, label: EEG_RESETn, identifier: EEG_RESETn}
+- {pin_num: E16, pin_signal: PMIC_I2C_SCL, label: PMIC_I2C_SCL, identifier: PMIC_I2C_SCL}
+- {pin_num: F16, pin_signal: PMIC_I2C_SDA, label: PMIC_I2C_SDA, identifier: PMIC_I2C_SDA}
+- {pin_num: B16, pin_signal: PMIC_MODE1, label: PMIC_MODE1, identifier: PMIC_MODE1}
+- {pin_num: A16, pin_signal: LDO_ENABLE, label: PMIC_LDO_ENABLE, identifier: PMIC_LDO_ENABLE}
+- {pin_num: C15, pin_signal: PMIC_MODE0, label: PMIC_MODE0, identifier: PMIC_MODE0}
+- {pin_num: A15, pin_signal: PMIC_IRQ_N, label: PMIC_IRQ_N, identifier: PMIC_IRQ_N}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -188,6 +194,12 @@ BOARD_InitPins:
   - {pin_num: B3, peripheral: SCT0, signal: 'OUT, 7', pin_signal: PIO0_27/FC3_SSEL3/SCT0_GPI7/SCT0_OUT7/CTIMER0_MAT3/SEC_PIO0_27/ADC0_11}
   - {pin_num: G3, peripheral: GPIO, signal: 'PIO0, 13', pin_signal: PIO0_13/FC1_SSEL3/SCT0_GPI3/SCT0_OUT3/CTIMER0_MAT1/SEC_PIO0_13/ADC0_9, direction: INPUT, pupdsel: pullUp,
     ibena: enabled}
+  - {pin_num: E16, peripheral: FLEXCOMM15, signal: SCL, pin_signal: PMIC_I2C_SCL, pupdena: enabled, pupdsel: pullUp, ibena: enabled, odena: enabled}
+  - {pin_num: F16, peripheral: FLEXCOMM15, signal: SDA, pin_signal: PMIC_I2C_SDA, pupdena: enabled, pupdsel: pullUp, ibena: enabled, odena: enabled}
+  - {pin_num: B16, peripheral: PMC, signal: 'PMIC_MODE, 1', pin_signal: PMIC_MODE1}
+  - {pin_num: A16, peripheral: PMC, signal: PMIC_LDO_ENABLE, pin_signal: LDO_ENABLE}
+  - {pin_num: C15, peripheral: PMC, signal: 'PMIC_MODE, 0', pin_signal: PMIC_MODE0}
+  - {pin_num: A15, peripheral: PMC, signal: PMIC_IRQ, pin_signal: PMIC_IRQ_N}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -298,6 +310,48 @@ void BOARD_InitPins(void)
     INPUTMUX_AttachSignal(INPUTMUX, 6U, kINPUTMUX_GpioPort0Pin20ToPintsel);
     /* PIO0_22 is selected for PINT input 7 */
     INPUTMUX_AttachSignal(INPUTMUX, 7U, kINPUTMUX_GpioPort0Pin22ToPintsel);
+
+    const uint32_t fc15_i2c_scl_config = (/* Pin is configured as I2C_SCL */
+                                          IOPCTL_PIO_FUNC0 |
+                                          /* Enable pull-up / pull-down function */
+                                          IOPCTL_PIO_PUPD_EN |
+                                          /* Enable pull-up function */
+                                          IOPCTL_PIO_PULLUP_EN |
+                                          /* Enables input buffer function */
+                                          IOPCTL_PIO_INBUF_EN |
+                                          /* Normal mode */
+                                          IOPCTL_PIO_SLEW_RATE_NORMAL |
+                                          /* Normal drive */
+                                          IOPCTL_PIO_FULLDRIVE_DI |
+                                          /* Analog mux is disabled */
+                                          IOPCTL_PIO_ANAMUX_DI |
+                                          /* Pseudo Output Drain is enabled */
+                                          IOPCTL_PIO_PSEDRAIN_EN |
+                                          /* Input function is not inverted */
+                                          IOPCTL_PIO_INV_DI);
+    /* FC15_SCL PIN (coords: E16) is configured as I2C SCL */
+    IOPCTL->FC15_I2C_SCL = fc15_i2c_scl_config;
+
+    const uint32_t fc15_i2c_sda_config = (/* Pin is configured as I2C_SDA */
+                                          IOPCTL_PIO_FUNC0 |
+                                          /* Enable pull-up / pull-down function */
+                                          IOPCTL_PIO_PUPD_EN |
+                                          /* Enable pull-up function */
+                                          IOPCTL_PIO_PULLUP_EN |
+                                          /* Enables input buffer function */
+                                          IOPCTL_PIO_INBUF_EN |
+                                          /* Normal mode */
+                                          IOPCTL_PIO_SLEW_RATE_NORMAL |
+                                          /* Normal drive */
+                                          IOPCTL_PIO_FULLDRIVE_DI |
+                                          /* Analog mux is disabled */
+                                          IOPCTL_PIO_ANAMUX_DI |
+                                          /* Pseudo Output Drain is enabled */
+                                          IOPCTL_PIO_PSEDRAIN_EN |
+                                          /* Input function is not inverted */
+                                          IOPCTL_PIO_INV_DI);
+    /* FC15_SDA PIN (coords: F16) is configured as I2C SDA */
+    IOPCTL->FC15_I2C_SDA = fc15_i2c_sda_config;
 
     const uint32_t EEG_START = (/* Pin is configured as PIO0_0 */
                                 IOPCTL_PIO_FUNC0 |

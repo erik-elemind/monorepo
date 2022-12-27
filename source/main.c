@@ -15,6 +15,7 @@
 #include "fsl_debug_console.h"
 #include "fsl_powerquad.h"
 
+
 /* Project includes */
 #include "config.h"
 #include "micro_clock.h"
@@ -46,6 +47,7 @@
 #include "erp.h"
 #include "ml.h"
 #include "user_metrics.h"
+#include "pmic_pca9420.h"
 
 #include "powerquad_helper.h"
 
@@ -236,7 +238,6 @@ static void dsp_boot_up(void);
  * @brief Main function
  */
 
-
 static void system_boot_up(void)
 {
 	// Make sure that GPIO peripherals reset before gpios initialize
@@ -254,6 +255,8 @@ static void system_boot_up(void)
 
 	BOARD_InitBLE();
 	BOARD_InitDebugConsole();
+
+	pmic_init();
 
 	//BOARD_DSP_Init();
 

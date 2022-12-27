@@ -37,6 +37,7 @@ void BOARD_InitBootPins(void);
 #define IOPCTL_PIO_INBUF_EN 0x40u         /*!<@brief Enables input buffer function */
 #define IOPCTL_PIO_INV_DI 0x00u           /*!<@brief Input function is not inverted */
 #define IOPCTL_PIO_PSEDRAIN_DI 0x00u      /*!<@brief Pseudo Output Drain is disabled */
+#define IOPCTL_PIO_PSEDRAIN_EN 0x0400u    /*!<@brief Pseudo Output Drain is enabled */
 #define IOPCTL_PIO_PULLDOWN_EN 0x00u      /*!<@brief Enable pull-down function */
 #define IOPCTL_PIO_PULLUP_EN 0x20u        /*!<@brief Enable pull-up function */
 #define IOPCTL_PIO_PUPD_DI 0x00u          /*!<@brief Disable pull-up / pull-down function */
@@ -689,6 +690,50 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_EEG_DRDYn_PIN 13U                           /*!<@brief PORT pin number */
 #define BOARD_INITPINS_EEG_DRDYn_PIN_MASK (1U << 13U)              /*!<@brief PORT pin mask */
                                                                    /* @} */
+
+/*! @name PMIC_I2C_SCL (coord E16), PMIC_I2C_SCL
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_PMIC_I2C_SCL_PERIPHERAL FLEXCOMM15 /*!<@brief Peripheral name */
+#define BOARD_INITPINS_PMIC_I2C_SCL_SIGNAL SCL            /*!<@brief Signal name */
+                                                          /* @} */
+
+/*! @name PMIC_I2C_SDA (coord F16), PMIC_I2C_SDA
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_PMIC_I2C_SDA_PERIPHERAL FLEXCOMM15 /*!<@brief Peripheral name */
+#define BOARD_INITPINS_PMIC_I2C_SDA_SIGNAL SDA            /*!<@brief Signal name */
+                                                          /* @} */
+
+/*! @name PMIC_MODE1 (coord B16), PMIC_MODE1
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_PMIC_MODE1_PERIPHERAL PMC      /*!<@brief Peripheral name */
+#define BOARD_INITPINS_PMIC_MODE1_SIGNAL PMIC_MODE    /*!<@brief Signal name */
+#define BOARD_INITPINS_PMIC_MODE1_CHANNEL 1           /*!<@brief Signal channel */
+                                                      /* @} */
+
+/*! @name LDO_ENABLE (coord A16), PMIC_LDO_ENABLE
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_PMIC_LDO_ENABLE_PERIPHERAL PMC          /*!<@brief Peripheral name */
+#define BOARD_INITPINS_PMIC_LDO_ENABLE_SIGNAL PMIC_LDO_ENABLE  /*!<@brief Signal name */
+                                                               /* @} */
+
+/*! @name PMIC_MODE0 (coord C15), PMIC_MODE0
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_PMIC_MODE0_PERIPHERAL PMC      /*!<@brief Peripheral name */
+#define BOARD_INITPINS_PMIC_MODE0_SIGNAL PMIC_MODE    /*!<@brief Signal name */
+#define BOARD_INITPINS_PMIC_MODE0_CHANNEL 0           /*!<@brief Signal channel */
+                                                      /* @} */
+
+/*! @name PMIC_IRQ_N (coord A15), PMIC_IRQ_N
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_PMIC_IRQ_N_PERIPHERAL PMC      /*!<@brief Peripheral name */
+#define BOARD_INITPINS_PMIC_IRQ_N_SIGNAL PMIC_IRQ     /*!<@brief Signal name */
+                                                      /* @} */
 
 /*!
  * @brief 
