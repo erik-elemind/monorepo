@@ -87,6 +87,7 @@ outputs:
 - {id: CTIMER0_clock.outFreq, value: 16 MHz}
 - {id: FLEXSPI_clock.outFreq, value: 1188/19 MHz}
 - {id: FXCOM0_clock.outFreq, value: 16 MHz}
+- {id: FXCOM15_clock.outFreq, value: 16 MHz}
 - {id: FXCOM1_clock.outFreq, value: 16 MHz}
 - {id: FXCOM2_clock.outFreq, value: 16 MHz}
 - {id: FXCOM3_clock.outFreq, value: 16 MHz}
@@ -104,6 +105,7 @@ settings:
 - {id: SYSCON.AUDIO_PLL0_PFD0_MUL.scale, value: '18', locked: true}
 - {id: SYSCON.CT32BIT0FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC0FCLKSEL.sel, value: SYSCON.sfro}
+- {id: SYSCON.FC15FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC1FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC2FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC3FCLKSEL.sel, value: SYSCON.sfro}
@@ -205,6 +207,7 @@ void BOARD_BootClockRUN(void)
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM3);                 /* Switch FLEXCOMM3 to SFRO */
     CLOCK_AttachClk(kFRG_to_FLEXCOMM4);                 /* Switch FLEXCOMM4 to FRG */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM5);                 /* Switch FLEXCOMM5 to SFRO */
+    CLOCK_AttachClk(kSFRO_to_FLEXCOMM15);                 /* Switch FLEXCOMM15 to SFRO */
 
     /* Set up dividers */
     CLOCK_SetClkDiv(kCLOCK_DivPllFrgClk, 177U);         /* Set FRGPLLCLKDIV divider to value 177 */

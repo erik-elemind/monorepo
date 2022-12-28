@@ -97,6 +97,12 @@
                <pin_label pin_num="G1" pin_signal="PIO0_0/FC0_SCK/CTIMER0_MAT0/I2S_BRIDGE_CLK_IN/GPIO_INT_BMAT/SEC_PIO0_0" label="EEG_START" identifier="EEG_START"/>
                <pin_label pin_num="L1" pin_signal="PIO0_11/FC1_RTS_SCL_SSEL1/SCT0_GPI0/SCT0_OUT8/CTIMER_INP2/FC0_SSEL3/SEC_PIO0_11" label="EEG_PWDn" identifier="EEG_PWDn"/>
                <pin_label pin_num="J15" pin_signal="PIO1_7/FC5_RTS_SCL_SSEL1/SCT0_GPI5/SCT0_OUT5/CTIMER_INP9/FC4_SSEL3" label="EEG_RESETn" identifier="EEG_RESETn"/>
+               <pin_label pin_num="E16" pin_signal="PMIC_I2C_SCL" label="PMIC_I2C_SCL" identifier="PMIC_I2C_SCL"/>
+               <pin_label pin_num="F16" pin_signal="PMIC_I2C_SDA" label="PMIC_I2C_SDA" identifier="PMIC_I2C_SDA"/>
+               <pin_label pin_num="B16" pin_signal="PMIC_MODE1" label="PMIC_MODE1" identifier="PMIC_MODE1"/>
+               <pin_label pin_num="A16" pin_signal="LDO_ENABLE" label="PMIC_LDO_ENABLE" identifier="PMIC_LDO_ENABLE"/>
+               <pin_label pin_num="C15" pin_signal="PMIC_MODE0" label="PMIC_MODE0" identifier="PMIC_MODE0"/>
+               <pin_label pin_num="A15" pin_signal="PMIC_IRQ_N" label="PMIC_IRQ_N" identifier="PMIC_IRQ_N"/>
             </pin_labels>
          </pins_profile>
          <functions_list>
@@ -385,6 +391,26 @@
                         <pin_feature name="ibena" value="enabled"/>
                      </pin_features>
                   </pin>
+                  <pin peripheral="FLEXCOMM15" signal="SCL" pin_num="E16" pin_signal="PMIC_I2C_SCL">
+                     <pin_features>
+                        <pin_feature name="pupdena" value="enabled"/>
+                        <pin_feature name="pupdsel" value="pullUp"/>
+                        <pin_feature name="ibena" value="enabled"/>
+                        <pin_feature name="odena" value="enabled"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="FLEXCOMM15" signal="SDA" pin_num="F16" pin_signal="PMIC_I2C_SDA">
+                     <pin_features>
+                        <pin_feature name="pupdena" value="enabled"/>
+                        <pin_feature name="pupdsel" value="pullUp"/>
+                        <pin_feature name="ibena" value="enabled"/>
+                        <pin_feature name="odena" value="enabled"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="PMC" signal="PMIC_MODE, 1" pin_num="B16" pin_signal="PMIC_MODE1"/>
+                  <pin peripheral="PMC" signal="PMIC_LDO_ENABLE" pin_num="A16" pin_signal="LDO_ENABLE"/>
+                  <pin peripheral="PMC" signal="PMIC_MODE, 0" pin_num="C15" pin_signal="PMIC_MODE0"/>
+                  <pin peripheral="PMC" signal="PMIC_IRQ" pin_num="A15" pin_signal="PMIC_IRQ_N"/>
                </pins>
             </function>
          </functions_list>
@@ -466,6 +492,7 @@
                   <clock_output id="CTIMER0_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="FLEXSPI_clock.outFreq" value="1188/19 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM0_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FXCOM15_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM1_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM2_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM3_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
@@ -484,6 +511,7 @@
                   <setting id="SYSCON.AUDIO_PLL0_PFD0_MUL.scale" value="18" locked="true"/>
                   <setting id="SYSCON.CT32BIT0FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
                   <setting id="SYSCON.FC0FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
+                  <setting id="SYSCON.FC15FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
                   <setting id="SYSCON.FC1FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
                   <setting id="SYSCON.FC2FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
                   <setting id="SYSCON.FC3FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
@@ -879,6 +907,21 @@
                      </feature>
                   </dependency>
                   <dependency resourceType="ClockOutput" resourceId="FLEXSPI_clock" description="FLEXSPI clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="frequency" evaluation="greaterThan">
+                        <data type="Frequency" unit="Hz">0</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXCOMM15.i2c_scl" description="Signal I2C serial clock is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXCOMM15.i2c_sda" description="Signal I2C serial data is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="ClockOutput" resourceId="FXCOM15_clock" description="FXCOM15 clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
                      <feature name="frequency" evaluation="greaterThan">
                         <data type="Frequency" unit="Hz">0</data>
                      </feature>
@@ -1435,6 +1478,19 @@
                                  <setting name="enable_custom_name" value="false"/>
                               </struct>
                            </struct>
+                        </struct>
+                     </config_set>
+                  </instance>
+                  <instance name="FC15_PMIC" uuid="118b5378-d952-4393-b343-b3373aca5405" type="flexcomm_i2c" type_id="flexcomm_i2c_c8597948f61bd571ab263ea4330b9dd6" mode="I2C_Polling" peripheral="FLEXCOMM15" enabled="true" comment="" custom_name_enabled="true" editing_lock="false">
+                     <config_set name="fsl_i2c" quick_selection="QS_I2C_Master">
+                        <setting name="i2c_mode" value="kI2C_Master"/>
+                        <setting name="clockSource" value="FXCOMFunctionClock"/>
+                        <setting name="clockSourceFreq" value="BOARD_BootClockRUN"/>
+                        <struct name="i2c_master_config">
+                           <setting name="enableMaster" value="true"/>
+                           <setting name="baudRate_Bps" value="100000"/>
+                           <setting name="enableTimeout" value="false"/>
+                           <setting name="timeout_Ms" value="35"/>
                         </struct>
                      </config_set>
                   </instance>

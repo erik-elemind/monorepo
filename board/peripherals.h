@@ -183,6 +183,11 @@ extern "C" {
 #define RTC_IRQ_PRIORITY 5
 /* RTC interrupt handler identifier. */
 #define RTC_IRQHANDLER RTC_IRQHandler
+/* BOARD_InitPeripherals defines for FLEXCOMM15 */
+/* Definition of peripheral ID */
+#define FC15_PMIC_PERIPHERAL ((I2C_Type *)FLEXCOMM15)
+/* Definition of the clock source frequency */
+#define FC15_PMIC_CLOCK_SOURCE 16000000UL
 
 /***********************************************************************************************************************
  * Global variables
@@ -210,6 +215,7 @@ extern const flexspi_transfer_t NAND_FLEXSPI_config_transfer_NAND;
 extern dma_handle_t NAND_FLEXSPI_RX_Handle;
 extern dma_handle_t NAND_FLEXSPI_TX_Handle;
 extern flexspi_dma_handle_t NAND_FLEXSPI_DMA_Handle;
+extern const i2c_master_config_t FC15_PMIC_config;
 
 /***********************************************************************************************************************
  * Callback functions

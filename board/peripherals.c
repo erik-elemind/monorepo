@@ -1058,6 +1058,44 @@ static void RTC_init(void) {
 }
 
 /***********************************************************************************************************************
+ * FC15_PMIC initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'FC15_PMIC'
+- type: 'flexcomm_i2c'
+- mode: 'I2C_Polling'
+- custom_name_enabled: 'true'
+- type_id: 'flexcomm_i2c_c8597948f61bd571ab263ea4330b9dd6'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'FLEXCOMM15'
+- config_sets:
+  - fsl_i2c:
+    - i2c_mode: 'kI2C_Master'
+    - clockSource: 'FXCOMFunctionClock'
+    - clockSourceFreq: 'BOARD_BootClockRUN'
+    - i2c_master_config:
+      - enableMaster: 'true'
+      - baudRate_Bps: '100000'
+      - enableTimeout: 'false'
+      - timeout_Ms: '35'
+    - quick_selection: 'QS_I2C_Master'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const i2c_master_config_t FC15_PMIC_config = {
+  .enableMaster = true,
+  .baudRate_Bps = 100000UL,
+  .enableTimeout = false,
+  .timeout_Ms = 35U
+};
+
+static void FC15_PMIC_init(void) {
+  /* Initialization function */
+  I2C_MasterInit(FC15_PMIC_PERIPHERAL, &FC15_PMIC_config, FC15_PMIC_CLOCK_SOURCE);
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 void BOARD_InitPeripherals(void)
@@ -1079,6 +1117,7 @@ void BOARD_InitPeripherals(void)
   FC4_AUDIO_I2S_init();
   NAND_FLEXSPI_init();
   RTC_init();
+  FC15_PMIC_init();
 }
 
 /***********************************************************************************************************************

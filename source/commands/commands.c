@@ -41,6 +41,7 @@
 #include "mic_commands.h"
 #include "als_commands.h"
 #include "skin_temp_commands.h"
+#include "pmic_commands.h"
 
 //static const char *TAG = "commands";  // Logging prefix for this module
 
@@ -126,6 +127,8 @@ const shell_command_t commands[] = {
     { P_ALL, "noise_test_flash_stop", noise_test_flash_stop_command, "Stop flash test" },
 #endif // (defined(ENABLE_NOISE_TEST) && (ENABLE_NOISE_TEST > 0U))
 #endif // FLASH_COMMANDS_H
+
+	{ P_ALL, "pmic_status", pmic_status_command, "" },
 
 #ifdef NAND_COMMANDS_H
     { P_ALL, "nand_id", nand_id_command, "Read SPI Flash ID register" },
