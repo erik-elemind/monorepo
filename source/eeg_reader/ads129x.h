@@ -77,10 +77,15 @@ ads_status ads_stop_command();
 ads_status ads_rdatac_command(ads129x* ads);
 ads_status ads_sdatac_command(ads129x* ads);
 ads_status ads_receive_sample(ads129x* ads, bool from_isr);
+ads_status ads_turn_on_leadoff_detection(void);
+ads_status ads_turn_off_leadoff_detection(void);
+ads_status ads_get_leadoff_stat(uint8_t* stat);
 
 void ads_init(ads129x *ads);
 ads_status ads_on(ads129x* ads);
 void ads_off(ads129x* ads);
+void ads_set_gain(ads129x* ads, uint8_t gain);
+
 void ads_set_gain(ads129x* ads, uint8_t gain);
 
 #if defined(__cplusplus)

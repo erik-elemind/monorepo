@@ -9,6 +9,7 @@
 #include "task.h"
 #include "command_helpers.h"
 #include "ymodem.h"
+#include "eeg_reader.h"
 
 #include "ble.h"
 #include "hex_utils.h"
@@ -325,4 +326,16 @@ ble_print_addr_command(int argc, char **argv)
   // Print BLE address in reverse order of the way it's stored, which is nRF convention.
   LOGV(TAG, "BLE Address: %02X%02X%02X%02X%02X%02X", addr[5], addr[4], addr[3],
       addr[2], addr[1], addr[0]);
+}
+
+void ble_connected(int argc, char **argv)
+{
+	LOGV(TAG, "BLE Connected");
+	eeg_reader_event_ble_connected();
+}
+
+void ble_disconnected(int argc, char **argv)
+{
+	LOGV(TAG, "BLE Disconnected");
+	eeg_reader_event_ble_disconnected();
 }
