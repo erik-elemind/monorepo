@@ -706,6 +706,7 @@ static void
 on_connect(ble_elemind_t* p_elemind, const ble_evt_t* p_ble_evt)
 {
   p_elemind->conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
+  lpc_uart_sendline("ble_connected\n");
 }
 
 /** Handle the Disconnect event.
@@ -718,6 +719,7 @@ on_disconnect(ble_elemind_t* p_elemind, const ble_evt_t* p_ble_evt)
 {
   UNUSED_PARAMETER(p_ble_evt);
   p_elemind->conn_handle = BLE_CONN_HANDLE_INVALID;
+  lpc_uart_sendline("ble_disconnected\n");
 }
 
 
