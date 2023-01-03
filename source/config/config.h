@@ -67,7 +67,7 @@
 // 0U - disable timer-based auto power-off
 // 1U - enable timer-based auto power-off (production default)
 // (Used in app.c)
-#define ENABLE_APP_POWER_OFF_TIMER (0U)
+#define ENABLE_APP_SLEEP_TIMER (1U)
 
 // Enable timer for auto power-off of BLE
 // 0U - disable timer-based auto power-off

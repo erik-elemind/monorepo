@@ -134,17 +134,6 @@ typedef struct
 
 } interpreter_event_t;
 
-
-//
-// State machine states:
-//
-typedef enum
-{
-  INTERPRETER_STATE_STANDBY,
-  INTERPRETER_STATE_RUNNING,
-  INTERPRETER_STATE_BLINK_TEST,
-} interpreter_state_t;
-
 typedef enum
 {
   BLINK_STATE_STANDBY = 0,
@@ -332,6 +321,9 @@ static int getchar_script(void){
   }
 }
 
+interpreter_state_t interpreter_get_state(void){
+	return g_interpreter_context.state;
+}
 
 void
 interpreter_event_start_script(const char* filename){

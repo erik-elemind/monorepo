@@ -37,7 +37,7 @@ app_event_command(int argc, char **argv) {
     printf("    ble_activity\n");
     printf("    button_activity\n");
     printf("    shell_activity\n");
-    printf("    power_off_timeout\n");
+    printf("    sleep_timeout\n");
     printf("    ble_off_timeout\n");
     printf("    charger_plugged\n");
     printf("    charger_unplugged\n");
@@ -64,8 +64,8 @@ app_event_command(int argc, char **argv) {
   else if (!strcmp(argv[1], "shell_activity")) {
     app_event_shell_activity();
   }
-  else if (!strcmp(argv[1], "power_off_timeout")) {
-    app_event_power_off_timeout();
+  else if (!strcmp(argv[1], "sleep_timeout")) {
+    app_event_sleep_timeout();
   }
   else if (!strcmp(argv[1], "ble_off_timeout")) {
     app_event_ble_off_timeout();
