@@ -86,6 +86,8 @@ void ble_time_request(void);
 void ble_time_command(uint64_t unix_epoch_time_sec);
 void ble_time_update(uint64_t unix_epoch_time_sec);
 void ble_addr_command(uint8_t* addr);
+void ble_connected_event(void);
+void ble_disconnected_event(void);
 
 uint8_t* ble_get_addr();
 
