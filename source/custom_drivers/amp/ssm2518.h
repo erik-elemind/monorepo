@@ -161,12 +161,11 @@
 extern "C" {
 #endif
 
-void SSM2518_WriteReg(i2c_rtos_handle_t *i2c_handle, char regAddr, unsigned char data);
-unsigned char SSM2518_ReadReg(i2c_rtos_handle_t *i2c_handle, char regAddr);
+void SSM2518_WriteReg(char regAddr, unsigned char data);
+unsigned char SSM2518_ReadReg(char regAddr);
 void SSM2518_Init(i2c_rtos_handle_t *i2c_handle);
-//void EnableIntc(void);
-//void EnableUartIntr(void);
-//void EnableExtIntr(void);
+void SSM2518_Mute(bool mute);
+void SSM2518_SetVolume(uint8_t volume);
 
 // End: Tell C++ compiler to include this C header.
 #ifdef __cplusplus

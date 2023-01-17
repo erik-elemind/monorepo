@@ -49,8 +49,7 @@
 
 #include "ssm2518.h"
 
-volatile int rxData = 0x00;
-
+static i2c_rtos_handle_t* g_i2c_handle;
 /*****************************************************************************
 * @brief Write to an internal SSM2518 Register.
 *
@@ -59,7 +58,7 @@ volatile int rxData = 0x00;
 *
 * @return None.
 ******************************************************************************/
-void SSM2518_WriteReg(i2c_rtos_handle_t *i2c_handle, char regAddr, unsigned char data)
+void SSM2518_WriteReg(char regAddr, unsigned char data)
 {
   i2c_master_transfer_t masterXfer;
   status_t status;
@@ -73,7 +72,7 @@ void SSM2518_WriteReg(i2c_rtos_handle_t *i2c_handle, char regAddr, unsigned char
   masterXfer.dataSize       = 1;
   masterXfer.flags          = kI2C_TransferDefaultFlag;
 
-  status = I2C_RTOS_Transfer(i2c_handle, &masterXfer);
+  status = I2C_RTOS_Transfer(g_i2c_handle, &masterXfer);
   if (status != kStatus_Success) {
     // TODO: Print Error Message
   }
@@ -86,7 +85,7 @@ void SSM2518_WriteReg(i2c_rtos_handle_t *i2c_handle, char regAddr, unsigned char
 *
 * @return rxBuffer[0] - data read from device.
 ******************************************************************************/
-unsigned char SSM2518_ReadReg(i2c_rtos_handle_t *i2c_handle, char regAddr)
+unsigned char SSM2518_ReadReg(char regAddr)
 {
   unsigned char data;
 
@@ -103,7 +102,7 @@ unsigned char SSM2518_ReadReg(i2c_rtos_handle_t *i2c_handle, char regAddr)
   masterXfer.dataSize       = 1;
   masterXfer.flags          = kI2C_TransferDefaultFlag;
 
-  status = I2C_RTOS_Transfer(i2c_handle, &masterXfer);
+  status = I2C_RTOS_Transfer(g_i2c_handle, &masterXfer);
   if (status != kStatus_Success) {
     // TODO: Print Error Message
   }
@@ -202,6 +201,7 @@ void SSM2518_Init(i2c_rtos_handle_t *i2c_handle)
 #else
   // Initializing SSM2518 via I2C.
 
+  g_i2c_handle = i2c_handle;
   // Reset Power Control Register (RegAddr 0):
   // 00100000
   // 0******* - Software Reset            , Normal operation (do not reset)
@@ -209,13 +209,13 @@ void SSM2518_Init(i2c_rtos_handle_t *i2c_handle)
   // **1***** - Bit Clock Source Selection, MCLK pin used as bit clock source
   // ***0001* - 128 * Fs
   // *******0 - Software Master Power-Down, Normal operation (do not power-down)
-  SSM2518_WriteReg(i2c_handle, SSM2518_Reset_Power_Control,                  0x22);
+  SSM2518_WriteReg(SSM2518_Reset_Power_Control, 0x22);
   // Edge Speed And Clocking Control Register (RegAddr 1):
   // 00000000
   // 00000*** - Reserved
   // *****00* - Edge Rate Control         , No edge rate control
   // *******0 - Automatic Sample Rate Detection, Automatic detection enabled
-  SSM2518_WriteReg(i2c_handle, SSM2518_Edge_Clock_Control,                   0x00);
+  SSM2518_WriteReg(SSM2518_Edge_Clock_Control, 0x00);
   // Serial Audio Interface And Sample Rate Control Register (RegAddr 2)
   // 00001011
   // 0******* - Reserved
@@ -224,7 +224,7 @@ void SSM2518_Init(i2c_rtos_handle_t *i2c_handle)
   // ******01 - Manual Sample Rate Selection, 16 to 24 kHz
   // Note: Manual Sample Rate Selection is NOT used because Edge Clock Control Register
   //       has Automatic Sample Rate Detection enabled. (50kHz is what is actually used)
-  SSM2518_WriteReg(i2c_handle, SSM2518_Serial_Interface_Sample_Rate_Control, 0x01);//0x03
+  SSM2518_WriteReg(SSM2518_Serial_Interface_Sample_Rate_Control, 0x01);//0x03
   // Serial Audio Interface Control Register (RegAddr 3):
   // 00001000
   // 0******* - Internal BCLK Generator Enable, Bit clock from BCLK pin is used.
@@ -234,20 +234,20 @@ void SSM2518_Init(i2c_rtos_handle_t *i2c_handle)
   // ****00** - TDM Slot Width                , 32 BCLK (used inly in TDM mode)
   // ******0* - BCLK Active Edge              , Rising BCLK edge used
   // *******0 - Reserved
-  SSM2518_WriteReg(i2c_handle, SSM2518_Serial_Interface_Control,             0x00);
+  SSM2518_WriteReg(SSM2518_Serial_Interface_Control, 0x00);
   // Channel Mapping Control Register (RegAddr 4):
   // 00100000
   // 0001**** - Right Channel Select          , Channel 2
   // ****0000 - Left Channel Select           , Channel 0
-  SSM2518_WriteReg(i2c_handle, SSM2518_Channel_Mapping_Control,              0x10);
+  SSM2518_WriteReg(SSM2518_Channel_Mapping_Control, 0x10);
   // Left Channel Volume Control Register (RegAddr 5):
   // 11000000
   // 11000000 - Left Channel Volume Control   , 0dB  (smaller number is louder)
-  SSM2518_WriteReg(i2c_handle, SSM2518_Left_Volume_Control,                  0x80);
+  SSM2518_WriteReg(SSM2518_Left_Volume_Control, 0x80);
   // Right Channel Volume Control Register (RegAddr 6):
   // 11000000
   // 11000000 - Right Channel Volume Control  , 0dB  (smaller number is louder)
-  SSM2518_WriteReg(i2c_handle, SSM2518_Right_Volume_Control,                 0x80);
+  SSM2518_WriteReg(SSM2518_Right_Volume_Control, 0x80);
   // Volume and Mute Control Register (RegAddr 7):
   // 10000000
   // 1******* - Automatic Mute Enable       , Auto mute disabled
@@ -258,7 +258,7 @@ void SSM2518_Init(i2c_rtos_handle_t *i2c_handle)
   // *****0** - Right Channel Soft Mute     , Normal operation (R not muted)
   // ******0* - Left Channel Soft Mute      , Normal operation (L not muted)
   // *******0 - Master Mute Control         , Normal operation (R and L not muted)
-  SSM2518_WriteReg(i2c_handle, SSM2518_Volume_Mute_Control,                  0x80);
+  SSM2518_WriteReg(SSM2518_Volume_Mute_Control, 0x80);
   // Fault Control Register 1 (RegAddr 8):
   // 00001100
   // 0******* - Left Channel Overcurrent Fault  (read only), Normal operation
@@ -267,7 +267,7 @@ void SSM2518_Init(i2c_rtos_handle_t *i2c_handle)
   // ***0**** - Manual Fault Recovery           (read only), Normal operation
   // ****11** - Max Fault Recovery Attempts                , Unlimited attempts
   // ******00 - Auto Fault Recovery         , Auto recovery from overtemp and overcurrent.
-  SSM2518_WriteReg(i2c_handle, SSM2518_Fault_Control_1,                      0x0C);
+  SSM2518_WriteReg(SSM2518_Fault_Control_1, 0x0C);
   // Power and Fault Control Register (RegAddr 9):
   // 10000000
   // 10****** - Auto Recovery Delay Time   , 40 ms autorecovery delay
@@ -277,6 +277,19 @@ void SSM2518_Init(i2c_rtos_handle_t *i2c_handle)
   // *****0** - Right Channel Powerdown    , Normal operation (R not powered down)
   // ******0* - Left Channel Powerdown     , Normal operation (L not powered down)
   // *******0 - Automatic Power-Down Enable, auto power-down disabled
-  SSM2518_WriteReg(i2c_handle, SSM2518_Power_Fault_Control,                  0x80);
+  SSM2518_WriteReg(SSM2518_Power_Fault_Control, 0x80);
 #endif
+}
+
+void SSM2518_Mute(bool mute)
+{
+	SSM2518_WriteReg(SSM2518_Volume_Mute_Control, mute);
+}
+
+void SSM2518_SetVolume(uint8_t volume)
+{
+	// Left Channel Volume Control Register (RegAddr 5):
+	SSM2518_WriteReg(SSM2518_Left_Volume_Control, volume);
+	// Right Channel Volume Control Register (RegAddr 6):
+	SSM2518_WriteReg(SSM2518_Right_Volume_Control, volume);
 }

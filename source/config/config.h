@@ -111,6 +111,10 @@
 #define USE_NAND_GD5F4GQ6_2KPAGE (0U)
 #define USE_NAND_W25N04KW        (1U)
 
+// Config which amp to use
+#define USE_SSM2518 (1U)
+#define USE_SSM2529 (0U)
+
 // Config Streaming Log Data (used in data_log.c)
 // 0U - stream NO logged data
 // 1U - stream ALL logged data
