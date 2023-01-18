@@ -68,6 +68,11 @@ BOARD_SetRGB32(uint32_t rgb_duty_cycle_bytes);
 void
 BOARD_ToggleDebugLED(void);
 
+AT_QUICKACCESS_SECTION_CODE(void BOARD_SetDeepSleepPinConfig(void));
+AT_QUICKACCESS_SECTION_CODE(void BOARD_RestoreDeepSleepPinConfig(void));
+AT_QUICKACCESS_SECTION_CODE(void BOARD_EnterDeepSleep(const uint32_t exclude_from_pd[4]));
+AT_QUICKACCESS_SECTION_CODE(void BOARD_EnterDeepPowerDown(const uint32_t exclude_from_pd[4]));
+
 #ifdef __cplusplus
 }
 #endif

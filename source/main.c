@@ -69,6 +69,12 @@
 
 static const char *TAG = "main";  // Logging prefix for this module
 
+/* BE CAUTIOUS TO SET CORRECT VOLTAGE RANGE ACCORDING TO YOUR BOARD/APPLICATION. PAD SUPPLY BEYOND THE RANGE DO
+      HARM TO THE SILICON. */
+power_pad_vrange_t vrange = {.Vdde0Range = kPadVol_171_198,
+							.Vdde1Range = kPadVol_171_198,
+							/* SD0 voltage is switchable, but in power_manager demo, it's fixed 3.3V. */
+							.Vdde2Range = kPadVol_171_198};
 
 //
 // Set task stack sizes and priorities:
@@ -257,6 +263,13 @@ static void system_boot_up(void)
 	BOARD_InitDebugConsole();
 
 	pmic_init();
+
+	// Enable USB, buttons, and BLE UART for DeepSleepIRQs
+	POWER_UpdatePmicRecoveryTime(1);
+	POWER_SetPadVolRange(&vrange);
+	EnableDeepSleepIRQ(PIN_INT5_IRQn); //usr_but1
+	EnableDeepSleepIRQ(PIN_INT6_IRQn); //usr_but2
+	EnableDeepSleepIRQ(PIN_INT7_IRQn); //power_but
 
 	//BOARD_DSP_Init();
 
