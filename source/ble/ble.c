@@ -419,7 +419,7 @@ void ble_alarm_request(void){
 void ble_alarm_command(alarm_params_t *params){
   ble_event_t event = { .type = BLE_EVENT_ALARM_COMMAND,
     .user_data = {0} };
-  memcpy(event.user_data, &(params->all[0]), ALARM_NUM);
+  memcpy(event.user_data, &(params->all[0]), sizeof(alarm_params_t));
   xQueueSend(g_event_queue, &event, portMAX_DELAY);
 }
 
@@ -748,7 +748,7 @@ handle_alarm_request(ble_event_t *event)
 static void
 handle_alarm_command(ble_event_t *event)
 {
-  memcpy(&(g_ble_context.alarm), &(event->user_data[0]), ALARM_NUM);
+  memcpy(&(g_ble_context.alarm), &(event->user_data[0]), sizeof(alarm_params_t));
   rtc_alarm_set(&(g_ble_context.alarm));
 }
 
