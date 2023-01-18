@@ -14,6 +14,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+//
+// State machine states:
+//
+typedef enum
+{
+  INTERPRETER_STATE_STANDBY,
+  INTERPRETER_STATE_RUNNING,
+  INTERPRETER_STATE_BLINK_TEST,
+} interpreter_state_t;
 
 typedef enum therapy_type_t{
   THERAPY_TYPE_NONE = 0,
@@ -25,7 +34,7 @@ typedef enum therapy_type_t{
 // Init called before vTaskStartScheduler() launches our Task in main():
 void interpreter_pretask_init(void);
 void interpreter_task(void *ignored);
-
+interpreter_state_t interpreter_get_state(void);
 void interpreter_event_start_script(const char* filepath);
 void interpreter_event_stop_script(bool start_electrode_quality);
 

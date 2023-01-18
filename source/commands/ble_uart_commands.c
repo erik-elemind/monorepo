@@ -331,11 +331,11 @@ ble_print_addr_command(int argc, char **argv)
 void ble_connected(int argc, char **argv)
 {
 	LOGV(TAG, "BLE Connected");
-	eeg_reader_event_ble_connected();
+	ble_connected_event();
 }
 
 void ble_disconnected(int argc, char **argv)
 {
 	LOGV(TAG, "BLE Disconnected");
-	eeg_reader_event_ble_disconnected();
+	ble_disconnected_event();
 }

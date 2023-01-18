@@ -70,6 +70,8 @@ typedef enum
   BLE_EVENT_TIME_COMMAND,
   BLE_EVENT_TIME_UPDATE,
   BLE_EVENT_ADDR_COMMAND,
+  BLE_EVENT_CONNECTED,
+  BLE_EVENT_DISCONNECTED
 } ble_event_type_t;
 
 // Events are passed to the g_event_queue with an optional
@@ -229,10 +231,26 @@ ble_event_type_name(ble_event_type_t event_type)
       return "BLE_EVENT_TIME_UPDATE";
     case BLE_EVENT_ADDR_COMMAND:
       return "BLE_EVENT_ADDR_COMMAND";
+    case BLE_EVENT_CONNECTED:
+      return "BLE_EVENT_CONNECTED";
+    case BLE_EVENT_DISCONNECTED:
+      return "BLE_EVENT_DISCONNECTED";
     default:
       break;
   }
   return "BLE_EVENT UNKNOWN";
+}
+
+void ble_connected_event(void)
+{
+	ble_event_t event = {.type = BLE_EVENT_CONNECTED };
+	xQueueSend(g_event_queue, &event, 0);
+}
+
+void ble_disconnected_event(void)
+{
+	ble_event_t event = {.type = BLE_EVENT_DISCONNECTED };
+	xQueueSend(g_event_queue, &event, 0);
 }
 
 void
@@ -855,6 +873,14 @@ handle_state_standby(ble_event_t *event)
       // Generic code to always execute when entering this state goes here.
       break;
 
+    case BLE_EVENT_CONNECTED:
+    	eeg_reader_event_ble_connected();
+    	break;
+
+    case BLE_EVENT_DISCONNECTED:
+    	eeg_reader_event_ble_disconnected();
+    	break;
+
     case BLE_EVENT_BATTERY_LEVEL_REQUEST:
       handle_battery_level_request(event);
       break;
@@ -1003,6 +1029,7 @@ handle_event(ble_event_t *event)
   switch (g_ble_context.state) {
     case BLE_STATE_STANDBY:
       handle_state_standby(event);
+      app_event_ble_activity();
       break;
 
     default:

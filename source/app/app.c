@@ -74,7 +74,7 @@ typedef enum
   APP_EVENT_BLE_ACTIVITY,
   APP_EVENT_BUTTON_ACTIVITY,
   APP_EVENT_SHELL_ACTIVITY,
-  APP_EVENT_POWER_OFF_TIMEOUT,
+  APP_EVENT_SLEEP_TIMEOUT,
   APP_EVENT_BLE_OFF_TIMEOUT,
   APP_EVENT_LED_OFF_TIMEOUT,
 
@@ -104,7 +104,7 @@ typedef enum
   APP_STATE_INVALID = 0,
   APP_STATE_BOOT_UP,
   APP_STATE_ON,
-  APP_STATE_POWER_OFF,
+  APP_STATE_SLEEP,
   APP_STATE_CHARGER_ATTACHED,
 } app_state_t;
 
@@ -115,8 +115,8 @@ typedef enum
 typedef struct
 {
   app_state_t state;
-  TimerHandle_t power_off_timer_handle;
-  StaticTimer_t power_off_timer_struct;
+  TimerHandle_t sleep_timer_handle;
+  StaticTimer_t sleep_timer_struct;
   TimerHandle_t ble_off_timer_handle;
   StaticTimer_t ble_off_timer_struct;
   TimerHandle_t led_off_timer_handle;
@@ -130,13 +130,13 @@ typedef struct
 //#define TEST_TIMEOUTS // Uncomment to select shorter timeouts for testing
 #ifndef TEST_TIMEOUTS
 enum {
-  POWER_OFF_TIMEOUT_MS = MINUTES_TO_MS(5),
+  SLEEP_TIMEOUT_MS = MINUTES_TO_MS(1),
   BLE_OFF_TIMEOUT_MS = MINUTES_TO_MS(5),
   LED_OFF_TIMEOUT_MS = SECONDS_TO_MS(5),
 };
 #else
 enum {
-  POWER_OFF_TIMEOUT_MS = SECONDS_TO_MS(30),
+  SLEEP_TIMEOUT_MS = SECONDS_TO_MS(30),
   BLE_OFF_TIMEOUT_MS = SECONDS_TO_MS(30),
 };
 #endif
@@ -163,7 +163,7 @@ app_state_name(app_state_t state)
     case APP_STATE_BOOT_UP: return "APP_STATE_BOOT_UP";
     case APP_STATE_ON: return "APP_STATE_ON";
     case APP_STATE_CHARGER_ATTACHED: return "APP_STATE_CHARGER_ATTACHED";
-    case APP_STATE_POWER_OFF: return "APP_STATE_POWER_OFF";
+    case APP_STATE_SLEEP: return "APP_STATE_SLEEP";
     default:
       break;
   }
@@ -189,7 +189,7 @@ app_event_type_name(app_event_type_t event_type)
     case APP_EVENT_BLE_ACTIVITY: return "APP_EVENT_BLE_ACTIVITY";
     case APP_EVENT_BUTTON_ACTIVITY: return "APP_EVENT_BUTTON_ACTIVITY";
     case APP_EVENT_SHELL_ACTIVITY: return "APP_EVENT_SHELL_ACTIVITY";
-    case APP_EVENT_POWER_OFF_TIMEOUT: return "APP_EVENT_POWER_OFF_TIMEOUT";
+    case APP_EVENT_SLEEP_TIMEOUT: return "APP_EVENT_SLEEP_TIMEOUT";
     case APP_EVENT_BLE_OFF_TIMEOUT: return "APP_EVENT_BLE_OFF_TIMEOUT";
     case APP_EVENT_CHARGER_PLUGGED: return "APP_EVENT_CHARGER_PLUGGED";
     case APP_EVENT_CHARGER_UNPLUGGED: return "APP_EVENT_CHARGER_UNPLUGGED";
@@ -307,10 +307,10 @@ app_event_shell_activity(void)
 }
 
 void
-app_event_power_off_timeout(void)
+app_event_sleep_timeout(void)
 {
-#if (defined(ENABLE_APP_POWER_OFF_TIMER) && (ENABLE_APP_POWER_OFF_TIMER > 0U))
-  app_event_t event = {.type = APP_EVENT_POWER_OFF_TIMEOUT, .user_data = NULL };
+#if (defined(ENABLE_APP_SLEEP_TIMER) && (ENABLE_APP_SLEEP_TIMER > 0U))
+  app_event_t event = {.type = APP_EVENT_SLEEP_TIMEOUT, .user_data = NULL };
   xQueueSend(g_event_queue, &event, portMAX_DELAY);
 #endif
 }
@@ -406,7 +406,7 @@ log_event_ignored(app_event_t *event)
 static void
 set_state(app_state_t state)
 {
-  LOGD(TAG, "[%s] -> [%s]", app_state_name(g_app_context.state), app_state_name(state));
+  LOGV(TAG, "[%s] -> [%s]", app_state_name(g_app_context.state), app_state_name(state));
 
   g_app_context.state = state;
 
@@ -417,19 +417,19 @@ set_state(app_state_t state)
 }
 
 static void
-restart_power_off_timer(uint32_t timeout_ms)
+restart_sleep_timer(void)
 {
   // xTimerChangePeriod will start timer if it's not running already
-  if (xTimerChangePeriod(g_app_context.power_off_timer_handle,
-      pdMS_TO_TICKS(timeout_ms), 0) == pdFAIL) {
+  if (xTimerChangePeriod(g_app_context.sleep_timer_handle,
+      pdMS_TO_TICKS(SLEEP_TIMEOUT_MS), 0) == pdFAIL) {
     LOGE(TAG, "Unable to start power off timer!");
   }
 }
 
 static void
-stop_power_off_timer(void)
+stop_sleep_timer(void)
 {
-  if (xTimerStop(g_app_context.power_off_timer_handle, 0) == pdFAIL) {
+  if (xTimerStop(g_app_context.sleep_timer_handle, 0) == pdFAIL) {
     LOGE(TAG, "Unable to stop power off timer!");
   }
 }
@@ -500,25 +500,32 @@ set_led_by_charger_status(void)
 // Event handlers for the various application states:
 //
 static void
-handle_state_power_off(app_event_t *event)
+handle_state_sleep(app_event_t *event)
 {
 
   switch (event->type) {
     case APP_EVENT_ENTER_STATE:
-      stop_power_off_timer();
-      stop_ble_off_timer();
-      ble_power_off();
-
-      set_led_state(LED_OFF);
-
-      interpreter_event_forced_stop_therapy();
-
-      // Tell system monitor to power off LPC
-      system_monitor_event_power_off();
+      if (interpreter_get_state() == INTERPRETER_STATE_STANDBY)
+      {
+        stop_sleep_timer();
+        stop_ble_off_timer();
+        set_led_state(LED_OFF);
+        LOGV(TAG, "going to sleep");
+        //POWER_EnterSleep();
+      }
+      else // Therapy is on-going, set back to ON state
+      {
+    	  set_state(APP_STATE_ON);
+      }
       break;
 
       /* No other events here--we reset after power-on wakeup, and go
-         to APP_STATE_POWERING_ON. */
+         to APP_STATE_BOOT_UP. */
+    case APP_EVENT_BUTTON_ACTIVITY:
+    case APP_EVENT_BLE_ACTIVITY:
+    case APP_EVENT_SHELL_ACTIVITY:
+    	set_state(APP_STATE_ON);
+    	break;
 
     default:
       log_event_ignored(event);
@@ -553,7 +560,7 @@ handle_state_on(app_event_t *event)
 
   switch (event->type) {
       case APP_EVENT_ENTER_STATE:
-        restart_power_off_timer(POWER_OFF_TIMEOUT_MS);
+        restart_sleep_timer();
         stop_ble_off_timer();
         //ble_power_on();
 
@@ -571,8 +578,8 @@ handle_state_on(app_event_t *event)
         restart_led_off_timer();
         break;
 
-      case APP_EVENT_POWER_OFF_TIMEOUT:
-        set_state(APP_STATE_POWER_OFF);
+      case APP_EVENT_SLEEP_TIMEOUT:
+        set_state(APP_STATE_SLEEP);
         break;
 
       case APP_EVENT_CHARGER_PLUGGED:
@@ -584,7 +591,7 @@ handle_state_on(app_event_t *event)
 
       case APP_EVENT_POWER_BUTTON_LONG_CLICK:
         stop_led_off_timer();
-        set_state(APP_STATE_POWER_OFF);
+        set_state(APP_STATE_SLEEP);
         break;
 
       case APP_EVENT_LED_OFF_TIMEOUT:
@@ -592,7 +599,7 @@ handle_state_on(app_event_t *event)
         break;
 
       case APP_EVENT_BUTTON_ACTIVITY:
-            restart_power_off_timer(POWER_OFF_TIMEOUT_MS);
+            restart_sleep_timer();
 //            if(battery_get_percent() >= POWER_GOOD_BATT_THRESHOLD)
 //              {
 //                set_led_state(LED_POWER_GOOD);
@@ -617,7 +624,7 @@ handle_state_charger_attached(app_event_t *event)
 {
   switch (event->type) {
      case APP_EVENT_ENTER_STATE:
-       stop_power_off_timer();
+       stop_sleep_timer();
        stop_ble_off_timer();
        //ble_power_on();
        break;
@@ -625,6 +632,11 @@ handle_state_charger_attached(app_event_t *event)
      case APP_EVENT_CHARGER_UNPLUGGED:
        set_state(APP_STATE_ON);
        break;
+
+     //TODO: remove when reworked boards arrive
+     case APP_EVENT_SLEEP_TIMEOUT:
+    	 set_state(APP_STATE_SLEEP);
+    	 break;
 
      default:
        log_event_ignored(event);
@@ -645,9 +657,10 @@ handle_event(app_event_t *event)
       return;
     case APP_EVENT_BLE_ACTIVITY:
       restart_ble_off_timer();
-      return;
+      restart_sleep_timer();
+      break;
     case APP_EVENT_BUTTON_ACTIVITY:
-      restart_power_off_timer(POWER_OFF_TIMEOUT_MS);
+      restart_sleep_timer();
 //      if(battery_get_percent() >= POWER_GOOD_BATT_THRESHOLD)
 //      {
 //        set_led_state(LED_POWER_GOOD);
@@ -658,10 +671,10 @@ handle_event(app_event_t *event)
 //      }
 
       restart_led_off_timer();
-      return;
+      break;
     case APP_EVENT_SHELL_ACTIVITY:
-      restart_power_off_timer(POWER_OFF_TIMEOUT_MS);
-      return;
+      restart_sleep_timer();
+      break;
     case APP_EVENT_BLE_OFF_TIMEOUT:
       stop_ble_off_timer();
       ble_power_off();
@@ -681,8 +694,8 @@ handle_event(app_event_t *event)
     }
 
   switch (g_app_context.state) {
-      case APP_STATE_POWER_OFF:
-        handle_state_power_off(event);
+      case APP_STATE_SLEEP:
+        handle_state_sleep(event);
         break;
 
       case APP_STATE_BOOT_UP:
@@ -705,9 +718,9 @@ handle_event(app_event_t *event)
 }
 
 static void
-power_off_timeout(TimerHandle_t timer_handle)
+sleep_timeout(TimerHandle_t timer_handle)
 {
-  app_event_power_off_timeout();
+  app_event_sleep_timeout();
 }
 
 static void
@@ -737,9 +750,9 @@ static void
 task_init()
 {
   // Any post-scheduler init goes here.
-  g_app_context.power_off_timer_handle = xTimerCreateStatic("APP_POWER_OFF",
-     pdMS_TO_TICKS(POWER_OFF_TIMEOUT_MS), pdFALSE, NULL,
-     power_off_timeout, &(g_app_context.power_off_timer_struct));
+  g_app_context.sleep_timer_handle = xTimerCreateStatic("APP_SLEEP",
+     pdMS_TO_TICKS(SLEEP_TIMEOUT_MS), pdFALSE, NULL,
+     sleep_timeout, &(g_app_context.sleep_timer_struct));
 
   g_app_context.ble_off_timer_handle = xTimerCreateStatic("APP_BLE_OFF",
     pdMS_TO_TICKS(BLE_OFF_TIMEOUT_MS), pdFALSE, NULL,
@@ -794,7 +807,7 @@ void app_event_ble_therapy_start(therapy_type_t therapy){}
 void app_event_ble_activity(void){}
 void app_event_button_activity(void){}
 void app_event_shell_activity(void){}
-void app_event_power_off_timeout(void){}
+void app_event_sleep_timeout(void){}
 void app_event_ble_off_timeout(void){}
 void app_event_charger_plugged(void){}
 void app_event_charger_unplugged(void){}

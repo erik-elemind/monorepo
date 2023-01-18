@@ -37,7 +37,7 @@ void app_event_ble_therapy_start(therapy_type_t therapy);
 void app_event_ble_activity(void);
 void app_event_button_activity(void);
 void app_event_shell_activity(void);
-void app_event_power_off_timeout(void);
+void app_event_sleep_timeout(void);
 void app_event_ble_off_timeout(void);
 void app_event_charger_plugged(void);
 void app_event_charger_unplugged(void);
