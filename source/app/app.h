@@ -17,6 +17,17 @@
 extern "C" {
 #endif
 
+#define APP_DEEPSLEEP_RUNCFG0 (SYSCTL0_PDSLEEPCFG0_RBB_PD_MASK)
+#define APP_DEEPSLEEP_RAM_APD 0xFFFFF8U
+#define APP_DEEPSLEEP_RAM_PPD 0x0U
+#define APP_EXCLUDE_FROM_DEEPSLEEP                                                                                \
+    (((const uint32_t[]){APP_DEEPSLEEP_RUNCFG0,                                                                   \
+                         (SYSCTL0_PDSLEEPCFG1_FLEXSPI_SRAM_APD_MASK | SYSCTL0_PDSLEEPCFG1_FLEXSPI_SRAM_PPD_MASK), \
+                         APP_DEEPSLEEP_RAM_APD, APP_DEEPSLEEP_RAM_PPD}))
+
+#define APP_EXCLUDE_FROM_DEEP_POWERDOWN      (((const uint32_t[]){0, 0, 0, 0}))
+#define APP_EXCLUDE_FROM_FULL_DEEP_POWERDOWN (((const uint32_t[]){0, 0, 0, 0}))
+
 // Init called before vTaskStartScheduler() launches our Task in main():
 void app_pretask_init(void);
 

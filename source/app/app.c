@@ -41,7 +41,8 @@
 #include "led.h"
 #include "audio.h"
 #include "battery.h"
-
+#include "fsl_power.h"
+#include "pmic_pca9420.h"
 #include "../interpreter/interpreter.h"
 
 #if (defined(ENABLE_APP_TASK) && (ENABLE_APP_TASK > 0U))
@@ -496,6 +497,21 @@ set_led_by_charger_status(void)
     }
 }
 
+static void 
+presleep_tasks(void)
+{
+  LOGV(TAG, "Sleeping...");
+  //BOARD_SetPmicVoltageBeforeDeepSleep();
+}
+
+static void 
+postsleep_tasks(void)
+{
+  //BOARD_RestorePmicVoltageAfterDeepSleep();
+  LOGV(TAG, "Waking up!");
+  set_state(APP_STATE_BOOT_UP);
+}
+
 //
 // Event handlers for the various application states:
 //
@@ -510,8 +526,10 @@ handle_state_sleep(app_event_t *event)
         stop_sleep_timer();
         stop_ble_off_timer();
         set_led_state(LED_OFF);
-        LOGV(TAG, "going to sleep");
-        //POWER_EnterSleep();
+        // TODO: enable presleep_tasks, sleep, postsleep_tasks
+        //presleep_tasks();
+        //BOARD_EnterDeepSleep(APP_EXCLUDE_FROM_DEEPSLEEP);
+        //postsleep_tasks();
       }
       else // Therapy is on-going, set back to ON state
       {
@@ -519,8 +537,7 @@ handle_state_sleep(app_event_t *event)
       }
       break;
 
-      /* No other events here--we reset after power-on wakeup, and go
-         to APP_STATE_BOOT_UP. */
+      /* Exit on activity. This would only occur if uC didn't actually Sleep */
     case APP_EVENT_BUTTON_ACTIVITY:
     case APP_EVENT_BLE_ACTIVITY:
     case APP_EVENT_SHELL_ACTIVITY:
@@ -624,7 +641,8 @@ handle_state_charger_attached(app_event_t *event)
 {
   switch (event->type) {
      case APP_EVENT_ENTER_STATE:
-       stop_sleep_timer();
+       //stop_sleep_timer(); //TODO: reenable when new boards
+    	 restart_sleep_timer(); //TODO: remove when new boards arrive
        stop_ble_off_timer();
        //ble_power_on();
        break;

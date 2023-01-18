@@ -10,6 +10,9 @@
 #include "peripherals.h"
 
 static pca9420_handle_t pca9420Handle;
+static pca9420_modecfg_t pca9420CurrModeCfg;
+static pca9420_mode_t pca9420CurrMode;
+static bool pmicVoltChangedForDeepSleep;
 
 /*
  * Sends txBuff to PCA9420 over I2C
@@ -135,28 +138,45 @@ static void pmic_config_modes(pca9420_modecfg_t *cfg, uint32_t num)
 	// TODO: Update this function to encode the modes we care about.
     assert(cfg);
 
-    if (num >= 2)
-    {
-        /* Mode 1: High drive. */
-        cfg[1].sw1OutVolt  = kPCA9420_Sw1OutVolt1V100;
-        cfg[1].sw2OutVolt  = kPCA9420_Sw2OutVolt1V900;
-        cfg[1].ldo1OutVolt = kPCA9420_Ldo1OutVolt1V900;
-        cfg[1].ldo2OutVolt = kPCA9420_Ldo2OutVolt3V300;
-    }
-    if (num >= 3)
-    {
-        /* Mode 2: Low drive. */
-        cfg[2].sw1OutVolt  = kPCA9420_Sw1OutVolt0V975;
-        cfg[2].sw2OutVolt  = kPCA9420_Sw2OutVolt1V800;
-        cfg[2].ldo1OutVolt = kPCA9420_Ldo1OutVolt1V800;
-        cfg[2].ldo2OutVolt = kPCA9420_Ldo2OutVolt3V300;
-    }
-    if (num >= 4)
-    {
-        /* Mode 3: VDDIO off, watchdog enabled. */
-        cfg[3].enableLdo2Out = false;
-        cfg[3].wdogTimerCfg  = kPCA9420_WdTimer16s;
-    }
+    /* Configuration PMIC mode to align with power lib like below:
+     *  0b00    run mode, no special.
+     *  0b01    deep sleep mode, vddcore 0.7V.
+     *  0b10    deep powerdown mode, vddcore off.
+     *  0b11    full deep powerdown mode vdd1v8 and vddcore off. */
+
+    /* Mode 1: VDDCORE 0.7V. */
+    cfg[1].sw1OutVolt = kPCA9420_Sw1OutVolt0V700;
+
+    /* Mode 2: VDDCORE off. */
+    cfg[2].enableSw1Out = false;
+
+    /* Mode 3: VDDCORE, VDD1V8 and VDDIO off. */
+    cfg[3].enableSw1Out  = false;
+    cfg[3].enableSw2Out  = false;
+    cfg[3].enableLdo2Out = false;
+
+    // if (num >= 2)
+    // {
+    //     /* Mode 1: High drive. */
+    //     cfg[1].sw1OutVolt  = kPCA9420_Sw1OutVolt1V100;
+    //     cfg[1].sw2OutVolt  = kPCA9420_Sw2OutVolt1V900;
+    //     cfg[1].ldo1OutVolt = kPCA9420_Ldo1OutVolt1V900;
+    //     cfg[1].ldo2OutVolt = kPCA9420_Ldo2OutVolt3V300;
+    // }
+    // if (num >= 3)
+    // {
+    //     /* Mode 2: Low drive. */
+    //     cfg[2].sw1OutVolt  = kPCA9420_Sw1OutVolt0V975;
+    //     cfg[2].sw2OutVolt  = kPCA9420_Sw2OutVolt1V800;
+    //     cfg[2].ldo1OutVolt = kPCA9420_Ldo1OutVolt1V800;
+    //     cfg[2].ldo2OutVolt = kPCA9420_Ldo2OutVolt3V300;
+    // }
+    // if (num >= 4)
+    // {
+    //     /* Mode 3: VDDIO off, watchdog enabled. */
+    //     cfg[3].enableLdo2Out = false;
+    //     cfg[3].wdogTimerCfg  = kPCA9420_WdTimer16s;
+    // }
 }
 
 
@@ -184,5 +204,56 @@ void pmic_init(){
     /* Enable PMIC interrupts. */
     PCA9420_EnableInterrupts(&pca9420Handle, kPCA9420_IntSrcSysAll | kPCA9420_IntSrcRegulatorAll);
 
+}
+
+void BOARD_SetPmicVoltageBeforeDeepSleep(void)
+{
+    PCA9420_GetCurrentMode(&pca9420Handle, &pca9420CurrMode);
+    PCA9420_ReadModeConfigs(&pca9420Handle, pca9420CurrMode, &pca9420CurrModeCfg, 1);
+
+    if (pca9420CurrModeCfg.sw1OutVolt == kPCA9420_Sw1OutVolt0V700)
+    {
+        pmicVoltChangedForDeepSleep = true;
+        /* On resume from deep sleep with external PMIC, LVD is always used even if we have already disabled it.
+         * Here we need to set up a safe threshold to avoid LVD reset and interrupt. */
+        POWER_SetLvdFallingTripVoltage(kLvdFallingTripVol_720);
+        pca9420CurrModeCfg.sw1OutVolt = kPCA9420_Sw1OutVolt0V750;
+        PCA9420_WriteModeConfigs(&pca9420Handle, pca9420CurrMode, &pca9420CurrModeCfg, 1);
+    }
+    else
+    {
+    }
+}
+
+void BOARD_RestorePmicVoltageAfterDeepSleep(void)
+{
+    if (pmicVoltChangedForDeepSleep)
+    {
+        PCA9420_GetCurrentMode(&pca9420Handle, &pca9420CurrMode);
+        PCA9420_ReadModeConfigs(&pca9420Handle, pca9420CurrMode, &pca9420CurrModeCfg, 1);
+        pca9420CurrModeCfg.sw1OutVolt = kPCA9420_Sw1OutVolt0V700;
+        PCA9420_WriteModeConfigs(&pca9420Handle, pca9420CurrMode, &pca9420CurrModeCfg, 1);
+        pmicVoltChangedForDeepSleep = false;
+    }
+    else
+    {
+    }
+}
+
+void BOARD_SetPmicVoltageBeforeDeepPowerDown(void)
+{
+    PCA9420_GetCurrentMode(&pca9420Handle, &pca9420CurrMode);
+    PCA9420_ReadModeConfigs(&pca9420Handle, pca9420CurrMode, &pca9420CurrModeCfg, 1);
+
+    /* Wakeup from deep power down is same as POR, and need VDDCORE >= 1.0V. Otherwise
+       0.9V LVD reset value may cause wakeup failure. */
+    if (pca9420CurrModeCfg.sw1OutVolt < kPCA9420_Sw1OutVolt1V000)
+    {
+        pca9420CurrModeCfg.sw1OutVolt = kPCA9420_Sw1OutVolt1V000;
+        PCA9420_WriteModeConfigs(&pca9420Handle, pca9420CurrMode, &pca9420CurrModeCfg, 1);
+    }
+    else
+    {
+    }
 }
 
