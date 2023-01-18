@@ -884,8 +884,9 @@ handle_event (interpreter_event_t *event)
 static void
 interpreter_handle_rtc_alarm(void)
 {
-  static const char filename[] = "script_alarm.txt";
-  interpreter_event_start_script(filename);
+  // static const char filename[] = "script_alarm.txt";
+  // interpreter_event_start_script(filename);
+  app_event_rtc_activity();
   rtc_alarm_init();
 }
 
