@@ -1,0 +1,25 @@
+#Project variables for prebuild.h
+PROJECT_NAME := morpheus_fw_imxrt685
+VARIANT := VARIANT_FF4
+
+#Create prebuild.h file
+CREATE_FILE := $(shell echo "/* Generated file. Do not edit. */" > ../prebuild.h)
+CREATE_FILE := $(shell echo "#define PROJECT_NAME \""$(PROJECT_NAME)"\"" >> ../prebuild.h)
+CREATE_FILE := $(shell echo "#define VARIANT \""$(VARIANT)"\"" >> ../prebuild.h)
+CREATE_FILE := $(shell echo "#define $(VARIANT) \""$(VARIANT)"\"" >> ../prebuild.h)
+
+#Get firmware version information from git tag
+GIT_VERSION := $(shell git describe --abbrev=7 --dirty='+' --always --tags)
+GIT_TAG_LATEST := $(shell git describe --abbrev=0 --always --tags)
+VER_MAJOR := $(shell echo $(GIT_TAG_LATEST) | awk -F'[v.]' '{print $$2}')
+VER_MINOR := $(shell echo $(GIT_TAG_LATEST) | awk -F'[v.]' '{print $$3}')
+VER_PATCH := $(shell echo $(GIT_TAG_LATEST) | awk -F'[v.]' '{print $$4}')
+
+#Create firmware version file
+CREATE_FILE := $(shell echo "/* Generated file. Do not edit. */" > ../fw_version.h)
+CREATE_FILE := $(shell echo "#pragma once" >> ../fw_version.h)
+CREATE_FILE := $(shell echo "#define FW_VERSION_MAJOR      $(VER_MAJOR)" >> ../fw_version.h)
+CREATE_FILE := $(shell echo "#define FW_VERSION_MINOR      $(VER_MINOR)" >> ../fw_version.h)
+CREATE_FILE := $(shell echo "#define FW_VERSION_PATCH      $(VER_PATCH)" >> ../fw_version.h)
+CREATE_FILE := $(shell echo "#define FW_VERSION_STRING     \"$(GIT_TAG_LATEST)\"" >> ../fw_version.h)
+CREATE_FILE := $(shell echo "#define FW_VERSION_FULL       \"$(GIT_VERSION)\"" >> ../fw_version.h)
