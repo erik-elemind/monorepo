@@ -9,6 +9,7 @@
 #include "fsl_common.h"
 #include "fsl_dsp.h"
 #include "dsp_support.h"
+#include "fsl_power.h"
 
 /*******************************************************************************
  * Definitions
@@ -61,6 +62,10 @@ void BOARD_DSP_Init(void)
 #endif
 #endif
 #endif
+
+    /* Configure PMIC Vddcore value according to main/dsp clock. */
+    BOARD_SetPmicVoltageForFreq(kPartTemp_0C_P85C, kVoltOpFullRange, CLOCK_GetFreq(kCLOCK_CoreSysClk), 594000000U);
+
     /* Enable DSP PLL clock 594MHz. */
     CLOCK_InitSysPfd(kCLOCK_Pfd1, 16);
     /*Let DSP run on DSP PLL clock with divider 1 (594Mhz). */

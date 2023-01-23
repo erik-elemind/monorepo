@@ -271,7 +271,9 @@ static void system_boot_up(void)
 	EnableDeepSleepIRQ(PIN_INT6_IRQn); //usr_but2
 	EnableDeepSleepIRQ(PIN_INT7_IRQn); //power_but
 
-	//BOARD_DSP_Init();
+#if DSP_IMAGE_COPY_TO_RAM
+	BOARD_DSP_Init();
+#endif
 
     // Enable PowerQuad - Needed for ecHT computation in eeg_processor.h
     pqhelper_init();
@@ -501,7 +503,9 @@ int main(void)
     vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)USER_METRICS_TASK_STACK_SIZE );
 #endif
 
-	//DSP_Start();
+#if DSP_IMAGE_COPY_TO_RAM
+	DSP_Start();
+#endif
 
 	vTaskStartScheduler();
 
