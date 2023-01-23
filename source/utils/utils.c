@@ -1,26 +1,26 @@
 #include "virtual_com.h"
 #include "utils.h"
 #include "reset_reason.h"
-//#include "prebuild.h" //ToDo: port
+#include "prebuild.h"
+#include "fw_version.h"
 #include "zmodem.h"
 
 //static const char *TAG = "utils";  // Logging prefix for this module
 uint8_t rcv_byte[8192] = { '\0' };
 int recv_cnt = 0;
 
-#ifndef PROJECT_NAME
-#define PROJECT_NAME "PROJECT_NAME"
-#endif
-#ifndef GIT_VERSION
-#define GIT_VERSION "GIT_VERSION"
-#endif
-
-
 void
 print_version (void)
 {
-  printf (PROJECT_NAME " fw:0x%08x/%s git:%s reset:0x%08lx\n\r",
-	  FW_VERSION_INTEGER, FW_VERSION_STRING, GIT_VERSION, get_reset_reason());
+  printf(FW_VERSION_STRING);
+  printf("\r\n");
+}
+
+void
+print_version_full (void)
+{
+  printf(FW_VERSION_FULL);
+  printf("\r\n");
 }
 
 #if defined(CONFIG_SHELL_USB)

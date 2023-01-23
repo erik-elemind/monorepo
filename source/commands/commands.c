@@ -93,6 +93,13 @@ version_command(int argc, char **argv)
 }
 
 static void
+version_command_full(int argc, char **argv)
+{
+  print_version_full();
+}
+
+
+static void
 reset_command(int argc, char **argv)
 {
   NVIC_SystemReset();
@@ -334,7 +341,8 @@ const shell_command_t commands[] = {
     { P_ALL, "?", shell_list, "List commands" },
 
     { P_ALL, "log_level", log_level_command, "Display or set the log level squelching (ERROR, WARN, INFO, etc.)" },
-    { P_ALL, "version", version_command, "Print out the current firmware build and reset reason." },
+    { P_ALL, "version", version_command, "Print out the current firmware version" },
+	{ P_ALL, "version_full", version_command_full, "Print out all details of the current firmware version" },
     { P_ALL, "reset", reset_command, "Perform a software reset." },
 
     // Platform commands

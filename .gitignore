@@ -57,3 +57,5 @@ Debug/
 
 # IDE settings
 .settings/
+prebuild.h
+fw_version.h

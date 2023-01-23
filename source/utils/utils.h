@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 void print_version(void);
+void print_version_full(void);
 #if defined(CONFIG_SHELL_USB) || defined(CONFIG_SHELL_UART)
 void debug_uart_buffer_clear(void);
 int get_recv_count(void);
