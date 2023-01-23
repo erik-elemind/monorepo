@@ -270,6 +270,7 @@ static void system_boot_up(void)
 	EnableDeepSleepIRQ(PIN_INT5_IRQn); //usr_but1
 	EnableDeepSleepIRQ(PIN_INT6_IRQn); //usr_but2
 	EnableDeepSleepIRQ(PIN_INT7_IRQn); //power_but
+	EnableDeepSleepIRQ(RTC_IRQn); // rtc
 
 #if DSP_IMAGE_COPY_TO_RAM
 	BOARD_DSP_Init();

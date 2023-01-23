@@ -18,8 +18,8 @@ extern "C" {
 #endif
 
 #define APP_DEEPSLEEP_RUNCFG0 (SYSCTL0_PDSLEEPCFG0_RBB_PD_MASK)
-#define APP_DEEPSLEEP_RAM_APD 0xFFFFF8U
-#define APP_DEEPSLEEP_RAM_PPD 0x0U
+#define APP_DEEPSLEEP_RAM_APD 0xFFFFF8U // SRAM array power on for SRAM interface 0,1,2
+#define APP_DEEPSLEEP_RAM_PPD 0x0U // peripherary power on for all SRAM interfaces
 #define APP_EXCLUDE_FROM_DEEPSLEEP                                                                                \
     (((const uint32_t[]){APP_DEEPSLEEP_RUNCFG0,                                                                   \
                          (SYSCTL0_PDSLEEPCFG1_FLEXSPI_SRAM_APD_MASK | SYSCTL0_PDSLEEPCFG1_FLEXSPI_SRAM_PPD_MASK), \
@@ -46,6 +46,7 @@ void app_event_voldn_button_up(void);
 void app_event_voldn_button_click(void);
 void app_event_ble_therapy_start(therapy_type_t therapy);
 void app_event_ble_activity(void);
+void app_event_rtc_activity(void);
 void app_event_button_activity(void);
 void app_event_shell_activity(void);
 void app_event_sleep_timeout(void);

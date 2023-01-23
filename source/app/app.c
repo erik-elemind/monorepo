@@ -73,6 +73,7 @@ typedef enum
   APP_EVENT_VOLDN_BUTTON_CLICK,
 
   APP_EVENT_BLE_ACTIVITY,
+  APP_EVENT_RTC_ACTIVITY,
   APP_EVENT_BUTTON_ACTIVITY,
   APP_EVENT_SHELL_ACTIVITY,
   APP_EVENT_SLEEP_TIMEOUT,
@@ -188,6 +189,7 @@ app_event_type_name(app_event_type_t event_type)
     case APP_EVENT_VOLDN_BUTTON_UP: return "APP_EVENT_VOLDN_BUTTON_UP";
     case APP_EVENT_VOLDN_BUTTON_CLICK: return "APP_EVENT_VOLDN_BUTTON_CLICK";
     case APP_EVENT_BLE_ACTIVITY: return "APP_EVENT_BLE_ACTIVITY";
+    case APP_EVENT_RTC_ACTIVITY: return "APP_EVENT_RTC_ACTIVITY";
     case APP_EVENT_BUTTON_ACTIVITY: return "APP_EVENT_BUTTON_ACTIVITY";
     case APP_EVENT_SHELL_ACTIVITY: return "APP_EVENT_SHELL_ACTIVITY";
     case APP_EVENT_SLEEP_TIMEOUT: return "APP_EVENT_SLEEP_TIMEOUT";
@@ -283,6 +285,13 @@ void
 app_event_voldn_button_click(void)
 {
   app_event_t event = {.type = APP_EVENT_VOLDN_BUTTON_CLICK, .user_data = NULL };
+  xQueueSend(g_event_queue, &event, portMAX_DELAY);
+}
+
+void
+app_event_rtc_activity(void)
+{
+  app_event_t event = {.type = APP_EVENT_RTC_ACTIVITY, .user_data = NULL };
   xQueueSend(g_event_queue, &event, portMAX_DELAY);
 }
 
@@ -541,6 +550,7 @@ handle_state_sleep(app_event_t *event)
     case APP_EVENT_BUTTON_ACTIVITY:
     case APP_EVENT_BLE_ACTIVITY:
     case APP_EVENT_SHELL_ACTIVITY:
+    case APP_EVENT_RTC_ACTIVITY:
     	set_state(APP_STATE_ON);
     	break;
 
@@ -629,6 +639,10 @@ handle_state_on(app_event_t *event)
               restart_led_off_timer();
               break;
 
+      case APP_EVENT_RTC_ACTIVITY:
+            restart_sleep_timer();
+            break;
+
       default:
         log_event_ignored(event);
         break;
@@ -691,8 +705,9 @@ handle_event(app_event_t *event)
       restart_led_off_timer();
       break;
     case APP_EVENT_SHELL_ACTIVITY:
+    case APP_EVENT_RTC_ACTIVITY:
       restart_sleep_timer();
-      break;
+      break;     
     case APP_EVENT_BLE_OFF_TIMEOUT:
       stop_ble_off_timer();
       ble_power_off();
