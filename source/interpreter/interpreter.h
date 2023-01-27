@@ -46,6 +46,7 @@ void interpreter_event_wait_timer1();
 void interpreter_event_start_therapy(therapy_type_t therapy_type);
 void interpreter_event_natural_stop_therapy(void);
 void interpreter_event_forced_stop_therapy(void);
+void interpreter_event_start_alarm(void);
 
 void interpreter_event_blink_start_test();
 void interpreter_event_blink_stop_test();

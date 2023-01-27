@@ -702,6 +702,12 @@ handle_therapy_update(ble_event_t *event)
 {
   g_ble_context.therapy = event->user_data[0];
   ble_uart_send_therapy(g_ble_context.therapy);
+
+  if (g_ble_context.therapy == THERAPY_TYPE_NONE)
+  {
+	  // send RTC event
+    interpreter_event_start_alarm();
+  }
 }
 
 static void
