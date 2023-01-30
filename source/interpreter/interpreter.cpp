@@ -750,6 +750,7 @@ handle_state_running (interpreter_event_t *event)
       break;
 
     case INTERPRETER_EVENT_STOP_SCRIPT:
+    	interpreter_set_alarm_status(false);
       interpreter_stop_therapy();
       // change the state to standy
       set_state(INTERPRETER_STATE_STANDBY);

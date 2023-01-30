@@ -30,6 +30,7 @@
 #include "volume_scaling.h"
 #include "memman_rtos.h"
 #include "settings.h"
+#include "interpreter.h"
 
 #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
 
@@ -381,9 +382,15 @@ static void audio_set_volume_int(uint8_t volume, bool update_ble)
   char cbuf[5] = {0};
   snprintf(cbuf, sizeof(cbuf), "%d", volume);
   // TODO: standardize the settings file key naming.
-  if( 0 != settings_set_string("audio.volume", cbuf)) {
-    // TODO: do something in the event of error.
-	  LOGV(TAG, "error setting volume\n\r");
+
+  // do not save audio.volume if alarm is running
+  if(!interpreter_get_alarm_status())
+  {
+	  if (0 != settings_set_string("audio.volume", cbuf))
+	  {
+		  //TODO: do something in event of error.
+		  LOGV(TAG, "error setting volume!");
+	  }
   }
 
   if(AUDIO_STATE_OFF != ag_context.state) {
@@ -396,7 +403,7 @@ static void audio_set_volume_int(uint8_t volume, bool update_ble)
   }
 
   // Tell BLE that volume has changed
-  if(update_ble){
+  if((update_ble) && (!interpreter_get_alarm_status())){
     ble_volume_update(volume);
   }
 }
