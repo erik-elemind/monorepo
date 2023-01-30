@@ -54,8 +54,7 @@ void audio_set_volume_command(int argc, char **argv)
 
   // TODO: Do something with tokens
   token_t tokens;
-
-  parse_dot_notation(parse_var_buf, sizeof(parse_var_buf), &tokens);
+  parse_dot_notation(argv[1], sizeof(argv[1]), &tokens);
 
   switch(bg_select){
   case PARSE_VAR_RETURN_NOTHING:
@@ -67,19 +66,36 @@ void audio_set_volume_command(int argc, char **argv)
     break;
   case PARSE_VAR_RETURN_SETTINGS_VALUE:
   {
-	// if argument is settings file, set the volume to previously saved
-    char settings_audio_vol[5] = {0};
-    // get from settings file
-    if ( 0 == settings_get_string("audio.volume", settings_audio_vol, sizeof(settings_audio_vol)) )
-    {
-      volume = (uint8_t) atoi(settings_audio_vol);
-      success &= true;
-    }
-    else
-    {
-      LOGE(TAG, "Error retrieving getting volume setting\n\r");
-      success &= false;
-    }
+	  char settings_audio_vol[5] = {0};
+	  char *token_name = tokens.v[1];
+    // check if argument is alarm settings file
+	  if(strcmp(token_name, "alarm.volume") == 0)
+	  {
+			if ( 0 == settings_get_string("alarm.volume", settings_audio_vol, sizeof(settings_audio_vol)) )
+			{
+			  volume = (uint8_t) atoi(settings_audio_vol);
+			  success &= true;
+			}
+			else
+			{
+			  LOGE(TAG, "Error retrieving getting alarm volume setting\n\r");
+			  success &= false;
+			}
+	  }
+	  else
+	  {
+		  // set the volume to previously saved audio volume
+		    if ( 0 == settings_get_string("audio.volume", settings_audio_vol, sizeof(settings_audio_vol)) )
+		    {
+		      volume = (uint8_t) atoi(settings_audio_vol);
+		      success &= true;
+		    }
+		    else
+		    {
+		      LOGE(TAG, "Error retrieving getting audio volume setting\n\r");
+		      success &= false;
+		    }
+	  }
     break;
   }
   case PARSE_VAR_RETURN_SETTINGS_KEY:
@@ -172,8 +188,7 @@ void audio_bgwav_play_command(int argc, char **argv)
 
   // TODO: Do something with tokens
   token_t tokens;
-
-  parse_dot_notation(parse_var_buf, sizeof(parse_var_buf), &tokens);
+  parse_dot_notation(argv[1], sizeof(argv[1]), &tokens);
 
   switch(bg_select){
   case PARSE_VAR_RETURN_NOTHING:
@@ -185,9 +200,18 @@ void audio_bgwav_play_command(int argc, char **argv)
     break;
   case PARSE_VAR_RETURN_SETTINGS_VALUE:
   {
+    char *token_name = tokens.v[1];
     int settings_bgwav_select = atoi(parse_var_buf);
     char settings_bgwav_path_key[20] = {0};
-    snprintf(settings_bgwav_path_key, sizeof(settings_bgwav_path_key), "bgwav.path.%d", settings_bgwav_select);
+
+    if (strcmp(token_name, "alarm.path.select") == 0)
+    {
+    	snprintf(settings_bgwav_path_key, sizeof(settings_bgwav_path_key), "alarm.path.%d", settings_bgwav_select);
+    }
+    else
+    {
+    	snprintf(settings_bgwav_path_key, sizeof(settings_bgwav_path_key), "bgwav.path.%d", settings_bgwav_select);
+    }
 
     if ( 0 == settings_get_string(settings_bgwav_path_key, settings_bgwav_path, sizeof(settings_bgwav_path)) ){
       audio_file = settings_bgwav_path;

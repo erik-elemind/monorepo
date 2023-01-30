@@ -196,6 +196,8 @@ static MessageBufferHandle_t g_scriptname_mbuf_handle;
 
 // Function prototypes
 static void interpreter_handle_rtc_alarm(void);
+static bool alarm_triggered = false;
+static bool alarm_running = false;
 
 // For logging and debug:
 static const char *
@@ -348,6 +350,12 @@ static void
 interpter_event_script_command_complete(){
   interpreter_event_t event = {.type = INTERPRETER_EVENT_SCRIPT_COMMAND_COMPLETE };
   xQueueSend(g_event_queue, &event, portMAX_DELAY);
+}
+
+void interpreter_event_start_alarm (void)
+{
+	interpreter_event_t event = {.type = INTERPRETER_EVENT_RTC_ALARM };
+	xQueueSend(g_event_queue, &event, portMAX_DELAY);
 }
 
 void
@@ -630,6 +638,15 @@ handle_state_standby (interpreter_event_t *event)
       set_state(INTERPRETER_STATE_BLINK_TEST);
       break;
 
+    case INTERPRETER_EVENT_STOP_SCRIPT:
+    	if (alarm_triggered)
+    	{
+        interpreter_stop_therapy();
+        // change the state to standy
+        set_state(INTERPRETER_STATE_STANDBY);
+    	}
+      break;
+
     case INTERPRETER_EVENT_RTC_ALARM:
       interpreter_handle_rtc_alarm();
       break;
@@ -733,6 +750,7 @@ handle_state_running (interpreter_event_t *event)
       break;
 
     case INTERPRETER_EVENT_STOP_SCRIPT:
+    	interpreter_set_alarm_status(false);
       interpreter_stop_therapy();
       // change the state to standy
       set_state(INTERPRETER_STATE_STANDBY);
@@ -881,23 +899,42 @@ handle_event (interpreter_event_t *event)
     }
 }
 
+bool interpreter_get_alarm_status(void)
+{
+	return alarm_running;
+}
+
+void interpreter_set_alarm_status(bool status)
+{
+	alarm_running = status;
+}
+
 static void
 interpreter_handle_rtc_alarm(void)
 {
-  // static const char filename[] = "script_alarm.txt";
-  // interpreter_event_start_script(filename);
-  app_event_rtc_activity();
-  rtc_alarm_init();
+  // wait for other tasks to complete 
+	vTaskDelay(100);
+	// check if this was due to a legitimate alarm
+	if (alarm_triggered)
+	{
+		static const char filename[] = "alarm_script.txt";
+		interpreter_event_start_script(filename);
+		app_event_rtc_activity();
+		rtc_alarm_init();
+		alarm_triggered = false;
+		alarm_running = true;
+	}
 }
 
 void
 rtc_alarm_isr_cb(void) 
 {
-  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-  static const interpreter_event_t event = {.type = INTERPRETER_EVENT_RTC_ALARM };
-  xQueueSendFromISR(g_event_queue, &event, &xHigherPriorityTaskWoken);
-  // Always do this when calling a FreeRTOS "...FromISR()" function:
-  portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+	// turn off therapy
+	interpreter_event_stop_script(false);
+
+	// set flag to indicate alarm has triggered
+	alarm_triggered = true;
+
 
 }
 

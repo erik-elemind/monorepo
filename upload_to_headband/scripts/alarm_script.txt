@@ -1,0 +1,10 @@
+audio_bg_fade_out 1000
+audio_bgwav_stop
+therapy_delay 1000
+
+audio_set_volume S.alarm.volume
+audio_bg_volume 1
+audio_bg_fade_in 1000
+audio_bgwav_play S.alarm.path.select 1
+therapy_delay 1800000
+
