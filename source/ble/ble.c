@@ -881,6 +881,11 @@ handle_state_standby(ble_event_t *event)
 
     case BLE_EVENT_CONNECTED:
     	eeg_reader_event_ble_connected();
+    	if (interpreter_get_alarm_status())
+    	{
+    		// turn off alarm on BLE connect if running
+    		interpreter_event_stop_script(false);
+    	}
     	break;
 
     case BLE_EVENT_DISCONNECTED:

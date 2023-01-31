@@ -44,7 +44,6 @@ void user_button1_isr(pint_pin_int_t pintr, uint32_t pmatch_status)
 	// if alarm is running, turn it off
 	if (interpreter_get_alarm_status())
 	{
-		interpreter_set_alarm_status(false);
 		interpreter_event_stop_script(false);
 	}
 	button_isr(1);
@@ -55,7 +54,6 @@ void user_button2_isr(pint_pin_int_t pintr, uint32_t pmatch_status)
 	// if alarm is running, turn it off
 	if (interpreter_get_alarm_status())
 	{
-		interpreter_set_alarm_status(false);
 		interpreter_event_stop_script(false);
 	}
 	button_isr(2);
