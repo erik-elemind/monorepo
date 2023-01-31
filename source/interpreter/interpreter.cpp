@@ -561,6 +561,28 @@ interpreter_stop_blink_test(){
 }
 
 static void
+interpreter_stop_alarm(){
+	  // close the script file
+	  close_script();
+
+	  // stop any timers
+	  stop_therapy_delay_timer();
+	  stop_therapy_timer1_timer();
+	  g_interpreter_context.wait_for_delay = false;
+	  g_interpreter_context.wait_for_timer1 = false;
+
+	  // stop audio
+	  audio_bg_fadeout(0);
+	  audio_pink_fadeout(0);
+	  audio_bgwav_stop();
+	  audio_pink_stop();
+	  audio_sine_stop();
+
+	  alarm_triggered = false;
+	  alarm_running = false;
+}
+
+static void
 interpreter_stop_therapy(){
   // close the script file
   close_script();
@@ -638,12 +660,12 @@ handle_state_standby (interpreter_event_t *event)
       set_state(INTERPRETER_STATE_BLINK_TEST);
       break;
 
+
+    // handle case when alarm is triggered outside of therapy session
     case INTERPRETER_EVENT_STOP_SCRIPT:
     	if (alarm_triggered)
     	{
-        interpreter_stop_therapy();
-        // change the state to standy
-        set_state(INTERPRETER_STATE_STANDBY);
+    		interpreter_handle_rtc_alarm();
     	}
       break;
 
@@ -750,8 +772,13 @@ handle_state_running (interpreter_event_t *event)
       break;
 
     case INTERPRETER_EVENT_STOP_SCRIPT:
-    	interpreter_set_alarm_status(false);
-      interpreter_stop_therapy();
+      if (alarm_running) {
+    	  interpreter_stop_alarm();
+      }
+      else
+      {
+    	  interpreter_stop_therapy();
+      }
       // change the state to standy
       set_state(INTERPRETER_STATE_STANDBY);
       break;
