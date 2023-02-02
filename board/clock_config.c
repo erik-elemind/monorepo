@@ -97,7 +97,7 @@ outputs:
 - {id: OSTIMER_clock.outFreq, value: 1 MHz}
 - {id: RTC32K_clock.outFreq, value: 32.768 kHz}
 - {id: System_clock.outFreq, value: 4752/19 MHz}
-- {id: WAKE_32K_clock.outFreq, value: 31.25 kHz}
+- {id: WAKE_32K_clock.outFreq, value: 32.768 kHz}
 settings:
 - {id: PLL0_PFD0_CLK_GATE, value: Enabled}
 - {id: SYSCON.AUDIOPLL0CLKSEL.sel, value: SYSCON.sfro}
@@ -129,6 +129,7 @@ settings:
 - {id: SYSCON.PLL1.num, value: '0', locked: true}
 - {id: SYSCON.SYSCPUAHBCLKDIV.scale, value: '2', locked: true}
 - {id: SYSCON.SYSPLL0CLKSEL.sel, value: SYSCON.SYSOSCBYPASS}
+- {id: SYSCON.WAKECLK32KHZSEL.sel, value: RTC.rtc_osc_32k_clk}
 - {id: SYSCTL_PDRUNCFG_SYSPLL_CFG, value: 'No'}
 - {id: SYSCTL_PDRUNCFG_SYSXTAL_CFG, value: Power_up}
 - {id: XTAL32K_EN_CFG, value: Enable}
@@ -200,6 +201,7 @@ void BOARD_BootClockRUN(void)
 
     /* Set up clock selectors - Attach clocks to the peripheries */
     CLOCK_AttachClk(kMAIN_PLL_to_MAIN_CLK);                 /* Switch MAIN_CLK to MAIN_PLL */
+    CLOCK_AttachClk(kOSC32K_to_32KHZWAKE_CLK);                 /* Switch 32KHZWAKE_CLK to OSC32K */
     CLOCK_AttachClk(kSFRO_to_CTIMER0);                 /* Switch CTIMER0 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM0);                 /* Switch FLEXCOMM0 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM1);                 /* Switch FLEXCOMM1 to SFRO */

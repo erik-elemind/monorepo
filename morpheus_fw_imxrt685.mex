@@ -502,7 +502,7 @@
                   <clock_output id="OSTIMER_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
                   <clock_output id="RTC32K_clock.outFreq" value="32.768 kHz" locked="false" accuracy=""/>
                   <clock_output id="System_clock.outFreq" value="4752/19 MHz" locked="false" accuracy=""/>
-                  <clock_output id="WAKE_32K_clock.outFreq" value="31.25 kHz" locked="false" accuracy=""/>
+                  <clock_output id="WAKE_32K_clock.outFreq" value="32.768 kHz" locked="false" accuracy=""/>
                </clock_outputs>
                <clock_settings>
                   <setting id="PLL0_PFD0_CLK_GATE" value="Enabled" locked="false"/>
@@ -535,6 +535,7 @@
                   <setting id="SYSCON.PLL1.num" value="0" locked="true"/>
                   <setting id="SYSCON.SYSCPUAHBCLKDIV.scale" value="2" locked="true"/>
                   <setting id="SYSCON.SYSPLL0CLKSEL.sel" value="SYSCON.SYSOSCBYPASS" locked="false"/>
+                  <setting id="SYSCON.WAKECLK32KHZSEL.sel" value="RTC.rtc_osc_32k_clk" locked="false"/>
                   <setting id="SYSCTL_PDRUNCFG_SYSPLL_CFG" value="No" locked="false"/>
                   <setting id="SYSCTL_PDRUNCFG_SYSXTAL_CFG" value="Power_up" locked="false"/>
                   <setting id="XTAL32K_EN_CFG" value="Enable" locked="false"/>

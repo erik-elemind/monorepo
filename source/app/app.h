@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-#define APP_DEEPSLEEP_RUNCFG0 (SYSCTL0_PDSLEEPCFG0_RBB_PD_MASK)
+#define APP_DEEPSLEEP_RUNCFG0 (SYSCTL0_PDSLEEPCFG0_RBB_PD_MASK | SYSCTL0_PDSLEEPCFG0_SFRO_PD_MASK)
 #define APP_DEEPSLEEP_RAM_APD 0xFFFFF8U // SRAM array power on for SRAM interface 0,1,2
 #define APP_DEEPSLEEP_RAM_PPD 0x0U // peripherary power on for all SRAM interfaces
 #define APP_EXCLUDE_FROM_DEEPSLEEP                                                                                \
