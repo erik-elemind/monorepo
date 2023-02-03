@@ -365,7 +365,21 @@ interpreter_event_start_therapy(therapy_type_t therapy_type)
     return;
   }
 
-  // convert count to new log ID
+  // increment the log_uuid here
+  char log_fnum_buf[15];
+  size_t log_uuid = 0;
+
+  if ( getLogFileUID(log_fnum_buf, sizeof(log_fnum_buf)) ) {
+    log_fnum_buf[sizeof(log_fnum_buf)-1] = '\0';
+    log_uuid = atoi(log_fnum_buf)+1;
+  }else{
+    log_uuid = 0;
+  }
+  snprintf ( log_fnum_buf, sizeof(log_fnum_buf), "%d", log_uuid );
+  setLogFileUID(log_fnum_buf);
+
+  // convert count to new script ID
+  // TODO: MF-200 can be implemented here
   char therapy_number[5];
   snprintf ( therapy_number, 5, "%d", therapy_type );
 
@@ -375,7 +389,7 @@ interpreter_event_start_therapy(therapy_type_t therapy_type)
   index = str_append2(therapy_fname, index, therapy_number); // directory
   index = str_append2(therapy_fname, index, ".txt"); // directory
 
-  LOGV(TAG, "Starting therapy: %s", therapy_fname);
+  LOGV(TAG, "Starting therapy script: %s", therapy_fname);
 
   // TODO: somehow start the script, given only a therapy number
   interpreter_event_start_script((char*)therapy_fname);
