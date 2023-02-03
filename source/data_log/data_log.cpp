@@ -260,11 +260,11 @@ static size_t CountObjectUnder(const char *path)
 static const char* settings_datalog_key = "datalog.uid";
 
 // Returns true if the setting exists
-static bool getLogFileUID(char* uid, size_t uid_size){
+bool getLogFileUID(char* uid, size_t uid_size){
   return (0 == settings_get_string(settings_datalog_key, uid, uid_size));
 }
 
-static bool setLogFileUID(char* uid){
+bool setLogFileUID(char* uid){
   return (0 == settings_set_string(settings_datalog_key, uid));
 }
 
@@ -308,7 +308,7 @@ static bool open_data_log(){
   // get previously used UID from settings file
   if ( getLogFileUID(log_fnum_buf, sizeof(log_fnum_buf)) ) {
     log_fnum_buf[sizeof(log_fnum_buf)-1] = '\0';
-    datalog_uid = atoi(log_fnum_buf)+1;
+    datalog_uid = atoi(log_fnum_buf);
   }else{
     datalog_uid = 0;
   }
@@ -322,22 +322,25 @@ static bool open_data_log(){
     size_t log_fsize = 0;
     log_fsize = str_append2(log_fname, log_fsize, DATA_LOG_DIR_PATH); // directory
     log_fsize = str_append2(log_fname, log_fsize, "/");               // path separator
-    log_fsize = str_append2(log_fname, log_fsize, "log");             // log file name
+
+#if (defined(CONFIG_DATALOG_USE_TIME_STRING) && (CONFIG_DATALOG_USE_TIME_STRING > 0U))
+  taskENTER_CRITICAL();
+  if (g_data_log_context.datetime_size != 0) {
+    log_fsize = str_append2(log_fname, log_fsize, "_");             // log file name
+    log_fsize = str_append2(log_fname, log_fsize, g_data_log_context.datetime);   // log file number
+  }
+  taskEXIT_CRITICAL();
+#else
+  char log_datetime[12];
+  snprintf(log_datetime, sizeof(log_datetime), "%lu", rtc_get());
+  log_fsize = str_append2(log_fname, log_fsize, log_datetime);
+  log_fsize = str_append2(log_fname, log_fsize, "_");
+#endif
+
+    log_fsize = str_append2(log_fname, log_fsize, "datalog_");             // log file name
     log_fsize = str_append2(log_fname, log_fsize, log_fnum_buf);      // log file number
 
-  #if (defined(CONFIG_DATALOG_USE_TIME_STRING) && (CONFIG_DATALOG_USE_TIME_STRING > 0U))
-    taskENTER_CRITICAL();
-    if (g_data_log_context.datetime_size != 0) {
-      log_fsize = str_append2(log_fname, log_fsize, "_");             // log file name
-      log_fsize = str_append2(log_fname, log_fsize, g_data_log_context.datetime);   // log file number
-    }
-    taskEXIT_CRITICAL();
-  #else
-    char log_datetime[12];
-    snprintf(log_datetime, sizeof(log_datetime), "%lu", rtc_get());
-    log_fsize = str_append2(log_fname, log_fsize, "_");
-    log_fsize = str_append2(log_fname, log_fsize, log_datetime);
-  #endif
+
 
     log_fsize = str_append2(log_fname, log_fsize, ".bin");            // log file suffix
 
@@ -349,8 +352,6 @@ static bool open_data_log(){
     // create the new log file
 
     if( open_data_log(log_fname, FA_CREATE_NEW | FA_WRITE) ){
-      // save the new uid
-      setLogFileUID(log_fnum_buf);
       return true;
     }else{
       datalog_uid ++;
@@ -364,8 +365,7 @@ void user_metrics_log_open(FIL *file)
   char log_fnum_buf[15];
   size_t datalog_uid = 0;
 
-  // get log unique ID (assume data log will always be opened first)
-  // get previously used UID from settings file
+  // get log unique ID
   if ( getLogFileUID(log_fnum_buf, sizeof(log_fnum_buf)) ) {
     log_fnum_buf[sizeof(log_fnum_buf)-1] = '\0';
     datalog_uid = atoi(log_fnum_buf);
@@ -387,7 +387,7 @@ void user_metrics_log_open(FIL *file)
     log_fsize = str_append2(log_fname, log_fsize, log_datetime);
     log_fsize = str_append2(log_fname, log_fsize, "_");
 
-    log_fsize = str_append2(log_fname, log_fsize, "user_metrics");    // log file name
+    log_fsize = str_append2(log_fname, log_fsize, "usermetrics_");    // log file name
     log_fsize = str_append2(log_fname, log_fsize, log_fnum_buf);      // log file number
     log_fsize = str_append2(log_fname, log_fsize, ".json");            // log file suffix
 

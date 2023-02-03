@@ -35,6 +35,9 @@ void data_log_open();
 void data_log_close();
 void user_metrics_log_open(FIL *file);
 
+bool getLogFileUID(char* uid, size_t uid_size);
+bool setLogFileUID(char* uid);
+
 void data_log_set_time(char *datetime_string, size_t datetime_size);
 
 // log device gain settings

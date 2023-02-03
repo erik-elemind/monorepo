@@ -1,0 +1,41 @@
+data_log_open
+therapy_enable_alpha_switch 1
+therapy_config_alpha_switch 5 10 1 2 6
+eeg_start
+accel_start_sample
+hrm_on
+als_start_sample
+skin_temp_start_sample
+
+echt_config_simple 10
+echt_set_min_max_phase 134 224
+echt_start
+
+audio_set_volume S.audio.volume
+
+audio_pink_volume 1
+audio_pink_fade_in 60000
+audio_pink_play
+audio_bg_volume 0.2
+audio_bg_fade_in 500
+audio_bgwav_play S.bgwav.path.select 1
+
+therapy_delay 1800000
+
+audio_pink_fade_out 500
+audio_bg_fade_out 1000
+
+therapy_delay 1000
+
+audio_pink_stop
+audio_bgwav_stop
+echt_stop
+
+therapy_delay 5399000
+
+skin_temp_stop
+als_stop
+hrm_off
+accel_stop
+eeg_stop
+data_log_close
