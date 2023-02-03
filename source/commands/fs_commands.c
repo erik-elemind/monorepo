@@ -286,22 +286,54 @@ fs_rm_datalogs_command(int argc, char **argv){
   DIR dir;
   FILINFO finfo;
   char buf[MAX_PATH_LENGTH+2];
-  const char *name = "/datalogs";
+  const char *datalog_name = "/datalogs";
+  const char *usermetrics_name = "/user_metrics";
   char *sub;
   int ret = 0;
 
-  result = f_opendir(&dir, name);
+  // remove datalogs
+  result = f_opendir(&dir, datalog_name);
   if (FR_OK != result) {
-    printf("Can't open '%s' directory\n", name);
+    printf("Can't open '%s' directory\n", datalog_name);
   }
   else {
     result = f_readdir(&dir, &finfo);
     // FatFS indicates end of directory with a null name
     while (FR_OK == result && 0 != finfo.fname[0]) {
-      strncpy(buf, name, sizeof(buf)-1);
+      strncpy(buf, datalog_name, sizeof(buf)-1);
       buf[sizeof(buf)-1] = '\0';
       sub = buf;
-      if (name[strlen(name)-1] != '/') {
+      if (datalog_name[strlen(datalog_name)-1] != '/') {
+        sub = strcat(buf, "/");
+      }
+      sub = strcat(sub, finfo.fname);
+      ret = f_unlink(sub);
+      if (ret == 0) {
+        printf("Delete '%s' succ.\n", sub);
+      }
+      else {
+        printf("Delete '%s' fail!\n", sub);
+      }
+      // move to next entry
+      result = f_readdir(&dir, &finfo);
+    }
+
+    f_closedir(&dir);
+  }
+
+  // remove user_metric files
+  result = f_opendir(&dir, usermetrics_name);
+  if (FR_OK != result) {
+    printf("Can't open '%s' directory\n", usermetrics_name);
+  }
+  else {
+    result = f_readdir(&dir, &finfo);
+    // FatFS indicates end of directory with a null name
+    while (FR_OK == result && 0 != finfo.fname[0]) {
+      strncpy(buf, usermetrics_name, sizeof(buf)-1);
+      buf[sizeof(buf)-1] = '\0';
+      sub = buf;
+      if (usermetrics_name[strlen(usermetrics_name)-1] != '/') {
         sub = strcat(buf, "/");
       }
       sub = strcat(sub, finfo.fname);
