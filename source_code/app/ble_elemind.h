@@ -42,6 +42,11 @@
 #define ELEMIND_ALARM_CHAR_UUID 0x000A
 #define ELEMIND_SOUND_CHAR_UUID 0x000B
 #define ELEMIND_TIME_CHAR_UUID 0x000C
+#define ELEMIND_CHARGER_STATUS_CHAR_UUID 0x000D
+#define ELEMIND_SETTINGS_CHAR_UUID 0x000E
+#define ELEMIND_MEMORY_LEVEL_CHAR_UUID 0x000F
+#define ELEMIND_FACTORY_RESET_CHAR_UUID 0x0010
+#define ELEMIND_SOUND_CONTROL_CHAR_UUID 0x0011
 
 /** BLE event observer priority.
 
@@ -121,6 +126,21 @@ typedef struct
   /** Initial time */
   uint8_t time_initial_value[TIME_SIZE];
 
+  /** Initial charger_status */
+  uint8_t charger_status_initial_value;
+
+  /** Initial settings */
+  uint8_t settings_initial_value;
+
+  /** Initial memory_level */
+  uint8_t memory_level_initial_value;
+
+  /** Initial factory_reset */
+  uint8_t factory_reset_initial_value;
+
+  /** Initial sound_control */
+  uint8_t sound_control_initial_value;
+
 } ble_elemind_init_t;
 
 /** Elemind Service structure.
@@ -168,6 +188,21 @@ typedef struct
 
   /** Handles related to the Elemind Time characteristic. */
   ble_gatts_char_handles_t time_handles;
+
+  /** Handles related to the Elemind Charger Status characteristic. */
+  ble_gatts_char_handles_t charger_status_handles;
+
+  /** Handles related to the Elemind Settings characteristic. */
+  ble_gatts_char_handles_t settings_handles;
+
+  /** Handles related to the Elemind Memory Level characteristic. */
+  ble_gatts_char_handles_t memory_level_handles;
+
+  /** Handles related to the Elemind Factory reset characteristic. */
+  ble_gatts_char_handles_t factory_reset_handles;
+
+  /** Handles related to the Elemind Sound Control characteristic. */
+  ble_gatts_char_handles_t sound_control_handles;
 
   /** Handle of the current connection (as provided by the BLE stack,
       is BLE_CONN_HANDLE_INVALID if not in a connection). */
@@ -415,6 +450,86 @@ ble_elemind_time_update(
   ble_elemind_t* p_elemind, 
   uint8_t* time
   );
+
+/** Update the Charger Status value.
+
+    The application calls this function when the charger status value should be
+    updated. If notification has been enabled, the charger status
+    characteristic is sent to the client.
+
+    @param[in] p_elemind Elemind Service structure.
+    @param[in] charger_status New Charger Status value
+
+    @return NRF_SUCCESS on success, otherwise an error code.
+*/
+ret_code_t
+ble_elemind_charger_status_update(
+  ble_elemind_t* p_elemind, 
+  uint8_t charger_status);
+
+/** Update the Settings value.
+
+    The application calls this function when the settings value should be
+    updated. If notification has been enabled, the settings
+    characteristic is sent to the client.
+
+    @param[in] p_elemind Elemind Service structure.
+    @param[in] settings New Settings value
+
+    @return NRF_SUCCESS on success, otherwise an error code.
+*/
+ret_code_t
+ble_elemind_settings_update(
+  ble_elemind_t* p_elemind, 
+  uint8_t settings);
+
+/** Update the Memory Level value.
+
+    The application calls this function when the memory level value should be
+    updated. If notification has been enabled, the memory level
+    characteristic is sent to the client.
+
+    @param[in] p_elemind Elemind Service structure.
+    @param[in] memory_level New Memory Level value
+
+    @return NRF_SUCCESS on success, otherwise an error code.
+*/
+ret_code_t
+ble_elemind_memory_level_update(
+  ble_elemind_t* p_elemind, 
+  uint8_t memory_level);
+
+/** Update the Factory Reset value.
+
+    The application calls this function when the factory reset value should be
+    updated. If notification has been enabled, the factory reset
+    characteristic is sent to the client.
+
+    @param[in] p_elemind Elemind Service structure.
+    @param[in] factory_reset New Factory Reset value
+
+    @return NRF_SUCCESS on success, otherwise an error code.
+*/
+ret_code_t
+ble_elemind_factory_reset_update(
+  ble_elemind_t* p_elemind, 
+  uint8_t factory_reset);
+
+/** Update the Sound Control value.
+
+    The application calls this function when the sound control value should be
+    updated. If notification has been enabled, the sound control
+    characteristic is sent to the client.
+
+    @param[in] p_elemind Elemind Service structure.
+    @param[in] sound_control New Sound Control value
+
+    @return NRF_SUCCESS on success, otherwise an error code.
+*/
+ret_code_t
+ble_elemind_sound_control_update(
+  ble_elemind_t* p_elemind, 
+  uint8_t sound_control);
 
 /** Get the Serial Number value.
 

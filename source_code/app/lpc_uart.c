@@ -458,6 +458,116 @@ handle_time(int argc, char **argv)
   }
 }
 
+/** Handle charger status command.
+
+    Update charger status characteristic with value from command.
+
+    @param argc Number of arguments (including command)
+    @param argv Argument values
+*/
+static void
+handle_charger_status(int argc, char **argv)
+{
+  if (argc != 2) {
+    NRF_LOG_ERROR("Error: Command '%s' missing argument", argv[0]);
+    return;
+  }
+
+  // Get charger_status
+  uint8_t charger_status = 0;
+  if (parse_uint8_arg(argv[0], argv[1], &charger_status)) {
+    ble_elemind_charger_status_update(g_elemind, charger_status);
+  }
+}
+
+/** Handle settings command.
+
+    Update settings characteristic with value from command.
+
+    @param argc Number of arguments (including command)
+    @param argv Argument values
+*/
+static void
+handle_settings(int argc, char **argv)
+{
+  if (argc != 2) {
+    NRF_LOG_ERROR("Error: Command '%s' missing argument", argv[0]);
+    return;
+  }
+
+  // Get settings
+  uint8_t settings = 0;
+  if (parse_uint8_arg(argv[0], argv[1], &settings)) {
+    ble_elemind_settings_update(g_elemind, settings);
+  }
+}
+
+/** Handle memory level command.
+
+    Update memory_level characteristic with value from command.
+
+    @param argc Number of arguments (including command)
+    @param argv Argument values
+*/
+static void
+handle_memory_level(int argc, char **argv)
+{
+  if (argc != 2) {
+    NRF_LOG_ERROR("Error: Command '%s' missing argument", argv[0]);
+    return;
+  }
+
+  // Get memory_level
+  uint8_t memory_level = 0;
+  if (parse_uint8_arg(argv[0], argv[1], &memory_level)) {
+    ble_elemind_memory_level_update(g_elemind, memory_level);
+  }
+}
+
+/** Handle factory reset command.
+
+    Update factory_reset characteristic with value from command.
+
+    @param argc Number of arguments (including command)
+    @param argv Argument values
+*/
+static void
+handle_factory_reset(int argc, char **argv)
+{
+  if (argc != 2) {
+    NRF_LOG_ERROR("Error: Command '%s' missing argument", argv[0]);
+    return;
+  }
+
+  // Get factory_reset
+  uint8_t factory_reset = 0;
+  if (parse_uint8_arg(argv[0], argv[1], &factory_reset)) {
+    ble_elemind_factory_reset_update(g_elemind, factory_reset);
+  }
+}
+
+/** Handle sound control command.
+
+    Update sound_control characteristic with value from command.
+
+    @param argc Number of arguments (including command)
+    @param argv Argument values
+*/
+static void
+handle_sound_control(int argc, char **argv)
+{
+  if (argc != 2) {
+    NRF_LOG_ERROR("Error: Command '%s' missing argument", argv[0]);
+    return;
+  }
+
+  // Get sound_control
+  uint8_t sound_control = 0;
+  if (parse_uint8_arg(argv[0], argv[1], &sound_control)) {
+    ble_elemind_sound_control_update(g_elemind, sound_control);
+  }
+}
+
 /** LPC command name to handler mapping table.
 
     Must be defined after handlers.
@@ -477,6 +587,11 @@ struct lpc_command lpc_uart_commands[] = {
   {"ble_alarm", handle_alarm},
   {"ble_sound", handle_sound},
   {"ble_time", handle_time},
+  {"ble_charger_status", handle_charger_status},
+  {"ble_settings", handle_settings},
+  {"ble_memory_level", handle_memory_level},
+  {"ble_factory_reset", handle_factory_reset},
+  {"ble_sound_control", handle_sound_control},
 };
 
 /* Initialize the LPC UART interface. */
