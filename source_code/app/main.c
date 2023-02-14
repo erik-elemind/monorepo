@@ -481,27 +481,30 @@ gap_params_init(void)
 static void
 dis_init(void)
 {
-  uint32_t err_code;
-  ble_dis_init_t dis_init;
+  // ToDo: Reimplement this. With BLE V2 ran out of RAM space. Needs to be allocated on
+  // linker file and sdk_config.h, going to put that off for further effort
+    
+  // uint32_t err_code;
+  // ble_dis_init_t dis_init;
 
-  // Initialize Device Information Service.
-  memset(&dis_init, 0, sizeof(dis_init));
+  // // Initialize Device Information Service.
+  // memset(&dis_init, 0, sizeof(dis_init));
 
-  ble_srv_ascii_to_utf8(&dis_init.manufact_name_str, (char *)MANUFACTURER_NAME);
-  ble_srv_ascii_to_utf8(&dis_init.model_num_str, (char *)MODEL_NUM);
-  ble_srv_ascii_to_utf8(&dis_init.serial_num_str,
-    ble_elemind_get_serial_number());
-  ble_srv_ascii_to_utf8(&dis_init.hw_rev_str, (char *)HW_VERSION_STRING);
-  ble_srv_ascii_to_utf8(&dis_init.fw_rev_str, (char *)FW_VERSION_STRING);
-  ble_srv_ascii_to_utf8(&dis_init.sw_rev_str,
-    ble_elemind_get_software_version());
+  // ble_srv_ascii_to_utf8(&dis_init.manufact_name_str, (char *)MANUFACTURER_NAME);
+  // ble_srv_ascii_to_utf8(&dis_init.model_num_str, (char *)MODEL_NUM);
+  // ble_srv_ascii_to_utf8(&dis_init.serial_num_str,
+  //   ble_elemind_get_serial_number());
+  // ble_srv_ascii_to_utf8(&dis_init.hw_rev_str, (char *)HW_VERSION_STRING);
+  // ble_srv_ascii_to_utf8(&dis_init.fw_rev_str, (char *)FW_VERSION_STRING);
+  // ble_srv_ascii_to_utf8(&dis_init.sw_rev_str,
+  //   ble_elemind_get_software_version());
 
-  dis_init.dis_char_rd_sec = SEC_OPEN;
+  // dis_init.dis_char_rd_sec = SEC_OPEN;
 
-  NRF_LOG_DEBUG("ble_dis_init");
-  err_code = ble_dis_init(&dis_init);
-  NRF_LOG_DEBUG("ble_dis_init: %d", err_code);
-  APP_ERROR_CHECK(err_code);
+  // NRF_LOG_DEBUG("ble_dis_init");
+  // err_code = ble_dis_init(&dis_init);
+  // NRF_LOG_DEBUG("ble_dis_init: %d", err_code);
+  // APP_ERROR_CHECK(err_code);
 }
 
 /** Initialize services that will be used by the application.
