@@ -85,12 +85,24 @@ void ble_sound_update(uint8_t sound);
 void ble_time_request(void);
 void ble_time_command(uint64_t unix_epoch_time_sec);
 void ble_time_update(uint64_t unix_epoch_time_sec);
+void ble_charger_status_request(void);
+void ble_charger_status_update(uint8_t charger_status);
+void ble_settings_request(void);
+void ble_settings_command(uint8_t settings);
+void ble_settings_update(uint8_t settings);
+void ble_memory_level_request(void);
+void ble_memory_level_update(uint8_t memory_level);
+void ble_factory_reset_request(void);
+void ble_factory_reset_command(uint8_t factory_reset);
+void ble_factory_reset_update(uint8_t factory_reset);
+void ble_sound_control_request(void);
+void ble_sound_control_command(uint8_t sound_control);
+void ble_sound_control_update(uint8_t sound_control);
 void ble_addr_command(uint8_t* addr);
 void ble_connected_event(void);
 void ble_disconnected_event(void);
 
 uint8_t* ble_get_addr();
-
 
 // Convenience methods for power off/on
 void ble_power_off(void);

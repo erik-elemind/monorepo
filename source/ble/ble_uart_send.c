@@ -241,14 +241,28 @@ void ble_uart_send_time(uint64_t unix_epoch_time_sec){
   bin_itf_send_command(response, strlen(response));
 }
 
+void ble_uart_send_charger_status(uint8_t charger_status)
+{
+	ble_uart_send_uint8_value("ble_charger_status", charger_status);
+}
 
+void ble_uart_send_settings(uint8_t settings)
+{
+	ble_uart_send_uint8_value("ble_settings", settings);
+}
 
+void ble_uart_send_memory_level(uint8_t memory_level)
+{
+	ble_uart_send_uint8_value("ble_memory_level", memory_level);
+}
 
+void ble_uart_send_factory_reset(uint8_t factory_reset)
+{
+	ble_uart_send_uint8_value("ble_factory_reset", factory_reset);
+}
 
-
-
-
-
-
-
+void ble_uart_send_sound_control(uint8_t sound_control)
+{
+	ble_uart_send_uint8_value("ble_sound_control", sound_control);
+}
 

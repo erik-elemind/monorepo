@@ -225,3 +225,54 @@ ble_time_debug_command(int argc, char **argv)
    ble_time_update(time);
  }
 }
+
+void ble_charger_status_debug_command(int argc, char **argv)
+{
+	CHK_ARGC(2,2);
+
+	uint8_t charger_status;
+	if (parse_uint8_arg(argv[0], argv[1], &charger_status)) {
+		ble_charger_status_update(charger_status);
+	}
+}
+
+void ble_settings_debug_command(int argc, char **argv)
+{
+	CHK_ARGC(2,2);
+
+	uint8_t settings;
+	if (parse_uint8_arg(argv[0], argv[1], &settings)) {
+		ble_settings_update(settings);
+	}
+}
+
+void ble_memory_level_debug_command(int argc, char **argv)
+{
+	CHK_ARGC(2,2);
+
+	uint8_t memory_level;
+	if (parse_uint8_arg(argv[0], argv[1], &memory_level)) {
+		ble_memory_level_update(memory_level);
+	}
+}
+
+void ble_factory_reset_debug_command(int argc, char **argv)
+{
+	CHK_ARGC(2,2);
+
+	uint8_t factory_reset;
+	if (parse_uint8_arg(argv[0], argv[1], &factory_reset)) {
+		ble_factory_reset_update(factory_reset);
+	}
+}
+
+void ble_sound_control_debug_command(int argc, char **argv)
+{
+	CHK_ARGC(2,2);
+
+	uint8_t sound_control;
+	if (parse_uint8_arg(argv[0], argv[1], &sound_control)) {
+		ble_sound_control_update(sound_control);
+	}
+}
+

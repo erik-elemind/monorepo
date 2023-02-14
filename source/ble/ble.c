@@ -69,9 +69,22 @@ typedef enum
   BLE_EVENT_TIME_REQUEST,
   BLE_EVENT_TIME_COMMAND,
   BLE_EVENT_TIME_UPDATE,
+  BLE_EVENT_CHARGER_STATUS_REQUEST,
+  BLE_EVENT_CHARGER_STATUS_UPDATE,
+  BLE_EVENT_SETTINGS_REQUEST,
+  BLE_EVENT_SETTINGS_COMMAND,
+  BLE_EVENT_SETTINGS_UPDATE,
+  BLE_EVENT_MEMORY_LEVEL_REQUEST,
+  BLE_EVENT_MEMORY_LEVEL_UPDATE,
+  BLE_EVENT_FACTORY_RESET_REQUEST,
+  BLE_EVENT_FACTORY_RESET_COMMAND,
+  BLE_EVENT_FACTORY_RESET_UPDATE,
+  BLE_EVENT_SOUND_CONTROL_REQUEST,
+  BLE_EVENT_SOUND_CONTROL_COMMAND,
+  BLE_EVENT_SOUND_CONTROL_UPDATE,
   BLE_EVENT_ADDR_COMMAND,
   BLE_EVENT_CONNECTED,
-  BLE_EVENT_DISCONNECTED
+  BLE_EVENT_DISCONNECTED,
 } ble_event_type_t;
 
 // Events are passed to the g_event_queue with an optional
@@ -112,6 +125,11 @@ typedef struct
   alarm_params_t alarm;
   uint8_t sound;
   uint64_t time;
+  uint8_t charger_status;
+  uint8_t settings;
+  uint8_t memory_level;
+  uint8_t factory_reset;
+  uint8_t sound_control;
   uint8_t addr[ADDR_NUM];
 } ble_context_t;
 
@@ -131,6 +149,11 @@ static ble_context_t g_ble_context = {
   .alarm = {.all = {0},},
   .sound = 0,
   .time = 0,
+  .charger_status = 0,
+  .settings = 0,
+  .memory_level = 0,
+  .factory_reset = 0,
+  .sound_control = 0,
   .addr = {0,0,0,0,0,0},
 };
 
@@ -229,6 +252,32 @@ ble_event_type_name(ble_event_type_t event_type)
       return "BLE_EVENT_TIME_COMMAND";
     case BLE_EVENT_TIME_UPDATE:
       return "BLE_EVENT_TIME_UPDATE";
+    case BLE_EVENT_CHARGER_STATUS_REQUEST:
+	  return "BLE_EVENT_CHARGER_STATUS_REQUEST";
+	case BLE_EVENT_CHARGER_STATUS_UPDATE:
+	  return "BLE_EVENT_CHARGER_STATUS_UPDATE";
+	case BLE_EVENT_SETTINGS_REQUEST:
+	  return "BLE_EVENT_SETTINGS_REQUEST";
+	case BLE_EVENT_SETTINGS_COMMAND:
+	  return "BLE_EVENT_SETTINGS_COMMAND";
+	case BLE_EVENT_SETTINGS_UPDATE:
+	  return "BLE_EVENT_SETTINGS_UPDATE";
+	case BLE_EVENT_MEMORY_LEVEL_REQUEST:
+	  return "BLE_EVENT_MEMORY_LEVEL_REQUEST";
+	case BLE_EVENT_MEMORY_LEVEL_UPDATE:
+	  return "BLE_EVENT_MEMORY_LEVEL_UPDATE";
+	 case BLE_EVENT_FACTORY_RESET_REQUEST:
+	  return "BLE_EVENT_FACTORY_RESET_REQUEST";
+	case BLE_EVENT_FACTORY_RESET_COMMAND:
+	  return "BLE_EVENT_FACTORY_RESET_COMMAND";
+	case BLE_EVENT_FACTORY_RESET_UPDATE:
+	  return "BLE_EVENT_FACTORY_RESET_UPDATE";
+	case BLE_EVENT_SOUND_CONTROL_REQUEST:
+	  return "BLE_EVENT_SOUND_CONTROL_REQUEST";
+	case BLE_EVENT_SOUND_CONTROL_COMMAND:
+	  return "BLE_EVENT_SOUND_CONTROL_COMMAND";
+	case BLE_EVENT_SOUND_CONTROL_UPDATE:
+	  return "BLE_EVENT_SOUND_CONTROL_UPDATE";
     case BLE_EVENT_ADDR_COMMAND:
       return "BLE_EVENT_ADDR_COMMAND";
     case BLE_EVENT_CONNECTED:
@@ -490,6 +539,92 @@ void ble_time_update(uint64_t unix_epoch_time_sec){
     .user_data = {0} };
   memcpy(event.user_data, &unix_epoch_time_sec, TIME_NUM);
   xQueueSend(g_event_queue, &event, 0);
+}
+
+void ble_charger_status_request(void)
+{
+	ble_event_t event = { .type = BLE_EVENT_CHARGER_STATUS_REQUEST };
+	xQueueSend(g_event_queue, &event, portMAX_DELAY);
+}
+
+void ble_charger_status_update(uint8_t charger_status)
+{
+	ble_event_t event = { .type = BLE_EVENT_CHARGER_STATUS_UPDATE,
+			.user_data = {charger_status} };
+	xQueueSend(g_event_queue, &event, portMAX_DELAY);
+}
+
+void ble_settings_request(void)
+{
+	ble_event_t event = { .type = BLE_EVENT_SETTINGS_REQUEST };
+	xQueueSend(g_event_queue, &event, 0);
+}
+
+void ble_settings_command(uint8_t settings)
+{
+	ble_event_t event = { .type = BLE_EVENT_SETTINGS_COMMAND,
+			.user_data = {settings} };
+	xQueueSend(g_event_queue, &event, 0);
+}
+
+void ble_settings_update(uint8_t settings)
+{
+	ble_event_t event = { .type = BLE_EVENT_SETTINGS_UPDATE,
+			.user_data = {settings} };
+	xQueueSend(g_event_queue, &event, 0);
+}
+
+void ble_memory_level_request(void)
+{
+	ble_event_t event = { .type = BLE_EVENT_MEMORY_LEVEL_REQUEST };
+	xQueueSend(g_event_queue, &event, 0);
+}
+
+void ble_memory_level_update(uint8_t memory_level)
+{
+	ble_event_t event = { .type = BLE_EVENT_MEMORY_LEVEL_UPDATE,
+			.user_data = {memory_level} };
+	xQueueSend(g_event_queue, &event, 0);
+}
+
+void ble_factory_reset_request(void)
+{
+	 ble_event_t event = { .type = BLE_EVENT_FACTORY_RESET_REQUEST };
+	 xQueueSend(g_event_queue, &event, portMAX_DELAY);
+}
+
+void ble_factory_reset_command(uint8_t factory_reset)
+{
+	ble_event_t event = { .type = BLE_EVENT_FACTORY_RESET_COMMAND,
+			.user_data = {factory_reset} };
+	xQueueSend(g_event_queue, &event, portMAX_DELAY);
+}
+
+void ble_factory_reset_update(uint8_t factory_reset)
+{
+	 ble_event_t event = { .type = BLE_EVENT_FACTORY_RESET_UPDATE,
+			 .user_data = {factory_reset} };
+	 xQueueSend(g_event_queue, &event, portMAX_DELAY);
+}
+
+void ble_sound_control_request(void)
+{
+	ble_event_t event = { .type = BLE_EVENT_SOUND_CONTROL_REQUEST };
+	xQueueSend(g_event_queue, &event, portMAX_DELAY);
+}
+
+void ble_sound_control_command(uint8_t sound_control)
+{
+	 ble_event_t event = { .type = BLE_EVENT_SOUND_CONTROL_COMMAND,
+			 .user_data = {sound_control} };
+	 xQueueSend(g_event_queue, &event, portMAX_DELAY);
+}
+
+void ble_sound_control_update(uint8_t sound_control)
+{
+	ble_event_t event = { .type = BLE_EVENT_SOUND_CONTROL_UPDATE,
+			.user_data = {sound_control} };
+	xQueueSend(g_event_queue, &event, portMAX_DELAY);
 }
 
 void ble_addr_command(uint8_t* addr){
@@ -871,6 +1006,110 @@ handle_addr_command(ble_event_t *event){
 }
 
 static void
+handle_charger_status_request(ble_event_t *event)
+{
+	ble_uart_send_charger_status(g_ble_context.charger_status);
+}
+
+static void
+handle_charger_status_update(ble_event_t *event)
+{
+	g_ble_context.charger_status = event->user_data[0];
+	ble_uart_send_charger_status(g_ble_context.charger_status);
+}
+
+static void
+handle_settings_request(ble_event_t *event)
+{
+	ble_uart_send_settings(g_ble_context.settings);
+}
+
+static void
+handle_settings_command(ble_event_t *event)
+{
+	g_ble_context.settings = event->user_data[0];
+}
+
+static void
+handle_settings_update(ble_event_t *event)
+{
+	g_ble_context.settings = event->user_data[0];
+	ble_uart_send_settings(g_ble_context.settings);
+}
+
+static void
+handle_memory_level_request(ble_event_t *event)
+{
+	ble_uart_send_memory_level(g_ble_context.memory_level);
+}
+
+static void
+handle_memory_level_update(ble_event_t *event)
+{
+	g_ble_context.memory_level = event->user_data[0];
+	ble_uart_send_memory_level(g_ble_context.memory_level);
+}
+
+static void
+handle_factory_reset_request(ble_event_t *event)
+{
+	ble_uart_send_factory_reset(g_ble_context.factory_reset);
+}
+
+static void
+handle_factory_reset_command(ble_event_t *event)
+{
+	g_ble_context.factory_reset = event->user_data[0];
+	// ToDo: Need to start the factory reset functionality here
+	LOGV(TAG, "Todo: Implement factory reset");
+}
+
+static void
+handle_factory_reset_update(ble_event_t *event)
+{
+	g_ble_context.factory_reset = event->user_data[0];
+	ble_uart_send_factory_reset(g_ble_context.factory_reset);
+}
+
+static void
+handle_sound_control_request(ble_event_t *event)
+{
+	ble_uart_send_sound_control(g_ble_context.sound_control);
+}
+
+static void
+handle_sound_control_command(ble_event_t *event)
+{
+	g_ble_context.sound_control = event->user_data[0];
+	// ToDo: Need to start the sound control functionality here
+	LOGV(TAG, "Todo: Implement sound control");
+}
+
+static void
+handle_sound_control_update(ble_event_t *event)
+{
+	g_ble_context.sound_control = event->user_data[0];
+	ble_uart_send_sound_control(g_ble_context.sound_control);
+}
+
+static void
+handle_ble_connected(ble_event_t *event)
+{
+	eeg_reader_event_ble_connected();
+	if (interpreter_get_alarm_status())
+	{
+		// turn off alarm on BLE connect if running
+		interpreter_event_stop_script(false);
+	}
+}
+
+static void
+handle_ble_disconnected(ble_event_t *event)
+{
+	eeg_reader_event_ble_disconnected();
+}
+
+static void
 handle_state_standby(ble_event_t *event)
 {
 
@@ -880,16 +1119,11 @@ handle_state_standby(ble_event_t *event)
       break;
 
     case BLE_EVENT_CONNECTED:
-    	eeg_reader_event_ble_connected();
-    	if (interpreter_get_alarm_status())
-    	{
-    		// turn off alarm on BLE connect if running
-    		interpreter_event_stop_script(false);
-    	}
+    	handle_ble_connected(event);
     	break;
 
     case BLE_EVENT_DISCONNECTED:
-    	eeg_reader_event_ble_disconnected();
+    	handle_ble_disconnected(event);
     	break;
 
     case BLE_EVENT_BATTERY_LEVEL_REQUEST:
@@ -1026,6 +1260,58 @@ handle_state_standby(ble_event_t *event)
 
     case BLE_EVENT_ADDR_COMMAND:
       handle_addr_command(event);
+      break;
+
+    case BLE_EVENT_CHARGER_STATUS_REQUEST:
+      handle_charger_status_request(event);
+      break;
+
+    case BLE_EVENT_CHARGER_STATUS_UPDATE:
+      handle_charger_status_update(event);
+      break;
+
+    case BLE_EVENT_SETTINGS_REQUEST:
+      handle_settings_request(event);
+      break;
+
+    case BLE_EVENT_SETTINGS_COMMAND:
+      handle_settings_command(event);
+      break;
+
+    case BLE_EVENT_SETTINGS_UPDATE:
+      handle_settings_update(event);
+      break;
+
+    case BLE_EVENT_MEMORY_LEVEL_REQUEST:
+      handle_memory_level_request(event);
+      break;
+
+    case BLE_EVENT_MEMORY_LEVEL_UPDATE:
+      handle_memory_level_update(event);
+      break;
+
+    case BLE_EVENT_FACTORY_RESET_REQUEST:
+      handle_factory_reset_request(event);
+      break;
+
+    case BLE_EVENT_FACTORY_RESET_COMMAND:
+      handle_factory_reset_command(event);
+      break;
+
+    case BLE_EVENT_FACTORY_RESET_UPDATE:
+      handle_factory_reset_update(event);
+      break;
+
+    case BLE_EVENT_SOUND_CONTROL_REQUEST:
+      handle_sound_control_request(event);
+      break;
+
+    case BLE_EVENT_SOUND_CONTROL_COMMAND:
+      handle_sound_control_command(event);
+      break;
+
+    case BLE_EVENT_SOUND_CONTROL_UPDATE:
+      handle_sound_control_update(event);
       break;
 
     default:

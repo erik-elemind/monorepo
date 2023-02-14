@@ -35,6 +35,12 @@ void ble_time_debug_command(int argc, char **argv);
 
 void ble_send_file_command(int argc, char **argv);
 
+void ble_charger_status_debug_command(int argc, char **argv);
+void ble_settings_debug_command(int argc, char **argv);
+void ble_memory_level_debug_command(int argc, char **argv);
+void ble_factory_reset_debug_command(int argc, char **argv);
+void ble_sound_control_debug_command(int argc, char **argv);
+
 #ifdef __cplusplus
 }
 #endif
