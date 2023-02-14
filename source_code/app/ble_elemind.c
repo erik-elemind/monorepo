@@ -539,6 +539,115 @@ time_char_add(
     );
 }
 
+/** Add Elemind Charger Status characteristic.
+
+    @param[in] p_elemind Elemind Service structure.
+    @param[in] p_elemind_init Information needed to initialize the service.
+    @return NRF_SUCCESS on success, otherwise an error code.
+*/
+static ret_code_t
+charger_status_char_add(
+  ble_elemind_t* p_elemind,
+  const ble_elemind_init_t* p_elemind_init
+  )
+{
+  return char_add_uint8(
+    p_elemind,
+    p_elemind_init,
+    &p_elemind->charger_status_handles,
+    ELEMIND_CHARGER_STATUS_CHAR_UUID,
+    p_elemind_init->charger_status_initial_value,
+    ELEMIND_ACCESS_READ | ELEMIND_ACCESS_NOTIFY
+    );
+}
+
+/** Add Elemind Settings characteristic.
+
+    @param[in] p_elemind Elemind Service structure.
+    @param[in] p_elemind_init Information needed to initialize the service.
+    @return NRF_SUCCESS on success, otherwise an error code.
+*/
+static ret_code_t
+settings_char_add(
+  ble_elemind_t* p_elemind,
+  const ble_elemind_init_t* p_elemind_init
+  )
+{
+  return char_add_uint8(
+    p_elemind,
+    p_elemind_init,
+    &p_elemind->settings_handles,
+    ELEMIND_SETTINGS_CHAR_UUID,
+    p_elemind_init->settings_initial_value,
+    ELEMIND_ACCESS_READ | ELEMIND_ACCESS_WRITE |ELEMIND_ACCESS_NOTIFY
+    );
+}
+
+/** Add Elemind Memory Level characteristic.
+
+    @param[in] p_elemind Elemind Service structure.
+    @param[in] p_elemind_init Information needed to initialize the service.
+    @return NRF_SUCCESS on success, otherwise an error code.
+*/
+static ret_code_t
+memory_level_char_add(
+  ble_elemind_t* p_elemind,
+  const ble_elemind_init_t* p_elemind_init
+  )
+{
+  return char_add_uint8(
+    p_elemind,
+    p_elemind_init,
+    &p_elemind->memory_level_handles,
+    ELEMIND_MEMORY_LEVEL_CHAR_UUID,
+    p_elemind_init->memory_level_initial_value,
+    ELEMIND_ACCESS_READ | ELEMIND_ACCESS_NOTIFY
+    );
+}
+
+/** Add Elemind Factory Reset characteristic.
+
+    @param[in] p_elemind Elemind Service structure.
+    @param[in] p_elemind_init Information needed to initialize the service.
+    @return NRF_SUCCESS on success, otherwise an error code.
+*/
+static ret_code_t
+factory_reset_char_add(
+  ble_elemind_t* p_elemind,
+  const ble_elemind_init_t* p_elemind_init
+  )
+{
+  return char_add_uint8(
+    p_elemind,
+    p_elemind_init,
+    &p_elemind->factory_reset_handles,
+    ELEMIND_FACTORY_RESET_CHAR_UUID,
+    p_elemind_init->factory_reset_initial_value,
+    ELEMIND_ACCESS_READ | ELEMIND_ACCESS_WRITE |ELEMIND_ACCESS_NOTIFY
+    );
+}
+
+/** Add Elemind Sound Control characteristic.
+
+    @param[in] p_elemind Elemind Service structure.
+    @param[in] p_elemind_init Information needed to initialize the service.
+    @return NRF_SUCCESS on success, otherwise an error code.
+*/
+static ret_code_t
+sound_control_char_add(
+  ble_elemind_t* p_elemind,
+  const ble_elemind_init_t* p_elemind_init
+  )
+{
+  return char_add_uint8(
+    p_elemind,
+    p_elemind_init,
+    &p_elemind->sound_control_handles,
+    ELEMIND_SOUND_CONTROL_CHAR_UUID,
+    p_elemind_init->sound_control_initial_value,
+    ELEMIND_ACCESS_READ | ELEMIND_ACCESS_WRITE |ELEMIND_ACCESS_NOTIFY
+    );
+}
 
 /* Initialize the Elemind Service Init to Defaults. */
 void
@@ -559,6 +668,20 @@ ble_elemind_init_defaults( ble_elemind_init_t* p_elemind_init )
   memcpy(p_elemind_init->blink_status_initial_value,
     blink_status_defaults, sizeof(blink_status_defaults));
   p_elemind_init->quality_check_initial_value = 0;
+  static const uint8_t alarm_defaults[ALARM_SIZE] =
+    {0,0,0};
+  memcpy(p_elemind_init->alarm_initial_value,
+    alarm_defaults, sizeof(alarm_defaults));
+  p_elemind_init->sound_initial_value = 0;
+  static const uint8_t time_defaults[TIME_SIZE] =
+    {0,0,0,0,0,0,0,0};
+  memcpy(p_elemind_init->time_initial_value,
+    time_defaults, sizeof(time_defaults));
+  p_elemind_init->charger_status_initial_value = 0;
+  p_elemind_init->settings_initial_value = 0;
+  p_elemind_init->memory_level_initial_value = 0;
+  p_elemind_init->factory_reset_initial_value = 0;
+  p_elemind_init->sound_control_initial_value = 0;
 }
 
 /* Initialize the Elemind Service. */
@@ -663,6 +786,36 @@ ble_elemind_init(
 
   // Add the Time characteristic
   err_code = time_char_add(p_elemind, p_elemind_init);
+  if (err_code != NRF_SUCCESS) {
+    return err_code;
+  }
+
+  // Add the Charger Status characteristic
+  err_code = charger_status_char_add(p_elemind, p_elemind_init);
+  if (err_code != NRF_SUCCESS) {
+    return err_code;
+  }
+
+  // Add the Settings characteristic
+  err_code = settings_char_add(p_elemind, p_elemind_init);
+  if (err_code != NRF_SUCCESS) {
+    return err_code;
+  }
+
+  // Add the Memory Level characteristic
+  err_code = memory_level_char_add(p_elemind, p_elemind_init);
+  if (err_code != NRF_SUCCESS) {
+    return err_code;
+  }
+
+  // Add the Factory Reset characteristic
+  err_code = factory_reset_char_add(p_elemind, p_elemind_init);
+  if (err_code != NRF_SUCCESS) {
+    return err_code;
+  }
+
+  // Add the Sound Control characteristic
+  err_code = sound_control_char_add(p_elemind, p_elemind_init);
   if (err_code != NRF_SUCCESS) {
     return err_code;
   }
@@ -935,6 +1088,41 @@ on_write_time(const ble_gatts_evt_write_t* p_evt_write)
   APP_ERROR_CHECK(err_code);
 }
 
+/** Handle Settings characteristic write.
+
+    @param[in] p_evt_write Write event received from the BLE stack.
+*/
+static void
+on_write_settings(const ble_gatts_evt_write_t* p_evt_write)
+{
+  ret_code_t err_code = NRF_SUCCESS;
+  err_code = on_write_command_helper("ble_settings", p_evt_write->data[0]);
+  APP_ERROR_CHECK(err_code);
+}
+
+/** Handle Factory Reset characteristic write.
+
+    @param[in] p_evt_write Write event received from the BLE stack.
+*/
+static void
+on_write_factory_reset(const ble_gatts_evt_write_t* p_evt_write)
+{
+  ret_code_t err_code = NRF_SUCCESS;
+  err_code = on_write_command_helper("ble_factory_reset", p_evt_write->data[0]);
+  APP_ERROR_CHECK(err_code);
+}
+
+/** Handle Sound Control characteristic write.
+
+    @param[in] p_evt_write Write event received from the BLE stack.
+*/
+static void
+on_write_sound_control(const ble_gatts_evt_write_t* p_evt_write)
+{
+  ret_code_t err_code = NRF_SUCCESS;
+  err_code = on_write_command_helper("ble_sound_control", p_evt_write->data[0]);
+  APP_ERROR_CHECK(err_code);
+}
 
 /** Handle the Write event.
 
@@ -983,6 +1171,18 @@ static void on_write(ble_elemind_t* p_elemind, const ble_evt_t* p_ble_evt)
   else if (p_evt_write->handle == p_elemind->time_handles.value_handle) {
     NRF_LOG_INFO("Time written: %d", p_evt_write->data[0]);
     on_write_time(p_evt_write);
+  }
+  else if (p_evt_write->handle == p_elemind->settings_handles.value_handle) {
+    NRF_LOG_INFO("Settings written: %d", p_evt_write->data[0]);
+    on_write_settings(p_evt_write);
+  }
+  else if (p_evt_write->handle == p_elemind->factory_reset_handles.value_handle) {
+    NRF_LOG_INFO("Factory Reset written: %d", p_evt_write->data[0]);
+    on_write_factory_reset(p_evt_write);
+  }
+  else if (p_evt_write->handle == p_elemind->sound_control_handles.value_handle) {
+    NRF_LOG_INFO("Sound Control written: %d", p_evt_write->data[0]);
+    on_write_sound_control(p_evt_write);
   }
 }
 
@@ -1162,6 +1362,56 @@ ble_elemind_time_update(
   return char_update(p_elemind,
     p_elemind->time_handles.value_handle,
     p_time_value, TIME_SIZE);
+}
+
+/* Update the Charger Status value. */
+ret_code_t
+ble_elemind_charger_status_update(
+  ble_elemind_t* p_elemind, 
+  uint8_t charger_status)
+{
+    return char_update_uint8(p_elemind,
+    p_elemind->charger_status_handles.value_handle, charger_status);
+}
+
+/* Update the Settings value. */
+ret_code_t
+ble_elemind_settings_update(
+  ble_elemind_t* p_elemind, 
+  uint8_t settings)
+{
+    return char_update_uint8(p_elemind,
+    p_elemind->settings_handles.value_handle, settings);
+}
+
+/* Update the Memory Level value. */
+ret_code_t
+ble_elemind_memory_level_update(
+  ble_elemind_t* p_elemind, 
+  uint8_t memory_level)
+{
+    return char_update_uint8(p_elemind,
+    p_elemind->memory_level_handles.value_handle, memory_level);
+}
+
+/* Update the Factory Reset value. */
+ret_code_t
+ble_elemind_factory_reset_update(
+  ble_elemind_t* p_elemind, 
+  uint8_t factory_reset)
+{
+    return char_update_uint8(p_elemind,
+    p_elemind->factory_reset_handles.value_handle, factory_reset);
+}
+
+/* Update the Sound Control value. */
+ret_code_t
+ble_elemind_sound_control_update(
+  ble_elemind_t* p_elemind, 
+  uint8_t sound_control)
+{
+    return char_update_uint8(p_elemind,
+    p_elemind->sound_control_handles.value_handle, sound_control);
 }
 
 
