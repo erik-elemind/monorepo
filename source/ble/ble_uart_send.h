@@ -46,6 +46,11 @@ void ble_uart_send_quality_check(uint8_t quality_check);
 void ble_uart_send_alarm(alarm_params_t *alarm);
 void ble_uart_send_sound(uint8_t sound);
 void ble_uart_send_time(uint64_t unix_epoch_time_sec);
+void ble_uart_send_charger_status(uint8_t charger_status);
+void ble_uart_send_settings(uint8_t settings);
+void ble_uart_send_memory_level(uint8_t memory_level);
+void ble_uart_send_factory_reset(uint8_t factory_reset);
+void ble_uart_send_sound_control(uint8_t sound_control);
 
 
 #ifdef __cplusplus

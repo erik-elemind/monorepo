@@ -44,6 +44,14 @@ void addr_command(int argc, char **argv);
 void ble_print_addr_command(int argc, char **argv);
 void ble_connected(int argc, char **argv);
 void ble_disconnected(int argc, char **argv);
+void charger_status_request(int argc, char **argv);
+void settings_request(int argc, char **argv);
+void settings_command(int argc, char **argv);
+void memory_level_request(int argc, char **argv);
+void factory_reset_request(int argc, char **argv);
+void factory_reset_command(int argc, char **argv);
+void sound_control_request(int argc, char **argv);
+void sound_control_command(int argc, char **argv);
 
 #ifdef __cplusplus
 }

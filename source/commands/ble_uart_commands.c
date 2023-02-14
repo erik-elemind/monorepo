@@ -339,3 +339,96 @@ void ble_disconnected(int argc, char **argv)
 	LOGV(TAG, "BLE Disconnected");
 	ble_disconnected_event();
 }
+
+void charger_status_request(int argc, char **argv)
+{
+	if (argc != 1) {
+		LOGE(TAG, "Error: Command '%s' takes no arguments", argv[0]);
+		return;
+	}
+
+	ble_charger_status_request();
+}
+
+void settings_request(int argc, char **argv)
+{
+	if (argc != 1) {
+		LOGE(TAG, "Error: Command '%s' takes no arguments", argv[0]);
+		return;
+	}
+
+	ble_settings_request();
+}
+
+void settings_command(int argc, char **argv)
+{
+	if (argc != 2) {
+		LOGE(TAG, "Error: Command '%s' missing argument", argv[0]);
+		return;
+	}
+
+	// Get settings
+	uint8_t settings = 0;
+	if (parse_uint8_arg(argv[0], argv[1], &settings)) {
+		ble_settings_command(settings);
+	}
+}
+
+void memory_level_request(int argc, char **argv)
+{
+	if (argc != 1) {
+		LOGE(TAG, "Error: Command '%s' takes no arguments", argv[0]);
+		return;
+	}
+
+	ble_memory_level_request();
+}
+
+void factory_reset_request(int argc, char **argv)
+{
+	if (argc != 1) {
+		LOGE(TAG, "Error: Command '%s' takes no arguments", argv[0]);
+		return;
+	}
+
+	ble_factory_reset_request();
+}
+
+void factory_reset_command(int argc, char **argv)
+{
+	if (argc != 2) {
+		LOGE(TAG, "Error: Command '%s' missing argument", argv[0]);
+		return;
+	}
+
+	// Get factory_reset
+	uint8_t factory_reset = 0;
+	if (parse_uint8_arg(argv[0], argv[1], &factory_reset)) {
+		ble_factory_reset_command(factory_reset);
+	}
+}
+
+void sound_control_request(int argc, char **argv)
+{
+	if (argc != 1) {
+		LOGE(TAG, "Error: Command '%s' takes no arguments", argv[0]);
+		return;
+	}
+
+	ble_sound_control_request();
+}
+
+void sound_control_command(int argc, char **argv)
+{
+	if (argc != 2) {
+		LOGE(TAG, "Error: Command '%s' missing argument", argv[0]);
+		return;
+	}
+
+	// Get sound_control
+	uint8_t sound_control = 0;
+	if (parse_uint8_arg(argv[0], argv[1], &sound_control)) {
+		ble_sound_control_command(sound_control);
+	}
+}
+
