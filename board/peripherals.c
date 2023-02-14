@@ -606,7 +606,7 @@ instance:
     - enableHTimer: 'false'
     - pwms:
       - 0:
-        - output: 'kSCTIMER_Out_7'
+        - output: 'kSCTIMER_Out_2'
         - level: 'kSCTIMER_LowTrue'
         - dutyCyclePercent: '1'
       - 1:
@@ -614,7 +614,7 @@ instance:
         - level: 'kSCTIMER_LowTrue'
         - dutyCyclePercent: '1'
       - 2:
-        - output: 'kSCTIMER_Out_2'
+        - output: 'kSCTIMER_Out_7'
         - level: 'kSCTIMER_LowTrue'
         - dutyCyclePercent: '1'
     - pwmMode: 'kSCTIMER_EdgeAlignedPwm'
@@ -638,7 +638,7 @@ const sctimer_config_t SCT0_initConfig = {
 };
 const sctimer_pwm_signal_param_t SCT0_pwmSignalsConfig[3] = {
   {
-    .output = kSCTIMER_Out_7,
+    .output = kSCTIMER_Out_2,
     .level = kSCTIMER_LowTrue,
     .dutyCyclePercent = 1U
   },
@@ -648,7 +648,7 @@ const sctimer_pwm_signal_param_t SCT0_pwmSignalsConfig[3] = {
     .dutyCyclePercent = 1U
   },
   {
-    .output = kSCTIMER_Out_2,
+    .output = kSCTIMER_Out_7,
     .level = kSCTIMER_LowTrue,
     .dutyCyclePercent = 1U
   }
