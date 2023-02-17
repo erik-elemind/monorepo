@@ -442,6 +442,7 @@ const shell_command_t commands[] = {
 
 	{ P_BLE, "ble_connected", ble_connected, ""},
 	{ P_BLE, "ble_disconnected", ble_disconnected, ""},
+	{ P_BLE, "ble_ota_start", ble_ota_started, ""},
 
     // Misc low level tests
 #if (defined(ENABLE_STREAM_MEMORY_TEST_COMMANDS) && (ENABLE_STREAM_MEMORY_TEST_COMMANDS > 0U))
