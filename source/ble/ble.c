@@ -85,6 +85,7 @@ typedef enum
   BLE_EVENT_ADDR_COMMAND,
   BLE_EVENT_CONNECTED,
   BLE_EVENT_DISCONNECTED,
+  BLE_EVENT_OTA,
 } ble_event_type_t;
 
 // Events are passed to the g_event_queue with an optional
@@ -284,6 +285,8 @@ ble_event_type_name(ble_event_type_t event_type)
       return "BLE_EVENT_CONNECTED";
     case BLE_EVENT_DISCONNECTED:
       return "BLE_EVENT_DISCONNECTED";
+    case BLE_EVENT_OTA:
+    	return "BLE_EVENT_OTA";
     default:
       break;
   }
@@ -299,6 +302,12 @@ void ble_connected_event(void)
 void ble_disconnected_event(void)
 {
 	ble_event_t event = {.type = BLE_EVENT_DISCONNECTED };
+	xQueueSend(g_event_queue, &event, 0);
+}
+
+void ble_ota_event(void)
+{
+	ble_event_t event = {.type = BLE_EVENT_OTA };
 	xQueueSend(g_event_queue, &event, 0);
 }
 
@@ -1110,6 +1119,14 @@ handle_ble_disconnected(ble_event_t *event)
 }
 
 static void
+handle_ble_ota_started(ble_event_t *event)
+{
+	// tell interpreter to stop
+	// TODO: consider turning off IRQs too?
+	interpreter_event_stop_script(false);
+}
+
+static void
 handle_state_standby(ble_event_t *event)
 {
 
@@ -1124,6 +1141,10 @@ handle_state_standby(ble_event_t *event)
 
     case BLE_EVENT_DISCONNECTED:
     	handle_ble_disconnected(event);
+    	break;
+
+    case BLE_EVENT_OTA:
+    	handle_ble_ota_started(event);
     	break;
 
     case BLE_EVENT_BATTERY_LEVEL_REQUEST:

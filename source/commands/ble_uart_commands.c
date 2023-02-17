@@ -340,6 +340,12 @@ void ble_disconnected(int argc, char **argv)
 	ble_disconnected_event();
 }
 
+void ble_ota_started(int argc, char **argv)
+{
+	LOGV(TAG, "BLE OTA Started");
+	ble_ota_event();
+}
+
 void charger_status_request(int argc, char **argv)
 {
 	if (argc != 1) {
