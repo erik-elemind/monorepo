@@ -7,6 +7,7 @@ accel_start_sample
 hrm_on
 als_start_sample
 skin_temp_start_sample
+ml_enable
 
 echt_config_simple 10
 echt_set_min_max_phase 134 224
@@ -39,5 +40,7 @@ als_stop
 hrm_off
 accel_stop
 eeg_stop
+ml_stop
+ml_disable
 user_metrics_log_close
 data_log_close
