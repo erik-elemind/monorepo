@@ -42,6 +42,7 @@
 #include "als_commands.h"
 #include "skin_temp_commands.h"
 #include "pmic_commands.h"
+#include "ml.h"
 
 //static const char *TAG = "commands";  // Logging prefix for this module
 
@@ -186,6 +187,11 @@ const shell_command_t commands[] = {
     // Heart rate monitor commands:
     { P_ALL, "hrm_off", hrm_off, "Turn off heart rate monitor" },
     { P_ALL, "hrm_on", hrm_on, "Turn on heart rate monitor" },
+
+	// ML commands
+	{ P_ALL, "ml_enable", ml_enable, "Enables ML inference" },
+	{ P_ALL, "ml_disable", ml_disable, "Disables ML inference" },
+	{ P_ALL, "ml_stop", ml_event_stop, "Resets ML state machine"},
 
     // Accel commands:
     { P_ALL, "accel_start_sample", accel_start_sample_command, "Run the accel in sample mode" },

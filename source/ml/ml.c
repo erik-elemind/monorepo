@@ -64,6 +64,7 @@ typedef struct
 {
   ml_state_t state;
   // TODO: Other "global" vars shared between events or states goes here.
+  uint8_t enabled;
 } ml_context_t;
 
 static ml_context_t g_context;
@@ -100,6 +101,16 @@ static const char * ml_event_type_name(ml_event_type_t event_type)
       break;
   }
   return "ML_EVENT UNKNOWN";
+}
+
+void ml_enable(void)
+{
+	g_context.enabled = 1;
+}
+
+void ml_disable(void)
+{
+	g_context.enabled = 0;
 }
 
 void ml_event_input(ads129x_frontal_sample* f_sample)
@@ -172,7 +183,8 @@ static void handle_state_standby(ml_event_t *event)
       break;
 
     case ML_EVENT_STOP:
-    	break;
+      ml_disable();
+      break;
 
     default:
       log_event_ignored(event);
@@ -195,7 +207,7 @@ static void handle_state_input(ml_event_t *event)
 
     	if (currentCount == INPUT_SIZE) // raw data is downsampled by half
     	{
-    		set_state(ML_STATE_INFERENCE, event);
+    		(g_context.enabled > 0) ? set_state(ML_STATE_INFERENCE, event) : set_state(ML_STATE_STANDBY, event);
     		currentCount = 0;
     	}
 
@@ -204,6 +216,7 @@ static void handle_state_input(ml_event_t *event)
     case ML_EVENT_STOP:{
     	set_state(ML_STATE_STANDBY, event);
     	currentCount = 0;
+    	ml_disable();
     	break;
     }
 
@@ -281,6 +294,7 @@ void ml_pretask_init(void)
 static void task_init()
 {
   // Any post-scheduler init goes here.
+  ml_disable();
   set_state(ML_STATE_STANDBY, NULL);
   LOGV(TAG, "Task launched. Entering event loop.\n\r");
 }
