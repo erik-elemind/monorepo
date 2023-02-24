@@ -20,6 +20,7 @@
 
 #include "interpreter.h"
 #include "settings.h"
+#include "app_settings.h"
 
 #if (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
 
@@ -28,7 +29,6 @@
 static const char *TAG = "ble";	// Logging prefix for this module
 
 #define   BLE_POWER_OFF_DELAY_MS 50
-
 
 //
 // Task events:
@@ -93,7 +93,6 @@ typedef enum
 typedef struct
 {
   ble_event_type_t type;
-//  uint8_t user_data[ELECTRODE_NUM]; // Max data is 1 byte per electrode
   uint8_t user_data[10]; // Max data is 1 byte per blink status
 } ble_event_t;
 
@@ -127,7 +126,7 @@ typedef struct
   uint8_t sound;
   uint64_t time;
   uint8_t charger_status;
-  uint8_t settings;
+  uint8_t app_settings;
   uint8_t memory_level;
   uint8_t factory_reset;
   uint8_t sound_control;
@@ -151,7 +150,7 @@ static ble_context_t g_ble_context = {
   .sound = 0,
   .time = 0,
   .charger_status = 0,
-  .settings = 0,
+  .app_settings = 0,
   .memory_level = 0,
   .factory_reset = 0,
   .sound_control = 0,
@@ -674,7 +673,6 @@ ble_power_on(void)
   }
 };
 
-
 static void
 log_event(ble_event_t *event)
 {
@@ -1030,20 +1028,39 @@ handle_charger_status_update(ble_event_t *event)
 static void
 handle_settings_request(ble_event_t *event)
 {
-	ble_uart_send_settings(g_ble_context.settings);
+	ble_uart_send_settings(g_ble_context.app_settings);
 }
 
 static void
 handle_settings_command(ble_event_t *event)
 {
-	g_ble_context.settings = event->user_data[0];
+	// Make sure settings have changed to minimize file writes
+	if(g_ble_context.app_settings == event->user_data[0])
+	{
+		return;
+	}
+
+	g_ble_context.app_settings = event->user_data[0];
+
+	// Update settings.ini file
+	if(save_app_settings(g_ble_context.app_settings) != APP_SETTINGS_RESULT_SUCCESS)
+	{
+		LOGE(TAG, "Failed to write app settings to settings.ini");
+	}
 }
 
 static void
 handle_settings_update(ble_event_t *event)
 {
-	g_ble_context.settings = event->user_data[0];
-	ble_uart_send_settings(g_ble_context.settings);
+	g_ble_context.app_settings = event->user_data[0];
+
+	// Update settings.ini file
+	if(save_app_settings(g_ble_context.app_settings) != APP_SETTINGS_RESULT_SUCCESS)
+	{
+		LOGE(TAG, "Failed to write app settings to settings.ini");
+	}
+
+	ble_uart_send_settings(g_ble_context.app_settings);
 }
 
 static void
@@ -1374,6 +1391,12 @@ task_init()
 {
   // Any post-scheduler init goes here.
   set_state(BLE_STATE_STANDBY);
+
+  // Read off last saved settings from the settings.ini file
+  if(read_app_settings(&g_ble_context.app_settings) != APP_SETTINGS_RESULT_SUCCESS)
+  {
+	  LOGE(TAG, "Error reading app settings from settings.ini");
+  }
 
   LOGV(TAG, "Task launched. Entering event loop.\n\r");
 }
