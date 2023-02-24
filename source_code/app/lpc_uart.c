@@ -619,6 +619,7 @@ lpc_uart_init(ble_bas_t* p_bas, ble_elemind_t* p_elemind)
   // Send serial number and software version requests
   lpc_uart_sendline("ble_serial_number?\n");
   lpc_uart_sendline("ble_software_version?\n");
+  lpc_uart_sendline("ble_settings?\n");
 
   return NRF_SUCCESS;
 }
