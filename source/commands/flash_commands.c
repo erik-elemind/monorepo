@@ -103,6 +103,23 @@ static inline uint32_t max(uint32_t a, uint32_t b){
 	return a>b ? a : b;
 }
 
+
+void flash_mux_select(int argc, char **argv)
+{
+  if (argc != 2) {
+    printf("Error: Command '%s' missing argument\n", argv[0]);
+    return;
+  }
+
+  // Get pin setting
+  uint8_t pin_level = 0;
+  if (parse_uint8_arg(argv[0], argv[1], &pin_level)) {
+    printf("Flash MUX select: %d\n", pin_level);
+    // Set mux select high or low (1 = nrf control)
+    GPIO_PinWrite(BOARD_INITPINS_FLASH_MUX_SEL_GPIO, BOARD_INITPINS_FLASH_MUX_SEL_PORT, BOARD_INITPINS_FLASH_MUX_SEL_PIN, pin_level);
+  }
+}
+
 void
 flash_read_page(int argc, char **argv)
 {

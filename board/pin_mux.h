@@ -348,17 +348,33 @@ void BOARD_InitBootPins(void);
 /*! @name PIO1_24 (coord T7), FLASH_MUX_SEL
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_FLASH_MUX_SEL_PERIPHERAL GPIO           /*!<@brief Peripheral name */
-#define BOARD_INITPINS_FLASH_MUX_SEL_SIGNAL PIO1               /*!<@brief Signal name */
-#define BOARD_INITPINS_FLASH_MUX_SEL_CHANNEL 24                /*!<@brief Signal channel */
+/*!
+ * @brief Peripheral name */
+#define BOARD_INITPINS_FLASH_MUX_SEL_PERIPHERAL GPIO
+/*!
+ * @brief Signal name */
+#define BOARD_INITPINS_FLASH_MUX_SEL_SIGNAL PIO1
+/*!
+ * @brief Signal channel */
+#define BOARD_INITPINS_FLASH_MUX_SEL_CHANNEL 24
 
 /* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_FLASH_MUX_SEL_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_FLASH_MUX_SEL_GPIO_PIN_MASK (1U << 24U) /*!<@brief GPIO pin mask */
-#define BOARD_INITPINS_FLASH_MUX_SEL_PORT 1U                   /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_FLASH_MUX_SEL_PIN 24U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_FLASH_MUX_SEL_PIN_MASK (1U << 24U)      /*!<@brief PORT pin mask */
-                                                               /* @} */
+/*!
+ * @brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_FLASH_MUX_SEL_GPIO GPIO
+/*!
+ * @brief GPIO pin mask */
+#define BOARD_INITPINS_FLASH_MUX_SEL_GPIO_PIN_MASK (1U << 24U)
+/*!
+ * @brief PORT peripheral base pointer */
+#define BOARD_INITPINS_FLASH_MUX_SEL_PORT 1U
+/*!
+ * @brief PORT pin number */
+#define BOARD_INITPINS_FLASH_MUX_SEL_PIN 24U
+/*!
+ * @brief PORT pin mask */
+#define BOARD_INITPINS_FLASH_MUX_SEL_PIN_MASK (1U << 24U)
+/* @} */
 
 /*! @name PIO1_25 (coord U7), HRM_IR_ANODE_EN
   @{ */
