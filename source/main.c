@@ -94,13 +94,6 @@ StackType_t data_log_task_array[ DATA_LOG_TASK_STACK_SIZE];
 StaticTask_t data_log_task_struct;
 #endif
 
-#if (defined(ENABLE_LED_TASK) && (ENABLE_LED_TASK > 0U))
-#define LED_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*2)
-#define LED_TASK_PRIORITY 1
-StackType_t led_task_array[ LED_TASK_STACK_SIZE ];
-StaticTask_t led_task_struct;
-#endif
-
 #if (defined(ENABLE_BUTTON_TASK) && (ENABLE_BUTTON_TASK > 0U))
 #define BUTTON_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*1) // 2
 #define BUTTON_TASK_PRIORITY 1
@@ -262,6 +255,8 @@ static void system_boot_up(void)
 	BOARD_InitBLE();
 	BOARD_InitDebugConsole();
 
+	led_init();
+
 	pmic_init();
 
 	// Enable USB, buttons, and BLE UART for DeepSleepIRQs
@@ -333,15 +328,6 @@ int main(void)
   task_handle = xTaskCreateStatic(&data_log_task,
       "data_log", DATA_LOG_TASK_STACK_SIZE, NULL, DATA_LOG_TASK_PRIORITY, data_log_task_array, &data_log_task_struct);
   vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)DATA_LOG_TASK_STACK_SIZE );
-#endif
-
-	/* LED task */
-#if (defined(ENABLE_LED_TASK) && (ENABLE_LED_TASK > 0U))
-	LOGV(TAG, "Launching led task...");
-	led_pretask_init();
-	task_handle = xTaskCreateStatic(&led_task,
-	  "led", LED_TASK_STACK_SIZE, NULL, LED_TASK_PRIORITY, led_task_array, &led_task_struct);
-	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)LED_TASK_STACK_SIZE );
 #endif
 
 	/* Button task */

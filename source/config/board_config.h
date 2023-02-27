@@ -38,31 +38,6 @@ extern "C" {
   #error "Invalid variant"
 #endif
 
-/** Set RGB LED to specified color.
-
-    Sets LED color using three percentage values.
-
-    @param red_duty_cycle_percent Percent brightness for red LED (0-100)
-    @param green_duty_cycle_percent Percent brightness for green LED (0-100)
-    @param blue_duty_cycle_percent Percent brightness for blue LED (0-100)
- */
-void
-BOARD_SetRGB(
-  uint8_t red_duty_cycle_percent,
-  uint8_t grn_duty_cycle_percent,
-  uint8_t blu_duty_cycle_percent
-  );
-
-/** Set RGB LED to specified color using a single value for convenience.
-
-    @param rgb_duty_cycle_bytes RGB value encoded as 0x00RRGGBB, i.e.
-    red is byte 2, green is byte 1, blue is byte 0 (LSB). Note that
-    RGB byte values (0-255) are scaled to percentage values (0-100)
-    for display.
- */
-void
-BOARD_SetRGB32(uint32_t rgb_duty_cycle_bytes);
-
 /** Toggle Debug LED
  */
 void
