@@ -267,7 +267,7 @@ void anim_set_value(int value, void *user_data) {
 
  char* get_pattern_name(led_pattern_t pattern) {
   switch (pattern) {
-   case LED_OFF_TRISTATE:  return "LED_OFF_TRISTATE";
+   case LED_OFF_NO_TRISTATE:  return "LED_OFF_NO_TRISTATE";
    case LED_OFF:  return "LED_OFF";
    case LED_RED:  return "LED_RED";
    case LED_GREEN:  return "LED_GREEN";
@@ -298,23 +298,23 @@ set_led_state(led_pattern_t led_pattern)
   
   anim_channel_stop_all();
   switch (led_pattern) {
-  	case LED_OFF_TRISTATE:
-  	  led_set_rgb32(0x000000, true);
+  	case LED_OFF_NO_TRISTATE:
+  	  led_set_rgb32(0x000000, false);
   	  break;
     case LED_OFF:
-      led_set_rgb32(0x000000, false);
+      led_set_rgb32(0x000000, true);
       break;
     case LED_RED:
-      led_set_rgb32(0xFF0000, false);
+      led_set_rgb32(0xFF0000, true);
       break;
     case LED_GREEN:
-      led_set_rgb32(0x00FF00, false);
+      led_set_rgb32(0x00FF00, true);
       break;
     case LED_BLUE:
-      led_set_rgb32(0x0000FF, false);
+      led_set_rgb32(0x0000FF, true);
       break;
     case LED_ON:
-      led_set_rgb32(0x0000aa, false);
+      led_set_rgb32(0x0000aa, true);
       break;
     case LED_THERAPY:
       anim_pulse(0x000000, 0x00aa00, 1000);
@@ -323,16 +323,16 @@ set_led_state(led_pattern_t led_pattern)
       anim_pulse(0x000000, 0x885500, 1000);
       break;
     case LED_CHARGED:
-      led_set_rgb32(0x00ff00, false);
+      led_set_rgb32(0x00ff00, true);
       break;
     case LED_CHARGE_FAULT:
       anim_pulse(0x000000, 0xaaaa00, 200);
       break;
     case LED_POWER_GOOD:
-      led_set_rgb32(0x00aa00, false);
+      led_set_rgb32(0x00aa00, true);
       break;
     case LED_POWER_LOW:
-      led_set_rgb32(0xaa0000, false);
+      led_set_rgb32(0xaa0000, true);
       break;
     default:
       LOGE(TAG, "set_led_state(): Unknown LED state!\n\r");

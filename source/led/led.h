@@ -12,7 +12,7 @@ extern "C" {
 // LED states
 typedef enum
 {
-  LED_OFF_TRISTATE = 0,
+  LED_OFF_NO_TRISTATE = 0,
   LED_OFF,
   LED_RED,
   LED_GREEN,

@@ -208,7 +208,7 @@ const shell_command_t commands[] = {
     { P_ALL, "skin_temp_stop", skin_temp_stop_command, ""},
 
     // LED animations
-    { P_ALL, "led_state", led_state_command, "Set LED state <state pattern [0-6]> " },
+    { P_ALL, "led_state", led_state_command, "Set LED state <state pattern [0-11]> " },
 
     // Sleep therapy commands:
     { P_ALL, "therapy_start", therapy_start_command, "Start sleep therapy" },
