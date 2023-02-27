@@ -144,7 +144,7 @@ static ble_context_t g_ble_context = {
   .heart_rate = 0xFF,
   .battery_level = 100,
   .serial_number = {0},
-  .software_version = FW_VERSION_GIT_STRING,
+  .software_version = FW_VERSION_FULL,
   .quality_check = 0,
   .alarm = {.all = {0},},
   .sound = 0,

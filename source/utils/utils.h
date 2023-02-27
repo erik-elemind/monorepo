@@ -4,7 +4,7 @@
 #include <stdint.h>  // uint32_t, etc.
 
 // Include FW_VERSION_[MAJOR|MINOR|STRING|INTEGER]
-#include "version.h"
+#include "fw_version.h"
 
 #include "config.h"
 

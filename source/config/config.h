@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "version.h"
+#include "fw_version.h"
 #include "../config/board_config.h"
 #include "config_tracealyzer.h"
 #include "config_tracealyzer_isr.h"
