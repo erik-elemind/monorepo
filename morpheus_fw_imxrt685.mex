@@ -822,7 +822,7 @@
                         <data type="Frequency" unit="Hz">0</data>
                      </feature>
                   </dependency>
-                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="SCT0.out.2" description="Signal output 2 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="SCT0.out.7" description="Signal output 7 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
                      <feature name="routed" evaluation="equal">
                         <data type="Boolean">true</data>
                      </feature>
@@ -832,7 +832,7 @@
                         <data type="Boolean">true</data>
                      </feature>
                   </dependency>
-                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="SCT0.out.7" description="Signal output 7 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="SCT0.out.2" description="Signal output 2 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
                      <feature name="routed" evaluation="equal">
                         <data type="Boolean">true</data>
                      </feature>
@@ -1210,7 +1210,7 @@
                         <setting name="enableHTimer" value="false"/>
                         <array name="pwms">
                            <struct name="0">
-                              <setting name="output" value="kSCTIMER_Out_2"/>
+                              <setting name="output" value="kSCTIMER_Out_7"/>
                               <setting name="level" value="kSCTIMER_LowTrue"/>
                               <setting name="dutyCyclePercent" value="1"/>
                            </struct>
@@ -1220,7 +1220,7 @@
                               <setting name="dutyCyclePercent" value="1"/>
                            </struct>
                            <struct name="2">
-                              <setting name="output" value="kSCTIMER_Out_7"/>
+                              <setting name="output" value="kSCTIMER_Out_2"/>
                               <setting name="level" value="kSCTIMER_LowTrue"/>
                               <setting name="dutyCyclePercent" value="1"/>
                            </struct>

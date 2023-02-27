@@ -1,12 +1,10 @@
 
 
-#include <stdlib.h>
-#include <stdbool.h>
-
 #include "FreeRTOS.h"
 #include "task.h"
 #include "timers.h"
 #include "queue.h"
+#include "pin_mux.h"
 
 #include "loglevels.h"
 #include "config.h"
@@ -15,341 +13,219 @@
 #include "anim.h"
 #include "audio.h"
 
-#define LED_EVENT_QUEUE_SIZE 10
-
 static const char *TAG = "led";	// Logging prefix for this module
 
-//
-// Task events:
-//
-typedef enum
-{
-  LED_EVENT_ENTER_STATE,	// (used for state transitions)
-  LED_EVENT_TYPE1,
-  LED_EVENT_TYPE2,
-  LED_EVENT_TYPE3,
-} led_event_type_t;
+/******************************************************************************
+ * LED GPIO Settings
+ *****************************************************************************/
 
-// Events are passed to the g_event_queue with an optional
-// void *user_data pointer (which may be NULL).
 typedef struct
 {
-  led_event_type_t type;
-  void *user_data;
-} led_event_t;
+	uint32_t port;
+	uint32_t pin;
+	uint32_t PIO_pwm_output;
+	uint32_t PIO_tristate;
+} led_ioconfig_t;
 
+led_ioconfig_t g_led_ioconfg_red;
+led_ioconfig_t g_led_ioconfg_grn;
+led_ioconfig_t g_led_ioconfg_blu;
 
-//
-// State machine states:
-//
-typedef enum
-{
-  LED_STATE_STANDBY,
-  LED_STATE_STATE1,
-  LED_STATE_STATE2,
-  LED_STATE_STATE3,
-} led_state_t;
-
-//
-// Global context data:
-//
-typedef struct
-{
-  led_state_t state;
-  // TODO: Other "global" vars shared between events or states goes here.
-} led_context_t;
-
-static led_context_t g_context;
-
-// Global event queue and handler:
-static uint8_t g_event_queue_array[LED_EVENT_QUEUE_SIZE*sizeof(led_event_t)];
-static StaticQueue_t g_event_queue_struct;
-static QueueHandle_t g_event_queue;
-static void handle_event(led_event_t *event);
-
-
-// For logging and debug:
-static const char *
-led_state_name(led_state_t state)
-{
-  switch (state) {
-    case LED_STATE_STANDBY: return "LED_STATE_STANDBY";
-    case LED_STATE_STATE1: return "LED_STATE_STATE1";
-    case LED_STATE_STATE2: return "LED_STATE_STATE2";
-    case LED_STATE_STATE3: return "LED_STATE_STATE3";
-    default:
-      break;
-  }
-  return "LED_STATE UNKNOWN";
+static inline void led_io_init(led_ioconfig_t *config, uint32_t port, uint32_t pin){
+	config->port = port;
+	config->pin = pin;
+	// Assume the default pin config works with the SC Timer.
+	config->PIO_pwm_output = LED_PIO_PERIPHERAL->PIO[port][pin];
+	// Change the pin to input, disable the input buffer.
+	config->PIO_tristate = (LED_PIO_PERIPHERAL->PIO[port][pin] & ~IOPCTL_PIO_FUNC3 & ~IOPCTL_PIO_INBUF_DI) | IOPCTL_PIO_FUNC0;
 }
 
-static const char *
-led_event_type_name(led_event_type_t event_type)
-{
-  switch (event_type) {
-    case LED_EVENT_ENTER_STATE: return "LED_EVENT_ENTER_STATE";
-    case LED_EVENT_TYPE1: return "LED_EVENT_TYPE1";
-    case LED_EVENT_TYPE2: return "LED_EVENT_TYPE2";
-    case LED_EVENT_TYPE3: return "LED_EVENT_TYPE3";
-    default:
-      break;
-  }
-  return "LED_EVENT UNKNOWN";
+static inline void led_io_tristate(led_ioconfig_t *ioconfig){
+  LED_PIO_PERIPHERAL->PIO[ioconfig->port][ioconfig->pin] = ioconfig->PIO_tristate;
 }
 
-void
-led_event_type1(void)
-{
-  led_event_t event = {.type = LED_EVENT_TYPE1, .user_data = NULL };
-  xQueueSend(g_event_queue, &event, portMAX_DELAY);
+static inline void led_io_pwm(led_ioconfig_t *ioconfig){
+  LED_PIO_PERIPHERAL->PIO[ioconfig->port][ioconfig->pin] = ioconfig->PIO_pwm_output;
 }
 
-void
-led_event_type2(void)
-{
-  led_event_t event = {.type = LED_EVENT_TYPE2, .user_data = NULL };
-  xQueueSend(g_event_queue, &event, portMAX_DELAY);
+/******************************************************************************
+ * LED SCTimer Settings
+ *****************************************************************************/
+
+static inline void led_sct_enable(SCT_Type *SCTbase, const sctimer_pwm_signal_param_t *pwmSignalsConfig, const uint32_t periodEvent){
+    const sctimer_out_t output = pwmSignalsConfig->output;
+    const sctimer_pwm_level_select_t level = pwmSignalsConfig->level;
+    const uint32_t pulseEvent  = periodEvent + 1;
+
+    // stop PWM timer
+    SCTIMER_StopTimer(SCTbase, kSCTIMER_Counter_U);
+
+    if (level == kSCTIMER_LowTrue) {
+      // enable events
+      SCTbase->OUT[output].CLR |= (1UL << periodEvent);
+      SCTbase->OUT[output].SET |= (1UL << pulseEvent);
+    }else{
+      // enable events
+      SCTbase->OUT[output].SET |= (1UL << periodEvent);
+      SCTbase->OUT[output].CLR |= (1UL << pulseEvent);
+    }
+
+    // start PWM timer
+    SCTIMER_StartTimer(SCTbase, kSCTIMER_Counter_U);
 }
 
-void
-led_event_type3(void)
-{
-  led_event_t event = {.type = LED_EVENT_TYPE3, .user_data = NULL };
-  xQueueSend(g_event_queue, &event, portMAX_DELAY);
+static inline void led_sct_disable(SCT_Type *SCTbase, const sctimer_pwm_signal_param_t *pwmSignalsConfig, const uint32_t periodEvent){
+    const sctimer_out_t output = pwmSignalsConfig->output;
+    const sctimer_pwm_level_select_t level = pwmSignalsConfig->level;
+    const uint32_t pulseEvent  = periodEvent + 1;
+
+    // stop PWM timer
+    SCTIMER_StopTimer(SCTbase, kSCTIMER_Counter_U);
+
+    if (level == kSCTIMER_LowTrue) {
+      // If SCTimer PWM is configured for "low-true level" and
+      // "kSCTIMER_EdgeAlignedPwm": Set the initial output level
+      // to HIGH which is the inactive state.
+
+      // disable events
+      SCTbase->OUT[output].CLR &= ~(1UL << periodEvent);
+      SCTbase->OUT[output].SET &= ~(1UL << pulseEvent);
+
+      SCTbase->OUTPUT |= (1UL << (uint32_t) output);
+    } else {
+      // If SCTimer PWM is configured for "high-true level" and
+      // "kSCTIMER_EdgeAlignedPwm": Set the initial output level
+      // to LOW which is the inactive state.
+
+      // disable events
+      SCTbase->OUT[output].SET &= ~(1UL << periodEvent);
+      SCTbase->OUT[output].CLR &= ~(1UL << pulseEvent);
+
+      SCTbase->OUTPUT &= ~(1UL << (uint32_t) output);
+    }
+
+    // start PWM timer
+    SCTIMER_StartTimer(SCTbase, kSCTIMER_Counter_U);
 }
 
+/******************************************************************************
+ * RED/GREEN/BLUE LED PWM
+ *****************************************************************************/
 
+void led_init(){
+	led_io_init(&g_led_ioconfg_red, LED_RED_PORT, LED_RED_PIN);
+	led_io_init(&g_led_ioconfg_grn, LED_GRN_PORT, LED_GRN_PIN);
+	led_io_init(&g_led_ioconfg_blu, LED_BLU_PORT, LED_BLU_PIN);
+
+	anim_init();
+}
+
+/*
+ *  Controls the duty cycle of an SCTimer controlled PWM to range from 0-100.
+ *  Extends the functionality of the "SCTIMER_UpdatePwmDutycycle()" function
+ *  provided in "fsl_sctimer.h/c", which only allows PWM ranges from 1-100.
+ *
+ *  SCTbase - pointer to the board's SCTimer control registers.
+ *  pwmSignalsConfig - structure describing the PWM configuration:
+ *      output  - which of the SCTimer output pins to control.
+ *      level   - whether the pin is pulled HIGH or LOW during the PWM.
+ *                kSCTIMER_HighTrue - when the PWM is HIGH, the output is HIGH.
+ *                kSCTIMER_LowTrue  - when the PWM is  LOW, the output is HIGH.
+ *  ioconfig - structure containing pin io configuration
+ *  dutyCyclePercent - percent of time the PWM is HIGH.
+ *  event -  an integer index into an array used in the fsl_sctimer.h to
+ *           keep track of parameters used to generate the PWM.
+ *           The index is created by "SCTIMER_SetupPwm()".
+ */
+/*
+ * Notes:
+ *
+ * -- The function "SCTIMER_UpdatePwmDutycycle()" provided by "fsl_sctimer.c",
+ *    cannot take a 0-value dutycycle. To turn the LED all the way off,
+ *    we disable PWM and set the output to a fixed output voltage.
+ * -- If the LED cannot be turned all the way off using a fixed voltage,
+ *    the leakage current can be prevented by tri-stating the pin.
+ *
+ */
 static void
-log_event(led_event_t *event)
+led_UpdatePwmDutycycle(SCT_Type *SCTbase,
+	sctimer_pwm_signal_param_t *pwmSignalsConfig,
+	uint32_t periodEvent,
+	led_ioconfig_t *ioconfig,
+    uint8_t dutyCyclePercent,
+	bool tristate_when_0duty)
 {
-  switch (event->type) {
-    default:
-//      LOGV(TAG, "[%s] Event: %s\n\r", led_state_name(g_context.state), led_event_type_name(event->type));
-      break;
-  }
-}
-
-static void
-log_event_ignored(led_event_t *event)
-{
-  LOGD(TAG, "[%s] Ignored Event: %s\n\r", led_state_name(g_context.state), led_event_type_name(event->type));
-}
-
-static void
-set_state(led_state_t state)
-{
-//  LOGD(TAG, "[%s] -> [%s]\n\r", led_state_name(g_context.state), led_state_name(state));
-
-  g_context.state = state;
-
-  // Immediately process an ENTER_STATE event, before any other pending events.
-  // This allows the app to do state-specific init/setup when changing states.
-  led_event_t event = { LED_EVENT_ENTER_STATE, (void *) state };
-  handle_event(&event);
-}
-
-
-
-//
-// Event handlers for the various application states:
-//
-
-static void
-handle_state_standby(led_event_t *event)
-{
-
-  switch (event->type) {
-    case LED_EVENT_ENTER_STATE:
-      // Generic code to always execute when entering this state goes here.
-      // Turn Off LEDs
-      BOARD_SetRGB(0,0,0);
-      break;
-
-    case LED_EVENT_TYPE1:
-      set_state(LED_STATE_STATE1);
-      break;
-
-    case LED_EVENT_TYPE2:
-      set_state(LED_STATE_STATE1);
-      break;
-
-    case LED_EVENT_TYPE3:
-      set_state(LED_STATE_STATE1);
-      break;
-
-    default:
-      log_event_ignored(event);
-      break;
-  }
-}
-
-
-static void
-handle_state_state1(led_event_t *event)
-{
-
-  switch (event->type) {
-    case LED_EVENT_ENTER_STATE:
-      // Generic code to always execute when entering this state goes here.
-      // Turn on red LED
-      BOARD_SetRGB(100,0,0);
-      break;
-
-    case LED_EVENT_TYPE1:
-      set_state(LED_STATE_STATE2);
-      break;
-
-    case LED_EVENT_TYPE2:
-      set_state(LED_STATE_STATE2);
-      break;
-
-    case LED_EVENT_TYPE3:
-      set_state(LED_STATE_STATE2);
-      break;
-
-    default:
-      log_event_ignored(event);
-      break;
-  }
-}
-
-
-static void
-handle_state_state2(led_event_t *event)
-{
-
-  switch (event->type) {
-    case LED_EVENT_ENTER_STATE:
-      // Generic code to always execute when entering this state goes here.
-      // Turn on green LED
-      BOARD_SetRGB(0,100,0);
-      break;
-
-    case LED_EVENT_TYPE1:
-      set_state(LED_STATE_STATE3);
-      break;
-
-    case LED_EVENT_TYPE2:
-      set_state(LED_STATE_STATE3);
-      break;
-
-    case LED_EVENT_TYPE3:
-      set_state(LED_STATE_STATE3);
-      break;
-
-    default:
-      log_event_ignored(event);
-      break;
-  }
-}
-
-
-static void
-handle_state_state3(led_event_t *event)
-{
-
-  switch (event->type) {
-    case LED_EVENT_ENTER_STATE:
-      // Generic code to always execute when entering this state goes here.
-      // Turn on blue LED
-      BOARD_SetRGB(0,0,100);
-      break;
-
-    case LED_EVENT_TYPE1:
-      set_state(LED_STATE_STANDBY);
-      break;
-
-    case LED_EVENT_TYPE2:
-      set_state(LED_STATE_STANDBY);
-      break;
-
-    case LED_EVENT_TYPE3:
-      set_state(LED_STATE_STANDBY);
-      break;
-
-    default:
-      log_event_ignored(event);
-      break;
-  }
-}
-
-
-static void
-handle_event(led_event_t *event)
-{
-  switch (g_context.state) {
-    case LED_STATE_STANDBY:
-      handle_state_standby(event);
-      break;
-
-    case LED_STATE_STATE1:
-      handle_state_state1(event);
-      break;
-
-    case LED_STATE_STATE2:
-      handle_state_state2(event);
-      break;
-
-    case LED_STATE_STATE3:
-      handle_state_state3(event);
-      break;
-
-    default:
-      // (We should never get here.)
-      LOGE(TAG, "Unknown led state: %d\n\r", (int) g_context.state);
-      break;
+  if (dutyCyclePercent == 0) {
+    if (tristate_when_0duty){
+      // enable tristate
+   	  led_io_tristate(ioconfig);
+	}
+	// disable pwm
+    led_sct_disable(SCTbase, pwmSignalsConfig, periodEvent);
+  }else{
+	if (dutyCyclePercent > 100) {
+      dutyCyclePercent = 100;
+    }
+	// disable tristate
+    led_io_pwm(ioconfig);
+    // enable pwm
+	led_sct_enable(SCTbase, pwmSignalsConfig, periodEvent);
+    // update pwm duty cycle
+    SCTIMER_UpdatePwmDutycycle(SCT0, pwmSignalsConfig->output, dutyCyclePercent,  periodEvent);
   }
 }
 
 void
-led_pretask_init(void)
+led_set_rgb(
+  uint8_t red_duty_cycle_percent,
+  uint8_t grn_duty_cycle_percent,
+  uint8_t blu_duty_cycle_percent,
+  bool tristate_when_0duty
+  )
 {
-  // Any pre-scheduler init goes here.
+  // Control the LEDs
+  led_UpdatePwmDutycycle(LED_SCT_PERIPHERAL, (sctimer_pwm_signal_param_t*) &LED_SCT_pwmSignalsConfig[LED_SCT_RED_INDEX], LED_SCT_pwmEvent[LED_SCT_RED_INDEX],
+		  &g_led_ioconfg_red,
+		  red_duty_cycle_percent, tristate_when_0duty);
+  led_UpdatePwmDutycycle(LED_SCT_PERIPHERAL, (sctimer_pwm_signal_param_t*) &LED_SCT_pwmSignalsConfig[LED_SCT_GRN_INDEX], LED_SCT_pwmEvent[LED_SCT_GRN_INDEX],
+		  &g_led_ioconfg_grn,
+		  grn_duty_cycle_percent, tristate_when_0duty);
+  led_UpdatePwmDutycycle(LED_SCT_PERIPHERAL, (sctimer_pwm_signal_param_t*) &LED_SCT_pwmSignalsConfig[LED_SCT_BLU_INDEX], LED_SCT_pwmEvent[LED_SCT_BLU_INDEX],
+		  &g_led_ioconfg_blu,
+		  blu_duty_cycle_percent, tristate_when_0duty);
 
-  // Create the event queue before the scheduler starts. Avoids race conditions.
-  g_event_queue = xQueueCreateStatic(LED_EVENT_QUEUE_SIZE,sizeof(led_event_t),g_event_queue_array,&g_event_queue_struct);
-  vQueueAddToRegistry(g_event_queue, "led_event_queue");
-
-  anim_init();
+  // If all the LEDs are OFF, halt the SCTimer to save power.
+  if( red_duty_cycle_percent==0 &&
+      grn_duty_cycle_percent==0 &&
+      blu_duty_cycle_percent==0 ) {
+    // Halt the SCTimer.
+    LED_SCT_PERIPHERAL->CTRL |= (SCT_CTRL_HALT_L_MASK | SCT_CTRL_HALT_H_MASK);
+    // The above code was copied from "fsl_sctimer.c",
+    // from the function SCTIMER_Deinit().
+    // The SCTIMER_Deinit function can optionally control the clocks,
+    // using this snippet of code ensures this function never halts
+    // the clocks.
+  }else{
+    // If the SCT0 peripheral is halted.
+    if ( (LED_SCT_PERIPHERAL->CTRL & SCT_CTRL_HALT_L_MASK) != 0 &&
+         (LED_SCT_PERIPHERAL->CTRL & SCT_CTRL_HALT_H_MASK) != 0 ) {
+      // Start the SCTimer.
+      SCTIMER_Init(LED_SCT_PERIPHERAL, &LED_SCT_initConfig);
+    }
+  }
 }
 
-
-static void
-task_init()
-{
-  // Any post-scheduler init goes here.
-
-  set_state(LED_STATE_STANDBY);
-
-  LOGV(TAG, "Task launched. Entering event loop.\n\r");
-}
+// Convert byte value (0-255) to percent value (0-100)
+#define BYTE_TO_PERCENT(X) (((X) * 100)/255)
 
 void
-led_task(void *ignored)
+led_set_rgb32(uint32_t rgb_duty_cycle_bytes, bool tristate_when_0duty)
 {
-  task_init();
-
-  led_event_t event;
-  int flag = 0;
-
-  while (1) {
-
-#if 0
-	// ToDo: Replace/Delete the following debug code ----->
-	vTaskDelay(200);
-
-    // Make the LEDs cycle from Red->Green->Blue.
-    event.type      = LED_EVENT_TYPE1;
-    event.user_data = (void *) 0;
-    // <------------ Replace/Delete
-#else
-    // Get the next event.
-    xQueueReceive(g_event_queue, &event, portMAX_DELAY);
-#endif
-    log_event(&event);
-
-    handle_event(&event);
-  }
+  led_set_rgb(
+    BYTE_TO_PERCENT((rgb_duty_cycle_bytes & 0x00FF0000) >> 16),
+    BYTE_TO_PERCENT((rgb_duty_cycle_bytes & 0x0000FF00) >> 8),
+    BYTE_TO_PERCENT((rgb_duty_cycle_bytes & 0x000000FF)),
+	tristate_when_0duty );
 }
 
 // Animation pattern selector.
@@ -386,18 +262,21 @@ void anim_set_value(int value, void *user_data) {
   static uint32_t color_triple = 0;
   color_triple &= ~(0xff << (int)user_data);
   color_triple |= value << (int)user_data;
-  BOARD_SetRGB32(color_triple);
+  led_set_rgb32(color_triple, true);
 }
 
  char* get_pattern_name(led_pattern_t pattern) {
   switch (pattern) {
-   case LED_OFF: return "LED_OFF";
+   case LED_OFF_NO_TRISTATE:  return "LED_OFF_NO_TRISTATE";
+   case LED_OFF:  return "LED_OFF";
+   case LED_RED:  return "LED_RED";
+   case LED_GREEN:  return "LED_GREEN";
+   case LED_BLUE:  return "LED_BLUE";
    case LED_ON:  return "LED_ON";
    case LED_THERAPY:  return "LED_THERAPY";
    case LED_CHARGING:  return "LED_CHARGING";
    case LED_CHARGED:  return "LED_CHARGED";
    case LED_CHARGE_FAULT:  return "LED_CHARGE_FAULT";
-   case LED_RED:  return "LED_RED";
    case LED_POWER_GOOD: return "LED_POWER_GOOD";
    case LED_POWER_LOW: return "LED_POWER_LOW";
    default: return "UNKNOWN LED PATTERN";
@@ -419,14 +298,23 @@ set_led_state(led_pattern_t led_pattern)
   
   anim_channel_stop_all();
   switch (led_pattern) {
+  	case LED_OFF_NO_TRISTATE:
+  	  led_set_rgb32(0x000000, false);
+  	  break;
     case LED_OFF:
-      BOARD_SetRGB32(0x000000);
-      break;
-    case LED_ON:
-      BOARD_SetRGB32(0x0000aa);
+      led_set_rgb32(0x000000, true);
       break;
     case LED_RED:
-      BOARD_SetRGB32(0xFF0000);
+      led_set_rgb32(0xFF0000, true);
+      break;
+    case LED_GREEN:
+      led_set_rgb32(0x00FF00, true);
+      break;
+    case LED_BLUE:
+      led_set_rgb32(0x0000FF, true);
+      break;
+    case LED_ON:
+      led_set_rgb32(0x0000aa, true);
       break;
     case LED_THERAPY:
       anim_pulse(0x000000, 0x00aa00, 1000);
@@ -435,16 +323,16 @@ set_led_state(led_pattern_t led_pattern)
       anim_pulse(0x000000, 0x885500, 1000);
       break;
     case LED_CHARGED:
-      BOARD_SetRGB32(0x00ff00);
+      led_set_rgb32(0x00ff00, true);
       break;
     case LED_CHARGE_FAULT:
       anim_pulse(0x000000, 0xaaaa00, 200);
       break;
     case LED_POWER_GOOD:
-      BOARD_SetRGB32(0x00aa00);
+      led_set_rgb32(0x00aa00, true);
       break;
     case LED_POWER_LOW:
-      BOARD_SetRGB32(0xaa0000);
+      led_set_rgb32(0xaa0000, true);
       break;
     default:
       LOGE(TAG, "set_led_state(): Unknown LED state!\n\r");

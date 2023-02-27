@@ -77,7 +77,6 @@
 
 #define ENABLE_FS_WRITER_TASK      (1U)
 #define ENABLE_DATA_LOG_TASK       (1U)
-#define ENABLE_LED_TASK            (1U)
 #define ENABLE_BUTTON_TASK         (1U)
 
 #define ENABLE_AUDIO_TASK          (1U)
