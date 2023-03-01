@@ -36,6 +36,7 @@
 #include "hrm.h"
 #include "data_log_commands.h"
 #include "ml.h"
+#include "led.h"
 
 #if (defined(ENABLE_INTERPRETER_TASK) && (ENABLE_INTERPRETER_TASK > 0U))
 
@@ -393,6 +394,7 @@ interpreter_event_start_therapy(therapy_type_t therapy_type)
 
   // TODO: somehow start the script, given only a therapy number
   interpreter_event_start_script((char*)therapy_fname);
+  set_led_state(LED_THERAPY);
 }
 
 void
@@ -786,6 +788,7 @@ handle_state_running (interpreter_event_t *event)
       break;
 
     case INTERPRETER_EVENT_STOP_SCRIPT:
+    	set_led_state(LED_OFF);
       if (alarm_running) {
     	  interpreter_stop_alarm();
       }
