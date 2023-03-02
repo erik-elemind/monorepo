@@ -132,9 +132,9 @@ typedef struct
 //#define TEST_TIMEOUTS // Uncomment to select shorter timeouts for testing
 #ifndef TEST_TIMEOUTS
 enum {
-  SLEEP_TIMEOUT_MS = MINUTES_TO_MS(1),
+  SLEEP_TIMEOUT_MS = SECONDS_TO_MS(10),
   BLE_OFF_TIMEOUT_MS = MINUTES_TO_MS(5),
-  LED_OFF_TIMEOUT_MS = SECONDS_TO_MS(5),
+  LED_OFF_TIMEOUT_MS = SECONDS_TO_MS(5), // LED timer specifically for Sleep Session LED behavior
 };
 #else
 enum {
@@ -337,8 +337,10 @@ app_event_ble_off_timeout(void)
 void
 app_event_led_off_timeout(void)
 {
+#if (defined(ENABLE_LED_OFF_TIMER) && (ENABLE_LED_OFF_TIMER > 0U))
   app_event_t event = {.type = APP_EVENT_LED_OFF_TIMEOUT, .user_data = NULL };
   xQueueSend(g_event_queue, &event, portMAX_DELAY);
+#endif
 }
 
 void
@@ -589,8 +591,10 @@ handle_state_on(app_event_t *event)
       case APP_EVENT_ENTER_STATE:
         restart_sleep_timer();
         stop_ble_off_timer();
-        //ble_power_on();
 
+        // if a script is running, keep LED off
+        if (interpreter_get_state() == INTERPRETER_STATE_STANDBY)
+        {
         // re-enable when ADC brought up
 //        if(battery_get_percent() >= POWER_GOOD_BATT_THRESHOLD)
 //        {
@@ -600,9 +604,13 @@ handle_state_on(app_event_t *event)
 //        {
 //          set_led_state(LED_POWER_LOW);
 //        }
-        set_led_state(LED_POWER_GOOD);
+            set_led_state(LED_POWER_GOOD);
+        }
+        else
+        {
+        	set_led_state(LED_OFF);
+        }
 
-        restart_led_off_timer();
         break;
 
       case APP_EVENT_SLEEP_TIMEOUT:
@@ -627,6 +635,7 @@ handle_state_on(app_event_t *event)
 
       case APP_EVENT_BUTTON_ACTIVITY:
             restart_sleep_timer();
+            // re-enable when ADC brought up
 //            if(battery_get_percent() >= POWER_GOOD_BATT_THRESHOLD)
 //              {
 //                set_led_state(LED_POWER_GOOD);
@@ -635,8 +644,8 @@ handle_state_on(app_event_t *event)
 //              {
 //                set_led_state(LED_POWER_LOW);
 //              }
+            set_led_state(LED_POWER_GOOD);
 
-              restart_led_off_timer();
               break;
 
       case APP_EVENT_RTC_ACTIVITY:
@@ -701,8 +710,8 @@ handle_event(app_event_t *event)
 //      {
 //        set_led_state(LED_POWER_LOW);
 //      }
+      set_led_state(LED_POWER_GOOD);
 
-      restart_led_off_timer();
       break;
     case APP_EVENT_SHELL_ACTIVITY:
     case APP_EVENT_RTC_ACTIVITY:

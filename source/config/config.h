@@ -74,6 +74,10 @@
 // 1U - enable timer-based auto power-off (production default)
 #define ENABLE_BLE_POWER_OFF_TIMER (0U)
 
+// Enable timer for auto LED off
+// 0U - disable timer-based auto LED-off
+// 1U - enable timer-based auto LED-off
+#define ENABLE_LED_OFF_TIMER (0U)
 
 #define ENABLE_FS_WRITER_TASK      (1U)
 #define ENABLE_DATA_LOG_TASK       (1U)

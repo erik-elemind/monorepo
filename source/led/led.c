@@ -317,7 +317,7 @@ set_led_state(led_pattern_t led_pattern)
       led_set_rgb32(0x0000aa, true);
       break;
     case LED_THERAPY:
-      anim_pulse(0x000000, 0x00aa00, 1000);
+      anim_pulse(0x000000, 0x880088, 2500);
       break;
     case LED_CHARGING:
       anim_pulse(0x000000, 0x885500, 1000);
