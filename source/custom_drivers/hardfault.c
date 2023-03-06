@@ -66,7 +66,13 @@ void my_fault_handler_c(sContextStateFrame *frame) {
   // Example "recovery" mechanism for UsageFaults while not running
   // in an ISR
   //
-#if 0
+
+  // reboot system
+  NVIC_SystemReset();
+  printf("I shouldn't be here oh no!!!!!\n");
+  while (1) { }
+
+#if 0 // TODO: implement more sophisticated fault handling
   volatile uint32_t *cfsr = (volatile uint32_t *)0xE000ED28;
   const uint32_t usage_fault_mask = 0xffff0000;
   const bool non_usage_fault_occurred = (*cfsr & ~usage_fault_mask) != 0;
@@ -76,6 +82,7 @@ void my_fault_handler_c(sContextStateFrame *frame) {
 
   if (faulted_from_exception || non_usage_fault_occurred) {
     // For any fault within an ISR or non-usage faults let's reboot the system
+	 // ( __NVIC_SystemReset)
     volatile uint32_t *aircr = (volatile uint32_t *)0xE000ED0C;
     *aircr = (0x05FA << 16) | 0x1 << 2;
     while (1) { } // should be unreachable
@@ -96,26 +103,32 @@ void my_fault_handler_c(sContextStateFrame *frame) {
 }
 
 void HardFault_Handler(void) {
+  printf("HardFault handler!\n");
   HARDFAULT_HANDLING_ASM();
 }
 
 void MemManage_Handler(void){
+  printf("MemManage handler!\n");
   HARDFAULT_HANDLING_ASM();
 }
 
 void BusFault_Handler(void){
+  printf("BusFault handler!\n");
   HARDFAULT_HANDLING_ASM();
 }
 
 void UsageFault_Handler(void){
+  printf("UsageFault_Handler!\n");
   HARDFAULT_HANDLING_ASM();
 }
 
 void vApplicationStackOverflowHook( TaskHandle_t xTask, char * pcTaskName ){
-  HARDFAULT_HANDLING_ASM();
+	printf("vApplicationStackOverflowHook!\n");
+	HARDFAULT_HANDLING_ASM();
 }
 
 void vApplicationMallocFailedHook( void ){
+	printf("vApplicationMallocFailedHook!\n");
   HARDFAULT_HANDLING_ASM();
 }
 
