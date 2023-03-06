@@ -78,7 +78,6 @@ typedef enum
   APP_EVENT_SHELL_ACTIVITY,
   APP_EVENT_SLEEP_TIMEOUT,
   APP_EVENT_BLE_OFF_TIMEOUT,
-  APP_EVENT_LED_OFF_TIMEOUT,
 
   APP_EVENT_CHARGER_PLUGGED,
   APP_EVENT_CHARGER_UNPLUGGED,
@@ -121,8 +120,6 @@ typedef struct
   StaticTimer_t sleep_timer_struct;
   TimerHandle_t ble_off_timer_handle;
   StaticTimer_t ble_off_timer_struct;
-  TimerHandle_t led_off_timer_handle;
-  StaticTimer_t led_off_timer_struct;
 } app_context_t;
 
 
@@ -335,15 +332,6 @@ app_event_ble_off_timeout(void)
 }
 
 void
-app_event_led_off_timeout(void)
-{
-#if (defined(ENABLE_LED_OFF_TIMER) && (ENABLE_LED_OFF_TIMER > 0U))
-  app_event_t event = {.type = APP_EVENT_LED_OFF_TIMEOUT, .user_data = NULL };
-  xQueueSend(g_event_queue, &event, portMAX_DELAY);
-#endif
-}
-
-void
 app_event_charger_plugged(void)
 {
 #if (defined(ENABLE_CHARGER_PLUGGED_EVENTS) && (ENABLE_CHARGER_PLUGGED_EVENTS > 0U))
@@ -465,25 +453,6 @@ stop_ble_off_timer(void)
 }
 
 static void
-restart_led_off_timer(void)
-{
-  // xTimerChangePeriod will start timer if it's not running already
-  if (xTimerChangePeriod(g_app_context.led_off_timer_handle,
-      pdMS_TO_TICKS(LED_OFF_TIMEOUT_MS), 0) == pdFAIL) {
-    LOGE(TAG, "Unable to start led off timer!");
-  }
-}
-
-static void
-stop_led_off_timer(void)
-{
-  // xTimerChangePeriod will start timer if it's not running already
-  if (xTimerStop(g_app_context.led_off_timer_handle, 0) == pdFAIL) {
-     LOGE(TAG, "Unable to stop LED off timer!");
-   }
-}
-
-static void
 set_led_by_charger_status(void)
 {
   battery_charger_status_t status =
@@ -492,7 +461,7 @@ set_led_by_charger_status(void)
   switch (status)
     {
     case BATTERY_CHARGER_STATUS_ON_BATTERY:
-      set_led_state(LED_ON);
+      set_led_state(LED_OFF);
       break;
     case BATTERY_CHARGER_STATUS_CHARGING:
       set_led_state(LED_CHARGING);
@@ -591,62 +560,29 @@ handle_state_on(app_event_t *event)
       case APP_EVENT_ENTER_STATE:
         restart_sleep_timer();
         stop_ble_off_timer();
-
-        // if a script is running, keep LED off
-        if (interpreter_get_state() == INTERPRETER_STATE_STANDBY)
-        {
-        // re-enable when ADC brought up
-//        if(battery_get_percent() >= POWER_GOOD_BATT_THRESHOLD)
-//        {
-//          set_led_state(LED_POWER_GOOD);
-//        }
-//        else
-//        {
-//          set_led_state(LED_POWER_LOW);
-//        }
-            set_led_state(LED_POWER_GOOD);
-        }
-        else
-        {
-        	set_led_state(LED_OFF);
-        }
-
         break;
 
       case APP_EVENT_SLEEP_TIMEOUT:
+		#if(ENABLE_POWER_MODE_TEST)
         set_state(APP_STATE_SLEEP);
+		#endif
         break;
 
       case APP_EVENT_CHARGER_PLUGGED:
       case APP_EVENT_CHARGE_COMPLETE:
       case APP_EVENT_CHARGE_FAULT:
-        stop_led_off_timer();
-        set_state(APP_STATE_CHARGER_ATTACHED);
-        break;
+    	  set_state(APP_STATE_CHARGER_ATTACHED);
+    	  break;
 
       case APP_EVENT_POWER_BUTTON_LONG_CLICK:
-        stop_led_off_timer();
-        set_state(APP_STATE_SLEEP);
-        break;
-
-      case APP_EVENT_LED_OFF_TIMEOUT:
-        set_led_state(LED_OFF);
-        break;
+		  #if(ENABLE_POWER_MODE_TEST)
+    	  set_state(APP_STATE_SLEEP);
+		  #endif
+    	  break;
 
       case APP_EVENT_BUTTON_ACTIVITY:
-            restart_sleep_timer();
-            // re-enable when ADC brought up
-//            if(battery_get_percent() >= POWER_GOOD_BATT_THRESHOLD)
-//              {
-//                set_led_state(LED_POWER_GOOD);
-//              }
-//              else
-//              {
-//                set_led_state(LED_POWER_LOW);
-//              }
-            set_led_state(LED_POWER_GOOD);
-
-              break;
+    	  restart_sleep_timer();
+    	  break;
 
       case APP_EVENT_RTC_ACTIVITY:
             restart_sleep_timer();
@@ -662,27 +598,33 @@ handle_state_on(app_event_t *event)
 static void
 handle_state_charger_attached(app_event_t *event)
 {
-  switch (event->type) {
-     case APP_EVENT_ENTER_STATE:
-       //stop_sleep_timer(); //TODO: reenable when new boards
-    	 restart_sleep_timer(); //TODO: remove when new boards arrive
-       stop_ble_off_timer();
-       //ble_power_on();
-       break;
+	switch (event->type) {
+		case APP_EVENT_ENTER_STATE:
+			#if(ENABLE_POWER_MODE_TEST)
+			//stop_sleep_timer(); //TODO: reenable when new boards
+			restart_sleep_timer(); //TODO: remove when new boards arrive
+			#else
+			stop_sleep_timer();
+			#endif
 
-     case APP_EVENT_CHARGER_UNPLUGGED:
-       set_state(APP_STATE_ON);
-       break;
+			stop_ble_off_timer();
+			break;
 
-     //TODO: remove when reworked boards arrive
-     case APP_EVENT_SLEEP_TIMEOUT:
-    	 set_state(APP_STATE_SLEEP);
-    	 break;
+		//TODO: remove when reworked boards arrive
+		case APP_EVENT_SLEEP_TIMEOUT:
+			#if(ENABLE_POWER_MODE_TEST)
+			set_state(APP_STATE_SLEEP);
+			#endif
+			break;
 
-     default:
-       log_event_ignored(event);
-       break;
-   }
+		case APP_EVENT_CHARGER_UNPLUGGED:
+			set_state(APP_STATE_ON);
+			break;
+
+		default:
+			log_event_ignored(event);
+			break;
+	}
 }
 
 static void
@@ -702,16 +644,6 @@ handle_event(app_event_t *event)
       break;
     case APP_EVENT_BUTTON_ACTIVITY:
       restart_sleep_timer();
-//      if(battery_get_percent() >= POWER_GOOD_BATT_THRESHOLD)
-//      {
-//        set_led_state(LED_POWER_GOOD);
-//      }
-//      else
-//      {
-//        set_led_state(LED_POWER_LOW);
-//      }
-      set_led_state(LED_POWER_GOOD);
-
       break;
     case APP_EVENT_SHELL_ACTIVITY:
     case APP_EVENT_RTC_ACTIVITY:
@@ -771,12 +703,6 @@ ble_off_timeout(TimerHandle_t timer_handle)
   app_event_ble_off_timeout();
 }
 
-static void
-led_off_timeout(TimerHandle_t timer_handle)
-{
-  app_event_led_off_timeout();
-}
-
 void
 app_pretask_init(void)
 {
@@ -799,10 +725,6 @@ task_init()
   g_app_context.ble_off_timer_handle = xTimerCreateStatic("APP_BLE_OFF",
     pdMS_TO_TICKS(BLE_OFF_TIMEOUT_MS), pdFALSE, NULL,
     ble_off_timeout, &(g_app_context.ble_off_timer_struct));
-
-  g_app_context.led_off_timer_handle = xTimerCreateStatic("APP_LED_OFF",
-    pdMS_TO_TICKS(LED_OFF_TIMEOUT_MS), pdFALSE, NULL,
-    led_off_timeout, &(g_app_context.led_off_timer_struct));
 
   set_state(APP_STATE_BOOT_UP);
 
