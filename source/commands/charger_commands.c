@@ -1,5 +1,6 @@
 #include "battery_charger.h"
 #include <stdio.h>
+#include "command_helpers.h"
 
 extern battery_charger_handle_t g_battery_charger_handle;
 
@@ -71,4 +72,14 @@ void bq_status(int argc, char **argv)
   if (status != kStatus_Success) {
     printf("Error printing detailed status: %ld (0x%lx)\n", status, status);
   }
+}
+
+void bq_adc_enable(int argc, char **argv)
+{
+	CHK_ARGC(2,2);
+
+	uint8_t enable = 0;
+	if (parse_uint8_arg_max(argv[0], argv[1], 1, &enable)) {
+		battery_charger_set_adc_enable(&g_battery_charger_handle, enable);
+	}
 }

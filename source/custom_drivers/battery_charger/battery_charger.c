@@ -33,8 +33,30 @@ typedef struct {
   fault_status_t fault_status;
 } charger_status_t;
 
-/// BQ25618 I2C address (right-aligned)
+typedef struct {
+  charger_control_1_t charger_control_1;
+  charger_control_3_t charger_control_3;
+} charger_control_t;
+
+
+typedef struct {
+  adc_control_t adc_control;
+  vbus_adc_1_t vbus_adc_1;
+  vbus_adc_0_t vbus_adc_0;
+  vbat_adc_1_t vbat_adc_1;
+  vbat_adc_0_t vbat_adc_0;
+  vcelltop_adc_1_t vcelltop_adc_1;
+  vcelltop_adc_0_t vcelltop_adc_0;
+  vcellbot_adc_1_t vcellbot_adc_1;
+  vcellbot_adc_0_t vcellbot_adc_0;
+} charger_adc_t;
+
+
+/// BQ25887 I2C address (right-aligned)
 static const uint8_t BQ25887_ADDR = 0x6A;
+
+/// Charger Control 1 register
+static const uint8_t REG_CHARGER_CONTROL_1 = 0x05;
 
 /// Charger Control 3 register
 static const uint8_t REG_CHARGER_CONTROL_3 = 0x07;
@@ -50,6 +72,33 @@ static const uint8_t REG_NTC_STATUS = 0x0D;
 
 /// Fault Status register
 static const uint8_t REG_FAULT_STATUS = 0x0D;
+
+/// ADC Control register
+static const uint8_t REG_ADC_CONTROL = 0x15;
+
+/// VBUS ADC 1 register
+static const uint8_t REG_VBUS_ADC_1 = 0x1B;
+
+/// VBUS ADC 0 register
+static const uint8_t REG_VBUS_ADC_0 = 0x1C;
+
+/// VBAT ADC 1 register
+static const uint8_t REG_VBAT_ADC_1 = 0x1D;
+
+/// VBAT ADC 0 register
+static const uint8_t REG_VBAT_ADC_0 = 0x1E;
+
+/// VCELLTOP ADC 1 register
+static const uint8_t REG_VCELLTOP_ADC_1 = 0x1F;
+
+/// VCELLTOP ADC 0 register
+static const uint8_t REG_VCELLTOP_ADC_0 = 0x20;
+
+/// VCELLBOT ADC 1 register
+static const uint8_t REG_VCELLBOT_ADC_1 = 0x26;
+
+/// VCELLBOT ADC 0 register
+static const uint8_t REG_VCELLBOT_ADC_0 = 0x27;
 
 /// Part Information register
 static const uint8_t REG_PART_INFORMATION = 0x25;
@@ -111,6 +160,19 @@ battery_charger_read_status_registers(
   charger_status_t* p_charger_status
   );
 
+static status_t
+battery_charger_read_control_registers(
+  battery_charger_handle_t* handle,
+  charger_control_t* p_charger_control
+  );
+
+static status_t
+battery_charger_read_adc_registers(
+  battery_charger_handle_t* handle,
+  charger_adc_t* p_charger_adc
+  );
+
+
 // Global function definitions
 
 void
@@ -144,19 +206,8 @@ battery_charger_init(
     LOGE(TAG, "Error resetting device: %ld", status);
   }
 
-  // Create repeating timer to tickle watchdog
-  handle->watchdog_timer_handle = xTimerCreateStatic("BATTERY_CHARGER",
-    pdMS_TO_TICKS(WATCHDOG_TICKLE_MS), pdTRUE, handle,
-    battery_charger_watchdog_timer, &(handle->watchdog_timer_struct));
-  if (xTimerStart(handle->watchdog_timer_handle, 0) == pdFAIL) {
-    LOGE(TAG, "Unable to start watchdog timer!");
-  }
-
-  // Tickle watchdog now
-  status = battery_charger_reset_watchdog(handle);
-  if (status != kStatus_Success) {
-    LOGE(TAG, "Error resetting watchdog: %ld", status);
-  }
+  // Disable WDT
+  battery_charger_disable_wdog(handle);
 
   // Read status registers twice to verify watchdog reset
   charger_status_t charger_status;
@@ -199,14 +250,14 @@ battery_charger_disable_wdog(
   battery_charger_handle_t* handle
   )
 {
-  charger_control_3_t charger_control_3 = { .raw = 0 };
+  charger_control_1_t charger_control_1 = { .raw = 0 };
   status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
-    REG_CHARGER_CONTROL_3, &charger_control_3.raw);
+    REG_CHARGER_CONTROL_1, &charger_control_1.raw);
 
   if (status == kStatus_Success) {
-	  charger_control_3.wd_rst = 0x0;
+	  charger_control_1.watchdog = 0x00;
     status = i2c_mem_write_byte(handle->i2c_handle, BQ25887_ADDR,
-      REG_CHARGER_CONTROL_3, charger_control_3.raw);
+      REG_CHARGER_CONTROL_1, charger_control_1.raw);
   }
 
   return status;
@@ -311,7 +362,92 @@ battery_charger_print_detailed_status(
     printf("    vbus_ovp_stat: %d\n", charger_status.fault_status.vbus_ovp_stat);
   }
 
+  charger_control_t charger_control;
+    status = battery_charger_read_control_registers(handle,
+      &charger_control);
+    if (status == kStatus_Success) {
+      printf("  Charger Control 1 (REG 0x05): 0x%x\n", charger_control.charger_control_1.raw);
+      printf("    Termination Control: %d\n", charger_control.charger_control_1.en_term);
+      printf("    STAT Pin Disable: %d\n", charger_control.charger_control_1.stat_dis);
+      printf("    WDT Settings: %d\n", charger_control.charger_control_1.watchdog);
+      printf("    Charging Safety Timer Enable: %d\n", charger_control.charger_control_1.en_timer);
+      printf("    Fast Charge Timer Settings: %d\n", charger_control.charger_control_1.chg_timer);
+      printf("    Safety Timer during DPM/TREG: %d\n", charger_control.charger_control_1.tmr2x_en);
+
+      printf("  Charger Control 3 (REG 0x07): 0x%x\n",charger_control.charger_control_3.raw);
+      printf("    PFM Mode Disable Control: %d\n", charger_control.charger_control_3.pfm_dis);
+  	  printf("    WDT Reset: %d\n", charger_control.charger_control_3.wd_rst);
+      printf("    Top off Timer Control: %d\n", charger_control.charger_control_3.topoff_timer);
+    }
+
+   charger_adc_t charger_adc;
+   status = battery_charger_read_adc_registers(handle,
+         &charger_adc);
+
+   if (status == kStatus_Success) {
+	   int16_t v_print=0;
+
+        printf("  ADC Control (REG 0x15): 0x%x\n", charger_adc.adc_control.raw);
+        printf("    ADC Enable: %d\n", charger_adc.adc_control.adc_en);
+        printf("    ADC Rate: %d\n", charger_adc.adc_control.adc_rate);
+        printf("    ADC Sample: %d\n", charger_adc.adc_control.adc_sample);
+
+        printf("  VBUS ADC 1 (REG 0x1B): 0x%x\n", charger_adc.vbus_adc_1.raw);
+        printf("  VBUS ADC 0 (REG 0x1C): 0x%x\n", charger_adc.vbus_adc_0.raw);
+
+        printf("  VBAT ADC 1 (REG 0x1D): 0x%x\n", charger_adc.vbat_adc_1.raw);
+		printf("  VBAT ADC 0 (REG 0x1E): 0x%x\n", charger_adc.vbat_adc_0.raw);
+
+		printf("  VCELLTOP ADC 1 (REG 0x1F): 0x%x\n", charger_adc.vcelltop_adc_1.raw);
+		printf("  VCELLTOP ADC 0 (REG 0x20): 0x%x\n", charger_adc.vcelltop_adc_0.raw);
+
+		printf("  VCELLBOT ADC 1 (REG 0x1F): 0x%x\n", charger_adc.vcellbot_adc_1.raw);
+		printf("  VCELLBOT ADC 0 (REG 0x20): 0x%x\n", charger_adc.vcellbot_adc_0.raw);
+
+        v_print |= (charger_adc.vbus_adc_1.raw << 8);
+        v_print |= (charger_adc.vbus_adc_0.raw);
+        printf("VBUS = %d mV\n", v_print);
+
+        v_print=0;
+
+        v_print |= (charger_adc.vbat_adc_1.raw << 8);
+		v_print |= (charger_adc.vbat_adc_0.raw);
+		printf("VBAT = %d mV\n", v_print);
+
+		v_print=0;
+
+		v_print |= (charger_adc.vcelltop_adc_1.raw << 8);
+		v_print |= (charger_adc.vcelltop_adc_0.raw);
+		printf("VCELLTOP = %d mV\n", v_print);
+
+		v_print=0;
+
+		v_print |= (charger_adc.vcellbot_adc_1.raw << 8);
+		v_print |= (charger_adc.vcellbot_adc_0.raw);
+		printf("VCELLBOT = %d mV\n", v_print);
+
+      }
+
   return status;
+}
+
+status_t
+battery_charger_set_adc_enable(
+  battery_charger_handle_t* handle,
+  bool enable
+  )
+{
+	adc_control_t adc_control = { .raw = 0 };
+	status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+	REG_ADC_CONTROL, &adc_control.raw);
+
+	if (status == kStatus_Success) {
+		adc_control.adc_en = enable;
+		status = i2c_mem_write_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_ADC_CONTROL, adc_control.raw);
+	}
+
+	return status;
 }
 
 // Local function definitions
@@ -387,5 +523,75 @@ battery_charger_read_status_registers(
   }
 
   return status;
+}
+
+static status_t
+battery_charger_read_control_registers(
+  battery_charger_handle_t* handle,
+  charger_control_t* p_charger_control
+  )
+{
+  // Read control registers.
+  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+    REG_CHARGER_CONTROL_1, &p_charger_control->charger_control_1.raw);
+
+  if (status == kStatus_Success) {
+    status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+      REG_CHARGER_CONTROL_3, &p_charger_control->charger_control_3.raw);
+  }
+
+  return status;
+}
+
+static status_t
+battery_charger_read_adc_registers(
+  battery_charger_handle_t* handle,
+  charger_adc_t* p_charger_adc
+  )
+{
+	// Read adc registers.
+	status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+	REG_ADC_CONTROL, &p_charger_adc->adc_control.raw);
+
+	if (status == kStatus_Success) {
+		status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_VBUS_ADC_1, &p_charger_adc->vbus_adc_1.raw);
+	}
+
+	if (status == kStatus_Success) {
+		status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_VBUS_ADC_0, &p_charger_adc->vbus_adc_0.raw);
+	}
+
+	if (status == kStatus_Success) {
+		status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_VBAT_ADC_1, &p_charger_adc->vbat_adc_1.raw);
+	}
+
+	if (status == kStatus_Success) {
+		status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_VBAT_ADC_0, &p_charger_adc->vbat_adc_0.raw);
+	}
+
+	if (status == kStatus_Success) {
+		status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_VCELLTOP_ADC_1, &p_charger_adc->vcelltop_adc_1.raw);
+	}
+
+	if (status == kStatus_Success) {
+		status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_VCELLTOP_ADC_0, &p_charger_adc->vcelltop_adc_0.raw);
+	}
+
+	if (status == kStatus_Success) {
+		status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_VCELLBOT_ADC_1, &p_charger_adc->vcellbot_adc_1.raw);
+	}
+
+	if (status == kStatus_Success) {
+		status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_VCELLBOT_ADC_0, &p_charger_adc->vcellbot_adc_0.raw);
+	}
+	return status;
 }
 

@@ -137,6 +137,20 @@ battery_charger_print_detailed_status(
   battery_charger_handle_t* handle
   );
 
+/** Enable or Disable ADC.
+
+    Enable ADC
+
+    @param handle Handle from battery_charger_init()
+
+    @return kStatus_Success if successful
+ */
+status_t
+battery_charger_set_adc_enable(
+  battery_charger_handle_t* handle,
+  bool enable
+  );
+
 #ifdef __cplusplus
 }
 #endif

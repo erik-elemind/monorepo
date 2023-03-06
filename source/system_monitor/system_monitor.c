@@ -492,19 +492,23 @@ handle_battery_event(void)
 
   switch (battery_status) {
     case BATTERY_CHARGER_STATUS_ON_BATTERY:
+      battery_charger_enable(&g_battery_charger_handle, false);
       app_event_charger_unplugged();
       break;
 
     case BATTERY_CHARGER_STATUS_CHARGING:
+      battery_charger_enable(&g_battery_charger_handle, true);
       app_event_charger_plugged();
       break;
 
     case BATTERY_CHARGER_STATUS_CHARGE_COMPLETE:
+      battery_charger_enable(&g_battery_charger_handle, true);
       app_event_charger_plugged();
       app_event_charge_complete();
       break;
 
     case BATTERY_CHARGER_STATUS_FAULT:
+      battery_charger_enable(&g_battery_charger_handle, true);
       app_event_charger_plugged();
       app_event_charge_fault();
       break;
