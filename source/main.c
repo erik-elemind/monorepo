@@ -95,7 +95,7 @@ StaticTask_t data_log_task_struct;
 #endif
 
 #if (defined(ENABLE_BUTTON_TASK) && (ENABLE_BUTTON_TASK > 0U))
-#define BUTTON_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*1) // 2
+#define BUTTON_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*2)
 #define BUTTON_TASK_PRIORITY 1
 StackType_t button_task_array[ BUTTON_TASK_STACK_SIZE ];
 StaticTask_t button_task_struct;
