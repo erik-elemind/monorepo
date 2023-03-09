@@ -935,48 +935,12 @@ handle_sound_request(ble_event_t *event)
 static void
 handle_sound_command(ble_event_t *event)
 {
-  const char* select_filepath = "S.bgwav.path.select";
-
   g_ble_context.sound = event->user_data[0];
   char cbuf[5] = {0};
   snprintf(cbuf, sizeof(cbuf), "%d", g_ble_context.sound);
   // TODO: standardize the settings file key naming.
   if( 0 != settings_set_string("bgwav.path.select", cbuf)) {
     // TODO: do something in the event of error.
-  }
-  else
-  {
-	audio_bg_fadeout(0);
-	audio_bgwav_stop();
-	audio_set_volume(audio_get_volume());
-	audio_bg_script_volume(0.2);
-	audio_bg_fadein(0);
-
-	// FOLLOWING CODE PULLS FROM COMMAND FUNCTION (audio_bgwav_play_command, PARSE_VAR_RETURN_SETTINGS_VALUE)
-	// TODO: figure out cleaner implementation (scripts? commands? etc)
-
-	bool success = true;
-	char* audio_file = NULL;
-	char parse_var_buf[10] = {0};
-	char settings_bgwav_path[256] = {0};
-	parse_variable_from_string((char *)select_filepath, parse_var_buf, sizeof(parse_var_buf));
-
-	// TODO: Do something with tokens
-	token_t tokens;
-	parse_dot_notation(parse_var_buf, sizeof(parse_var_buf), &tokens);
-
-	int settings_bgwav_select = atoi(parse_var_buf);
-	char settings_bgwav_path_key[20] = {0};
-	snprintf(settings_bgwav_path_key, sizeof(settings_bgwav_path_key), "bgwav.path.%d", settings_bgwav_select);
-	if ( 0 == settings_get_string(settings_bgwav_path_key, settings_bgwav_path, sizeof(settings_bgwav_path)) )
-	{
-	  audio_file = settings_bgwav_path;
-	  audio_bgwav_play(audio_file, true);
-	}
-	else
-	{
-	  LOGE(TAG,"Failed to get path to audio file.");
-	}
   }
 }
 
@@ -1106,9 +1070,59 @@ handle_sound_control_request(ble_event_t *event)
 static void
 handle_sound_control_command(ble_event_t *event)
 {
-	g_ble_context.sound_control = event->user_data[0];
-	// ToDo: Need to start the sound control functionality here
-	LOGV(TAG, "Todo: Implement sound control");
+  g_ble_context.sound_control = event->user_data[0];
+
+  // if sound command is OFF
+  if (g_ble_context.sound_control == 0)
+  {
+    if (g_ble_context.therapy == 1)
+    {
+      // do nothing
+      return;
+    }
+    else
+    {
+      // stop audio
+      audio_bg_fadeout(0);
+      audio_bgwav_stop();
+    }
+  }
+  // if sound command is ON, play audio
+  else
+  {
+    const char* select_filepath = "S.bgwav.path.select";
+    audio_bg_fadeout(0);
+    audio_bgwav_stop();
+    audio_set_volume_ble(audio_get_volume());
+    audio_bg_script_volume(0.2);
+    audio_bg_fadein(0);
+
+    // FOLLOWING CODE PULLS FROM COMMAND FUNCTION (audio_bgwav_play_command, PARSE_VAR_RETURN_SETTINGS_VALUE)
+    // TODO: figure out cleaner implementation (scripts? commands? etc)
+
+    bool success = true;
+    char* audio_file = NULL;
+    char parse_var_buf[10] = {0};
+    char settings_bgwav_path[256] = {0};
+    parse_variable_from_string((char *)select_filepath, parse_var_buf, sizeof(parse_var_buf));
+
+    // TODO: Do something with tokens
+    token_t tokens;
+    parse_dot_notation(parse_var_buf, sizeof(parse_var_buf), &tokens);
+
+    int settings_bgwav_select = atoi(parse_var_buf);
+    char settings_bgwav_path_key[20] = {0};
+    snprintf(settings_bgwav_path_key, sizeof(settings_bgwav_path_key), "bgwav.path.%d", settings_bgwav_select);
+    if ( 0 == settings_get_string(settings_bgwav_path_key, settings_bgwav_path, sizeof(settings_bgwav_path)) )
+    {
+      audio_file = settings_bgwav_path;
+      audio_bgwav_play(audio_file, true);
+    }
+    else
+    {
+      LOGE(TAG,"Failed to get path to audio file.");
+    }
+  }
 }
 
 static void
