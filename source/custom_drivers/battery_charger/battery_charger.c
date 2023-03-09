@@ -108,7 +108,7 @@ static const uint8_t REG_PART_INFORMATION = 0x25;
 
 // Rate to tickle watchdog
 static const int MS_PER_S = 1000;
-static const int RECHARGE_CHECK_MS = (5 * 60 * MS_PER_S);
+static const int RECHARGE_CHECK_MS = (1 * 60 * MS_PER_S);
 
 enum {
   CHRG_STAT_NOT_CHARGING = 0,
@@ -511,7 +511,13 @@ battery_charger_recharge_reset(battery_charger_handle_t* handle)
   status_t status = kStatus_Success;
   battery_charger_status_t battery_charger_status = battery_charger_get_status(handle);
   if (battery_charger_status == BATTERY_CHARGER_STATUS_CHARGE_COMPLETE){
+    // Toggling the CD line multiple times, with delay, to ensure a new charging cycle starts.
     status = battery_charger_enable(handle, false);
+    vTaskDelay(1*MS_PER_S);
+    status = battery_charger_enable(handle, true);
+    vTaskDelay(1*MS_PER_S);
+    status = battery_charger_enable(handle, false);
+    vTaskDelay(1*MS_PER_S);
     status = battery_charger_enable(handle, true);
   }
   return status;
