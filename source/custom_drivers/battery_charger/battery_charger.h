@@ -96,19 +96,6 @@ battery_charger_is_enabled(
   battery_charger_handle_t* handle
   );
 
-/** Disable watchdog timer.
-
-    Turn watchdog timer off to allow debugging without interrupting
-    battery charging.
-
-    @param handle Handle from battery_charger_init()
-
-    @return kStatus_Success if successful
- */
-status_t
-battery_charger_disable_wdog(
-  battery_charger_handle_t* handle
-  );
 
 /** Get charger status.
 

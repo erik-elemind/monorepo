@@ -26,17 +26,6 @@ void bq_charge_disable(int argc, char **argv)
   }
 }
 
-void bq_wdog_disable(int argc, char **argv)
-{
-  status_t status = battery_charger_disable_wdog(&g_battery_charger_handle);
-  if (status == kStatus_Success) {
-    printf("Battery charger watchdog disabled.\n");
-  }
-  else {
-    printf("Error: %ld (0x%lx)\n", status, status);
-  }
-}
-
 void bq_status(int argc, char **argv)
 {
   // Print top-level status from driver

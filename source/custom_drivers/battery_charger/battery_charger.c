@@ -16,7 +16,6 @@
 #include "config.h"
 #include "loglevels.h"
 
-#define CHARGER_STATUS_1_FAULTS 0x70
 #define NTS_STATUS_COLD 0x05
 #define NTS_STATUS_HOT 0x06
 
@@ -36,6 +35,7 @@ typedef struct {
 typedef struct {
   charger_control_1_t charger_control_1;
   charger_control_3_t charger_control_3;
+  current_limit_t current_limit;
 } charger_control_t;
 
 
@@ -54,6 +54,9 @@ typedef struct {
 
 /// BQ25887 I2C address (right-aligned)
 static const uint8_t BQ25887_ADDR = 0x6A;
+
+/// Charger Current Limit register
+static const uint8_t REG_CURRENT_LIMIT = 0x01;
 
 /// Charger Control 1 register
 static const uint8_t REG_CHARGER_CONTROL_1 = 0x05;
@@ -123,6 +126,8 @@ static const char* TAG = "battery_charger";
 
 
 // Local function declarations
+static status_t
+battery_charger_configure(battery_charger_handle_t* handle);
 
 /** Reset all battery charger registers.
 
@@ -206,8 +211,8 @@ battery_charger_init(
     LOGE(TAG, "Error resetting device: %ld", status);
   }
 
-  // Disable WDT
-  battery_charger_disable_wdog(handle);
+  // Configure registers for charger
+  battery_charger_configure(handle);
 
   // Read status registers twice to verify watchdog reset
   charger_status_t charger_status;
@@ -246,19 +251,36 @@ battery_charger_is_enabled(
 }
 
 status_t
-battery_charger_disable_wdog(
+battery_charger_configure(
   battery_charger_handle_t* handle
   )
 {
   charger_control_1_t charger_control_1 = { .raw = 0 };
+  current_limit_t current_limit = { .raw = 0 };
+
+  // Disable watchdog and termination mode
   status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
     REG_CHARGER_CONTROL_1, &charger_control_1.raw);
 
   if (status == kStatus_Success) {
 	  charger_control_1.watchdog = 0x00;
+	  charger_control_1.en_term = 0x00;
     status = i2c_mem_write_byte(handle->i2c_handle, BQ25887_ADDR,
       REG_CHARGER_CONTROL_1, charger_control_1.raw);
   }
+
+  // Disable current limit
+  if (status == kStatus_Success) {
+
+ 	  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+ 			  REG_CURRENT_LIMIT, &current_limit.raw);
+   }
+
+   if (status == kStatus_Success) {
+ 	  current_limit.en_ilim = 0x00;
+     status = i2c_mem_write_byte(handle->i2c_handle, BQ25887_ADDR,
+     		REG_CURRENT_LIMIT, current_limit.raw);
+   }
 
   return status;
 }
@@ -285,7 +307,6 @@ battery_charger_get_status(
         want to charge, but the battery will still charge, just
         slower. */
     if ((charger_status.fault_status.raw != 0) ||
-      ((charger_status.charger_status_1.raw & CHARGER_STATUS_1_FAULTS) != 0) ||
 	  (charger_status.ntc_status.raw == NTS_STATUS_COLD) ||
 	  (charger_status.ntc_status.raw == NTS_STATUS_HOT)) {
       battery_charger_status = BATTERY_CHARGER_STATUS_FAULT;
@@ -378,6 +399,11 @@ battery_charger_print_detailed_status(
       printf("    PFM Mode Disable Control: %d\n", charger_control.charger_control_3.pfm_dis);
   	  printf("    WDT Reset: %d\n", charger_control.charger_control_3.wd_rst);
       printf("    Top off Timer Control: %d\n", charger_control.charger_control_3.topoff_timer);
+
+      printf("  Current Limit (REG 0x01): 0x%x\n", charger_control.current_limit.raw);
+		printf("    Enable HIZ: %d\n", charger_control.current_limit.en_hiz);
+		printf("    Enable ILIM Pin Function: %d\n", charger_control.current_limit.en_ilim);
+		printf("    Fast Charge Current Limit: %d\n", charger_control.current_limit.ichg);
     }
 
    charger_adc_t charger_adc;
@@ -540,6 +566,10 @@ battery_charger_read_control_registers(
       REG_CHARGER_CONTROL_3, &p_charger_control->charger_control_3.raw);
   }
 
+  if (status == kStatus_Success) {
+	status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+			REG_CURRENT_LIMIT, &p_charger_control->current_limit.raw);
+  }
   return status;
 }
 

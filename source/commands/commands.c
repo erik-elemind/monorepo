@@ -361,7 +361,6 @@ const shell_command_t commands[] = {
     { P_ALL, "i2c_batt_write_byte", i2c_batt_write_byte, "Write byte to I2C device on Flexcomm (batt) bus" },
     { P_ALL, "bq_charge_enable", bq_charge_enable, "Enable battery charging on BQ25618 charge controller" },
     { P_ALL, "bq_charge_disable", bq_charge_disable, "Disable battery charging on BQ25618 charge controller" },
-    { P_ALL, "bq_wdog_disable", bq_wdog_disable, "Disable watchdog timer on BQ25618 charge controller" },
     { P_ALL, "bq_status", bq_status, "Get battery charging status from BQ25618 charge controller" },
 	{ P_ALL, "bq_adc_enable", bq_adc_enable, "Set BQ25618 ADC on or off, used to read voltages in bq_status" },
     { P_ALL, "hrm_off", hrm_off, "Turn on heart rate monitor" },

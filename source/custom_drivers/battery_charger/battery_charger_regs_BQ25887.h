@@ -17,6 +17,20 @@
 extern "C" {
 #endif
 
+/// Charger Current Limit Register (REG 0x01) register type
+typedef union {
+  struct {
+    // lsb
+    uint8_t ichg : 6; // r/w
+    bool en_ilim : 1; // r/w
+    bool en_hiz : 1; // r/w
+    // msb
+  };
+  uint8_t raw;
+} current_limit_t;
+static_assert(sizeof(current_limit_t) == sizeof(uint8_t),
+  "Register must be 1 byte");
+
 /// Part Information (REG 0x25) register type
 typedef union {
   struct {
