@@ -108,7 +108,7 @@ static const uint8_t REG_PART_INFORMATION = 0x25;
 
 // Rate to tickle watchdog
 static const int MS_PER_S = 1000;
-static const int WATCHDOG_TICKLE_MS = (20 * MS_PER_S);
+static const int RECHARGE_CHECK_MS = (5 * 60 * MS_PER_S);
 
 enum {
   CHRG_STAT_NOT_CHARGING = 0,
@@ -136,23 +136,24 @@ battery_charger_configure(battery_charger_handle_t* handle);
 static status_t
 battery_charger_reset_device(battery_charger_handle_t* handle);
 
-/** Reset battery charger watchdog.
+/** Restart a charge cycle.
 
-    Required for charging (if watchdog timer is enabled). Extracted
+    Checks the charging status, if CHARGE_COMPLETE this function
+    toggles the CD pin to restart a charging cycle. Extracted
     into its own function so that it can easily be called both from
     initialization code and from timer handler.
 
     @param handle Handle from battery_charger_init()
  */
 static status_t
-battery_charger_reset_watchdog(battery_charger_handle_t* handle);
+battery_charger_recharge_reset(battery_charger_handle_t* handle);
 
-/** Handle watchdog timer.
+/** Handle recharge timer.
 
     @param timer_handle FreeRTOS timer handle from xTimerCreate
  */
 static void
-battery_charger_watchdog_timer(TimerHandle_t timer_handle);
+battery_charger_recharge_timer(TimerHandle_t timer_handle);
 
 /** Read charger status registers.
 
@@ -213,6 +214,20 @@ battery_charger_init(
 
   // Configure registers for charger
   battery_charger_configure(handle);
+  
+  // Create repeating timer to restart charging cycle
+  handle->recharge_timer_handle = xTimerCreateStatic("BATTERY_CHARGER",
+    pdMS_TO_TICKS(RECHARGE_CHECK_MS), pdTRUE, handle,
+    battery_charger_recharge_timer, &(handle->recharge_timer_struct));
+  if (xTimerStart(handle->recharge_timer_handle, 0) == pdFAIL) {
+    LOGE(TAG, "Unable to start recharge timer!");
+  }
+
+  // Restart charging cycle
+  status = battery_charger_recharge_reset(handle);
+  if (status != kStatus_Success) {
+    LOGE(TAG, "Error resetting recharge: %ld", status);
+  }
 
   // Read status registers twice to verify watchdog reset
   charger_status_t charger_status;
@@ -265,6 +280,9 @@ battery_charger_configure(
   if (status == kStatus_Success) {
 	  charger_control_1.watchdog = 0x00;
 	  charger_control_1.en_term = 0x00;
+	  // Use 5 hour fast charge setting so we don't have to
+	  // wait as long to see if a charge cycle restarts.
+	  charger_control_1.chg_timer = 0x00;
     status = i2c_mem_write_byte(handle->i2c_handle, BQ25887_ADDR,
       REG_CHARGER_CONTROL_1, charger_control_1.raw);
   }
@@ -488,38 +506,23 @@ battery_charger_reset_device(battery_charger_handle_t* handle)
 }
 
 static status_t
-battery_charger_reset_watchdog(battery_charger_handle_t* handle)
+battery_charger_recharge_reset(battery_charger_handle_t* handle)
 {
-  charger_control_3_t charger_control_3;
-  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
-    REG_CHARGER_CONTROL_3, &charger_control_3.raw);
-  if (status == kStatus_Success) {
-	  charger_control_3.wd_rst = true;
-    status = i2c_mem_write_byte(handle->i2c_handle, BQ25887_ADDR,
-    		REG_CHARGER_CONTROL_3, charger_control_3.raw);
-    if (status == kStatus_Success) {
-      /// @todo BH - Can't log from SW timer, apparently?
-      //LOGV(TAG, "Watchdog timer successfully reset");
-    }
-    else {
-      /*LOGE(TAG, "Watchdog: Error writing Charger Control 0 register: %ld",
-        status);*/
-    }
+  status_t status = kStatus_Success;
+  battery_charger_status_t battery_charger_status = battery_charger_get_status(handle);
+  if (battery_charger_status == BATTERY_CHARGER_STATUS_CHARGE_COMPLETE){
+    status = battery_charger_enable(handle, false);
+    status = battery_charger_enable(handle, true);
   }
-  else {
-    /*LOGE(TAG, "Watchdog: Error reading Charger Control 0 register: %ld",
-      status);*/
-  }
-
   return status;
 }
 
 static void
-battery_charger_watchdog_timer(TimerHandle_t timer_handle)
+battery_charger_recharge_timer(TimerHandle_t timer_handle)
 {
   battery_charger_handle_t* handle =
     (battery_charger_handle_t*)pvTimerGetTimerID(timer_handle);
-  battery_charger_reset_watchdog(handle);
+  battery_charger_recharge_reset(handle);
 }
 
 static status_t

@@ -34,8 +34,8 @@ typedef struct {
   uint8_t charge_enable_pin;
   uint8_t status_port;
   uint8_t status_pin;
-  TimerHandle_t watchdog_timer_handle;
-  StaticTimer_t watchdog_timer_struct;
+  TimerHandle_t recharge_timer_handle;
+  StaticTimer_t recharge_timer_struct;
 } battery_charger_handle_t;
 
 /// Battery charger status
