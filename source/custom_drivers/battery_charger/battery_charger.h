@@ -4,9 +4,9 @@
  * Copyright (C) 2020 Elemind Technologies, Inc.
  *
  * Created: June, 2020
- * Author:  Bradey Honsinger
+ * Author:  Bradey Honsinger, Tyler Gage, David Wang
  *
- * Description: BQ25618 Battery Charger driver.
+ * Description: BQ25887 Battery Charger driver.
  *
  * Battery Charger driver. Handles I2C communication, charge enable
  * output, and status input, as well as interrupt input.
@@ -49,8 +49,8 @@ typedef enum {
 
 /** Initialize battery charger driver.
 
-    Sets up GPIOs and BQ25618 registers for the Morpheus board, and
-    creates timer to tickle BQ25618 watchdog.
+    Sets up GPIOs and BQ25887 registers for the Morpheus board, and
+    creates a timer to restart the charging cycle.
 
     Note that we don't provide an I2C address here, since address is
     not configurable for this chip.

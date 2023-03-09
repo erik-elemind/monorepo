@@ -4,9 +4,9 @@
  * Copyright (C) 2020 Elemind Technologies, Inc.
  *
  * Created: June, 2020
- * Author:  Bradey Honsinger
+ * Author:  Bradey Honsinger, Tyler Gage, David Wang
  *
- * Description: BQ25618 Battery Charger driver implementation.
+ * Description: BQ25887 Battery Charger driver implementation.
  */
 #include "battery_charger.h"
 #include "battery_charger_regs_BQ25887.h"
@@ -204,7 +204,7 @@ battery_charger_init(
   GPIO_PinInit(GPIO, handle->status_port, handle->status_pin,
       &(gpio_pin_config_t){kGPIO_DigitalInput, 0});
 
-  /* Reset device. Since the BQ25618 is powered as long as the
+  /* Reset device. Since the BQ25887 is powered as long as the
      battery has some charge, the registers will never get reset in
      normal operation unless we explicitly reset the device here. */
   status_t status = battery_charger_reset_device(handle);
