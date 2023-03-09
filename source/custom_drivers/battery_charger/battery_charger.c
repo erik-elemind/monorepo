@@ -4,9 +4,9 @@
  * Copyright (C) 2020 Elemind Technologies, Inc.
  *
  * Created: June, 2020
- * Author:  Bradey Honsinger
+ * Author:  Bradey Honsinger, Tyler Gage, David Wang
  *
- * Description: BQ25618 Battery Charger driver implementation.
+ * Description: BQ25887 Battery Charger driver implementation.
  */
 #include "battery_charger.h"
 #include "battery_charger_regs_BQ25887.h"
@@ -16,7 +16,6 @@
 #include "config.h"
 #include "loglevels.h"
 
-#define CHARGER_STATUS_1_FAULTS 0x70
 #define NTS_STATUS_COLD 0x05
 #define NTS_STATUS_HOT 0x06
 
@@ -33,8 +32,34 @@ typedef struct {
   fault_status_t fault_status;
 } charger_status_t;
 
-/// BQ25618 I2C address (right-aligned)
+typedef struct {
+  charger_control_1_t charger_control_1;
+  charger_control_3_t charger_control_3;
+  current_limit_t current_limit;
+} charger_control_t;
+
+
+typedef struct {
+  adc_control_t adc_control;
+  vbus_adc_1_t vbus_adc_1;
+  vbus_adc_0_t vbus_adc_0;
+  vbat_adc_1_t vbat_adc_1;
+  vbat_adc_0_t vbat_adc_0;
+  vcelltop_adc_1_t vcelltop_adc_1;
+  vcelltop_adc_0_t vcelltop_adc_0;
+  vcellbot_adc_1_t vcellbot_adc_1;
+  vcellbot_adc_0_t vcellbot_adc_0;
+} charger_adc_t;
+
+
+/// BQ25887 I2C address (right-aligned)
 static const uint8_t BQ25887_ADDR = 0x6A;
+
+/// Charger Current Limit register
+static const uint8_t REG_CURRENT_LIMIT = 0x01;
+
+/// Charger Control 1 register
+static const uint8_t REG_CHARGER_CONTROL_1 = 0x05;
 
 /// Charger Control 3 register
 static const uint8_t REG_CHARGER_CONTROL_3 = 0x07;
@@ -51,12 +76,39 @@ static const uint8_t REG_NTC_STATUS = 0x0D;
 /// Fault Status register
 static const uint8_t REG_FAULT_STATUS = 0x0D;
 
+/// ADC Control register
+static const uint8_t REG_ADC_CONTROL = 0x15;
+
+/// VBUS ADC 1 register
+static const uint8_t REG_VBUS_ADC_1 = 0x1B;
+
+/// VBUS ADC 0 register
+static const uint8_t REG_VBUS_ADC_0 = 0x1C;
+
+/// VBAT ADC 1 register
+static const uint8_t REG_VBAT_ADC_1 = 0x1D;
+
+/// VBAT ADC 0 register
+static const uint8_t REG_VBAT_ADC_0 = 0x1E;
+
+/// VCELLTOP ADC 1 register
+static const uint8_t REG_VCELLTOP_ADC_1 = 0x1F;
+
+/// VCELLTOP ADC 0 register
+static const uint8_t REG_VCELLTOP_ADC_0 = 0x20;
+
+/// VCELLBOT ADC 1 register
+static const uint8_t REG_VCELLBOT_ADC_1 = 0x26;
+
+/// VCELLBOT ADC 0 register
+static const uint8_t REG_VCELLBOT_ADC_0 = 0x27;
+
 /// Part Information register
 static const uint8_t REG_PART_INFORMATION = 0x25;
 
 // Rate to tickle watchdog
 static const int MS_PER_S = 1000;
-static const int WATCHDOG_TICKLE_MS = (20 * MS_PER_S);
+static const int RECHARGE_CHECK_MS = (1 * 60 * MS_PER_S);
 
 enum {
   CHRG_STAT_NOT_CHARGING = 0,
@@ -74,6 +126,8 @@ static const char* TAG = "battery_charger";
 
 
 // Local function declarations
+static status_t
+battery_charger_configure(battery_charger_handle_t* handle);
 
 /** Reset all battery charger registers.
 
@@ -82,23 +136,24 @@ static const char* TAG = "battery_charger";
 static status_t
 battery_charger_reset_device(battery_charger_handle_t* handle);
 
-/** Reset battery charger watchdog.
+/** Restart a charge cycle.
 
-    Required for charging (if watchdog timer is enabled). Extracted
+    Checks the charging status, if CHARGE_COMPLETE this function
+    toggles the CD pin to restart a charging cycle. Extracted
     into its own function so that it can easily be called both from
     initialization code and from timer handler.
 
     @param handle Handle from battery_charger_init()
  */
 static status_t
-battery_charger_reset_watchdog(battery_charger_handle_t* handle);
+battery_charger_recharge_reset(battery_charger_handle_t* handle);
 
-/** Handle watchdog timer.
+/** Handle recharge timer.
 
     @param timer_handle FreeRTOS timer handle from xTimerCreate
  */
 static void
-battery_charger_watchdog_timer(TimerHandle_t timer_handle);
+battery_charger_recharge_timer(TimerHandle_t timer_handle);
 
 /** Read charger status registers.
 
@@ -110,6 +165,19 @@ battery_charger_read_status_registers(
   battery_charger_handle_t* handle,
   charger_status_t* p_charger_status
   );
+
+static status_t
+battery_charger_read_control_registers(
+  battery_charger_handle_t* handle,
+  charger_control_t* p_charger_control
+  );
+
+static status_t
+battery_charger_read_adc_registers(
+  battery_charger_handle_t* handle,
+  charger_adc_t* p_charger_adc
+  );
+
 
 // Global function definitions
 
@@ -136,7 +204,7 @@ battery_charger_init(
   GPIO_PinInit(GPIO, handle->status_port, handle->status_pin,
       &(gpio_pin_config_t){kGPIO_DigitalInput, 0});
 
-  /* Reset device. Since the BQ25618 is powered as long as the
+  /* Reset device. Since the BQ25887 is powered as long as the
      battery has some charge, the registers will never get reset in
      normal operation unless we explicitly reset the device here. */
   status_t status = battery_charger_reset_device(handle);
@@ -144,18 +212,21 @@ battery_charger_init(
     LOGE(TAG, "Error resetting device: %ld", status);
   }
 
-  // Create repeating timer to tickle watchdog
-  handle->watchdog_timer_handle = xTimerCreateStatic("BATTERY_CHARGER",
-    pdMS_TO_TICKS(WATCHDOG_TICKLE_MS), pdTRUE, handle,
-    battery_charger_watchdog_timer, &(handle->watchdog_timer_struct));
-  if (xTimerStart(handle->watchdog_timer_handle, 0) == pdFAIL) {
-    LOGE(TAG, "Unable to start watchdog timer!");
+  // Configure registers for charger
+  battery_charger_configure(handle);
+  
+  // Create repeating timer to restart charging cycle
+  handle->recharge_timer_handle = xTimerCreateStatic("BATTERY_CHARGER",
+    pdMS_TO_TICKS(RECHARGE_CHECK_MS), pdTRUE, handle,
+    battery_charger_recharge_timer, &(handle->recharge_timer_struct));
+  if (xTimerStart(handle->recharge_timer_handle, 0) == pdFAIL) {
+    LOGE(TAG, "Unable to start recharge timer!");
   }
 
-  // Tickle watchdog now
-  status = battery_charger_reset_watchdog(handle);
+  // Restart charging cycle
+  status = battery_charger_recharge_reset(handle);
   if (status != kStatus_Success) {
-    LOGE(TAG, "Error resetting watchdog: %ld", status);
+    LOGE(TAG, "Error resetting recharge: %ld", status);
   }
 
   // Read status registers twice to verify watchdog reset
@@ -195,19 +266,39 @@ battery_charger_is_enabled(
 }
 
 status_t
-battery_charger_disable_wdog(
+battery_charger_configure(
   battery_charger_handle_t* handle
   )
 {
-  charger_control_3_t charger_control_3 = { .raw = 0 };
+  charger_control_1_t charger_control_1 = { .raw = 0 };
+  current_limit_t current_limit = { .raw = 0 };
+
+  // Disable watchdog and termination mode
   status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
-    REG_CHARGER_CONTROL_3, &charger_control_3.raw);
+    REG_CHARGER_CONTROL_1, &charger_control_1.raw);
 
   if (status == kStatus_Success) {
-	  charger_control_3.wd_rst = 0x0;
+	  charger_control_1.watchdog = 0x00;
+	  charger_control_1.en_term = 0x00;
+	  // Use 5 hour fast charge setting so we don't have to
+	  // wait as long to see if a charge cycle restarts.
+	  charger_control_1.chg_timer = 0x00;
     status = i2c_mem_write_byte(handle->i2c_handle, BQ25887_ADDR,
-      REG_CHARGER_CONTROL_3, charger_control_3.raw);
+      REG_CHARGER_CONTROL_1, charger_control_1.raw);
   }
+
+  // Disable current limit
+  if (status == kStatus_Success) {
+
+ 	  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+ 			  REG_CURRENT_LIMIT, &current_limit.raw);
+   }
+
+   if (status == kStatus_Success) {
+ 	  current_limit.en_ilim = 0x00;
+     status = i2c_mem_write_byte(handle->i2c_handle, BQ25887_ADDR,
+     		REG_CURRENT_LIMIT, current_limit.raw);
+   }
 
   return status;
 }
@@ -234,7 +325,6 @@ battery_charger_get_status(
         want to charge, but the battery will still charge, just
         slower. */
     if ((charger_status.fault_status.raw != 0) ||
-      ((charger_status.charger_status_1.raw & CHARGER_STATUS_1_FAULTS) != 0) ||
 	  (charger_status.ntc_status.raw == NTS_STATUS_COLD) ||
 	  (charger_status.ntc_status.raw == NTS_STATUS_HOT)) {
       battery_charger_status = BATTERY_CHARGER_STATUS_FAULT;
@@ -311,7 +401,97 @@ battery_charger_print_detailed_status(
     printf("    vbus_ovp_stat: %d\n", charger_status.fault_status.vbus_ovp_stat);
   }
 
+  charger_control_t charger_control;
+    status = battery_charger_read_control_registers(handle,
+      &charger_control);
+    if (status == kStatus_Success) {
+      printf("  Charger Control 1 (REG 0x05): 0x%x\n", charger_control.charger_control_1.raw);
+      printf("    Termination Control: %d\n", charger_control.charger_control_1.en_term);
+      printf("    STAT Pin Disable: %d\n", charger_control.charger_control_1.stat_dis);
+      printf("    WDT Settings: %d\n", charger_control.charger_control_1.watchdog);
+      printf("    Charging Safety Timer Enable: %d\n", charger_control.charger_control_1.en_timer);
+      printf("    Fast Charge Timer Settings: %d\n", charger_control.charger_control_1.chg_timer);
+      printf("    Safety Timer during DPM/TREG: %d\n", charger_control.charger_control_1.tmr2x_en);
+
+      printf("  Charger Control 3 (REG 0x07): 0x%x\n",charger_control.charger_control_3.raw);
+      printf("    PFM Mode Disable Control: %d\n", charger_control.charger_control_3.pfm_dis);
+  	  printf("    WDT Reset: %d\n", charger_control.charger_control_3.wd_rst);
+      printf("    Top off Timer Control: %d\n", charger_control.charger_control_3.topoff_timer);
+
+      printf("  Current Limit (REG 0x01): 0x%x\n", charger_control.current_limit.raw);
+		printf("    Enable HIZ: %d\n", charger_control.current_limit.en_hiz);
+		printf("    Enable ILIM Pin Function: %d\n", charger_control.current_limit.en_ilim);
+		printf("    Fast Charge Current Limit: %d\n", charger_control.current_limit.ichg);
+    }
+
+   charger_adc_t charger_adc;
+   status = battery_charger_read_adc_registers(handle,
+         &charger_adc);
+
+   if (status == kStatus_Success) {
+	   int16_t v_print=0;
+
+        printf("  ADC Control (REG 0x15): 0x%x\n", charger_adc.adc_control.raw);
+        printf("    ADC Enable: %d\n", charger_adc.adc_control.adc_en);
+        printf("    ADC Rate: %d\n", charger_adc.adc_control.adc_rate);
+        printf("    ADC Sample: %d\n", charger_adc.adc_control.adc_sample);
+
+        printf("  VBUS ADC 1 (REG 0x1B): 0x%x\n", charger_adc.vbus_adc_1.raw);
+        printf("  VBUS ADC 0 (REG 0x1C): 0x%x\n", charger_adc.vbus_adc_0.raw);
+
+        printf("  VBAT ADC 1 (REG 0x1D): 0x%x\n", charger_adc.vbat_adc_1.raw);
+		printf("  VBAT ADC 0 (REG 0x1E): 0x%x\n", charger_adc.vbat_adc_0.raw);
+
+		printf("  VCELLTOP ADC 1 (REG 0x1F): 0x%x\n", charger_adc.vcelltop_adc_1.raw);
+		printf("  VCELLTOP ADC 0 (REG 0x20): 0x%x\n", charger_adc.vcelltop_adc_0.raw);
+
+		printf("  VCELLBOT ADC 1 (REG 0x1F): 0x%x\n", charger_adc.vcellbot_adc_1.raw);
+		printf("  VCELLBOT ADC 0 (REG 0x20): 0x%x\n", charger_adc.vcellbot_adc_0.raw);
+
+        v_print |= (charger_adc.vbus_adc_1.raw << 8);
+        v_print |= (charger_adc.vbus_adc_0.raw);
+        printf("VBUS = %d mV\n", v_print);
+
+        v_print=0;
+
+        v_print |= (charger_adc.vbat_adc_1.raw << 8);
+		v_print |= (charger_adc.vbat_adc_0.raw);
+		printf("VBAT = %d mV\n", v_print);
+
+		v_print=0;
+
+		v_print |= (charger_adc.vcelltop_adc_1.raw << 8);
+		v_print |= (charger_adc.vcelltop_adc_0.raw);
+		printf("VCELLTOP = %d mV\n", v_print);
+
+		v_print=0;
+
+		v_print |= (charger_adc.vcellbot_adc_1.raw << 8);
+		v_print |= (charger_adc.vcellbot_adc_0.raw);
+		printf("VCELLBOT = %d mV\n", v_print);
+
+      }
+
   return status;
+}
+
+status_t
+battery_charger_set_adc_enable(
+  battery_charger_handle_t* handle,
+  bool enable
+  )
+{
+	adc_control_t adc_control = { .raw = 0 };
+	status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+	REG_ADC_CONTROL, &adc_control.raw);
+
+	if (status == kStatus_Success) {
+		adc_control.adc_en = enable;
+		status = i2c_mem_write_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_ADC_CONTROL, adc_control.raw);
+	}
+
+	return status;
 }
 
 // Local function definitions
@@ -326,38 +506,29 @@ battery_charger_reset_device(battery_charger_handle_t* handle)
 }
 
 static status_t
-battery_charger_reset_watchdog(battery_charger_handle_t* handle)
+battery_charger_recharge_reset(battery_charger_handle_t* handle)
 {
-  charger_control_3_t charger_control_3;
-  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
-    REG_CHARGER_CONTROL_3, &charger_control_3.raw);
-  if (status == kStatus_Success) {
-	  charger_control_3.wd_rst = true;
-    status = i2c_mem_write_byte(handle->i2c_handle, BQ25887_ADDR,
-    		REG_CHARGER_CONTROL_3, charger_control_3.raw);
-    if (status == kStatus_Success) {
-      /// @todo BH - Can't log from SW timer, apparently?
-      //LOGV(TAG, "Watchdog timer successfully reset");
-    }
-    else {
-      /*LOGE(TAG, "Watchdog: Error writing Charger Control 0 register: %ld",
-        status);*/
-    }
+  status_t status = kStatus_Success;
+  battery_charger_status_t battery_charger_status = battery_charger_get_status(handle);
+  if (battery_charger_status == BATTERY_CHARGER_STATUS_CHARGE_COMPLETE){
+    // Toggling the CD line multiple times, with delay, to ensure a new charging cycle starts.
+    status = battery_charger_enable(handle, false);
+    vTaskDelay(1*MS_PER_S);
+    status = battery_charger_enable(handle, true);
+    vTaskDelay(1*MS_PER_S);
+    status = battery_charger_enable(handle, false);
+    vTaskDelay(1*MS_PER_S);
+    status = battery_charger_enable(handle, true);
   }
-  else {
-    /*LOGE(TAG, "Watchdog: Error reading Charger Control 0 register: %ld",
-      status);*/
-  }
-
   return status;
 }
 
 static void
-battery_charger_watchdog_timer(TimerHandle_t timer_handle)
+battery_charger_recharge_timer(TimerHandle_t timer_handle)
 {
   battery_charger_handle_t* handle =
     (battery_charger_handle_t*)pvTimerGetTimerID(timer_handle);
-  battery_charger_reset_watchdog(handle);
+  battery_charger_recharge_reset(handle);
 }
 
 static status_t
@@ -387,5 +558,79 @@ battery_charger_read_status_registers(
   }
 
   return status;
+}
+
+static status_t
+battery_charger_read_control_registers(
+  battery_charger_handle_t* handle,
+  charger_control_t* p_charger_control
+  )
+{
+  // Read control registers.
+  status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+    REG_CHARGER_CONTROL_1, &p_charger_control->charger_control_1.raw);
+
+  if (status == kStatus_Success) {
+    status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+      REG_CHARGER_CONTROL_3, &p_charger_control->charger_control_3.raw);
+  }
+
+  if (status == kStatus_Success) {
+	status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+			REG_CURRENT_LIMIT, &p_charger_control->current_limit.raw);
+  }
+  return status;
+}
+
+static status_t
+battery_charger_read_adc_registers(
+  battery_charger_handle_t* handle,
+  charger_adc_t* p_charger_adc
+  )
+{
+	// Read adc registers.
+	status_t status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+	REG_ADC_CONTROL, &p_charger_adc->adc_control.raw);
+
+	if (status == kStatus_Success) {
+		status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_VBUS_ADC_1, &p_charger_adc->vbus_adc_1.raw);
+	}
+
+	if (status == kStatus_Success) {
+		status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_VBUS_ADC_0, &p_charger_adc->vbus_adc_0.raw);
+	}
+
+	if (status == kStatus_Success) {
+		status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_VBAT_ADC_1, &p_charger_adc->vbat_adc_1.raw);
+	}
+
+	if (status == kStatus_Success) {
+		status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_VBAT_ADC_0, &p_charger_adc->vbat_adc_0.raw);
+	}
+
+	if (status == kStatus_Success) {
+		status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_VCELLTOP_ADC_1, &p_charger_adc->vcelltop_adc_1.raw);
+	}
+
+	if (status == kStatus_Success) {
+		status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_VCELLTOP_ADC_0, &p_charger_adc->vcelltop_adc_0.raw);
+	}
+
+	if (status == kStatus_Success) {
+		status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_VCELLBOT_ADC_1, &p_charger_adc->vcellbot_adc_1.raw);
+	}
+
+	if (status == kStatus_Success) {
+		status = i2c_mem_read_byte(handle->i2c_handle, BQ25887_ADDR,
+				REG_VCELLBOT_ADC_0, &p_charger_adc->vcellbot_adc_0.raw);
+	}
+	return status;
 }
 

@@ -4,9 +4,9 @@
  * Copyright (C) 2020 Elemind Technologies, Inc.
  *
  * Created: June, 2020
- * Author:  Bradey Honsinger
+ * Author:  Bradey Honsinger, Tyler Gage, David Wang
  *
- * Description: BQ25618 Battery Charger driver.
+ * Description: BQ25887 Battery Charger driver.
  *
  * Battery Charger driver. Handles I2C communication, charge enable
  * output, and status input, as well as interrupt input.
@@ -34,8 +34,8 @@ typedef struct {
   uint8_t charge_enable_pin;
   uint8_t status_port;
   uint8_t status_pin;
-  TimerHandle_t watchdog_timer_handle;
-  StaticTimer_t watchdog_timer_struct;
+  TimerHandle_t recharge_timer_handle;
+  StaticTimer_t recharge_timer_struct;
 } battery_charger_handle_t;
 
 /// Battery charger status
@@ -49,8 +49,8 @@ typedef enum {
 
 /** Initialize battery charger driver.
 
-    Sets up GPIOs and BQ25618 registers for the Morpheus board, and
-    creates timer to tickle BQ25618 watchdog.
+    Sets up GPIOs and BQ25887 registers for the Morpheus board, and
+    creates a timer to restart the charging cycle.
 
     Note that we don't provide an I2C address here, since address is
     not configurable for this chip.
@@ -96,19 +96,6 @@ battery_charger_is_enabled(
   battery_charger_handle_t* handle
   );
 
-/** Disable watchdog timer.
-
-    Turn watchdog timer off to allow debugging without interrupting
-    battery charging.
-
-    @param handle Handle from battery_charger_init()
-
-    @return kStatus_Success if successful
- */
-status_t
-battery_charger_disable_wdog(
-  battery_charger_handle_t* handle
-  );
 
 /** Get charger status.
 
@@ -135,6 +122,20 @@ battery_charger_get_status(
 status_t
 battery_charger_print_detailed_status(
   battery_charger_handle_t* handle
+  );
+
+/** Enable or Disable ADC.
+
+    Enable ADC
+
+    @param handle Handle from battery_charger_init()
+
+    @return kStatus_Success if successful
+ */
+status_t
+battery_charger_set_adc_enable(
+  battery_charger_handle_t* handle,
+  bool enable
   );
 
 #ifdef __cplusplus
