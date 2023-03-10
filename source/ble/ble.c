@@ -433,7 +433,7 @@ ble_therapy_request(void)
 void
 ble_therapy_command(uint8_t therapy)
 {
-  LOGV("ble.c","THERAPY: %d\n\r",therapy);
+  LOGV(TAG,"THERAPY: %d",therapy);
 
   ble_event_t event = { .type = BLE_EVENT_THERAPY_COMMAND,
     .user_data = {therapy} };
