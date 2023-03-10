@@ -26,7 +26,6 @@ typedef enum
 
 typedef enum therapy_type_t{
   THERAPY_TYPE_NONE = 0,
-  THERAPY_TYPE_BASELINE,
   THERAPY_TYPE_THERAPY,
 }therapy_type_t;
 

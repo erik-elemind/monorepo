@@ -391,6 +391,7 @@ interpreter_event_start_therapy(therapy_type_t therapy_type)
   index = str_append2(therapy_fname, index, ".txt"); // directory
 
   LOGV(TAG, "Starting therapy script: %s", therapy_fname);
+  ble_therapy_update(THERAPY_TYPE_THERAPY);
 
   // TODO: somehow start the script, given only a therapy number
   interpreter_event_start_script((char*)therapy_fname);
