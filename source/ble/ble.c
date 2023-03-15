@@ -20,7 +20,7 @@
 
 #include "interpreter.h"
 #include "settings.h"
-#include "app_settings.h"
+#include "fs_commands.h"
 
 #if (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
 
@@ -29,6 +29,13 @@
 static const char *TAG = "ble";	// Logging prefix for this module
 
 #define   BLE_POWER_OFF_DELAY_MS 50
+
+typedef enum
+{
+	FACTORY_RESET_IDLE		= 0,
+	FACTORY_RESET_ACTIVE	= 1,
+	FACTORY_RESET_ERROR		= 2,
+} factory_reset_t;
 
 //
 // Task events:
@@ -128,7 +135,7 @@ typedef struct
   uint8_t charger_status;
   uint8_t app_settings;
   uint8_t memory_level;
-  uint8_t factory_reset;
+  factory_reset_t factory_reset;
   uint8_t sound_control;
   uint8_t addr[ADDR_NUM];
 } ble_context_t;
@@ -152,7 +159,7 @@ static ble_context_t g_ble_context = {
   .charger_status = 0,
   .app_settings = 0,
   .memory_level = 0,
-  .factory_reset = 0,
+  .factory_reset = FACTORY_RESET_IDLE,
   .sound_control = 0,
   .addr = {0,0,0,0,0,0},
 };
@@ -1007,8 +1014,7 @@ handle_settings_command(ble_event_t *event)
 	g_ble_context.app_settings = event->user_data[0];
 
 	// Update settings.ini file
-	if(save_app_settings(g_ble_context.app_settings) != APP_SETTINGS_RESULT_SUCCESS)
-	{
+	if(write_app_settings(g_ble_context.app_settings) != SETTINGS_RESULT_SUCCESS)	{
 		LOGE(TAG, "Failed to write app settings to settings.ini");
 	}
 }
@@ -1019,7 +1025,7 @@ handle_settings_update(ble_event_t *event)
 	g_ble_context.app_settings = event->user_data[0];
 
 	// Update settings.ini file
-	if(save_app_settings(g_ble_context.app_settings) != APP_SETTINGS_RESULT_SUCCESS)
+	if(write_app_settings(g_ble_context.app_settings) != SETTINGS_RESULT_SUCCESS)
 	{
 		LOGE(TAG, "Failed to write app settings to settings.ini");
 	}
@@ -1049,9 +1055,125 @@ handle_factory_reset_request(ble_event_t *event)
 static void
 handle_factory_reset_command(ble_event_t *event)
 {
+	FRESULT result;
+	DIR dir;
+	FILINFO finfo;
+	char buf[MAX_PATH_LENGTH+2];
+	const char *datalog_name = "/datalogs";
+	const char *usermetrics_name = "/user_metrics";
+	char *sub;
+	int ret = 0;
+
+	LOGV(TAG, "Handle Factory Reset");
+
 	g_ble_context.factory_reset = event->user_data[0];
-	// ToDo: Need to start the factory reset functionality here
-	LOGV(TAG, "Todo: Implement factory reset");
+
+
+	if(g_ble_context.factory_reset == FACTORY_RESET_ACTIVE)
+	{
+		// Remove raw data logs
+		result = f_opendir(&dir, datalog_name);
+		if (FR_OK != result) {
+			LOGW(TAG, "Can't open '%s' directory", datalog_name);
+		}
+		else {
+			result = f_readdir(&dir, &finfo);
+			// FatFS indicates end of directory with a null name
+			while (FR_OK == result && 0 != finfo.fname[0]) {
+				strncpy(buf, datalog_name, sizeof(buf)-1);
+				buf[sizeof(buf)-1] = '\0';
+				sub = buf;
+				if (datalog_name[strlen(datalog_name)-1] != '/') {
+					sub = strcat(buf, "/");
+				}
+				sub = strcat(sub, finfo.fname);
+				ret = f_unlink(sub);
+				if (ret == 0) {
+					LOGV(TAG, "Delete '%s' succ.", sub);
+				}
+				else {
+					LOGE(TAG, "Delete '%s' fail!", sub);
+				}
+				// move to next entry
+				result = f_readdir(&dir, &finfo);
+			}
+
+			result = f_closedir(&dir);
+
+			if(result != FR_OK)
+			{
+				LOGE(TAG, "Failed to delete raw data log files");
+				ble_factory_reset_update(FACTORY_RESET_ERROR);
+				return;
+			}
+		}
+
+		// Remove user_metric files
+		result = f_opendir(&dir, usermetrics_name);
+		if (FR_OK != result) {
+			LOGW(TAG, "Can't open '%s' directory", usermetrics_name);
+		}
+		else {
+			result = f_readdir(&dir, &finfo);
+			// FatFS indicates end of directory with a null name
+			while (FR_OK == result && 0 != finfo.fname[0]) {
+				strncpy(buf, usermetrics_name, sizeof(buf)-1);
+				buf[sizeof(buf)-1] = '\0';
+				sub = buf;
+				if (usermetrics_name[strlen(usermetrics_name)-1] != '/') {
+					sub = strcat(buf, "/");
+				}
+				sub = strcat(sub, finfo.fname);
+				ret = f_unlink(sub);
+				if (ret == 0) {
+					LOGV(TAG, "Delete '%s' succ.", sub);
+				}
+				else {
+					LOGE(TAG, "Delete '%s' fail!", sub);
+				}
+				// move to next entry
+				result = f_readdir(&dir, &finfo);
+			}
+
+			result = f_closedir(&dir);
+
+			if(result != FR_OK)
+			{
+				LOGE(TAG, "Failed to delete user metric files");
+				ble_factory_reset_update(FACTORY_RESET_ERROR);
+				return;
+			}
+		}
+
+
+		// Reset settings to default values
+		if(reset_default_settings() == SETTINGS_RESULT_SUCCESS)
+		{
+			uint8_t app_settings = 0;
+			LOGV(TAG, "Settings reset");
+
+			// Update app settings characteristic
+			if(read_app_settings(&app_settings) == SETTINGS_RESULT_SUCCESS)
+			{
+				g_ble_context.app_settings = app_settings;
+				ble_settings_update(g_ble_context.app_settings);
+			}
+
+			// Update factory setting characteristic
+			ble_factory_reset_update(FACTORY_RESET_IDLE);
+		}
+		else
+		{
+			LOGE(TAG, "Failed settings reset");
+			ble_factory_reset_update(FACTORY_RESET_ERROR);
+			return;
+		}
+
+	}
+	else
+	{
+		LOGV(TAG,"Set Factory Reset to: %d", g_ble_context.factory_reset);
+	}
 }
 
 static void
@@ -1407,7 +1529,7 @@ task_init()
   set_state(BLE_STATE_STANDBY);
 
   // Read off last saved settings from the settings.ini file
-  if(read_app_settings(&g_ble_context.app_settings) != APP_SETTINGS_RESULT_SUCCESS)
+  if(read_app_settings(&g_ble_context.app_settings) != SETTINGS_RESULT_SUCCESS)
   {
 	  LOGE(TAG, "Error reading app settings from settings.ini");
   }

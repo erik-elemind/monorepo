@@ -11,6 +11,11 @@
 // Specify the default numeric value to return
 #define SETTINGS_DEF_VALUE  INT32_MAX
 
+typedef enum {
+	SETTINGS_RESULT_SUCCESS,
+	SETTINGS_RESULT_ERROR,
+}settings_ret_t;
+
 // Read a boolean value.
 // Returns 0 for success, non-zero for failure.
 static inline int settings_get_bool(const char* key, bool* value) {
@@ -92,3 +97,12 @@ static inline int settings_delete(const char* key) {
   // Delete the entry by setting a NULL string
   return ini_puts(SETTINGS_SECTION, key, NULL, SETTINGS_FILE) ? 0 : -1;
 }
+
+// Set all the settings to their default values
+settings_ret_t reset_default_settings(void);
+
+// Saves app settings to external settings.ini file
+settings_ret_t write_app_settings(uint8_t app_settings);
+
+// Reads app settings from external settings.ini file
+settings_ret_t read_app_settings(uint8_t* app_settings);
