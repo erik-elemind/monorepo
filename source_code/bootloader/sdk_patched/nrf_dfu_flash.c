@@ -127,20 +127,21 @@ ret_code_t nrf_dfu_flash_store(uint32_t                   dest,
 {
     ret_code_t rc;
 
-    NRF_LOG_INFO("nrf_fstorage_write(addr=%p, src=%p, len=%d bytes), queue usage: %d",
-                    dest, p_src, len, m_flash_operations_pending);
-
     if (EXT_STORAGE_IS_ADDR(dest))
     {
         //lint -save -e611 (Suspicious cast)
         rc = ext_fstorage_write(dest, p_src, len, (void *)callback);
         //lint -restore
+        NRF_LOG_INFO("ext_fstorage_write(addr=%p, src=%p, len=%d bytes), queue usage: %d",
+                        dest, p_src, len, m_flash_operations_pending);        
     }
     else
     {
         //lint -save -e611 (Suspicious cast)
         rc = nrf_fstorage_write(&m_fs, dest, p_src, len, (void *)callback);
         //lint -restore
+        NRF_LOG_INFO("nrf_fstorage_write(addr=%p, src=%p, len=%d bytes), queue usage: %d",
+                        dest, p_src, len, m_flash_operations_pending);        
     }
 
     if ((NRF_LOG_ENABLED) && (rc == NRF_SUCCESS))

@@ -15,9 +15,9 @@
 #include "app_util.h" // for STATIC_ASSERT()
 
 // Define the page size in bytes.
-#define SPI_FLASH_PAGE_LEN      (256)
+#define SPI_FLASH_PAGE_LEN      (2048)
 // Define the sector size in bytes. This is the smallest erasable chunk.
-#define SPI_FLASH_SECTOR_LEN    (4*1024)
+#define SPI_FLASH_SECTOR_LEN    (64*SPI_FLASH_PAGE_LEN)
 
 // The following timeouts can be used to scale timeouts for different operations.
 // These are specifically for high performance mode of the chip.
@@ -42,14 +42,10 @@ STATIC_ASSERT(1 == sizeof(status_reg_t));
 
 /**@brief Read device ID from flash
  *
- * @param[in]   mfgid    Manufacturer ID field
- * @param[in]   memtype  Memory type field
- * @param[in]   density  Memory density field
- *
  * @retval  NRF_SUCCESS, if the operation was successful. Otherwise, an error
  *          code is returned.
  */
-ret_code_t ext_flash_cmd_read_id(uint8_t* mfgid, uint8_t* memtype, uint8_t* density);
+ret_code_t ext_flash_cmd_read_id(void);
 
 /**@brief Read flash memory
  * 

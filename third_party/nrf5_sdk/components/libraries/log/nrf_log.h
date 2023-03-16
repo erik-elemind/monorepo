@@ -68,7 +68,7 @@ extern "C" {
  * The severity level can be defined in a module to override the default.
  */
 #ifndef NRF_LOG_LEVEL
-    #define NRF_LOG_LEVEL NRF_LOG_DEFAULT_LEVEL
+    #define NRF_LOG_LEVEL 4
 #endif
 
 /** @brief Initial severity if filtering is enabled.
