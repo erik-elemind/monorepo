@@ -46,6 +46,36 @@ extern "C" {
 
 #include "nrf_gpio.h"
 
+#ifdef BOARD_FF4
+
+#define BUTTONS_NUMBER 0
+#define BUTTON_PULL    NRF_GPIO_PIN_NOPULL
+
+/** Pin definitions for Elemind Morpheus FF4 board. */
+
+// UART pins
+#define RX_PIN_NUMBER  9
+#define TX_PIN_NUMBER  10
+#define CTS_PIN_NUMBER 12
+#define RTS_PIN_NUMBER 6
+
+// LPC/NXP pins
+#define LPC_RESETN_PIN 20
+#define LPC_ISPN_PIN 30
+
+#define ISP0N_PIN 27
+#define ISP1N_PIN 29
+#define ISP2N_PIN 31
+
+// SPI config for external flash
+#define SPIM0_SCK_PIN   (16)
+#define SPIM0_MOSI_PIN  (14)
+#define SPIM0_MISO_PIN  (15)
+#define SPIM0_CSN_PIN   (24)
+#define SPI_FLASH_RSTN  (5)
+
+#endif  // BOARD_FF4
+
 #ifdef BOARD_FF3
 // Pins are the same for FF1 and FF3.
 

@@ -120,7 +120,10 @@
 #define MANUFACTURER_NAME "Elemind Technologies, Inc."
 
 /** Model. Will be passed to Device Information Service. */
-#if defined(BOARD_FF3)
+#if defined(BOARD_FF4)
+#define MODEL_NUM "FF4"
+#define HW_VERSION_STRING "3"
+#elif defined(BOARD_FF3)
 #define MODEL_NUM "FF3"
 #define HW_VERSION_STRING "3"
 #elif defined(BOARD_FF1)

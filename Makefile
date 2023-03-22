@@ -71,7 +71,7 @@ export GNU_VERSION := $(shell $(MYCC) -dumpversion)
 # List of buildable targets
 TARGETS := app bootloader bootloader-debug bootloader-test
 # List of supported boards/platforms
-BOARDS := ff3 ff1 pca10040
+BOARDS := ff4 ff3 ff1 pca10040
 # Default to the first board in the list
 BOARD_DEFAULT := $(word 1,$(BOARDS))
 
