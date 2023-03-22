@@ -18,6 +18,7 @@
 #include "dhara_metadata_cache.h"
 
 #define DHARA_GC_RATIO 4
+#define OTA_NUM_BLOCKS 1
 
 static uint8_t layout_buffer[NAND_PAGE_PLUS_SPARE_SIZE];
 
@@ -38,7 +39,7 @@ const struct dhara_nand g_dhara_nand = {
 
   .log2_page_size = NAND_PAGE_SIZE_LOG2,
   .log2_ppb = NAND_PAGES_PER_BLOCK_LOG2,
-  .num_blocks = NAND_BLOCK_COUNT
+  .num_blocks = NAND_BLOCK_COUNT - OTA_NUM_BLOCKS
 };
 
 /// Logging prefix
