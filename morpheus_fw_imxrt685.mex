@@ -268,7 +268,13 @@
                         <pin_feature name="ibena" value="enabled"/>
                      </pin_features>
                   </pin>
-                  <pin peripheral="GPIO" signal="PIO1, 24" pin_num="T7" pin_signal="PIO1_24/FLEXSPI0A_DATA4/SCT0_GPI3"/>
+                  <pin peripheral="GPIO" signal="PIO1, 24" pin_num="T7" pin_signal="PIO1_24/FLEXSPI0A_DATA4/SCT0_GPI3">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                        <pin_feature name="ibena" value="enabled"/>
+                        <pin_feature name="iiena" value="disabled"/>
+                     </pin_features>
+                  </pin>
                   <pin peripheral="GPIO" signal="PIO1, 25" pin_num="U7" pin_signal="PIO1_25/FLEXSPI0A_DATA5/SCT0_OUT3"/>
                   <pin peripheral="GPIO" signal="PIO1, 27" pin_num="T8" pin_signal="PIO1_27/FLEXSPI0A_DATA7/SCT0_OUT4"/>
                   <pin peripheral="GPIO" signal="PIO1, 30" pin_num="P10" pin_signal="PIO1_30/SD0_CLK/SCT0_GPI0"/>

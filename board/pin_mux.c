@@ -151,7 +151,7 @@ BOARD_InitPins:
   - {pin_num: J17, peripheral: PINT, signal: 'PINT, 2', pin_signal: PIO1_6/FC5_CTS_SDA_SSEL0/SCT0_GPI4/SCT0_OUT4/FC4_SSEL2}
   - {pin_num: B1, peripheral: PINT, signal: 'PINT, 3', pin_signal: PIO1_9/FC5_SSEL3/SCT0_GPI7/UTICK_CAP1/CTIMER1_MAT3/ADC0_12, ibena: enabled}
   - {pin_num: K16, peripheral: PINT, signal: 'PINT, 4', pin_signal: PIO1_10/MCLK/FREQME_GPIO_CLK/CTIMER_INP10/CLKOUT, ibena: enabled}
-  - {pin_num: T7, peripheral: GPIO, signal: 'PIO1, 24', pin_signal: PIO1_24/FLEXSPI0A_DATA4/SCT0_GPI3}
+  - {pin_num: T7, peripheral: GPIO, signal: 'PIO1, 24', pin_signal: PIO1_24/FLEXSPI0A_DATA4/SCT0_GPI3, direction: OUTPUT, ibena: enabled, iiena: disabled}
   - {pin_num: U7, peripheral: GPIO, signal: 'PIO1, 25', pin_signal: PIO1_25/FLEXSPI0A_DATA5/SCT0_OUT3}
   - {pin_num: T8, peripheral: GPIO, signal: 'PIO1, 27', pin_signal: PIO1_27/FLEXSPI0A_DATA7/SCT0_OUT4}
   - {pin_num: P10, peripheral: GPIO, signal: 'PIO1, 30', pin_signal: PIO1_30/SD0_CLK/SCT0_GPI0}
@@ -280,6 +280,13 @@ void BOARD_InitPins(void)
     };
     /* Initialize GPIO functionality on pin PIO1_7 (pin J15)  */
     GPIO_PinInit(BOARD_INITPINS_EEG_RESETn_GPIO, BOARD_INITPINS_EEG_RESETn_PORT, BOARD_INITPINS_EEG_RESETn_PIN, &EEG_RESETn_config);
+
+    gpio_pin_config_t FLASH_MUX_SEL_config = {
+        .pinDirection = kGPIO_DigitalOutput,
+        .outputLogic = 0U
+    };
+    /* Initialize GPIO functionality on pin PIO1_24 (pin T7)  */
+    GPIO_PinInit(BOARD_INITPINS_FLASH_MUX_SEL_GPIO, BOARD_INITPINS_FLASH_MUX_SEL_PORT, BOARD_INITPINS_FLASH_MUX_SEL_PIN, &FLASH_MUX_SEL_config);
 
     gpio_pin_config_t EEG_LDO_EN_config = {
         .pinDirection = kGPIO_DigitalOutput,
@@ -1304,8 +1311,8 @@ void BOARD_InitPins(void)
                                     IOPCTL_PIO_PUPD_DI |
                                     /* Enable pull-down function */
                                     IOPCTL_PIO_PULLDOWN_EN |
-                                    /* Disable input buffer function */
-                                    IOPCTL_PIO_INBUF_DI |
+                                    /* Enables input buffer function */
+                                    IOPCTL_PIO_INBUF_EN |
                                     /* Normal mode */
                                     IOPCTL_PIO_SLEW_RATE_NORMAL |
                                     /* Normal drive */

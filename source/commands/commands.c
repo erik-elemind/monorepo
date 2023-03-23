@@ -119,6 +119,7 @@ const shell_command_t commands[] = {
     { P_ALL, "flash_status", flash_status, "Read SPI Flash ID status registers" },
 
     { P_ALL, "flash_unlock", flash_unlock, "Unlock SPI Flash ID for writes" },
+    { P_ALL, "flash_mux_select", flash_mux_select, "Flash MUX select"},
     { P_ALL, "flash_read_page", flash_read_page, "Read SPI Flash page" },
     { P_ALL, "flash_write_page", flash_write_page, "Write SPI Flash page with test data" },
     { P_ALL, "flash_check_block", flash_check_block, "Check flash for a specific bad blocks" },

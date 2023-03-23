@@ -20,6 +20,7 @@ void flash_hello(int argc, char **argv);
 void flash_id(int argc, char **argv);
 void flash_status(int argc, char **argv);
 void flash_unlock(int argc, char **argv);
+void flash_mux_select(int argc, char **argv);
 void flash_read_page(int argc, char **argv);
 void flash_write_page(int argc, char **argv);
 void flash_check_block(int argc, char **argv);
