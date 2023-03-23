@@ -43,19 +43,19 @@ static ret_code_t wait_for_write_complete(uint32_t ms)
     static const uint32_t delay_step_ms = 1;
     uint32_t ms_elapsed = 0;
     ret_code_t err_code;
-    status_reg_t status;
+    nand_status_reg_t status;
 
     do
     {
-        err_code = ext_flash_cmd_status_read(&status);
+        err_code = ext_flash_cmd_status_read(&status, status_only_reg_addr);
         if (NRF_SUCCESS != err_code)
         {
             return NRF_ERROR_INTERNAL;
         }
 
-        if (0 == status.write_in_prog)
+        if (0 == status.raw)
         {
-            NRF_LOG_DEBUG("wip cleared. ms_elapsed=%d (of %d)", ms_elapsed, ms);
+            NRF_LOG_INFO("wip cleared. ms_elapsed=%d (of %d)", ms_elapsed, ms);
             return NRF_SUCCESS;
         }
 
@@ -145,9 +145,16 @@ ret_code_t ext_fstorage_write(uint32_t               dest,
             return NRF_ERROR_INTERNAL;
         }
 
-        // Write the page
+        // Load Program Data
         uint32_t len_cmd = len;
-        err_code = ext_flash_cmd_page_program(dest, &len_cmd, p_src);
+        err_code = ext_flash_cmd_load_program(dest, &len_cmd, p_src);
+        if (NRF_SUCCESS != err_code)
+        {
+            return NRF_ERROR_INTERNAL;
+        }
+
+        // Execute Program Data
+        err_code = ext_flash_cmd_page_program(dest);
         if (NRF_SUCCESS != err_code)
         {
             return NRF_ERROR_INTERNAL;

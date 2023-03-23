@@ -433,6 +433,16 @@ static bool test_readId(void)
     return (NRF_SUCCESS == ext_flash_cmd_read_id());
 }
 
+static bool test_write(void)
+{
+    uint8_t p_src[10] = {0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7, 0xE8, 0xE9};
+    uint32_t len = 10;
+    uint32_t dest = 262080; //{0x3F, 0xFC, 0x00} // addr of last block, and page 0
+
+    // TODO: remove when confirming test_write_offset
+    return (NRF_SUCCESS == ext_fstorage_write(dest, p_src, len, NULL));
+}
+
 // Top level test routine.
 void ext_fstorage_test(void)
 {
@@ -447,7 +457,8 @@ void ext_fstorage_test(void)
 
     test_run = true;
 
-    if (test_readId())
+    if (test_readId() && 
+        test_write())
     // if (test_write_offset() &&
     //     test_read_offset() &&
     //     test_write_readback(0, 16*1024) &&

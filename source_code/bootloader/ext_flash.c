@@ -48,10 +48,11 @@ static const nrfx_spi_config_t m_spi_cfg =
 };
 static const nrfx_spi_t m_spi_instance = NRFX_SPI_INSTANCE(0);
 
-#define SPI_FLASH_OPCODE_PAGE_PROGRAM       0x02    // write a page or portion of it.
+#define SPI_FLASH_OPCODE_LOAD_PROGRAM       0x02    // load program data buffer
+#define SPI_FLASH_OPCODE_PAGE_PROGRAM       0x10    // write program data buffer to memory
 #define SPI_FLASH_OPCODE_NORMAL_READ        0x03    // read data from flash
-#define SPI_FLASH_OPCODE_READ_STATUS        0x05    // read status register
-#define SPI_FLASH_OPCODE_WRITE_ENABLE       0x06    // write enable. must be sent prior to page_program or sector_erase
+#define SPI_FLASH_OPCODE_READ_STATUS        0x0F    // read status register. (0x05 also works)
+#define SPI_FLASH_OPCODE_WRITE_ENABLE       0x06    // write enable. must be sent prior to load_program_data, page_program or block_erase
 #define SPI_FLASH_OPCODE_SECTOR_ERASE       0x20    // or 0xD7. erases a 4k sector
 #define SPI_FLASH_OPCODE_CHIP_ERASE         0x60    // 0x60 or 0xC7
 #define SPI_FLASH_OPCODE_DEVICE_ID          0x90    // device manufacturer ID and device ID register
@@ -163,16 +164,16 @@ ret_code_t ext_flash_cmd_write_enable(void)
     return NRF_SUCCESS;
 }
 
-ret_code_t ext_flash_cmd_status_read(status_reg_t* status)
+ret_code_t ext_flash_cmd_status_read(nand_status_reg_t* status, uint8_t addr)
 {
-    // cmd is 1 byte opcode only
-    static const uint8_t tx_buf[] = {SPI_FLASH_OPCODE_READ_STATUS};
+    // cmd is 1 byte opcode, followed by an 8-bit status reg addr
+    uint8_t tx_buf[] = {SPI_FLASH_OPCODE_READ_STATUS, addr};
 
-    // Perform two tranfsers while keeping the CS pin asserted so that 
+    // Perform two transfer while keeping the CS pin asserted so that 
     // we can utilize the callers buffer directly.
     nrfx_spi_xfer_desc_t desc[] = {
         NRFX_SPI_XFER_TX(tx_buf, sizeof(tx_buf)),
-        NRFX_SPI_XFER_RX(&status->byte, sizeof(*status)),
+        NRFX_SPI_XFER_RX(&status->raw, sizeof(*status)),
     };
     nrfx_err_t err = ext_flash_cmd_send(desc, ARRAY_SIZE(desc));
     if (NRFX_SUCCESS != err)
@@ -227,20 +228,19 @@ ret_code_t ext_flash_cmd_sector_erase(uint32_t addr)
     return NRF_SUCCESS;
 }
 
-ret_code_t ext_flash_cmd_page_program(uint32_t addr, uint32_t* len, const uint8_t* data)
+ret_code_t ext_flash_cmd_load_program(uint32_t addr, uint32_t* len, const uint8_t* data)
 {
     uint32_t len_cmd;
 
-    if (*len == 0) 
+    if (*len == 0)
     {
         return NRF_SUCCESS;
     }
 
-    // cmd is 1 byte opcode, plus 3 bytes big endian address (MSB first)
-    uint8_t tx_buf[] = {SPI_FLASH_OPCODE_PAGE_PROGRAM,0,0,0};
-    addr_to_be24(addr, &tx_buf[1]);
-
-    // Prevent wrap
+    // CMD is 1 byte opcode, plus 16-bit Column Address followed by the data (2kb max)
+    uint8_t tx_buf[] = {SPI_FLASH_OPCODE_LOAD_PROGRAM, 0, 0};
+    
+    // Handle wrapping case
     len_cmd = SPI_FLASH_PAGE_LEN - (addr & (SPI_FLASH_PAGE_LEN-1));
     len_cmd = MIN(len_cmd, *len);
 
@@ -250,10 +250,11 @@ ret_code_t ext_flash_cmd_page_program(uint32_t addr, uint32_t* len, const uint8_
         NRFX_SPI_XFER_TX(tx_buf, sizeof(tx_buf)),
         NRFX_SPI_XFER_TX(data, len_cmd),
     };
+
     nrfx_err_t err = ext_flash_cmd_send(desc, ARRAY_SIZE(desc));
     if (NRFX_SUCCESS != err)
     {
-        NRF_LOG_WARNING("page prog failed. code=%d", err);
+        NRF_LOG_WARNING("program load failed. code=%d", err);
         return NRF_ERROR_INTERNAL;
     }
 
@@ -264,6 +265,27 @@ ret_code_t ext_flash_cmd_page_program(uint32_t addr, uint32_t* len, const uint8_
         data[0]);
 
     *len = len_cmd;
+    return NRF_SUCCESS;
+}
+
+ret_code_t ext_flash_cmd_page_program(uint32_t addr)
+{
+
+    // cmd is 1 byte opcode, plus 24-bit big endian address (MSB first)
+    uint8_t tx_buf[] = {SPI_FLASH_OPCODE_PAGE_PROGRAM,0,0,0};
+    addr_to_be24(addr, &tx_buf[1]);
+
+    // Perform two tranfsers while keeping the CS pin asserted so that 
+    // we can utilize the callers buffer directly.
+    nrfx_spi_xfer_desc_t desc[] = {
+        NRFX_SPI_XFER_TX(tx_buf, sizeof(tx_buf))
+    };
+    nrfx_err_t err = ext_flash_cmd_send(desc, ARRAY_SIZE(desc));
+    if (NRFX_SUCCESS != err)
+    {
+        NRF_LOG_WARNING("page prog failed. code=%d", err);
+        return NRF_ERROR_INTERNAL;
+    }
 
     return NRF_SUCCESS;
 }
