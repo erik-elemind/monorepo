@@ -26,7 +26,7 @@
 // <2=> Warning
 // <3=> Info
 // <4=> Debug
-#define NRF_LOG_LEVEL       (3)
+#define NRF_LOG_LEVEL       (4)
 #define NRF_LOG_MODULE_NAME LPU
 #include "nrf_log.h"
 NRF_LOG_MODULE_REGISTER();

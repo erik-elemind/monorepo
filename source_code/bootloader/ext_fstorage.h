@@ -18,7 +18,7 @@
 // Bits [23:0] are assumed to be 0.
 #define EXT_STORAGE_ADDR_BASE       (0xC0000000)
 // Size of external flash, in bytes
-#define EXT_STORAGE_SIZE            (8*1024*1024)
+#define EXT_STORAGE_SIZE            (64*2048) // 1 block = 64 * PAGE_LEN (2048) ; 128kB
 // Returns true if address is in external flash range
 #define EXT_STORAGE_IS_ADDR(addr)   ((addr) >= EXT_STORAGE_ADDR_BASE && \
                                      (addr) < (EXT_STORAGE_ADDR_BASE + EXT_STORAGE_SIZE))

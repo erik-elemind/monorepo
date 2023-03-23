@@ -101,7 +101,7 @@ extern "C" {
 #define SPIM0_SCK_PIN   (16)
 #define SPIM0_MOSI_PIN  (14)
 #define SPIM0_MISO_PIN  (15)
-#define SPIM0_CSN_PIN   (25)
+#define SPIM0_CSN_PIN   (24)
 #define SPI_FLASH_RSTN  (5)
 
 #endif  // BOARD_FF3

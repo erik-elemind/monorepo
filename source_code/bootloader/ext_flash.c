@@ -20,7 +20,7 @@
 // <2=> Warning
 // <3=> Info
 // <4=> Debug
-#define NRF_LOG_LEVEL       (2)
+#define NRF_LOG_LEVEL       (4)
 #define NRF_LOG_MODULE_NAME EXT
 #include "nrf_log.h"
 NRF_LOG_MODULE_REGISTER();
@@ -55,7 +55,7 @@ static const nrfx_spi_t m_spi_instance = NRFX_SPI_INSTANCE(0);
 #define SPI_FLASH_OPCODE_SECTOR_ERASE       0x20    // or 0xD7. erases a 4k sector
 #define SPI_FLASH_OPCODE_CHIP_ERASE         0x60    // 0x60 or 0xC7
 #define SPI_FLASH_OPCODE_DEVICE_ID          0x90    // device manufacturer ID and device ID register
-#define SPI_FLASH_OPCODE_READ_ID            0x9f    // read jedec stats: mfg id, mem type, and density
+#define SPI_FLASH_OPCODE_READ_ID            0x9F    // read jedec stats: mfg id, mem type, and density
 
 // Convert a 32bit little endian address into 3 address bytes in the 
 // format expected by the SPI chip.
@@ -81,10 +81,10 @@ static nrfx_err_t ext_flash_cmd_send(const nrfx_spi_xfer_desc_t desc[], uint32_t
     return err;
 }
 
-ret_code_t ext_flash_cmd_read_id(uint8_t* mfgid, uint8_t* memtype, uint8_t* density)
+ret_code_t ext_flash_cmd_read_id(void)
 {
     static const uint8_t tx_buf[] = {SPI_FLASH_OPCODE_READ_ID};
-    static uint8_t rx_buf[4];
+    static uint8_t rx_buf[5];
     static const nrfx_spi_xfer_desc_t desc[] = {
         NRFX_SPI_XFER_TRX(tx_buf, sizeof(tx_buf), rx_buf, sizeof(rx_buf))
     };
@@ -96,20 +96,10 @@ ret_code_t ext_flash_cmd_read_id(uint8_t* mfgid, uint8_t* memtype, uint8_t* dens
         return NRF_ERROR_INTERNAL;
     }
 
-    NRF_LOG_INFO("read id. mfgid=0x%02X, memtype=0x%02X, density=0x%02X", 
-        rx_buf[1],
+    NRF_LOG_INFO("read id. mfgid=0x%02X, deviceID[0]=0x%02X, deviceID[1]=0x%02X", 
         rx_buf[2],
-        rx_buf[3]);
-
-    if (mfgid) {
-        *mfgid = rx_buf[1];
-    }
-    if (memtype) {
-        *memtype = rx_buf[2];
-    }
-    if (density) {
-        *density = rx_buf[3];
-    }
+        rx_buf[3],
+        rx_buf[4]);
 
     return NRF_SUCCESS;
 }
@@ -292,19 +282,20 @@ ret_code_t ext_flash_init(void)
                     NRF_GPIO_PIN_S0S1,
                     NRF_GPIO_PIN_NOSENSE);
 
-        nrf_gpio_cfg(SPI_FLASH_RSTN,
-                    NRF_GPIO_PIN_DIR_OUTPUT,
-                    NRF_GPIO_PIN_INPUT_CONNECT,
-                    NRF_GPIO_PIN_NOPULL,
-                    NRF_GPIO_PIN_S0S1,
-                    NRF_GPIO_PIN_NOSENSE);
+        // Past applications restarted Flash, comment out for now pending design
+        // nrf_gpio_cfg(SPI_FLASH_RSTN,
+        //             NRF_GPIO_PIN_DIR_OUTPUT,
+        //             NRF_GPIO_PIN_INPUT_CONNECT,
+        //             NRF_GPIO_PIN_NOPULL,
+        //             NRF_GPIO_PIN_S0S1,
+        //             NRF_GPIO_PIN_NOSENSE);
 
-        // Reset the SPI flash to clear state.
-        // Spec says min reset hold time is 10us (tRLRH)
-        nrf_gpio_pin_clear(SPI_FLASH_RSTN);
-        nrf_delay_us(100);
-        nrf_gpio_pin_set(SPI_FLASH_RSTN);
-        nrf_delay_us(100);
+        // // Reset the SPI flash to clear state.
+        // // Spec says min reset hold time is 10us (tRLRH)
+        // nrf_gpio_pin_clear(SPI_FLASH_RSTN);
+        // nrf_delay_us(100);
+        // nrf_gpio_pin_set(SPI_FLASH_RSTN);
+        // nrf_delay_us(100);
     }
     else if (NRFX_ERROR_INVALID_STATE == err)
     {
