@@ -53,7 +53,7 @@ static const nrfx_spi_t m_spi_instance = NRFX_SPI_INSTANCE(0);
 #define SPI_FLASH_OPCODE_NORMAL_READ        0x03    // read data from flash
 #define SPI_FLASH_OPCODE_READ_STATUS        0x0F    // read status register. (0x05 also works)
 #define SPI_FLASH_OPCODE_WRITE_ENABLE       0x06    // write enable. must be sent prior to load_program_data, page_program or block_erase
-#define SPI_FLASH_OPCODE_SECTOR_ERASE       0x20    // or 0xD7. erases a 4k sector
+#define SPI_FLASH_OPCODE_BLOCK_ERASE        0xD8    // erases 64 pages (128kb)
 #define SPI_FLASH_OPCODE_CHIP_ERASE         0x60    // 0x60 or 0xC7
 #define SPI_FLASH_OPCODE_DEVICE_ID          0x90    // device manufacturer ID and device ID register
 #define SPI_FLASH_OPCODE_READ_ID            0x9F    // read jedec stats: mfg id, mem type, and density
@@ -206,10 +206,10 @@ ret_code_t ext_flash_cmd_chip_erase(void)
     return NRF_SUCCESS;
 }
 
-ret_code_t ext_flash_cmd_sector_erase(uint32_t addr)
+ret_code_t ext_flash_cmd_block_erase(uint32_t addr)
 {
     // cmd is 1 byte opcode, plus 3 bytes big endian address (MSB first)
-    uint8_t tx_buf[] = {SPI_FLASH_OPCODE_SECTOR_ERASE,0,0,0};
+    uint8_t tx_buf[] = {SPI_FLASH_OPCODE_BLOCK_ERASE,0,0,0};
     addr_to_be24(addr, &tx_buf[1]);
 
     // Single transfer. Caller must wait for completion by checking status.
@@ -219,11 +219,11 @@ ret_code_t ext_flash_cmd_sector_erase(uint32_t addr)
     nrfx_err_t err = ext_flash_cmd_send(desc, ARRAY_SIZE(desc));
     if (NRFX_SUCCESS != err)
     {
-        NRF_LOG_WARNING("sector erase failed. code=%d", err);
+        NRF_LOG_WARNING("block erase failed. code=%d", err);
         return NRF_ERROR_INTERNAL;
     }
 
-    NRF_LOG_INFO("sector erase. addr=0x%06X", addr);
+    NRF_LOG_INFO("block erase. addr=0x%06X", addr);
 
     return NRF_SUCCESS;
 }

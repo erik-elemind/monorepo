@@ -16,8 +16,8 @@
 
 // Define the page size in bytes.
 #define SPI_FLASH_PAGE_LEN      (2048)
-// Define the sector size in bytes. This is the smallest erasable chunk.
-#define SPI_FLASH_SECTOR_LEN    (64*SPI_FLASH_PAGE_LEN)
+// Define the block size in bytes. This is the smallest erasable chunk.
+#define SPI_FLASH_BLOCK_LEN    (64*SPI_FLASH_PAGE_LEN)
 
 // Define status register addresses
 #define status_protection_reg_addr 0xA0
@@ -141,17 +141,17 @@ ret_code_t ext_flash_cmd_status_read(nand_status_reg_t* status, uint8_t addr);
  */
 ret_code_t ext_flash_cmd_chip_erase(void);
 
-/**@brief Send the sector erase command.
+/**@brief Send the block erase command.
  * 
  * Upon success, the erase procedure is initiated. Caller should read the 
  * status register to confirm completion before issuing another command.
  * 
- * @param[in]       addr    Flash address to erase. Need not be aligned.
+ * @param[in]       addr    Flash block address to erase. 
  *
  * @retval  NRF_SUCCESS, if the operation was successful. Otherwise, an error
  *          code is returned.
  */
-ret_code_t ext_flash_cmd_sector_erase(uint32_t addr);
+ret_code_t ext_flash_cmd_block_erase(uint32_t addr);
 
 /**@brief Load program (write) command.
  * 

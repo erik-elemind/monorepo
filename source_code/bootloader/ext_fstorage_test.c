@@ -43,8 +43,9 @@ static bool test_write_offset(void)
     static uint8_t buf_write[2*SPI_FLASH_PAGE_LEN];
 
     // Arbitrary base address for the test.
+    // TODO: must be BLOCK aligned and start at defined block addr
     // Must be page aligned.
-    static const uint32_t base_addr = 2*SPI_FLASH_SECTOR_LEN + 3*SPI_FLASH_PAGE_LEN;
+    static const uint32_t base_addr = 2*SPI_FLASH_BLOCK_LEN + 3*SPI_FLASH_PAGE_LEN;
 
     ret_code_t err_code;
     uint8_t exp;
@@ -152,7 +153,7 @@ static bool test_write_offset(void)
 // Write a chunk to flash, then read back to verify in various lengths.
 static bool test_read_offset(void)
 {
-    const uint32_t base_addr = 16*SPI_FLASH_SECTOR_LEN;
+    const uint32_t base_addr = 16*SPI_FLASH_BLOCK_LEN;
     const uint32_t len = 16*SPI_FLASH_PAGE_LEN;
 
     static uint8_t buf[2*SPI_FLASH_PAGE_LEN];
@@ -433,9 +434,18 @@ static bool test_readId(void)
     return (NRF_SUCCESS == ext_flash_cmd_read_id());
 }
 
+static bool test_erase(void)
+{
+    uint32_t page_addr = 262080; // {0x3F, 0xFC} // addr of last block
+    uint32_t num_blocks = 1;
+
+    // TODO: remove when confirming test_write_offset
+    return (NRF_SUCCESS == ext_fstorage_erase(page_addr, num_blocks, NULL));
+}
+
 static bool test_write(void)
 {
-    uint8_t p_src[10] = {0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7, 0xE8, 0xE9};
+    uint8_t p_src[10] = {0xE0, 0xE1, 0xE2, 0xE4, 0xE4, 0xE5, 0xE6, 0xE7, 0xE8, 0xE9};
     uint32_t len = 10;
     uint32_t dest = 262080; //{0x3F, 0xFC, 0x00} // addr of last block, and page 0
 
@@ -458,6 +468,7 @@ void ext_fstorage_test(void)
     test_run = true;
 
     if (test_readId() && 
+        test_erase() &&
         test_write())
     // if (test_write_offset() &&
     //     test_read_offset() &&

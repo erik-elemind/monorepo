@@ -186,7 +186,7 @@ ret_code_t ext_fstorage_write(uint32_t               dest,
 }
 
 ret_code_t ext_fstorage_erase(uint32_t page_addr,
-                              uint32_t num_pages,
+                              uint32_t num_blocks,
                               void   * p_param)
 {
     ret_code_t err_code;
@@ -196,11 +196,11 @@ ret_code_t ext_fstorage_erase(uint32_t page_addr,
         .result     = NRF_SUCCESS,
         .addr       = page_addr,
         .p_src      = (void*)page_addr,
-        .len        = num_pages,
+        .len        = num_blocks,
         .p_param    = p_param,
     };
 
-    for (uint32_t i=0; i<num_pages; i++, page_addr += SPI_FLASH_SECTOR_LEN)
+    for (uint32_t i=0; i<num_blocks; i++, page_addr += SPI_FLASH_BLOCK_LEN)
     {
         // Enable writes
         err_code = ext_flash_cmd_write_enable();
@@ -209,11 +209,11 @@ ret_code_t ext_fstorage_erase(uint32_t page_addr,
             return NRF_ERROR_INTERNAL;
         }
 
-        // Erase the current sector
-        err_code = ext_flash_cmd_sector_erase(page_addr);
+        // Erase the current block
+        err_code = ext_flash_cmd_block_erase(page_addr);
         if (NRF_SUCCESS != err_code)
         {
-            NRF_LOG_WARNING("sector erase failed. addr=0x%08X", page_addr);
+            NRF_LOG_WARNING("block erase failed. addr=0x%08X", page_addr);
             return NRF_ERROR_INTERNAL;
         }
 
@@ -240,13 +240,13 @@ uint32_t ext_fstorage_page_count(uint32_t addr,
     uint32_t chunk_len;
     
     // First chunk can be misaligned
-    chunk_len = SPI_FLASH_SECTOR_LEN - (addr & (SPI_FLASH_SECTOR_LEN-1));
+    chunk_len = SPI_FLASH_BLOCK_LEN - (addr & (SPI_FLASH_BLOCK_LEN-1));
 
     while (len > 0)
     {
         len -= MIN(len, chunk_len);
         num_pages++;
-        chunk_len = SPI_FLASH_SECTOR_LEN;
+        chunk_len = SPI_FLASH_BLOCK_LEN;
     }
 
     return num_pages;
