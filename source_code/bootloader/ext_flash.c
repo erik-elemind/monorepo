@@ -50,6 +50,7 @@ static const nrfx_spi_t m_spi_instance = NRFX_SPI_INSTANCE(0);
 
 #define SPI_FLASH_OPCODE_LOAD_PROGRAM       0x02    // load program data buffer
 #define SPI_FLASH_OPCODE_PAGE_PROGRAM       0x10    // write program data buffer to memory
+#define SPI_FLASH_OPCODE_PAGE_READ          0x13    // read page into data buffer/cache
 #define SPI_FLASH_OPCODE_NORMAL_READ        0x03    // read data from flash
 #define SPI_FLASH_OPCODE_READ_STATUS        0x0F    // read status register. (0x05 also works)
 #define SPI_FLASH_OPCODE_WRITE_ENABLE       0x06    // write enable. must be sent prior to load_program_data, page_program or block_erase
@@ -105,6 +106,29 @@ ret_code_t ext_flash_cmd_read_id(void)
     return NRF_SUCCESS;
 }
 
+ret_code_t ext_flash_cmd_read_page(const uint32_t addr)
+{
+    nrfx_err_t err;
+
+    // CMD is 1 byte opcode, followed by page addr
+    uint8_t tx_buf[] = {SPI_FLASH_OPCODE_PAGE_READ, 0, 0, 0};
+    addr_to_be24(addr, &tx_buf[1]);
+
+    nrfx_spi_xfer_desc_t desc[] = {
+        NRFX_SPI_XFER_TX(tx_buf, sizeof(tx_buf))
+    };
+
+    err = ext_flash_cmd_send(desc, ARRAY_SIZE(desc));
+    if (NRFX_SUCCESS != err)
+    {
+        NRF_LOG_WARNING("read page failed. code=%d", err);
+        return NRF_ERROR_INTERNAL;
+    }
+    // NRF_LOG_INFO("read page. addr=0x%06X", addr);
+
+    return NRF_SUCCESS;
+}
+
 ret_code_t ext_flash_cmd_read_mem(const uint32_t addr, uint32_t* len, uint8_t* data)
 {
     nrfx_err_t err;
@@ -115,19 +139,18 @@ ret_code_t ext_flash_cmd_read_mem(const uint32_t addr, uint32_t* len, uint8_t* d
         return NRF_SUCCESS;
     }
 
-    // cmd is 1 byte opcode, plus 3 bytes big endian address (MSB first)
-    uint8_t tx_buf[] = {SPI_FLASH_OPCODE_NORMAL_READ,0,0,0};
-    addr_to_be24(addr, &tx_buf[1]);
+    // CMD is 1 byte opcode, plus 16-bit Column Address followed by the data (2kb max) followed by 8-bit dummy
+    uint8_t tx_buf[] = {SPI_FLASH_OPCODE_NORMAL_READ, 0, 0, 0};
 
-    // Prevent wrap
-    len_cmd = SPI_FLASH_PAGE_LEN - (addr & (SPI_FLASH_PAGE_LEN-1));
+    // Prevent wrap (TODO: FIX THIS?)
+    len_cmd = SPI_FLASH_PAGE_LEN; // - (addr & (SPI_FLASH_PAGE_LEN-1));
     len_cmd = MIN(len_cmd, *len);
 
     // Perform two tranfsers while keeping the CS pin asserted so that 
     // we can utilize the callers buffer directly.
     nrfx_spi_xfer_desc_t desc[] = {
         NRFX_SPI_XFER_TX(tx_buf, sizeof(tx_buf)),
-        NRFX_SPI_XFER_RX(data, len_cmd),
+        NRFX_SPI_XFER_RX(data, len_cmd)
     };
     err = ext_flash_cmd_send(desc, ARRAY_SIZE(desc));
     if (NRFX_SUCCESS != err)
@@ -136,11 +159,11 @@ ret_code_t ext_flash_cmd_read_mem(const uint32_t addr, uint32_t* len, uint8_t* d
         return NRF_ERROR_INTERNAL;
     }
 
-    NRF_LOG_INFO("read mem. addr=0x%06X, len=%d/%d, data=0x%02X", 
-        addr,
-        len_cmd,
-        *len,
-        data[0]);
+    // NRF_LOG_INFO("read mem. addr=0x%06X, len=%d/%d, data=0x%02X", 
+    //     addr,
+    //     len_cmd,
+    //     *len,
+    //     data[0]);
 
     *len = len_cmd;
 
@@ -241,7 +264,7 @@ ret_code_t ext_flash_cmd_load_program(uint32_t addr, uint32_t* len, const uint8_
     uint8_t tx_buf[] = {SPI_FLASH_OPCODE_LOAD_PROGRAM, 0, 0};
     
     // Handle wrapping case
-    len_cmd = SPI_FLASH_PAGE_LEN - (addr & (SPI_FLASH_PAGE_LEN-1));
+    len_cmd = SPI_FLASH_PAGE_LEN;// - (addr & (SPI_FLASH_PAGE_LEN-1));
     len_cmd = MIN(len_cmd, *len);
 
     // Perform two tranfsers while keeping the CS pin asserted so that 
@@ -258,11 +281,11 @@ ret_code_t ext_flash_cmd_load_program(uint32_t addr, uint32_t* len, const uint8_
         return NRF_ERROR_INTERNAL;
     }
 
-    NRF_LOG_INFO("page prog. addr=0x%06X, len=%d/%d, data=0x%02x", 
-        addr, 
-        len_cmd,
-        *len,
-        data[0]);
+    // NRF_LOG_INFO("page prog. addr=0x%06X, len=%d/%d, data=0x%02x", 
+    //     addr, 
+    //     len_cmd,
+    //     *len,
+    //     data[0]);
 
     *len = len_cmd;
     return NRF_SUCCESS;

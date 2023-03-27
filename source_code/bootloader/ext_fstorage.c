@@ -55,7 +55,7 @@ static ret_code_t wait_for_write_complete(uint32_t ms)
 
         if (0 == status.raw)
         {
-            NRF_LOG_INFO("wip cleared. ms_elapsed=%d (of %d)", ms_elapsed, ms);
+            //NRF_LOG_INFO("wip cleared. ms_elapsed=%d (of %d)", ms_elapsed, ms);
             return NRF_SUCCESS;
         }
 
@@ -101,7 +101,21 @@ ret_code_t ext_fstorage_read(uint32_t               addr,
 
     while (len > 0)
     {
-        // Read the chunk
+        // Load page to cache
+        err_code = ext_flash_cmd_read_page(addr);
+        if (NRF_SUCCESS != err_code)
+        {
+            return NRF_ERROR_INTERNAL;
+        }
+
+        // Wait for complete
+        err_code = wait_for_write_complete(SPI_FLASH_TIMEOUT_PAGE_PROG);
+        if (NRF_SUCCESS != err_code)
+        {
+            return err_code;
+        }
+
+        // Read data off cache
         len_cmd = len;
         err_code = ext_flash_cmd_read_mem(addr, &len_cmd, p_dest);
         if (NRF_SUCCESS != err_code)
@@ -109,7 +123,8 @@ ret_code_t ext_fstorage_read(uint32_t               addr,
             return NRF_ERROR_INTERNAL;
         }
 
-        addr += len_cmd;
+        addr += 1; // minimum read size is 1 page, functions here are in page_addrs
+        //addr += len_cmd;
         p_dest = (void*)((uint32_t)p_dest + len_cmd);
         len -= len_cmd;
     }
@@ -167,7 +182,10 @@ ret_code_t ext_fstorage_write(uint32_t               dest,
             return err_code;
         }
 
-        dest += len_cmd;
+        //NRF_LOG_INFO("write mem. addr=%06X", dest);
+
+        dest += 1; // addresses are by pages 
+        //dest += len_cmd;
         p_src = (void*)((uint32_t)p_src + len_cmd);
         len -= len_cmd;
     }
@@ -200,7 +218,7 @@ ret_code_t ext_fstorage_erase(uint32_t page_addr,
         .p_param    = p_param,
     };
 
-    for (uint32_t i=0; i<num_blocks; i++, page_addr += SPI_FLASH_BLOCK_LEN)
+    for (uint32_t i=0; i<num_blocks; i++, page_addr += SPI_FLASH_PAGES_IN_BLOCK)
     {
         // Enable writes
         err_code = ext_flash_cmd_write_enable();
@@ -249,5 +267,30 @@ uint32_t ext_fstorage_page_count(uint32_t addr,
         chunk_len = SPI_FLASH_BLOCK_LEN;
     }
 
+    NRF_LOG_INFO("num_pages: %d", num_pages);
+
     return num_pages;
+}
+
+uint32_t ext_fstorage_block_count(uint32_t page_addr,
+                                 uint32_t len)
+{
+    uint32_t num_pages = 0;
+    uint32_t num_blocks = 0;
+    uint32_t chunk_len;
+    
+    // First chunk can be misaligned
+    chunk_len = SPI_FLASH_BLOCK_LEN - (page_addr & (SPI_FLASH_BLOCK_LEN-1));
+
+    while (len > 0)
+    {
+        len -= MIN(len, chunk_len);
+        num_pages++;
+        chunk_len = SPI_FLASH_BLOCK_LEN;
+    }
+
+    num_blocks = (num_pages / SPI_FLASH_PAGES_IN_BLOCK); // 0 -> 1 block; 1.1 -> 2 blocks; 0.9 -> 1 block; 1 -> 1 block
+    NRF_LOG_INFO("num_blocks: %d", num_blocks);
+
+    return (num_blocks > 1) ? num_blocks+1 : 1;
 }

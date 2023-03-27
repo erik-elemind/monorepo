@@ -17,7 +17,10 @@
 // Define the page size in bytes.
 #define SPI_FLASH_PAGE_LEN      (2048)
 // Define the block size in bytes. This is the smallest erasable chunk.
-#define SPI_FLASH_BLOCK_LEN    (64*SPI_FLASH_PAGE_LEN)
+#define SPI_FLASH_PAGES_IN_BLOCK  (64)
+#define SPI_FLASH_BLOCK_LEN    (SPI_FLASH_PAGES_IN_BLOCK * SPI_FLASH_PAGE_LEN)
+#define SPI_FLASH_OTA_START_ADDR (260864)
+#define SPI_FLASH_OTA_NUM_BLOCKS (20) //this should match with NXP fatfs file config 
 
 // Define status register addresses
 #define status_protection_reg_addr 0xA0
@@ -71,7 +74,7 @@ typedef union {
 
 // The following timeouts can be used to scale timeouts for different operations.
 // These are specifically for high performance mode of the chip.
-#define SPI_FLASH_TIMEOUT_PAGE_PROG         10      // tPP: typical=0.85ms, max=4ms
+#define SPI_FLASH_TIMEOUT_PAGE_PROG         50      // tPP: typical=0.85ms, max=4ms
 #define SPI_FLASH_TIMEOUT_SECTOR_ERASE      300     // tSE: typical=40ms, max=240ms
 #define SPI_FLASH_TIMEOUT_CHIP_ERASE        160000  // tCE: typical=50s, max=150s
 
@@ -96,6 +99,18 @@ STATIC_ASSERT(1 == sizeof(status_reg_t));
  *          code is returned.
  */
 ret_code_t ext_flash_cmd_read_id(void);
+
+
+/**@brief Read page into cache
+ * 
+ * Upon success, the read data is available in the buffer.
+ * 
+ * @param[in]       addr    Flash address to read from
+ *
+ * @retval  NRF_SUCCESS, if the operation was successful. Otherwise, an error
+ *          code is returned.
+ */
+ret_code_t ext_flash_cmd_read_page(const uint32_t addr);
 
 /**@brief Read flash memory
  * 

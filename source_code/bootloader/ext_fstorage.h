@@ -89,3 +89,13 @@ ret_code_t ext_fstorage_erase(uint32_t               page_addr,
  */
 uint32_t ext_fstorage_page_count(uint32_t addr,
                                  uint32_t len);
+
+/**@brief   Calculate the number of blocks to erase based on address and length.
+ *
+ * @param[in]   addr        Page address of the block to erase.
+ * @param[in]   len         Number of bytes in the buffer.
+ *
+ * @retval  Number of blocks is returned.
+ */
+uint32_t ext_fstorage_block_count(uint32_t page_addr,
+                                 uint32_t len);
