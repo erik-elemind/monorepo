@@ -112,10 +112,20 @@ PACKAGE_NAME := $(OUTPUT_DIRECTORY)/$(PROJECT_NAME)_$(GIT_INFO)_package.zip
 
 .PHONY: default help
 
+# Firmware ID for softdevice--see "nrfutil pkg generate --help"
+SD132_7_0_1_FW_ID := 0xCB
+
 # Default target - first one defined
 default: nrf52832_xxaa_s132
 	@echo Creating $(NAMED_HEX)
-	$(Q) cp $(APP_HEX) $(NAMED_HEX)
+	cp $(APP_HEX) $(NAMED_HEX)
+	@echo Packaging $(PACKAGE_NAME)
+	nrfutil pkg generate --hw-version 52 --bootloader-version 1 \
+		--sd-req $(SD132_7_0_1_FW_ID) \
+		--bootloader $(APP_HEX) \
+		--app-boot-validation VALIDATE_GENERATED_SHA256 \
+		--key-file $(SOURCE_DIR)/../private-key.pem \
+		$(PACKAGE_NAME)	
 
 # Print all targets that can be built
 help:
@@ -154,13 +164,13 @@ CMSIS_CONFIG_TOOL := $(SDK_ROOT)/external_tools/cmsisconfig/CMSIS_Configuration_
 sdk_config:
 	java -jar $(CMSIS_CONFIG_TOOL) $(SDK_CONFIG_FILE)
 
-# Firmware ID for softdevice--see "nrfutil pkg generate --help"
-SD132_7_0_1_FW_ID := 0xCB
-package: default
-	@echo Packaging $(PACKAGE_NAME)
-	nrfutil pkg generate --hw-version 52 --bootloader-version 1 \
-		--sd-req $(SD132_7_0_1_FW_ID) \
-		--bootloader $(APP_HEX) \
-		--app-boot-validation VALIDATE_GENERATED_SHA256 \
-		--key-file $(SOURCE_DIR)/../private-key.pem \
-		$(PACKAGE_NAME)
+# # Firmware ID for softdevice--see "nrfutil pkg generate --help"
+# SD132_7_0_1_FW_ID := 0xCB
+# package: default
+# 	@echo Packaging $(PACKAGE_NAME)
+# 	nrfutil pkg generate --hw-version 52 --bootloader-version 1 \
+# 		--sd-req $(SD132_7_0_1_FW_ID) \
+# 		--bootloader $(APP_HEX) \
+# 		--app-boot-validation VALIDATE_GENERATED_SHA256 \
+# 		--key-file $(SOURCE_DIR)/../private-key.pem \
+# 		$(PACKAGE_NAME)
