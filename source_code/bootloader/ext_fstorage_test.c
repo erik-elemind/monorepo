@@ -25,14 +25,30 @@
 #include "nrf_log.h"
 NRF_LOG_MODULE_REGISTER();
 
+#define NRF_RTT_DELAY_MS (5)
+
 // Fill a buffer with random bytes
 static void rand_fill(uint8_t* buf, uint32_t len)
 {
     // Fill byte-at-a-time because the SD only has 64 byte rand buffer.
-    // The delay between bytes is enough for it to refill.
-    for (uint32_t i=0; i<len; i++)
+    // The delay between bytes is enough for it to refill. not really lol wut is this
+    uint32_t size_remaining = len;   
+    for (uint32_t i=0; i<len; i+=64)
     {
-        (void)sd_rand_application_vector_get(&buf[i], 1);
+        uint8_t p_bytes_available = 0;	
+        do{
+            (void)sd_rand_application_bytes_available_get(&p_bytes_available);
+        }while(p_bytes_available < 64); // max rand buffer size
+
+        if (size_remaining > 64)
+        {
+            (void)sd_rand_application_vector_get(&buf[i], 64);
+            size_remaining -= 64;
+        }
+        else
+        {
+            (void)sd_rand_application_vector_get(&buf[i], size_remaining);
+        }
     }
 }
 
@@ -43,8 +59,9 @@ static bool test_write_offset(void)
     static uint8_t buf_write[2*SPI_FLASH_PAGE_LEN];
 
     // Arbitrary base address for the test.
+    // TODO: must be BLOCK aligned and start at defined block addr
     // Must be page aligned.
-    static const uint32_t base_addr = 2*SPI_FLASH_SECTOR_LEN + 3*SPI_FLASH_PAGE_LEN;
+    static const uint32_t base_addr = 260864;// + 2*SPI_FLASH_BLOCK_LEN + 3*SPI_FLASH_PAGE_LEN;
 
     ret_code_t err_code;
     uint8_t exp;
@@ -75,17 +92,22 @@ static bool test_write_offset(void)
         sizeof(buf_write),
     };
 
+    NRF_LOG_INFO("test_writeoffset test .");
+
     for (uint32_t i=0; i<ARRAY_SIZE(offset_vals); i++)
     {
         uint32_t offset = offset_vals[i];
 
         for (uint32_t j=0; j<ARRAY_SIZE(len_vals); j++)
         {
+            NRF_LOG_INFO("i: %d, j: %d", i, j);
             uint32_t len = len_vals[j];
 
-            // Erase the sector to clean up
+            NRF_LOG_INFO("numblocks to erase: %d", ext_fstorage_block_count(base_addr, sizeof(buf_read)));
+
+            // Erase the blocks to clean up
             err_code = ext_fstorage_erase(base_addr, 
-                ext_fstorage_page_count(base_addr, sizeof(buf_read)), NULL);
+                ext_fstorage_block_count(base_addr, sizeof(buf_read)), NULL);
             if (NRF_SUCCESS != err_code)
             {
                 return false;
@@ -152,7 +174,7 @@ static bool test_write_offset(void)
 // Write a chunk to flash, then read back to verify in various lengths.
 static bool test_read_offset(void)
 {
-    const uint32_t base_addr = 16*SPI_FLASH_SECTOR_LEN;
+    const uint32_t base_addr = 16*SPI_FLASH_BLOCK_LEN;
     const uint32_t len = 16*SPI_FLASH_PAGE_LEN;
 
     static uint8_t buf[2*SPI_FLASH_PAGE_LEN];
@@ -166,8 +188,8 @@ static bool test_read_offset(void)
 
     NRF_LOG_WARNING("read offset test: start.");
 
-    // Erase the pages to start clean
-    err_code = ext_fstorage_erase(base_addr, ext_fstorage_page_count(base_addr, len), NULL);
+    // Erase the blocks to start clean
+    err_code = ext_fstorage_erase(base_addr, ext_fstorage_block_count(base_addr, len), NULL);
     if (NRF_SUCCESS != err_code)
     {
         return false;
@@ -321,7 +343,7 @@ static bool test_write_readback(const uint32_t base_addr, const uint32_t len)
 
     // Erase the range to start.
     // This is not explicitly tested, but readback will fail if this doesn't work.
-    err_code = ext_fstorage_erase(base_addr, ext_fstorage_page_count(base_addr, len), NULL);
+    err_code = ext_fstorage_erase(base_addr, ext_fstorage_block_count(base_addr, len), NULL);
     if (NRF_SUCCESS != err_code)
     {
         return false;
@@ -430,7 +452,138 @@ static bool test_write_readback(const uint32_t base_addr, const uint32_t len)
 
 static bool test_readId(void)
 {
+    nrf_delay_ms(NRF_RTT_DELAY_MS);
+    NRF_LOG_INFO("readID test .")
     return (NRF_SUCCESS == ext_flash_cmd_read_id());
+}
+
+static bool test_erase_first_block(void)
+{
+    nrf_delay_ms(NRF_RTT_DELAY_MS);
+    NRF_LOG_INFO("test_erase_first_block .");
+    return (NRF_SUCCESS == ext_fstorage_erase(SPI_FLASH_OTA_START_ADDR, 1, NULL));
+}
+
+static bool test_read_first_page(void)
+{
+    uint8_t p_dest[SPI_FLASH_PAGE_LEN];
+
+    nrf_delay_ms(NRF_RTT_DELAY_MS);
+    NRF_LOG_INFO("test_read_first_page test .");
+    
+    if (NRF_SUCCESS == ext_fstorage_read(SPI_FLASH_OTA_START_ADDR, p_dest, SPI_FLASH_PAGE_LEN))
+    {
+        // nrf_delay_ms(NRF_RTT_DELAY_MS);
+        // for (int i = 0; i < sizeof(p_dest); i++)
+        // {
+        //     NRF_LOG_INFO("%02X ", p_dest[i]);
+        // }
+        return true;
+    }
+    return false;
+}
+
+static bool test_write_first_page(void)
+{
+    uint8_t p_src[SPI_FLASH_PAGE_LEN];
+    rand_fill(p_src, sizeof(p_src));
+
+    nrf_delay_ms(NRF_RTT_DELAY_MS);
+    NRF_LOG_INFO("test_write_first_page test .");
+
+    // for (int i = 0; i < sizeof(p_src); i++)
+    // {
+    //     NRF_LOG_INFO("%02X ", p_src[i]);
+    // }
+    return (NRF_SUCCESS == ext_fstorage_write(SPI_FLASH_OTA_START_ADDR, p_src, SPI_FLASH_PAGE_LEN, NULL));
+}
+
+static bool test_write_read_first_page(void)
+{
+    nrf_delay_ms(NRF_RTT_DELAY_MS);
+    uint8_t p_write_buff[SPI_FLASH_PAGE_LEN];
+    uint8_t p_read_buff[SPI_FLASH_PAGE_LEN];
+
+    NRF_LOG_INFO("test_write_read_first_page .");
+
+    // write to first page of flash
+    rand_fill(p_write_buff, sizeof(p_write_buff));
+    if (NRF_SUCCESS != ext_fstorage_write(SPI_FLASH_OTA_START_ADDR, p_write_buff, SPI_FLASH_PAGE_LEN, NULL))
+    {
+        return false;
+    }
+
+    // read first page of flash
+    nrf_delay_ms(NRF_RTT_DELAY_MS);
+    if (NRF_SUCCESS != ext_fstorage_read(SPI_FLASH_OTA_START_ADDR, p_read_buff, SPI_FLASH_PAGE_LEN))
+    {
+        return false;
+    }
+
+    // compare both buffers
+    for (int i = 0; i < SPI_FLASH_PAGE_LEN; i++)
+    {
+        if (p_write_buff[i] != p_read_buff[i])
+        {
+            NRF_LOG_INFO("index %d does not match! p_write_buff[i] = %d, p_read_buff[i] = %d", i, p_write_buff[i], p_read_buff[i]);
+            return false;
+        }
+    }
+    NRF_LOG_INFO("test_write_read_first_page success .");
+    return true;
+}
+
+static bool test_erase_ota_all(void)
+{
+    nrf_delay_ms(NRF_RTT_DELAY_MS);
+    NRF_LOG_INFO("test_erase_ota_all .");
+    return (NRF_SUCCESS == ext_fstorage_erase(SPI_FLASH_OTA_START_ADDR, SPI_FLASH_OTA_NUM_BLOCKS, NULL));
+}
+
+static bool test_write_verify_ota_all(void)
+{
+    nrf_delay_ms(NRF_RTT_DELAY_MS);
+    NRF_LOG_INFO("test_write_verify_ota_all .");
+    uint32_t addr = SPI_FLASH_OTA_START_ADDR;
+    uint8_t p_write_buff[SPI_FLASH_PAGE_LEN];
+    uint8_t p_read_buff[SPI_FLASH_PAGE_LEN];
+    rand_fill(p_write_buff, sizeof(p_write_buff));
+
+    // write each page at a time
+    for (int i = 0; i < SPI_FLASH_OTA_NUM_BLOCKS*SPI_FLASH_PAGES_IN_BLOCK; i++)
+    {
+        if(NRF_SUCCESS == ext_fstorage_write(addr, p_write_buff, SPI_FLASH_PAGE_LEN, NULL))
+        {
+            // read page
+            nrf_delay_ms(NRF_RTT_DELAY_MS);
+            if (NRF_SUCCESS != ext_fstorage_read(addr, p_read_buff, SPI_FLASH_PAGE_LEN))
+            {
+                return false;
+            }
+
+            // simple verify 
+            for (int i = 0; i < SPI_FLASH_PAGE_LEN; i++)
+            {
+                if (p_write_buff[i] != p_read_buff[i])
+                {
+                    NRF_LOG_INFO("index %d does not match! p_write_buff[i] = %d, p_read_buff[i] = %d", i, p_write_buff[i], p_read_buff[i]);
+                    return false;
+                }
+            }
+
+            //NRF_LOG_INFO("write success . addr=0x%06X", addr);
+            if (i % SPI_FLASH_PAGES_IN_BLOCK == 0) NRF_LOG_INFO("."); // lightweight logging
+            addr += 1;
+            memset(p_read_buff, 0xA5, sizeof(p_read_buff));
+            rand_fill(p_write_buff, sizeof(p_write_buff)); // comment this out if testing takes too long
+        }
+        else
+        {
+            return false;
+        }
+    }
+    NRF_LOG_INFO("test_write_verify_ota_all success .");
+    return true;
 }
 
 // Top level test routine.
@@ -447,7 +600,17 @@ void ext_fstorage_test(void)
 
     test_run = true;
 
-    if (test_readId())
+    if (test_readId() && 
+        test_erase_ota_all() &&
+        test_write_first_page() &&
+        test_read_first_page() &&
+        test_erase_first_block() &&
+        test_write_read_first_page() &&
+        test_erase_first_block() &&
+        test_write_verify_ota_all() &&
+        test_erase_ota_all()) // clean flash at the end
+        //test_write() &&
+        //test_write_offset())
     // if (test_write_offset() &&
     //     test_read_offset() &&
     //     test_write_readback(0, 16*1024) &&
