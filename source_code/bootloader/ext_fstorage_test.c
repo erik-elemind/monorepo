@@ -540,30 +540,49 @@ static bool test_erase_ota_all(void)
     return (NRF_SUCCESS == ext_fstorage_erase(SPI_FLASH_OTA_START_ADDR, SPI_FLASH_OTA_NUM_BLOCKS, NULL));
 }
 
-static bool test_write_ota_all(void)
+static bool test_write_verify_ota_all(void)
 {
     nrf_delay_ms(NRF_RTT_DELAY_MS);
-    NRF_LOG_INFO("test_write_ota_all .");
+    NRF_LOG_INFO("test_write_verify_ota_all .");
     uint32_t addr = SPI_FLASH_OTA_START_ADDR;
-    uint8_t p_src[SPI_FLASH_PAGE_LEN];
-    rand_fill(p_src, sizeof(p_src));
+    uint8_t p_write_buff[SPI_FLASH_PAGE_LEN];
+    uint8_t p_read_buff[SPI_FLASH_PAGE_LEN];
+    rand_fill(p_write_buff, sizeof(p_write_buff));
 
     // write each page at a time
     for (int i = 0; i < SPI_FLASH_OTA_NUM_BLOCKS*SPI_FLASH_PAGES_IN_BLOCK; i++)
     {
-        if(NRF_SUCCESS == ext_fstorage_write(addr, p_src, SPI_FLASH_PAGE_LEN, NULL))
+        if(NRF_SUCCESS == ext_fstorage_write(addr, p_write_buff, SPI_FLASH_PAGE_LEN, NULL))
         {
+            // read page
+            nrf_delay_ms(NRF_RTT_DELAY_MS);
+            if (NRF_SUCCESS != ext_fstorage_read(addr, p_read_buff, SPI_FLASH_PAGE_LEN))
+            {
+                return false;
+            }
+
+            // simple verify 
+            for (int i = 0; i < SPI_FLASH_PAGE_LEN; i++)
+            {
+                if (p_write_buff[i] != p_read_buff[i])
+                {
+                    NRF_LOG_INFO("index %d does not match! p_write_buff[i] = %d, p_read_buff[i] = %d", i, p_write_buff[i], p_read_buff[i]);
+                    return false;
+                }
+            }
+
             //NRF_LOG_INFO("write success . addr=0x%06X", addr);
             if (i % SPI_FLASH_PAGES_IN_BLOCK == 0) NRF_LOG_INFO("."); // lightweight logging
             addr += 1;
-            rand_fill(p_src, sizeof(p_src)); // comment this out if testing takes too long
+            memset(p_read_buff, 0xA5, sizeof(p_read_buff));
+            rand_fill(p_write_buff, sizeof(p_write_buff)); // comment this out if testing takes too long
         }
         else
         {
             return false;
         }
     }
-    NRF_LOG_INFO("test_write_ota_all success .");
+    NRF_LOG_INFO("test_write_verify_ota_all success .");
     return true;
 }
 
@@ -588,7 +607,7 @@ void ext_fstorage_test(void)
         test_erase_first_block() &&
         test_write_read_first_page() &&
         test_erase_first_block() &&
-        test_write_ota_all() &&
+        test_write_verify_ota_all() &&
         test_erase_ota_all()) // clean flash at the end
         //test_write() &&
         //test_write_offset())
