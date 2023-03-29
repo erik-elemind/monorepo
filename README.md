@@ -1,34 +1,83 @@
 # Morpheus NRF
 
 ## Prerequisites 
-Make is needed to build the firmware. Python3 is needed to generate the NRF OTA image. 
+[WSL](https://learn.microsoft.com/en-us/windows/wsl/install) (for Windows) and Make is needed to build the firmware.
 
 A JLink is needed for wired flashing (optional). Please download and install the 
 [Segger Software and Documentation pack](https://www.segger.com/downloads/jlink/#J-LinkSoftwareAndDocumentationPack).
 
-### Compiler & tools
-`make` checks for the ARMGCC to exist in `$PATH`. If not, it can be downloaded 
+
+### OS Setup
+Install WSL in order to set up a Linux environment on Windows.
+
+Once WSL is installed, open a Ubuntu terminal (may require administrative rights) and input the following:
+The commands are adapted from the Dockerfile within this repo. Slight variations may be needed
+
+If on Mac/Linux, follow the same commands but ignore WSL-references
+
+#### Install standard tools for build system
+- `sudo apt-get install update && apt update`
+- `sudo apt-get install -y wget`
+- `sudo apt-get install -y git`
+- `sudo apt-get install -y make`
+- `sudo apt install -y curl`
+- `sudo apt install -y zip`
+- `sudo rm /var/lib/apt/lists/*`
+
+At this point, we can clone this repo into our WSL. Follow [Github's instructions](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for setting up the SSH Keys. 
+
+#### Install Conda
+- `sudo wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh`
+- `sudo mkdir /root/.conda`
+- `sudo bash Miniconda3-latest-Linux-x86_64.sh`
+- `sudo conda --version`
+- `sudo rm -f Miniconda3-latest-Linux-x86_64.sh`
+- `sudo conda init bash`
+- `sudo conda config --set auto_activate_base false`
+
+#### Create Conda Environment
+Enter cloned repo in WSL and run
+- `conda env create -n nrf_env --file scripts/environment.yml`
+This should only be run once unless the environment.yml is changed
+
+The YAML file installs build tool dependencies into `nrf_env` allowing for a consistent build environment among developers.
+
+#### Run Conda Environment
+Once the `nrf_env` conda environment has been created, activate the environment:
+- `conda activate nrf_env`
+- `conda deactivate`
+
+#### Secret Keys
+In order to generate the .zip files, contact :( . 
+
+#### VS Code
+To directly edit the cloned repo in WSL via VS Code, following the [instructions](https://learn.microsoft.com/en-us/windows/wsl/tutorials/wsl-vscode).
+
+1. Install VS Code
+2. Install WSL extension (may need to uninstall CMake extensions)
+3. In Ubuntu terminal (cloned repo): `code .` will open a VS Code window for the WSL cloned repo to edit.
+
+<!-- ### Compiler & tools -->
+<!-- `make` checks for the ARMGCC to exist in `$PATH`. If not, it can be downloaded 
 via `make dist`. Currently, we use version 2019-q3, which is available from the [ARM developer site](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads).
 
-`make dist` also downloads [nrfjprog and mergehex](https://www.nordicsemi.com/Products/Development-tools/nrf-command-line-tools) which are used in the build.
+`make dist` also downloads [nrfjprog and mergehex](https://www.nordicsemi.com/Products/Development-tools/nrf-command-line-tools) which are used in the build. -->
 
 ## Build process
-Following the first clone of the repo, the first run of `make` creates a 
-python3 virtual environment and installs the module(s) from `requirements.txt`.
 
 To build the main NRF application firmware, run the following command.
 ```
 make app
 ```
 
-To flash the firmware via JLink, add `F=1` to the command line:
+<!-- To flash the firmware via JLink, add `F=1` to the command line:
 ```
 make app F=1
-```
+``` -->
 
 To specify a particular board, add the `BOARD` option:
 ```
-make app BOARD=ff3 F=1
+make app BOARD=ff4 F=1
 ```
 
 To build the bootloader, run the following (`F=1` also works here).
@@ -41,15 +90,15 @@ To clean the build:
 make clean
 ```
 
-To remove the downloaded tools in the `dist` directory:
+<!-- To remove the downloaded tools in the `dist` directory:
 ```
 make distclean
-```
+``` -->
 
 More options can be found in `make help`.
 
-## Generating LPC OTA packages
-To generate an LPC firmware package, run the `lpcpkg.sh` script
+<!-- ## Generating LPC OTA packages -->
+<!-- To generate an LPC firmware package, run the `lpcpkg.sh` script
 
 First step is to generate a hex file from MCUxpresso. In the project explorer, expand "Binaries", and right click morpheus_firmware.axf. Then select "Binary Utilities" and "Create hex". 
 
@@ -57,7 +106,7 @@ Then provide the path to the LPC hex file to the script, like so:
 
 ```
 ./lpcpkg.sh -f ../../images/morpheus_firmware.hex
-```
+``` -->
 
 ## External source: NRF SDK
 
