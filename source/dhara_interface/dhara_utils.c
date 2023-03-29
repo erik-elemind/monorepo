@@ -18,7 +18,7 @@
 #include "dhara_metadata_cache.h"
 
 #define DHARA_GC_RATIO 4
-#define OTA_NUM_BLOCKS 1
+#define OTA_NUM_BLOCKS 20
 
 static uint8_t layout_buffer[NAND_PAGE_PLUS_SPARE_SIZE];
 
