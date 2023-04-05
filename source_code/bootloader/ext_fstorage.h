@@ -17,8 +17,9 @@
 // Define the virtual start address of external flash
 // Bits [23:0] are assumed to be 0.
 #define EXT_STORAGE_ADDR_BASE       (0xC0000000)
+#define EXT_STORAGE_ADDR_NEW_BASE   (0x0003FB00)
 // Size of external flash, in bytes
-#define EXT_STORAGE_SIZE            (64*2048) // 1 block = 64 * PAGE_LEN (2048) ; 128kB
+#define EXT_STORAGE_SIZE (SPI_FLASH_OTA_NUM_BLOCKS*SPI_FLASH_BLOCK_LEN)
 // Returns true if address is in external flash range
 #define EXT_STORAGE_IS_ADDR(addr)   ((addr) >= EXT_STORAGE_ADDR_BASE && \
                                      (addr) < (EXT_STORAGE_ADDR_BASE + EXT_STORAGE_SIZE))
@@ -55,6 +56,7 @@ ret_code_t ext_fstorage_read(uint32_t               addr,
  * @param[in]   p_src       Data to be written.
  * @param[in]   len         Length of the data (in bytes).
  * @param[in]   p_param     User-defined parameter passed to the event handler (may be NULL).
+ * @param[in]   notify      Bool to notify event handler
  *
  * @retval  NRF_SUCCESS, if the operation was successful. Otherwise, an error
  *          code is returned.
@@ -62,7 +64,8 @@ ret_code_t ext_fstorage_read(uint32_t               addr,
 ret_code_t ext_fstorage_write(uint32_t               dest,
                               void           const * p_src,
                               uint32_t               len,
-                              void                 * p_param);
+                              void                 * p_param,
+                              bool                   notify);
 
 /**@brief   Function for erasing flash pages.
  *

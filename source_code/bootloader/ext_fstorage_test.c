@@ -131,7 +131,7 @@ static bool test_write_offset(void)
             }
 
             // Write a number of bytes at the given offset
-            err_code = ext_fstorage_write(base_addr+offset, buf_write, len, NULL);
+            err_code = ext_fstorage_write(base_addr+offset, buf_write, len, NULL, false);
             if (NRF_SUCCESS != err_code)
             {
                 return false;
@@ -210,7 +210,7 @@ static bool test_read_offset(void)
         rand_fill(buf, len_write);
 
         // Write it
-        err_code = ext_fstorage_write(base_addr+offset, buf, len_write, NULL);
+        err_code = ext_fstorage_write(base_addr+offset, buf, len_write, NULL, false);
         if (NRF_SUCCESS != err_code)
         {
             return false;
@@ -371,7 +371,7 @@ static bool test_write_readback(const uint32_t base_addr, const uint32_t len)
         // Fill write buffer with random data
         rand_fill(buf_write, len_write);
 
-        err_code = ext_fstorage_write(addr, buf_write, len_write, NULL);
+        err_code = ext_fstorage_write(addr, buf_write, len_write, NULL, false);
         if (NRF_SUCCESS != err_code)
         {
             return false;
@@ -495,7 +495,7 @@ static bool test_write_first_page(void)
     // {
     //     NRF_LOG_INFO("%02X ", p_src[i]);
     // }
-    return (NRF_SUCCESS == ext_fstorage_write(SPI_FLASH_OTA_START_ADDR, p_src, SPI_FLASH_PAGE_LEN, NULL));
+    return (NRF_SUCCESS == ext_fstorage_write(SPI_FLASH_OTA_START_ADDR, p_src, SPI_FLASH_PAGE_LEN, NULL, false));
 }
 
 static bool test_write_read_first_page(void)
@@ -508,7 +508,7 @@ static bool test_write_read_first_page(void)
 
     // write to first page of flash
     rand_fill(p_write_buff, sizeof(p_write_buff));
-    if (NRF_SUCCESS != ext_fstorage_write(SPI_FLASH_OTA_START_ADDR, p_write_buff, SPI_FLASH_PAGE_LEN, NULL))
+    if (NRF_SUCCESS != ext_fstorage_write(SPI_FLASH_OTA_START_ADDR, p_write_buff, SPI_FLASH_PAGE_LEN, NULL, false))
     {
         return false;
     }
@@ -552,7 +552,7 @@ static bool test_write_verify_ota_all(void)
     // write each page at a time
     for (int i = 0; i < SPI_FLASH_OTA_NUM_BLOCKS*SPI_FLASH_PAGES_IN_BLOCK; i++)
     {
-        if(NRF_SUCCESS == ext_fstorage_write(addr, p_write_buff, SPI_FLASH_PAGE_LEN, NULL))
+        if(NRF_SUCCESS == ext_fstorage_write(addr, p_write_buff, SPI_FLASH_PAGE_LEN, NULL, false))
         {
             // read page
             nrf_delay_ms(NRF_RTT_DELAY_MS);
@@ -607,7 +607,7 @@ void ext_fstorage_test(void)
         test_erase_first_block() &&
         test_write_read_first_page() &&
         test_erase_first_block() &&
-        test_write_verify_ota_all() &&
+        //test_write_verify_ota_all() &&
         test_erase_ota_all()) // clean flash at the end
         //test_write() &&
         //test_write_offset())

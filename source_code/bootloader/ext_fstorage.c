@@ -89,6 +89,9 @@ ret_code_t ext_fstorage_init(nrf_fstorage_evt_handler_t evt_handler)
     m_handler = handler_orig;
     #endif
 
+    // TODO: this would cause it to erase the area everytime device boots up (prob ok?)
+    ext_fstorage_erase(SPI_FLASH_OTA_START_ADDR, SPI_FLASH_OTA_NUM_BLOCKS, NULL);
+
     return NRF_SUCCESS;
 }
 
@@ -138,7 +141,8 @@ ret_code_t ext_fstorage_read(uint32_t               addr,
 ret_code_t ext_fstorage_write(uint32_t               dest,
                               void           const * p_src,
                               uint32_t               len,
-                              void                 * p_param)
+                              void                 * p_param,
+                              bool                   notify)
 {
     ret_code_t err_code;
 
@@ -150,6 +154,8 @@ ret_code_t ext_fstorage_write(uint32_t               dest,
         .len        = len,
         .p_param    = p_param,
     };
+
+    if (notify) goto end;
 
     while (len > 0)
     {
@@ -182,14 +188,16 @@ ret_code_t ext_fstorage_write(uint32_t               dest,
             return err_code;
         }
 
-        //NRF_LOG_INFO("write mem. addr=%06X", dest);
+        NRF_LOG_INFO("write mem. addr=%06X", dest);
 
         dest += 1; // addresses are by pages 
         //dest += len_cmd;
         p_src = (void*)((uint32_t)p_src + len_cmd);
         len -= len_cmd;
     }
+    return NRF_SUCCESS;
 
+    end:
     // For review:
     // It may be preferrable to call the handler via the scheduler, as 
     // a deferred call.

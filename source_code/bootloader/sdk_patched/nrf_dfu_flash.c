@@ -46,6 +46,7 @@
 #include "nrf_fstorage_nvmc.h"
 
 #include "ext_fstorage.h"
+#include "ext_flash.h"
 
 #define NRF_LOG_MODULE_NAME nrf_dfu_flash
 #include "nrf_log.h"
@@ -125,15 +126,52 @@ ret_code_t nrf_dfu_flash_store(uint32_t                   dest,
                                uint32_t                   len,
                                nrf_dfu_flash_callback_t   callback)
 {
+    static uint8_t buffer[SPI_FLASH_PAGE_LEN];
+    static uint32_t buffer_offset = 0;
+    uint8_t *p_src_ptr = p_src;
+
     ret_code_t rc;
 
     if (EXT_STORAGE_IS_ADDR(dest))
     {
+        uint32_t relative_byte_address = dest - EXT_STORAGE_ADDR_BASE;
+        uint32_t num_pages = relative_byte_address / SPI_FLASH_PAGE_LEN;
+        uint32_t adjusted_dest = EXT_STORAGE_ADDR_NEW_BASE + num_pages;
+        NRF_LOG_INFO("adjusted_dest=%p", adjusted_dest);
+
+        uint32_t remaining_space = SPI_FLASH_PAGE_LEN - buffer_offset;
+        uint32_t bytes_to_copy = (len < remaining_space) ? len : remaining_space;
+        uint32_t bytes_leftover = (len > remaining_space) ? (len - bytes_to_copy) : 0;
+
+        memcpy(buffer + buffer_offset, p_src, bytes_to_copy);
+        buffer_offset += bytes_to_copy;
+        p_src_ptr += bytes_to_copy;
+
+        if (buffer_offset == SPI_FLASH_PAGE_LEN || remaining_space == bytes_to_copy)
+        {
+            //lint -save -e611 (Suspicious cast)
+            rc = ext_fstorage_write(adjusted_dest, buffer, SPI_FLASH_PAGE_LEN, (void *)callback, false);
+            //lint -restore
+
+            NRF_LOG_INFO("ext_fstorage_write(addr=%p, src=%p, len=%d bytes), queue usage: %d",
+                            adjusted_dest, buffer, SPI_FLASH_PAGE_LEN, m_flash_operations_pending);
+
+            buffer_offset = 0; // Reset the buffer offset
+        } // fill the page
+
+        if (bytes_leftover > 0)
+        {
+            // reset the buffer and fill in any leftover
+            memset(buffer, 0x00, SPI_FLASH_PAGE_LEN);
+            memcpy(buffer, p_src_ptr, bytes_leftover);
+            buffer_offset = 0;
+            buffer_offset += bytes_leftover;
+        }
+
+        // always fake out
         //lint -save -e611 (Suspicious cast)
-        rc = ext_fstorage_write(dest, p_src, len, (void *)callback);
+        rc = ext_fstorage_write(dest, p_src, len, (void *)callback, true);
         //lint -restore
-        NRF_LOG_INFO("ext_fstorage_write(addr=%p, src=%p, len=%d bytes), queue usage: %d",
-                        dest, p_src, len, m_flash_operations_pending);        
     }
     else
     {
@@ -155,6 +193,7 @@ ret_code_t nrf_dfu_flash_store(uint32_t                   dest,
 
     return rc;
 }
+
 
 
 ret_code_t nrf_dfu_flash_erase(uint32_t                 page_addr,

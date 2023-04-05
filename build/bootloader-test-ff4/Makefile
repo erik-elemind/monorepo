@@ -13,8 +13,9 @@ CFLAGS += -DEXT_FSTORAGE_TEST=1
 # Enable crypto
 CFLAGS += -DBL_CRYPTO_DISABLE=0
 
-# Enable logs to see the test results
+# Enable logs to see the test results (adjust .ld file for different log levels)
 CFLAGS += -DNRF_LOG_ENABLED=1
+CFLAGS += -DNRF_LOG_DEFAULT_LEVEL=4
 
 # Use non-deferred logs, which helps with the long running tests, and 
 # reduces the buffers needed.
