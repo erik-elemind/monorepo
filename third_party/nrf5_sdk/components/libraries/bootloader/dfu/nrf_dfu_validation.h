@@ -194,6 +194,13 @@ nrf_dfu_result_t nrf_dfu_validation_post_external_app_execute(dfu_init_command_t
 */
 bool nrf_dfu_validation_valid_external_app(void);
 
+/**
+* @brief Function to return the size of external app fw image.
+*
+* @returns size in bytes
+*/
+uint32_t nrf_dfu_get_fw_size(void);
+
 #endif //__NRF_DFU_VALIDATION_H
 
 /** @} */

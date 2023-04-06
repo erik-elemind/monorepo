@@ -40,6 +40,7 @@
 
 #include "nrf_dfu_flash.h"
 #include "nrf_dfu_types.h"
+#include "nrf_dfu_validation.h"
 
 #include "nrf_fstorage.h"
 #include "nrf_fstorage_sd.h"
@@ -129,15 +130,17 @@ ret_code_t nrf_dfu_flash_store(uint32_t                   dest,
     static uint8_t buffer[SPI_FLASH_PAGE_LEN];
     static uint32_t buffer_offset = 0;
     uint8_t *p_src_ptr = p_src;
+    static uint32_t total_len = 0;
 
     ret_code_t rc;
 
     if (EXT_STORAGE_IS_ADDR(dest))
     {
+        total_len += len;
         uint32_t relative_byte_address = dest - EXT_STORAGE_ADDR_BASE;
         uint32_t num_pages = relative_byte_address / SPI_FLASH_PAGE_LEN;
         uint32_t adjusted_dest = EXT_STORAGE_ADDR_NEW_BASE + num_pages;
-        NRF_LOG_INFO("adjusted_dest=%p", adjusted_dest);
+        NRF_LOG_INFO("write adjusted_dest=%p", adjusted_dest);
 
         uint32_t remaining_space = SPI_FLASH_PAGE_LEN - buffer_offset;
         uint32_t bytes_to_copy = (len < remaining_space) ? len : remaining_space;
@@ -162,10 +165,18 @@ ret_code_t nrf_dfu_flash_store(uint32_t                   dest,
         if (bytes_leftover > 0)
         {
             // reset the buffer and fill in any leftover
-            memset(buffer, 0x00, SPI_FLASH_PAGE_LEN);
+            memset(buffer, 0xFF, SPI_FLASH_PAGE_LEN);
             memcpy(buffer, p_src_ptr, bytes_leftover);
             buffer_offset = 0;
             buffer_offset += bytes_leftover;
+        }
+
+        if (total_len == nrf_dfu_get_fw_size())
+        {
+            NRF_LOG_INFO("fw_size: %d", nrf_dfu_get_fw_size());
+            //lint -save -e611 (Suspicious cast)
+            rc = ext_fstorage_write(adjusted_dest, buffer, SPI_FLASH_PAGE_LEN, (void *)callback, false);
+            //lint -restore            
         }
 
         // always fake out

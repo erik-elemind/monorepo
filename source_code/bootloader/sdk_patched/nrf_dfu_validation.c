@@ -55,6 +55,7 @@
 #include "nrf_dfu_ver_validation.h"
 #include "nrf_strerror.h"
 #include "ext_fstorage.h"
+#include "ext_flash.h"
 
 #define NRF_LOG_MODULE_NAME nrf_dfu_validation
 #include "nrf_log.h"
@@ -428,6 +429,15 @@ static nrf_dfu_result_t nrf_dfu_validation_signature_check(dfu_signature_type_t 
     #endif
 }
 
+uint32_t nrf_dfu_get_fw_size(void)
+{
+    if ((mp_init->type == DFU_FW_TYPE_EXTERNAL_APPLICATION) &&
+         (mp_init->has_app_size == true))
+    {
+        return mp_init->app_size;
+    }
+    return 0;
+}
 
 // Function to calculate the total size of the firmware(s) in the update.
 static nrf_dfu_result_t update_data_size_get(dfu_init_command_t const * p_init, uint32_t * p_size)
@@ -702,6 +712,11 @@ static bool nrf_dfu_validation_hash_ok(uint8_t const * p_hash, uint32_t src_addr
 
     if (src_addr >= EXT_STORAGE_ADDR_BASE)
     {
+        uint32_t relative_byte_address = src_addr - EXT_STORAGE_ADDR_BASE;
+        uint32_t num_pages = relative_byte_address / SPI_FLASH_PAGE_LEN;
+        uint32_t adjusted_dest = EXT_STORAGE_ADDR_NEW_BASE + num_pages;
+        NRF_LOG_INFO(" read adjusted_dest=%p", adjusted_dest);
+
         // For external flash, we cannot read memory directly. We must 
         // use the external flash API.
         err_code = nrf_crypto_hash_init(&hash_context, &g_nrf_crypto_hash_sha256_info);
