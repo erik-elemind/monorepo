@@ -722,20 +722,22 @@ static bool nrf_dfu_validation_hash_ok(uint8_t const * p_hash, uint32_t src_addr
         err_code = nrf_crypto_hash_init(&hash_context, &g_nrf_crypto_hash_sha256_info);
         if (NRF_SUCCESS == err_code)
         {
-            // TODO: ADJUST THE ADDRESSES HERE. SIZE SHOULD BE MAX PAGE LENGTH
-            static uint8_t buf_read[64];
-            for (uint32_t offset=0, len_read; offset<data_len; offset+=len_read)
+            static uint8_t buf_read[SPI_FLASH_PAGE_LEN];
+            uint32_t num_read_pages = (data_len / SPI_FLASH_PAGE_LEN) + 1;
+            for (uint32_t page_num = 0; page_num < num_read_pages; page_num++)
             {
-                // Read the next chunk
-                len_read = MIN(data_len-offset, sizeof(buf_read));
-                err_code = ext_fstorage_read(src_addr+offset, buf_read, len_read);
+                // Read the next page (handle last page remainder)
+                uint32_t page_addr = adjusted_dest + page_num;
+                uint32_t page_len = (page_num == num_read_pages - 1) ? (data_len % SPI_FLASH_PAGE_LEN) : SPI_FLASH_PAGE_LEN;
+                
+                err_code = ext_fstorage_read(page_addr, buf_read, page_len);
                 if (NRF_SUCCESS != err_code)
                 {
                     break;
                 }
 
                 // Update the hash with the bytes we just read
-                err_code = nrf_crypto_hash_update(&hash_context, buf_read, len_read);
+                err_code = nrf_crypto_hash_update(&hash_context, buf_read, page_len);
                 if (NRF_SUCCESS != err_code)
                 {
                     break;
