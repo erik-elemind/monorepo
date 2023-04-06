@@ -90,7 +90,7 @@ ret_code_t ext_fstorage_init(nrf_fstorage_evt_handler_t evt_handler)
     #endif
 
     // TODO: this would cause it to erase the area everytime device boots up (prob ok?)
-    ext_fstorage_erase(SPI_FLASH_OTA_START_ADDR, SPI_FLASH_OTA_NUM_BLOCKS, NULL);
+    ext_fstorage_erase(SPI_FLASH_OTA_START_ADDR, SPI_FLASH_OTA_NUM_BLOCKS, NULL, false);
 
     return NRF_SUCCESS;
 }
@@ -213,7 +213,8 @@ ret_code_t ext_fstorage_write(uint32_t               dest,
 
 ret_code_t ext_fstorage_erase(uint32_t page_addr,
                               uint32_t num_blocks,
-                              void   * p_param)
+                              void   * p_param,
+                              bool     notify)
 {
     ret_code_t err_code;
 
@@ -225,6 +226,8 @@ ret_code_t ext_fstorage_erase(uint32_t page_addr,
         .len        = num_blocks,
         .p_param    = p_param,
     };
+
+    if (notify) goto end;
 
     for (uint32_t i=0; i<num_blocks; i++, page_addr += SPI_FLASH_PAGES_IN_BLOCK)
     {
@@ -250,7 +253,9 @@ ret_code_t ext_fstorage_erase(uint32_t page_addr,
             return err_code;
         }
     }
+    return NRF_SUCCESS;
 
+    end:
     if (m_handler)
     {
         m_handler(&e);

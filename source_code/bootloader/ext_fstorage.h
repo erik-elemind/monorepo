@@ -75,13 +75,15 @@ ret_code_t ext_fstorage_write(uint32_t               dest,
  * @param[in]   page_addr   Address of the page to erase.
  * @param[in]   num_pages   Number of pages to erase.
  * @param[in]   p_param     User-defined parameter passed to the event handler (may be NULL).
+ * @param[in]   notify      Bool to notify event handler
  *
  * @retval  NRF_SUCCESS, if the operation was successful. Otherwise, an error
  *          code is returned.
  */
 ret_code_t ext_fstorage_erase(uint32_t               page_addr,
                               uint32_t               num_pages,
-                              void                 * p_param);
+                              void                 * p_param,
+                              bool                   notify);
 
 /**@brief   Calculate the number of pages to erase based on address and length.
  *

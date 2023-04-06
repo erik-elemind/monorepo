@@ -473,7 +473,7 @@ static nrf_dfu_result_t update_data_size_get(dfu_init_command_t const * p_init, 
         NRF_LOG_ERROR("Init packet does not contain valid firmware size");
     }
 
-    NRF_LOG_INFO("data size=%d, type=%d", *p_size, p_init->type);
+    NRF_LOG_INFO("data size=%d, type=%d", *p_size, p_init->type); // how do I save this value lol (*p_size)
 
     return ret_val;
 }
@@ -707,6 +707,7 @@ static bool nrf_dfu_validation_hash_ok(uint8_t const * p_hash, uint32_t src_addr
         err_code = nrf_crypto_hash_init(&hash_context, &g_nrf_crypto_hash_sha256_info);
         if (NRF_SUCCESS == err_code)
         {
+            // TODO: ADJUST THE ADDRESSES HERE. SIZE SHOULD BE MAX PAGE LENGTH
             static uint8_t buf_read[64];
             for (uint32_t offset=0, len_read; offset<data_len; offset+=len_read)
             {
@@ -1171,12 +1172,14 @@ nrf_dfu_result_t postvalidate(uint32_t data_addr, uint32_t data_len, bool is_tru
 
 nrf_dfu_result_t nrf_dfu_validation_post_data_execute(uint32_t data_addr, uint32_t data_len)
 {
+    NRF_LOG_INFO("post_data_execute");
     return postvalidate(data_addr, data_len, false);
 }
 
 
 nrf_dfu_result_t nrf_dfu_validation_activation_prepare(uint32_t data_addr, uint32_t data_len)
 {
+    NRF_LOG_INFO("activation_prepare");
     return postvalidate(data_addr, data_len, true);
 }
 

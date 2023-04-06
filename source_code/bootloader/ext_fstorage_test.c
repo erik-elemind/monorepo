@@ -107,7 +107,7 @@ static bool test_write_offset(void)
 
             // Erase the blocks to clean up
             err_code = ext_fstorage_erase(base_addr, 
-                ext_fstorage_block_count(base_addr, sizeof(buf_read)), NULL);
+                ext_fstorage_block_count(base_addr, sizeof(buf_read)), NULL, false);
             if (NRF_SUCCESS != err_code)
             {
                 return false;
@@ -189,7 +189,7 @@ static bool test_read_offset(void)
     NRF_LOG_WARNING("read offset test: start.");
 
     // Erase the blocks to start clean
-    err_code = ext_fstorage_erase(base_addr, ext_fstorage_block_count(base_addr, len), NULL);
+    err_code = ext_fstorage_erase(base_addr, ext_fstorage_block_count(base_addr, len), NULL, false);
     if (NRF_SUCCESS != err_code)
     {
         return false;
@@ -343,7 +343,7 @@ static bool test_write_readback(const uint32_t base_addr, const uint32_t len)
 
     // Erase the range to start.
     // This is not explicitly tested, but readback will fail if this doesn't work.
-    err_code = ext_fstorage_erase(base_addr, ext_fstorage_block_count(base_addr, len), NULL);
+    err_code = ext_fstorage_erase(base_addr, ext_fstorage_block_count(base_addr, len), NULL, false);
     if (NRF_SUCCESS != err_code)
     {
         return false;
@@ -461,7 +461,7 @@ static bool test_erase_first_block(void)
 {
     nrf_delay_ms(NRF_RTT_DELAY_MS);
     NRF_LOG_INFO("test_erase_first_block .");
-    return (NRF_SUCCESS == ext_fstorage_erase(SPI_FLASH_OTA_START_ADDR, 1, NULL));
+    return (NRF_SUCCESS == ext_fstorage_erase(SPI_FLASH_OTA_START_ADDR, 1, NULL, false));
 }
 
 static bool test_read_first_page(void)
@@ -537,7 +537,7 @@ static bool test_erase_ota_all(void)
 {
     nrf_delay_ms(NRF_RTT_DELAY_MS);
     NRF_LOG_INFO("test_erase_ota_all .");
-    return (NRF_SUCCESS == ext_fstorage_erase(SPI_FLASH_OTA_START_ADDR, SPI_FLASH_OTA_NUM_BLOCKS, NULL));
+    return (NRF_SUCCESS == ext_fstorage_erase(SPI_FLASH_OTA_START_ADDR, SPI_FLASH_OTA_NUM_BLOCKS, NULL, false));
 }
 
 static bool test_write_verify_ota_all(void)

@@ -202,14 +202,25 @@ ret_code_t nrf_dfu_flash_erase(uint32_t                 page_addr,
 {
     ret_code_t rc;
 
-    NRF_LOG_DEBUG("nrf_fstorage_erase(addr=0x%p, len=%d pages), queue usage: %d",
+    NRF_LOG_INFO("nrf_fstorage_erase(addr=0x%p, len=%d pages), queue usage: %d",
                   page_addr, num_pages, m_flash_operations_pending);
 
     if (EXT_STORAGE_IS_ADDR(page_addr))
     {
+        uint32_t relative_byte_address = page_addr - EXT_STORAGE_ADDR_BASE;
+        uint32_t pages = relative_byte_address / SPI_FLASH_PAGE_LEN;
+        uint32_t adjusted_page_addr = EXT_STORAGE_ADDR_NEW_BASE + pages;
+
+        if (adjusted_page_addr % SPI_FLASH_PAGES_IN_BLOCK == 0)
+        {
+            // ff4: input is in blocks
+            //lint -save -e611 (Suspicious cast)
+            rc = ext_fstorage_erase(adjusted_page_addr, 1, (void *)callback, false);
+            //lint -restore
+        }
         //lint -save -e611 (Suspicious cast)
-        rc = ext_fstorage_erase(page_addr, num_pages, (void *)callback);
-        //lint -restore
+        rc = ext_fstorage_erase(page_addr, num_pages, (void *)callback, true);
+        //lint -restore        
     }
     else
     {
