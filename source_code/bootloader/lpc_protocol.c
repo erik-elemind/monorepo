@@ -9,6 +9,7 @@
 
 #include "lpc_protocol.h"
 #include "lpc_pkt.h"
+#include "custom_board.h"
 
 // nordic sdk
 #include "nrf_delay.h"
@@ -185,9 +186,27 @@ int lpc_protocol_apply_fw(uint32_t file_sz)
     int32_t bytes_to_send;
     int32_t bytes_rem = file_sz;
 
-    // Erase the LPC flash. This also unlocks the device.
-    RETURN_IF_NONZERO(lpc_send_flash_erase_region());
+    // Fill  & Set Configuration
+    RETURN_IF_NONZERO(lpc_send_fill_mem1()); 
     RETURN_IF_NONZERO(wait_for_pkt_rsp(PKT_CMDRSP_TAG_GENERIC_RSP, 0, NULL));
+    NRF_LOG_INFO("Fill mem1 success .");
+
+    RETURN_IF_NONZERO(lpc_send_fill_mem2()); 
+    RETURN_IF_NONZERO(wait_for_pkt_rsp(PKT_CMDRSP_TAG_GENERIC_RSP, 0, NULL));
+    NRF_LOG_INFO("Fill mem2 success .");
+    
+    RETURN_IF_NONZERO(lpc_send_config_mem());
+    RETURN_IF_NONZERO(wait_for_pkt_rsp(PKT_CMDRSP_TAG_GENERIC_RSP, 0, NULL));
+    NRF_LOG_INFO("Configure Memory success .");
+
+    // Erase the LPC flash. This also unlocks the device.
+    RETURN_IF_NONZERO(lpc_send_flash_erase_region1());
+    RETURN_IF_NONZERO(wait_for_pkt_rsp(PKT_CMDRSP_TAG_GENERIC_RSP, 0, NULL));
+    NRF_LOG_INFO("Flash erase 1 success .");
+
+    RETURN_IF_NONZERO(lpc_send_flash_erase_region2());
+    RETURN_IF_NONZERO(wait_for_pkt_rsp(PKT_CMDRSP_TAG_GENERIC_RSP, 0, NULL));
+    NRF_LOG_INFO("Flash erase 2 success .");
 
     // Read the max packet size
     RETURN_IF_NONZERO(lpc_send_get_property(PROP_MAX_PACKET_SIZE));
@@ -201,6 +220,8 @@ int lpc_protocol_apply_fw(uint32_t file_sz)
     // See diagram and description in MCUBOOTRM.pdf, section 3.3.
     RETURN_IF_NONZERO(lpc_send_write_mem(bytes_rem));
     RETURN_IF_NONZERO(wait_for_pkt_rsp(PKT_CMDRSP_TAG_GENERIC_RSP, 0, NULL));
+
+    NRF_LOG_INFO("Start write procedure .");
 
     while (bytes_rem)
     {
@@ -230,6 +251,12 @@ int lpc_protocol_apply_fw(uint32_t file_sz)
     RETURN_IF_NONZERO(wait_for_pkt_rsp(PKT_CMDRSP_TAG_GENERIC_RSP, 0, NULL));
     NRF_LOG_INFO("all bytes written! %d / %d", offset, file_sz);
 
+    // TODO: add isp reset pins here maybe?
+    // Setup ISP GPIOs
+    nrf_gpio_cfg_input(ISP0N_PIN, NRF_GPIO_PIN_PULLDOWN);
+    nrf_gpio_cfg_input(ISP1N_PIN, NRF_GPIO_PIN_PULLUP);
+    nrf_gpio_cfg_input(ISP2N_PIN, NRF_GPIO_PIN_PULLDOWN);
+
     // Reset the LPC to complete the process
     RETURN_IF_NONZERO(lpc_send_reset());
     RETURN_IF_NONZERO(wait_for_pkt_rsp(PKT_CMDRSP_TAG_GENERIC_RSP, 0, NULL));
@@ -249,17 +276,17 @@ int lpc_property_read(void)
     RETURN_IF_NONZERO(wait_for_pkt_rsp(PKT_CMDRSP_TAG_GET_PROPERTY_RSP, 0, &p_params));
     NRF_LOG_WARNING("PROP_MAX_PACKET_SIZE=0x%08X (%d)", p_params[1], p_params[1]);
 
-    RETURN_IF_NONZERO(lpc_send_get_property(PROP_FLASH_START_ADDR));
+    RETURN_IF_NONZERO(lpc_send_get_property(PROP_RAM_SIZE_BYTES));
     RETURN_IF_NONZERO(wait_for_pkt_rsp(PKT_CMDRSP_TAG_GET_PROPERTY_RSP, 0, &p_params));
-    NRF_LOG_WARNING("PROP_FLASH_START_ADDR=0x%08X (%d)", p_params[1], p_params[1]);
+    NRF_LOG_WARNING("PROP_RAM_SIZE_BYTES=0x%08X (%d)", p_params[1], p_params[1]);
 
-    RETURN_IF_NONZERO(lpc_send_get_property(PROP_FLASH_SIZE_BYTES));
+    RETURN_IF_NONZERO(lpc_send_get_property(PROP_FLASH_SECURITY_STATE));
     RETURN_IF_NONZERO(wait_for_pkt_rsp(PKT_CMDRSP_TAG_GET_PROPERTY_RSP, 0, &p_params));
-    NRF_LOG_WARNING("PROP_FLASH_SIZE_BYTES=0x%08X (%d)", p_params[1], p_params[1]);
+    NRF_LOG_WARNING("PROP_FLASH_SECURITY_STATE=0x%08X (%d)", p_params[1], p_params[1]);
 
-    RETURN_IF_NONZERO(lpc_send_get_property(PROP_FLASH_SECTOR_SIZE));
+    RETURN_IF_NONZERO(lpc_send_get_property(PROP_AVAIL_COMMANDS));
     RETURN_IF_NONZERO(wait_for_pkt_rsp(PKT_CMDRSP_TAG_GET_PROPERTY_RSP, 0, &p_params));
-    NRF_LOG_WARNING("PROP_FLASH_SECTOR_SIZE=0x%08X (%d)", p_params[1], p_params[1]);
+    NRF_LOG_WARNING("PROP_AVAIL_COMMANDS=0x%08X (%d)", p_params[1], p_params[1]);
 
     return 0;
 }

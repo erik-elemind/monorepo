@@ -11,7 +11,9 @@ ASMFLAGS += -DBOARD_FF4
 CFLAGS += -DBL_CRYPTO_DISABLE=0
 
 # Enable logs
-CFLAGS += -DNRF_LOG_ENABLED=1
+# CFLAGS += -DNRF_LOG_ENABLED=1
+# CFLAGS += -DNRF_LOG_DEFAULT_LEVEL=4
+CFLAGS += -DNRF_BL_DFU_ALLOW_UPDATE_FROM_APP
 
 # Use non-deferred logs, which helps with the long running tests, and 
 # reduces the buffers needed.
@@ -30,6 +32,6 @@ CFLAGS += -DNRF_LOG_BUFSIZE=128
 # We must completely erase the chip any time we switch the bootloader 
 # memory map to update the booloader start addr in UICR and MBR.
 # Use nrfjprog --recover to erase the chip.
-LINKER_SCRIPT ?= ../nrf52832_bootloader_test.ld
+LINKER_SCRIPT ?= ../nrf52832_bootloader.ld
 # Proceed to the common bootloader makefile.
 include ../nrf52832_bootloader.mk

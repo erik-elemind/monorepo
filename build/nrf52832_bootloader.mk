@@ -120,7 +120,7 @@ default: nrf52832_xxaa_s132
 	@echo Creating $(NAMED_HEX)
 	cp $(APP_HEX) $(NAMED_HEX)
 	@echo Packaging $(PACKAGE_NAME)
-	nrfutil pkg generate --hw-version 52 --bootloader-version 1 \
+	nrfutil pkg generate --hw-version 52 --bootloader-version 3 \
 		--sd-req $(SD132_7_0_1_FW_ID) \
 		--bootloader $(APP_HEX) \
 		--app-boot-validation VALIDATE_GENERATED_SHA256 \

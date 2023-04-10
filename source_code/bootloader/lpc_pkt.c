@@ -442,7 +442,7 @@ int lpc_send_ack(void)
         PKT_TYPE_ACK
     };
 
-    NRF_LOG_DEBUG("TX ACK");
+    NRF_LOG_INFO("TX ACK");
 
     if (m_uart_tx_func)
     {
@@ -502,15 +502,24 @@ static int send_cmdrsp(pkt_cmdrsp_tag_e tag, uint32_t param_count, const uint32_
     return -1;
 }
 
-int lpc_send_flash_erase_region(void)
+int lpc_send_flash_erase_region1(void)
 {
-    static const uint32_t params[] = {
-        0,        // start addr
-        0x90000,  // len
-        0,        // region id. 0 for internal flash.
+    static const uint32_t params1[] = {
+        0x8000000 ,        // start addr
+        0x400000       // len
     };
-    return send_cmdrsp(PKT_CMDRSP_TAG_FLASH_ERASE_REGION, ARRAY_SIZE(params), params, 0);
+    return send_cmdrsp(PKT_CMDRSP_TAG_FLASH_ERASE_REGION, ARRAY_SIZE(params1), params1, 0);
 }
+
+int lpc_send_flash_erase_region2(void)
+{
+    static const uint32_t params2[] = {
+        0x8400000 ,        // start addr
+        0x400000       // len
+    };
+    return send_cmdrsp(PKT_CMDRSP_TAG_FLASH_ERASE_REGION, ARRAY_SIZE(params2), params2, 0);
+}
+
 
 int lpc_send_get_property(property_type_t prop)
 {
@@ -525,10 +534,39 @@ int lpc_send_reset(void)
     return send_cmdrsp(PKT_CMDRSP_TAG_RESET, 0, NULL, 0);
 }
 
+int lpc_send_fill_mem1(void)
+{
+    uint32_t params[] = {
+        0x1C000,         // start addr
+        4,               // len
+        0xC1000204,      // pattern
+    };
+    return send_cmdrsp(PKT_CMDRSP_TAG_FILL_MEM, ARRAY_SIZE(params), params, PKT_CMDRSP_FLAG_MORE_DATA);
+}
+
+int lpc_send_fill_mem2(void)
+{
+    uint32_t params[] = {
+        0x1C004,         // start addr
+        4,               // len
+        0x20000000,      // pattern
+    };
+    return send_cmdrsp(PKT_CMDRSP_TAG_FILL_MEM, ARRAY_SIZE(params), params, PKT_CMDRSP_FLAG_MORE_DATA);
+}
+
+int lpc_send_config_mem(void)
+{
+    uint32_t params[] = {
+        9,               // memory ID
+        0x1C000,      // config block address
+    };
+    return send_cmdrsp(PKT_CMDRSP_TAG_CONFIG_QUAD_SPI, ARRAY_SIZE(params), params, PKT_CMDRSP_FLAG_MORE_DATA);
+}
+
 int lpc_send_write_mem(uint32_t len)
 {
     uint32_t params[] = {
-        0,      // start addr
+        0x8000000 ,      // start addr
         len,    // len
         0,
     };

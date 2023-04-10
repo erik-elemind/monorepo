@@ -89,9 +89,6 @@ ret_code_t ext_fstorage_init(nrf_fstorage_evt_handler_t evt_handler)
     m_handler = handler_orig;
     #endif
 
-    // TODO: this would cause it to erase the area everytime device boots up (prob ok?)
-    ext_fstorage_erase(SPI_FLASH_OTA_START_ADDR, SPI_FLASH_OTA_NUM_BLOCKS, NULL, false);
-
     return NRF_SUCCESS;
 }
 
