@@ -795,6 +795,10 @@ handle_state_running (interpreter_event_t *event)
       {
     	  interpreter_stop_therapy();
       }
+
+      // Update memory level after log files closed
+      ble_memory_level_request();
+
       // change the state to standy
       set_state(INTERPRETER_STATE_STANDBY);
       break;

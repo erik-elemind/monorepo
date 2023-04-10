@@ -21,6 +21,7 @@
 #include "interpreter.h"
 #include "settings.h"
 #include "fs_commands.h"
+#include "fatfs_utils.h"
 
 #if (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
 
@@ -30,12 +31,22 @@ static const char *TAG = "ble";	// Logging prefix for this module
 
 #define   BLE_POWER_OFF_DELAY_MS 50
 
+#define MEMORY_LEVEL_WARN_THRESHOLD 180000000
+#define MEMORY_LEVEL_FULL_THRESHOLD 300000000
+
 typedef enum
 {
 	FACTORY_RESET_IDLE		= 0,
 	FACTORY_RESET_ACTIVE	= 1,
 	FACTORY_RESET_ERROR		= 2,
 } factory_reset_t;
+
+typedef enum
+{
+	MEMORY_LEVEL_OK			= 0,
+	MEMORY_LEVEL_WARN		= 1,
+	MEMORY_LEVEL_FULL		= 2,
+} memory_level_t;
 
 //
 // Task events:
@@ -134,7 +145,7 @@ typedef struct
   uint64_t time;
   uint8_t charger_status;
   uint8_t app_settings;
-  uint8_t memory_level;
+  memory_level_t memory_level;
   factory_reset_t factory_reset;
   uint8_t sound_control;
   uint8_t addr[ADDR_NUM];
@@ -158,7 +169,7 @@ static ble_context_t g_ble_context = {
   .time = 0,
   .charger_status = 0,
   .app_settings = 0,
-  .memory_level = 0,
+  .memory_level = MEMORY_LEVEL_OK,
   .factory_reset = FACTORY_RESET_IDLE,
   .sound_control = 0,
   .addr = {0,0,0,0,0,0},
@@ -1036,7 +1047,32 @@ handle_settings_update(ble_event_t *event)
 static void
 handle_memory_level_request(ble_event_t *event)
 {
-	ble_uart_send_memory_level(g_ble_context.memory_level);
+	DWORD free_bytes;
+
+	// Check the current memory level on the file system, and update char
+	if(f_getfreebytes(&free_bytes, NULL) == FR_OK)
+	{
+		if(free_bytes >= MEMORY_LEVEL_FULL_THRESHOLD)
+		{
+			g_ble_context.memory_level = MEMORY_LEVEL_FULL;
+		}
+		else if(free_bytes >= MEMORY_LEVEL_WARN_THRESHOLD)
+		{
+			g_ble_context.memory_level = MEMORY_LEVEL_WARN;
+		}
+		else
+		{
+			g_ble_context.memory_level = MEMORY_LEVEL_OK;
+		}
+
+		ble_uart_send_memory_level(g_ble_context.memory_level);
+	}
+	else
+	{
+		LOGE(TAG, "Unable to check memory level of file system");
+	}
+
+
 }
 
 static void
@@ -1263,6 +1299,9 @@ handle_ble_connected(ble_event_t *event)
 		// turn off alarm on BLE connect if running
 		interpreter_event_stop_script(false);
 	}
+
+	// Measure and send memory level to BLE
+	ble_memory_level_request();
 }
 
 static void
