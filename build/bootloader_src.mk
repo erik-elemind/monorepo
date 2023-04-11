@@ -97,6 +97,7 @@ INC_FOLDERS += \
   $(BL_SOURCE_DIR) \
   $(BL_SOURCE_DIR)/config \
   $(BL_SOURCE_DIR)/../common \
+  $(BL_SOURCE_DIR)/sdk_patched \
   $(SDK_ROOT)/external/fprintf \
   $(SDK_ROOT)/external/segger_rtt \
   $(SDK_ROOT)/components/libraries/crypto/backend/micro_ecc \
