@@ -55,6 +55,7 @@
 #include "nrf_dfu_ver_validation.h"
 #include "nrf_strerror.h"
 #include "ext_fstorage.h"
+#include "ext_flash.h"
 
 #define NRF_LOG_MODULE_NAME nrf_dfu_validation
 #include "nrf_log.h"
@@ -428,6 +429,15 @@ static nrf_dfu_result_t nrf_dfu_validation_signature_check(dfu_signature_type_t 
     #endif
 }
 
+uint32_t nrf_dfu_get_fw_size(void)
+{
+    if ((mp_init->type == DFU_FW_TYPE_EXTERNAL_APPLICATION) &&
+         (mp_init->has_app_size == true))
+    {
+        return mp_init->app_size;
+    }
+    return 0;
+}
 
 // Function to calculate the total size of the firmware(s) in the update.
 static nrf_dfu_result_t update_data_size_get(dfu_init_command_t const * p_init, uint32_t * p_size)
@@ -473,7 +483,7 @@ static nrf_dfu_result_t update_data_size_get(dfu_init_command_t const * p_init, 
         NRF_LOG_ERROR("Init packet does not contain valid firmware size");
     }
 
-    NRF_LOG_INFO("data size=%d, type=%d", *p_size, p_init->type);
+    NRF_LOG_INFO("data size=%d, type=%d", *p_size, p_init->type); // how do I save this value lol (*p_size)
 
     return ret_val;
 }
@@ -702,24 +712,32 @@ static bool nrf_dfu_validation_hash_ok(uint8_t const * p_hash, uint32_t src_addr
 
     if (src_addr >= EXT_STORAGE_ADDR_BASE)
     {
+        uint32_t relative_byte_address = src_addr - EXT_STORAGE_ADDR_BASE;
+        uint32_t num_pages = relative_byte_address / SPI_FLASH_PAGE_LEN;
+        uint32_t adjusted_dest = EXT_STORAGE_ADDR_NEW_BASE + num_pages;
+        NRF_LOG_INFO(" read adjusted_dest=%p", adjusted_dest);
+
         // For external flash, we cannot read memory directly. We must 
         // use the external flash API.
         err_code = nrf_crypto_hash_init(&hash_context, &g_nrf_crypto_hash_sha256_info);
         if (NRF_SUCCESS == err_code)
         {
-            static uint8_t buf_read[64];
-            for (uint32_t offset=0, len_read; offset<data_len; offset+=len_read)
+            static uint8_t buf_read[SPI_FLASH_PAGE_LEN];
+            uint32_t num_read_pages = (data_len / SPI_FLASH_PAGE_LEN) + 1;
+            for (uint32_t page_num = 0; page_num < num_read_pages; page_num++)
             {
-                // Read the next chunk
-                len_read = MIN(data_len-offset, sizeof(buf_read));
-                err_code = ext_fstorage_read(src_addr+offset, buf_read, len_read);
+                // Read the next page (handle last page remainder)
+                uint32_t page_addr = adjusted_dest + page_num;
+                uint32_t page_len = (page_num == num_read_pages - 1) ? (data_len % SPI_FLASH_PAGE_LEN) : SPI_FLASH_PAGE_LEN;
+                
+                err_code = ext_fstorage_read(page_addr, buf_read, page_len);
                 if (NRF_SUCCESS != err_code)
                 {
                     break;
                 }
 
                 // Update the hash with the bytes we just read
-                err_code = nrf_crypto_hash_update(&hash_context, buf_read, len_read);
+                err_code = nrf_crypto_hash_update(&hash_context, buf_read, page_len);
                 if (NRF_SUCCESS != err_code)
                 {
                     break;
@@ -1171,12 +1189,14 @@ nrf_dfu_result_t postvalidate(uint32_t data_addr, uint32_t data_len, bool is_tru
 
 nrf_dfu_result_t nrf_dfu_validation_post_data_execute(uint32_t data_addr, uint32_t data_len)
 {
+    NRF_LOG_INFO("post_data_execute");
     return postvalidate(data_addr, data_len, false);
 }
 
 
 nrf_dfu_result_t nrf_dfu_validation_activation_prepare(uint32_t data_addr, uint32_t data_len)
 {
+    NRF_LOG_INFO("activation_prepare");
     return postvalidate(data_addr, data_len, true);
 }
 
