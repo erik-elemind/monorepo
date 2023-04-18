@@ -10,7 +10,7 @@ ASMFLAGS += -DBOARD_FF4
 # Enable crypto on FF3
 CFLAGS += -DBL_CRYPTO_DISABLE=0
 
-# Disable logs
+# Enable logs
 CFLAGS += -DNRF_LOG_ENABLED=1
 
 # Use non-deferred logs, which helps with the long running tests, and 
@@ -20,11 +20,11 @@ CFLAGS += -DNRF_LOG_BUFSIZE=128
 
 # Reduce ram consumption to enable the test buffers to fit.
 # Important note: this can make the DFU transfer fail artificially.
-CFLAGS += -DNRF_DFU_BLE_BUFFERS_OVERRIDE=1
-CFLAGS += -DNRF_DFU_BLE_BUFFERS=1
+# CFLAGS += -DNRF_DFU_BLE_BUFFERS_OVERRIDE=1
+# CFLAGS += -DNRF_DFU_BLE_BUFFERS=1
 
 # Disable the inactivity timer so that we only run the tests once and stop.
-CFLAGS += -DNRF_BL_DFU_INACTIVITY_TIMEOUT_MS=0
+#CFLAGS += -DNRF_BL_DFU_INACTIVITY_TIMEOUT_MS=0
 
 # Specify the linker script which has a larger code space for flash.
 # We must completely erase the chip any time we switch the bootloader 
