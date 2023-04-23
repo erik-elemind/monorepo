@@ -36,11 +36,10 @@ class AudioPlayUffsWav : public AudioStream, public AudioPlayUffsWavBufferRTOS
 {
 public:
 	AudioPlayUffsWav(void) : AudioStream(0, NULL), block_left(NULL), block_right(NULL) { begin(); }
-	void begin(void);
-	bool play(const char *filename, bool loop = false);
-	void stop(void);
 	virtual void update(void);
 	virtual bool is_idle(void);
+	bool play(const char *filename, bool loop = false);
+	void stop(void);
 #if 0
 	bool isPlaying(void);
 	uint32_t positionMillis(void);
@@ -48,6 +47,7 @@ public:
 	virtual void update(void);
 #endif
 private:
+	void begin(void);
 	void update_16bit_22_mono(void);
 	void update_16bit_22_stereo(void);
 	void update_16bit_44_mono(void);

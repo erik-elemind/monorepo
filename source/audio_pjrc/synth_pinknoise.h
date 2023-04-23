@@ -40,13 +40,9 @@ public:
 		pinc   = 0x0CCC;
 		pdec   = 0x0CCC;
 	}	
-	void amplitude(float n) {
-		if (n < 0.0) n = 0.0;
-		else if (n > 1.0) n = 1.0;
-		level = (int32_t)(n * 65536.0);
-	}
 	virtual void update(void);
 	virtual bool is_idle(void);
+	void amplitude(float n);
 private:
 	static const uint8_t pnmask[256];
 	static const int32_t pfira[64];

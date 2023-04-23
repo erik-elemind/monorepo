@@ -33,6 +33,7 @@
 #include "utils.h"
 #include "led.h"
 #include "audio.h"
+#include "audio_stream_task.h"
 #include "wavbuf.h"
 #include "hrm.h"
 #include "accel.h"
@@ -103,9 +104,14 @@ StaticTask_t button_task_struct;
 
 #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
 #define AUDIO_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*4) // 5
-#define AUDIO_TASK_PRIORITY 3 // used to be 4
+#define AUDIO_TASK_PRIORITY 1
 StackType_t audio_task_array[ AUDIO_TASK_STACK_SIZE ];
 StaticTask_t audio_task_struct;
+
+#define AUDIO_STREAM_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*4) // 5
+#define AUDIO_STREAM_TASK_PRIORITY 3 // used to be 4
+StackType_t audio_stream_task_array[ AUDIO_STREAM_TASK_STACK_SIZE ];
+StaticTask_t audio_stream_task_struct;
 #endif
 
 #if (defined(ENABLE_WAVBUF_TASK) && (ENABLE_WAVBUF_TASK > 0U))
@@ -347,6 +353,12 @@ int main(void)
 	task_handle = xTaskCreateStatic(&audio_task,
 	  "audio", AUDIO_TASK_STACK_SIZE, NULL, AUDIO_TASK_PRIORITY, audio_task_array, &audio_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)AUDIO_TASK_STACK_SIZE );
+
+	LOGV(TAG, "Launching audio compute task...");
+	audio_stream_pretask_init();
+	task_handle = xTaskCreateStatic(&audio_stream_task,
+	  "audio", AUDIO_STREAM_TASK_STACK_SIZE, NULL, AUDIO_STREAM_TASK_PRIORITY, audio_stream_task_array, &audio_stream_task_struct);
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)AUDIO_STREAM_TASK_STACK_SIZE );
 #endif
 
 #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))

@@ -30,6 +30,9 @@
 #include "play_uffs_wav_parser.h"
 #include "critical_section.h"
 
+/*****************************************************************************/
+// class AudioPlayUffsWav
+
 //static const char *TAG = "play_uffs_wav";   // Logging prefix for this module
 
 void AudioPlayUffsWav::begin(void)

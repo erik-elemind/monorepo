@@ -29,6 +29,9 @@
 #include "utility/dspinst.h"
 #include "utils.h"
 
+/*****************************************************************************/
+// class AudioEffectFade
+
 extern "C" {
 extern const int16_t fader_table[257];
 };
@@ -88,7 +91,43 @@ void AudioEffectFade::update(void)
 
 bool AudioEffectFade::is_idle(void)
 {
-  return position == 0 || position == 0xFFFFFFFF;
+  AUDIO_ENTER_CRITICAL();
+  uint32_t pos = position;
+  AUDIO_EXIT_CRITICAL();
+  return pos == 0 || pos == 0xFFFFFFFF;
+}
+
+void AudioEffectFade::fadeIn(uint32_t milliseconds) {
+  if(milliseconds == 0){
+    setVolume(true);
+  }else{
+    // TODO: change 441u to 500u, to match sampling rate
+//          uint32_t samples = (uint32_t)(milliseconds * 441u + 5u) / 10u;
+    // changed to 22kHz sampling rate
+    uint32_t samples = (uint32_t)(milliseconds * 220u + 5u) / 10u;
+      //Serial.printf("fadeIn, %u samples\n", samples);
+      fadeBegin(0xFFFFFFFFu / samples, 1);
+  }
+}
+
+void AudioEffectFade::fadeOut(uint32_t milliseconds) {
+    if(milliseconds == 0){
+      setVolume(false);
+    }else{
+    // TODO: change 441u to 500u, to match sampling rate
+//          uint32_t samples = (uint32_t)(milliseconds * 441u + 5u) / 10u;
+      // changed to 22kHz sampling rate
+      uint32_t samples = (uint32_t)(milliseconds * 220u + 5u) / 10u;
+      //Serial.printf("fadeOut, %u samples\n", samples);
+      fadeBegin(0xFFFFFFFFu / samples, 0);
+    }
+}
+
+void AudioEffectFade::setVolume(bool vol){
+    AUDIO_ENTER_CRITICAL();
+    // 0 = silent, 0xFFFFFFFF = pass-through
+    position = vol ? 0xFFFFFFFF : 0;
+    AUDIO_EXIT_CRITICAL();
 }
 
 void AudioEffectFade::fadeBegin(uint32_t newrate, uint8_t dir)

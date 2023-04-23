@@ -30,6 +30,7 @@
 
 //#include <Arduino.h>
 //#include "memcpy_audio.h"
+#include "audio_stream_task.h"
 #include "AudioCompat.h"
 #include "output_i2s.h"
 #include "peripherals.h"
@@ -315,7 +316,7 @@ bool AudioOutputI2S::is_idle(void)
 
 void audio_i2s_isr(I2S_Type *base, i2s_dma_handle_t *handle, status_t completionStatus, void *userData)
 {
-	audio_event_update_streams_from_isr(completionStatus);
+	audio_stream_update_from_isr(completionStatus);
 }
 
 #else

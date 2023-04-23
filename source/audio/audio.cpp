@@ -23,6 +23,7 @@
 #include "config.h"
 #include "ble.h"
 #include "audio.h"
+#include "audio_stream_task.h"
 #include "amp.h"
 #include "AudioPJRC.h"
 #include "AudioStream.h"
@@ -890,7 +891,7 @@ handle_state_off(audio_event_t *event)
       // Turn off power off timer
       xTimerStop(ag_context.audio_power_off_timer_handle, portMAX_DELAY);
 
-      AudioOutputI2S::end();
+      audio_stream_end();
       // pull shutdown pin low - power down
       GPIO_PinWrite(
           BOARD_INITPINS_SSM2518_SHTDNn_GPIO,
@@ -916,7 +917,7 @@ handle_state_off(audio_event_t *event)
       audio_set_volume_int(ag_context.log_volume, false);
 
       // Enable audio
-      AudioOutputI2S::begin();
+      audio_stream_begin();
 
       break;
 
@@ -1172,9 +1173,6 @@ handle_state_standby(audio_event_t *event)
       break;
 
     case AUDIO_EVENT_SOFTWARE_ISR_OCCURRED:
-      // Handle the software interrupt, but in a scheduled, non-ISR context:
-      AudioOutputI2S::handle_audio_i2s_event();
-
       static bool prev_audio_idle = false, curr_audio_idle = false;
       prev_audio_idle = curr_audio_idle;
 
@@ -1398,21 +1396,6 @@ audio_task(void *ignored)
   }
 }
 
-
-
-/*
- * Pin change interrupt callback for audio update ISR,
- * This interrupt is NOT routed to a pin, but is intended to be software triggered.
- */
-#if defined(VARIANT_NFF1) || defined(VARIANT_FF1) || defined(VARIANT_FF2) || defined(VARIANT_FF3) || defined(VARIANT_FF4)
-
-#define HALT_IF_DEBUGGING()                              \
-  do {                                                   \
-    if ((*(volatile uint32_t *)0xE000EDF0) & (1 << 0)) { \
-      __asm("bkpt 1");                                   \
-    }                                                    \
-  } while (0)
-
 // Non-ISR version of this function
 void audio_event_update_streams(void)
 {
@@ -1424,26 +1407,16 @@ void audio_event_update_streams(void)
   }
 }
 
-//void audio_software_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status)
-void audio_event_update_streams_from_isr(status_t i2s_completion_status)
+void audio_event_update_streams_from_isr(void)
 {
-  TRACEALYZER_ISR_AUDIO_BEGIN( AUDIO_I2S_ISR_TRACE );
-
-  if (i2s_completion_status == kStatus_I2S_BufferComplete) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     audio_event_t event = {.type = AUDIO_EVENT_SOFTWARE_ISR_OCCURRED };
     xQueueSendFromISR(g_event_queue, &event, &xHigherPriorityTaskWoken);
 
     // Always do this when calling a FreeRTOS "...FromISR()" function:
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-  }else{
-    HALT_IF_DEBUGGING();
-  }
-
-  TRACEALYZER_ISR_AUDIO_END( xHigherPriorityTaskWoken );
 }
 
-#endif
 
 #else // #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
 
@@ -1492,9 +1465,5 @@ void audio_pink_mute(bool mute){}
 
 void audio_sine_play(){}
 void audio_sine_stop(){}
-
-void audio_event_update_streams(void){}
-void audio_event_update_streams_from_isr(void){}
-
 
 #endif // #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
