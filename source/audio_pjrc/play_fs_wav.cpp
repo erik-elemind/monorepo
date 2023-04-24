@@ -31,9 +31,9 @@
 #include "critical_section.h"
 
 /*****************************************************************************/
-// class AudioPlayUffsWav
+// class AudioPlayFsWav
 
-//static const char *TAG = "play_uffs_wav";   // Logging prefix for this module
+//static const char *TAG = "play_fs_wav";   // Logging prefix for this module
 
 void AudioPlayFsWav::begin(void)
 {
@@ -71,7 +71,7 @@ void AudioPlayFsWav::update_16bit_22_mono(void)
   // AUDIO_BLOCK_SAMPLES MUST BE A MULTIPLE OF 2 [bytes]
   size_t exp_buf_len_bytes = 2*AUDIO_BLOCK_SAMPLES;
 #if (defined(ENABLE_NO_COPY_WAV_BUFFER) && (ENABLE_NO_COPY_WAV_BUFFER > 0U))
-  uffs_wav_buffer_return_t buf_result = get_from_buffer(exp_buf_len_bytes);
+  fs_wav_buffer_return_t buf_result = get_from_buffer(exp_buf_len_bytes);
   int16_t act_buf_len_bytes = buf_result.size;
   buffer = buf_result.data;
 #else
@@ -133,7 +133,7 @@ void AudioPlayFsWav::update_16bit_22_stereo(void)
   // AUDIO_BLOCK_SAMPLES MUST BE A MULTIPLE OF 2 [bytes]
   size_t exp_buf_len_bytes = 2*AUDIO_BLOCK_SAMPLES;
 #if (defined(ENABLE_NO_COPY_WAV_BUFFER) && (ENABLE_NO_COPY_WAV_BUFFER > 0U))
-  uffs_wav_buffer_return_t buf_result = get_from_buffer(exp_buf_len_bytes);
+  fs_wav_buffer_return_t buf_result = get_from_buffer(exp_buf_len_bytes);
   int16_t act_buf_len_bytes = buf_result.size;
   buffer = buf_result.data;
 #else
@@ -195,7 +195,7 @@ void AudioPlayFsWav::update_16bit_44_mono(void)
   // AUDIO_BLOCK_SAMPLES MUST BE A MULTIPLE OF 2 [bytes]
   size_t exp_buf_len_bytes = 2*AUDIO_BLOCK_SAMPLES;
 #if (defined(ENABLE_NO_COPY_WAV_BUFFER) && (ENABLE_NO_COPY_WAV_BUFFER > 0U))
-  uffs_wav_buffer_return_t buf_result = get_from_buffer(exp_buf_len_bytes);
+  fs_wav_buffer_return_t buf_result = get_from_buffer(exp_buf_len_bytes);
   int16_t act_buf_len_bytes = buf_result.size;
   buffer = buf_result.data;
 #else
@@ -235,7 +235,7 @@ void AudioPlayFsWav::update_16bit_44_stereo(void)
   // AUDIO_BLOCK_SAMPLES MUST BE A MULTIPLE OF 4 [bytes]
   size_t exp_buf_len_bytes = 4*AUDIO_BLOCK_SAMPLES;
 #if (defined(ENABLE_NO_COPY_WAV_BUFFER) && (ENABLE_NO_COPY_WAV_BUFFER > 0U))
-  uffs_wav_buffer_return_t buf_result = get_from_buffer(exp_buf_len_bytes);
+  fs_wav_buffer_return_t buf_result = get_from_buffer(exp_buf_len_bytes);
   int16_t act_buf_len_bytes = buf_result.size;
   buffer = buf_result.data;
 #else
@@ -299,7 +299,7 @@ void AudioPlayFsWav::update(void)
   // when the values it pulls from parsing the file only change once, when the file
   // is first opened (on a call to play()).
   get_stream_params(state_play, sample_rate);
-//  LOGV("play_uffs_wav","stream params: %d %lu", state_play, sample_rate);
+//  LOGV("play_fs_wav","stream params: %d %lu", state_play, sample_rate);
 
   switch(state_play){
   case STATE_DIRECT_16BIT_MONO:  // playing mono at native sample rate

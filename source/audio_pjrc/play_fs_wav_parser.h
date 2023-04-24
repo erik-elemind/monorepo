@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef play_uffs_wav_parser_h_
-#define play_uffs_wav_parser_h_
+#ifndef play_fs_wav_parser_h_
+#define play_fs_wav_parser_h_
 
 #include "AudioStream.h"
 #include "FreeRTOS.h"
@@ -85,4 +85,4 @@ private:
 
 };
 
-#endif // play_uffs_wav_parser_h_
+#endif // play_fs_wav_parser_h_

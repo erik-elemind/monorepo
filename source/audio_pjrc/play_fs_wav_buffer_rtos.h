@@ -1,5 +1,5 @@
-#ifndef play_uffs_wav_buffer_h_
-#define play_uffs_wav_buffer_h_
+#ifndef play_fs_wav_buffer_h_
+#define play_fs_wav_buffer_h_
 
 
 
@@ -16,13 +16,13 @@
 #include "stream_memory_rtos.h"
 
 // TODO: Use this RAM in a more clever manner?
-// If this is set to 1, only one instance of "AudioPlayUffsWav" can exist at a time.
+// If this is set to 1, only one instance of "AudioPlayFsWav" can exist at a time.
 #define USE_SRAMX_AUDIO_BUFFER (0U)
 
-// TODO: Check why everything runs when WAV_BUFFER_UFFS_READ_CHUNK_SIZE is 512, but not when it is 4096.
-//#define WAV_BUFFER_UFFS_READ_CHUNK_SIZE 4096
-//#define WAV_BUFFER_UFFS_READ_CHUNK_SIZE 1024
-#define WAV_BUFFER_UFFS_READ_CHUNK_SIZE 512
+// TODO: Check why everything runs when WAV_BUFFER_FS_READ_CHUNK_SIZE is 512, but not when it is 4096.
+//#define WAV_BUFFER_FS_READ_CHUNK_SIZE 4096
+//#define WAV_BUFFER_FS_READ_CHUNK_SIZE 1024
+#define WAV_BUFFER_FS_READ_CHUNK_SIZE 512
 #define WAV_BUFFER_TRIGGER_LEVEL_BYTES 4 // 4 bytes = 2 byte left channel, 2 byte right channel.
 
 #if (defined(USE_SRAMX_AUDIO_BUFFER) && (USE_SRAMX_AUDIO_BUFFER > 0U))
@@ -58,33 +58,33 @@ enum wav_buffer_message
   WAV_BUFFER_MSG_ERR
 };
 
-#define UFFS_WAV_BUFFER_EVENT_QUEUE_SIZE 4
+#define FS_WAV_BUFFER_EVENT_QUEUE_SIZE 4
 
 typedef enum
 {
-  UFFS_WAV_BUFFER_STATE_STOPPED = 0,
-  UFFS_WAV_BUFFER_STATE_READING
-} uffs_wav_buffer_state_type_t;
+  FS_WAV_BUFFER_STATE_STOPPED = 0,
+  FS_WAV_BUFFER_STATE_READING
+} fs_wav_buffer_state_type_t;
 
 typedef enum
 {
-  UFFS_WAV_BUFFER_EVENT_NONE = 0,
-  UFFS_WAV_BUFFER_EVENT_START,
-  UFFS_WAV_BUFFER_EVENT_STOP
-} uffs_wav_buffer_event_type_t;
+  FS_WAV_BUFFER_EVENT_NONE = 0,
+  FS_WAV_BUFFER_EVENT_START,
+  FS_WAV_BUFFER_EVENT_STOP
+} fs_wav_buffer_event_type_t;
 
 typedef struct
 {
-  uffs_wav_buffer_event_type_t type;
+  fs_wav_buffer_event_type_t type;
   char filename[256];
   bool loop;
-} uffs_wav_buffer_event_t;
+} fs_wav_buffer_event_t;
 
 typedef struct
 {
   uint8_t* data;
   size_t size;
-} uffs_wav_buffer_return_t;
+} fs_wav_buffer_return_t;
 
 
 class AudioPlayFsWavBufferRTOS {
@@ -97,7 +97,7 @@ public:
     bool fill_buffer(void);
     bool buffer_is_idle(void);
 #if (defined(ENABLE_NO_COPY_WAV_BUFFER) && (ENABLE_NO_COPY_WAV_BUFFER > 0U))
-    uffs_wav_buffer_return_t get_from_buffer(size_t data_len);
+    fs_wav_buffer_return_t get_from_buffer(size_t data_len);
 #else
     size_t get_from_buffer(void* data, size_t data_len);
 #endif
@@ -110,7 +110,7 @@ public:
 protected:
     static AudioPlayFsWavBufferRTOS *buffer_first_update; // init: static in cpp
     AudioPlayFsWavBufferRTOS *buffer_next_update;         // init: begin_buffer()
-    void start(uffs_wav_buffer_event_t &event);
+    void start(fs_wav_buffer_event_t &event);
     void stop();
 private:
 #if (defined(ENABLE_NO_COPY_WAV_BUFFER) && (ENABLE_NO_COPY_WAV_BUFFER > 0U))
@@ -122,7 +122,7 @@ private:
     // allocate stream memory
     smem_rtos_t smr;
 #else
-    uint8_t data[ WAV_BUFFER_UFFS_READ_CHUNK_SIZE ];
+    uint8_t data[ WAV_BUFFER_FS_READ_CHUNK_SIZE ];
 
     // Audio Buffer
 #if (defined(USE_SRAMX_AUDIO_BUFFER) && (USE_SRAMX_AUDIO_BUFFER > 0U))
@@ -139,10 +139,10 @@ private:
     FIL wav_file;                                      // init: begin_buffer(); only access from fill_buffer();
     bool looping;                                      // init: begin_buffer(); only access from fill_buffer();
     AudioPlayFsWavParser parser;                     // init: begin_buffer(); only access from fill_buffer();
-    uffs_wav_buffer_state_type_t buffer_state;         // init: begin_buffer(); only access from fill_buffer();
+    fs_wav_buffer_state_type_t buffer_state;         // init: begin_buffer(); only access from fill_buffer();
 
     // Event
-    uint8_t equeue_array[UFFS_WAV_BUFFER_EVENT_QUEUE_SIZE*sizeof(uffs_wav_buffer_event_t)];
+    uint8_t equeue_array[FS_WAV_BUFFER_EVENT_QUEUE_SIZE*sizeof(fs_wav_buffer_event_t)];
     StaticQueue_t equeue_struct;
     QueueHandle_t equeue_handle;
 };
@@ -153,4 +153,4 @@ private:
 #endif
 
 
-#endif // play_uffs_wav_buffer_h_
+#endif // play_fs_wav_buffer_h_

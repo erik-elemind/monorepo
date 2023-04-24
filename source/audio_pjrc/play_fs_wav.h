@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef play_uffs_wav_h_
-#define play_uffs_wav_h_
+#ifndef play_fs_wav_h_
+#define play_fs_wav_h_
 
 #include <play_fs_wav_buffer_rtos.h>
 #include "AudioStream.h"
@@ -62,4 +62,4 @@ private:
 };
 
 
-#endif // play_uffs_wav_h_
+#endif // play_fs_wav_h_
