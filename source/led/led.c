@@ -11,7 +11,7 @@
 #include "led.h"
 
 #include "anim.h"
-#include "audio.h"
+#include "audio_task.h"
 
 static const char *TAG = "led";	// Logging prefix for this module
 

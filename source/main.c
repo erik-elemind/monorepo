@@ -32,9 +32,9 @@
 #include "ble_shell.h"
 #include "utils.h"
 #include "led.h"
-#include "audio.h"
+#include "audio_task.h"
 #include "audio_stream_task.h"
-#include "wavbuf.h"
+#include "play_fs_wav_buffer_task.h"
 #include "hrm.h"
 #include "accel.h"
 #include "fatfs_writer.h"  // task to handle slow writes

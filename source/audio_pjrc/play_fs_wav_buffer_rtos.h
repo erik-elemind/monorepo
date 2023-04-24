@@ -3,6 +3,8 @@
 
 
 
+#include <play_fs_wav_buffer_rtos.h>
+#include <play_fs_wav_parser.h>
 #include "fsl_common.h"
 #include "fsl_pint.h"
 
@@ -10,8 +12,6 @@
 #include "stream_buffer.h"
 #include "semphr.h"
 #include "ff.h"
-#include "play_uffs_wav_buffer_rtos.h"
-#include "play_uffs_wav_parser.h"
 #include "config.h"
 #include "stream_memory_rtos.h"
 
@@ -87,9 +87,9 @@ typedef struct
 } uffs_wav_buffer_return_t;
 
 
-class AudioPlayUffsWavBufferRTOS {
+class AudioPlayFsWavBufferRTOS {
 public:
-  AudioPlayUffsWavBufferRTOS(void) { begin_buffer(); }
+  AudioPlayFsWavBufferRTOS(void) { begin_buffer(); }
     void begin_buffer(void);
     void pretask_init(void);
     bool start_buffer(const char *filename, bool loop = false);
@@ -108,8 +108,8 @@ public:
       parser.get_stream_params(state_play, sample_rate);
     }
 protected:
-    static AudioPlayUffsWavBufferRTOS *buffer_first_update; // init: static in cpp
-    AudioPlayUffsWavBufferRTOS *buffer_next_update;         // init: begin_buffer()
+    static AudioPlayFsWavBufferRTOS *buffer_first_update; // init: static in cpp
+    AudioPlayFsWavBufferRTOS *buffer_next_update;         // init: begin_buffer()
     void start(uffs_wav_buffer_event_t &event);
     void stop();
 private:
@@ -138,7 +138,7 @@ private:
     // Vars that should only be accessed from fill_buffer;
     FIL wav_file;                                      // init: begin_buffer(); only access from fill_buffer();
     bool looping;                                      // init: begin_buffer(); only access from fill_buffer();
-    AudioPlayUffsWavParser parser;                     // init: begin_buffer(); only access from fill_buffer();
+    AudioPlayFsWavParser parser;                     // init: begin_buffer(); only access from fill_buffer();
     uffs_wav_buffer_state_type_t buffer_state;         // init: begin_buffer(); only access from fill_buffer();
 
     // Event

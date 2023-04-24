@@ -6,11 +6,9 @@
  */
 
 
-#include "wavbuf.h"
-
-
-#include "play_uffs_wav_buffer_rtos.h"
-#include "wavbuf.h"
+#include <play_fs_wav_buffer_rtos.h>
+#include <play_fs_wav_buffer_task.h>
+#include <play_fs_wav_buffer_task.h>
 #include "loglevels.h"
 #include "utils.h"
 
@@ -25,7 +23,7 @@ void
 wavbuf_pretask_init(void)
 {
   // Any pre-scheduler init goes here.
-  AudioPlayUffsWavBufferRTOS::pretask_init_all_buffers();
+  AudioPlayFsWavBufferRTOS::pretask_init_all_buffers();
 }
 
 
@@ -58,7 +56,7 @@ wavbuf_task(void *ignored)
 
     // Stop when fill_all_buffers returns false
     // which indicates no buffers are "active".
-    bool active = AudioPlayUffsWavBufferRTOS::fill_all_buffers();
+    bool active = AudioPlayFsWavBufferRTOS::fill_all_buffers();
     if (!active){
       // Wait for a start notification
       xTaskNotifyWait( 0,                    // Clear no bits on entry

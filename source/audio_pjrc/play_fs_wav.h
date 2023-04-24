@@ -27,15 +27,15 @@
 #ifndef play_uffs_wav_h_
 #define play_uffs_wav_h_
 
-#include "play_uffs_wav_buffer_rtos.h"
+#include <play_fs_wav_buffer_rtos.h>
 #include "AudioStream.h"
 #include "config.h"
 
 
-class AudioPlayUffsWav : public AudioStream, public AudioPlayUffsWavBufferRTOS
+class AudioPlayFsWav : public AudioStream, public AudioPlayFsWavBufferRTOS
 {
 public:
-	AudioPlayUffsWav(void) : AudioStream(0, NULL), block_left(NULL), block_right(NULL) { begin(); }
+	AudioPlayFsWav(void) : AudioStream(0, NULL), block_left(NULL), block_right(NULL) { begin(); }
 	virtual void update(void);
 	virtual bool is_idle(void);
 	bool play(const char *filename, bool loop = false);

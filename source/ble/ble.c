@@ -10,7 +10,7 @@
 #include "config.h"
 
 #include "app.h"
-#include "audio.h"
+#include "audio_task.h"
 #include "ble.h"
 #include "ble_uart_commands.h"
 #include "ble_uart_recv.h"

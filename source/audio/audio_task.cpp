@@ -10,6 +10,7 @@
  * https://docs.google.com/document/d/1uTERHHox20vDXZfLd5PRKSXwrYdiXV4cV4suHQzFgoU
  */
 
+#include <audio_task.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -22,7 +23,6 @@
 #include "loglevels.h"
 #include "config.h"
 #include "ble.h"
-#include "audio.h"
 #include "audio_stream_task.h"
 #include "amp.h"
 #include "AudioPJRC.h"
@@ -62,7 +62,7 @@ AudioMixer5              mixerLeft;
 AudioMixer5              mixerRight;
 
 #if (defined(AUDIO_ENABLE_FG_WAV) && (AUDIO_ENABLE_FG_WAV > 0U))
-AudioPlayUffsWav         wavFG;
+AudioPlayFsWav         wavFG;
 AudioEffectFade          fade_fg_left(false);
 AudioEffectFade          fade_fg_right(false);
 AudioConnection          patchCord1(wavFG, 0, fade_fg_left , 0);
@@ -73,7 +73,7 @@ static float fgwav_gain = 0;
 #endif
 
 #if (defined(AUDIO_ENABLE_BG_WAV) && (AUDIO_ENABLE_BG_WAV > 0U))
-AudioPlayUffsWav         wavBG;
+AudioPlayFsWav         wavBG;
 AudioEffectFade          bg_fade_left(false);
 AudioEffectFade          bg_fade_right(false);
 AudioConnection          patchCord5(wavBG, 0, bg_fade_left , 0);

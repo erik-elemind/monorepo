@@ -49,10 +49,10 @@
 #define STATE_STOP          13
 
 
-class AudioPlayUffsWavParser
+class AudioPlayFsWavParser
 {
 public:
-  AudioPlayUffsWavParser(void) { begin_parser(); }
+  AudioPlayFsWavParser(void) { begin_parser(); }
 	void begin_parser(void);
 	bool start_parser(void);
     bool start_parser_at_audio_data_offset(void);

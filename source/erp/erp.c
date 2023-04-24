@@ -12,7 +12,7 @@
 #include "task.h"
 #include "timers.h"
 #include "queue.h"
-#include "audio.h"
+#include "audio_task.h"
 
 #include "loglevels.h"
 #include "erp.h"

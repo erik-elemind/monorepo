@@ -15,7 +15,7 @@
 
 #include "interpreter.h"
 #include "ads129x.h"
-#include "audio.h"
+#include "audio_task.h"
 #include "data_log.h"
 #include "eeg_reader.h"
 #include "app.h"
