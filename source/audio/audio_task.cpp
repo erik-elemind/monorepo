@@ -10,6 +10,7 @@
  * https://docs.google.com/document/d/1uTERHHox20vDXZfLd5PRKSXwrYdiXV4cV4suHQzFgoU
  */
 
+#include <audio_task.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -22,7 +23,7 @@
 #include "loglevels.h"
 #include "config.h"
 #include "ble.h"
-#include "audio.h"
+#include "audio_stream_task.h"
 #include "amp.h"
 #include "AudioPJRC.h"
 #include "AudioStream.h"
@@ -56,13 +57,12 @@ static const char *TAG = "audio";   // Logging prefix for this module
 #define AUDIO_SINE_CHANNEL 4
 
 #define AUDIO_DATA_SIZE 18 // 14
-static /*DMAMEM*/ audio_block_t AUDIO_DATA[AUDIO_DATA_SIZE];
 
 AudioMixer5              mixerLeft;
 AudioMixer5              mixerRight;
 
 #if (defined(AUDIO_ENABLE_FG_WAV) && (AUDIO_ENABLE_FG_WAV > 0U))
-AudioPlayUffsWav         wavFG;
+AudioPlayFsWav         wavFG;
 AudioEffectFade          fade_fg_left(false);
 AudioEffectFade          fade_fg_right(false);
 AudioConnection          patchCord1(wavFG, 0, fade_fg_left , 0);
@@ -73,7 +73,7 @@ static float fgwav_gain = 0;
 #endif
 
 #if (defined(AUDIO_ENABLE_BG_WAV) && (AUDIO_ENABLE_BG_WAV > 0U))
-AudioPlayUffsWav         wavBG;
+AudioPlayFsWav         wavBG;
 AudioEffectFade          bg_fade_left(false);
 AudioEffectFade          bg_fade_right(false);
 AudioConnection          patchCord5(wavBG, 0, bg_fade_left , 0);
@@ -383,7 +383,7 @@ static void audio_set_volume_int(uint8_t volume, bool update_ble)
   snprintf(cbuf, sizeof(cbuf), "%d", volume);
   // TODO: standardize the settings file key naming.
 
-  // do not save audio.volume if alarm is running
+  // do not save  if alarm is running
   if(!interpreter_get_alarm_status())
   {
 	  if (0 != settings_set_string("audio.volume", cbuf))
@@ -890,7 +890,7 @@ handle_state_off(audio_event_t *event)
       // Turn off power off timer
       xTimerStop(ag_context.audio_power_off_timer_handle, portMAX_DELAY);
 
-      AudioOutputI2S::end();
+      audio_stream_end();
       // pull shutdown pin low - power down
       GPIO_PinWrite(
           BOARD_INITPINS_SSM2518_SHTDNn_GPIO,
@@ -916,7 +916,7 @@ handle_state_off(audio_event_t *event)
       audio_set_volume_int(ag_context.log_volume, false);
 
       // Enable audio
-      AudioOutputI2S::begin();
+      audio_stream_begin();
 
       break;
 
@@ -1172,9 +1172,6 @@ handle_state_standby(audio_event_t *event)
       break;
 
     case AUDIO_EVENT_SOFTWARE_ISR_OCCURRED:
-      // Handle the software interrupt, but in a scheduled, non-ISR context:
-      AudioOutputI2S::handle_audio_i2s_event();
-
       static bool prev_audio_idle = false, curr_audio_idle = false;
       prev_audio_idle = curr_audio_idle;
 
@@ -1307,7 +1304,7 @@ audio_pretask_init(void)
 
   // Audio connections require memory to work.  For more
   // detailed information, see the MemoryAndCpuUsage example
-  AudioStream::initialize_memory(AUDIO_DATA, AUDIO_DATA_SIZE);
+  AudioMemory(AUDIO_DATA_SIZE);
 
 
 #if (defined(AUDIO_ENABLE_FG_WAV) && (AUDIO_ENABLE_FG_WAV > 0U))
@@ -1348,6 +1345,12 @@ audio_pretask_init(void)
   pink.amplitude(0);
 #endif
 
+
+  // Set the default settings
+  ag_context.mute = false;
+  ag_context.log_volume_step = AUDIO_VOLUME_STEP;
+  ag_context.log_volume = 100; // TODO: This causes BLE task to crash
+
 }
 
 
@@ -1356,17 +1359,9 @@ task_init()
 {
   // Any post-scheduler init goes here.
 
-  // Initialize the streaming block
-  AudioOutputI2S::init();
-
   // Start off with the audio driver disabled.
   // Note this is not a deferred call.
   set_state(AUDIO_STATE_OFF);
-
-  // Set the default settings
-  ag_context.mute = false;
-  ag_context.log_volume_step = AUDIO_VOLUME_STEP;
-  ag_context.log_volume = 100; // TODO: This causes BLE task to crash
 
   // This is a deferred call which enables the audio
 //  audio_power_on();
@@ -1398,21 +1393,6 @@ audio_task(void *ignored)
   }
 }
 
-
-
-/*
- * Pin change interrupt callback for audio update ISR,
- * This interrupt is NOT routed to a pin, but is intended to be software triggered.
- */
-#if defined(VARIANT_NFF1) || defined(VARIANT_FF1) || defined(VARIANT_FF2) || defined(VARIANT_FF3) || defined(VARIANT_FF4)
-
-#define HALT_IF_DEBUGGING()                              \
-  do {                                                   \
-    if ((*(volatile uint32_t *)0xE000EDF0) & (1 << 0)) { \
-      __asm("bkpt 1");                                   \
-    }                                                    \
-  } while (0)
-
 // Non-ISR version of this function
 void audio_event_update_streams(void)
 {
@@ -1424,26 +1404,16 @@ void audio_event_update_streams(void)
   }
 }
 
-//void audio_software_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status)
-void audio_event_update_streams_from_isr(status_t i2s_completion_status)
+void audio_event_update_streams_from_isr(void)
 {
-  TRACEALYZER_ISR_AUDIO_BEGIN( AUDIO_I2S_ISR_TRACE );
-
-  if (i2s_completion_status == kStatus_I2S_BufferComplete) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     audio_event_t event = {.type = AUDIO_EVENT_SOFTWARE_ISR_OCCURRED };
     xQueueSendFromISR(g_event_queue, &event, &xHigherPriorityTaskWoken);
 
     // Always do this when calling a FreeRTOS "...FromISR()" function:
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-  }else{
-    HALT_IF_DEBUGGING();
-  }
-
-  TRACEALYZER_ISR_AUDIO_END( xHigherPriorityTaskWoken );
 }
 
-#endif
 
 #else // #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
 
@@ -1459,7 +1429,7 @@ void audio_set_mute(bool m){}
 bool audio_get_mute(){return false;}
 void audio_set_volume(uint8_t vol){}
 void audio_set_volume_ble(uint8_t vol){}
-void audio_get_volume(uint8_t* log_volume, uint8_t* lin_volume){*log_volume=0;*lin_volume=0;}
+uint8_t audio_get_volume(){return 0;}
 void audio_set_volume_step(uint8_t step){}
 void audio_volume_up(){}
 void audio_volume_down(){}
@@ -1495,6 +1465,5 @@ void audio_sine_stop(){}
 
 void audio_event_update_streams(void){}
 void audio_event_update_streams_from_isr(void){}
-
 
 #endif // #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))

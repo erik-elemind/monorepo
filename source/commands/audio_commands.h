@@ -12,7 +12,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "audio.h"
+#include "audio_task.h"
 
 #ifdef __cplusplus
 extern "C" {

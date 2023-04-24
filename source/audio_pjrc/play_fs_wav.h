@@ -24,23 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef play_uffs_wav_h_
-#define play_uffs_wav_h_
+#ifndef play_fs_wav_h_
+#define play_fs_wav_h_
 
-#include "play_uffs_wav_buffer_rtos.h"
+#include <play_fs_wav_buffer_rtos.h>
 #include "AudioStream.h"
 #include "config.h"
 
 
-class AudioPlayUffsWav : public AudioStream, public AudioPlayUffsWavBufferRTOS
+class AudioPlayFsWav : public AudioStream, public AudioPlayFsWavBufferRTOS
 {
 public:
-	AudioPlayUffsWav(void) : AudioStream(0, NULL), block_left(NULL), block_right(NULL) { begin(); }
-	void begin(void);
-	bool play(const char *filename, bool loop = false);
-	void stop(void);
+	AudioPlayFsWav(void) : AudioStream(0, NULL), block_left(NULL), block_right(NULL) { begin(); }
 	virtual void update(void);
 	virtual bool is_idle(void);
+	bool play(const char *filename, bool loop = false);
+	void stop(void);
 #if 0
 	bool isPlaying(void);
 	uint32_t positionMillis(void);
@@ -48,6 +47,7 @@ public:
 	virtual void update(void);
 #endif
 private:
+	void begin(void);
 	void update_16bit_22_mono(void);
 	void update_16bit_22_stereo(void);
 	void update_16bit_44_mono(void);
@@ -62,4 +62,4 @@ private:
 };
 
 
-#endif // play_uffs_wav_h_
+#endif // play_fs_wav_h_

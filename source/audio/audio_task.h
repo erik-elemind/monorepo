@@ -167,12 +167,9 @@ void audio_pink_default_volume();
 void audio_sine_play();
 void audio_sine_stop();
 
-// Run the audio processing loop for all AudioStream instances.
-// (This is invoked by I2S DMA Complete interrupt.)
-void audio_event_update_streams(void);
 
-// This is invoked by the I2S DMA interrupt in interrupt context:
-void audio_event_update_streams_from_isr(status_t i2s_completion_status);
+void audio_event_update_streams(void);
+void audio_event_update_streams_from_isr(void);
 
 // End: Tell C++ compiler to include this C header.
 #ifdef __cplusplus

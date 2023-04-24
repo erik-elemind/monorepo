@@ -383,5 +383,7 @@ void update_all(void) // AudioStream::update_all()
 
 void AudioStream::update_all_streams(void)
 {
+  AUDIO_ENTER_CRITICAL();
   update_all();
+  AUDIO_EXIT_CRITICAL();
 }

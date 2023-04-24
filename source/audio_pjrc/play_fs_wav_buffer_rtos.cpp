@@ -1,25 +1,25 @@
 /*
- * play_uffs_wav_buffer.c
+ * play_fs_wav_buffer.c
  *
  *  Created on: Sep 27, 2020
  *      Author: David Wang
  */
 
 
-#include "play_uffs_wav_buffer_rtos.h"
-#include "wavbuf.h"
+#include <play_fs_wav_buffer_rtos.h>
+#include <play_fs_wav_buffer_task.h>
+#include <play_fs_wav_buffer_task.h>
 #include "ff.h"
 #include "fatfs_utils.h"
 #include "loglevels.h"
 #include "utils.h"
-#include "wavbuf.h"
 #include "micro_clock.h"
 
-//static const char *TAG = "play_uffs_wav_buffer_rtos";   // Logging prefix for this module
+//static const char *TAG = "play_fs_wav_buffer_rtos";   // Logging prefix for this module
 
-AudioPlayUffsWavBufferRTOS* AudioPlayUffsWavBufferRTOS::buffer_first_update = NULL;
+AudioPlayFsWavBufferRTOS* AudioPlayFsWavBufferRTOS::buffer_first_update = NULL;
 
-void AudioPlayUffsWavBufferRTOS::begin_buffer(void)
+void AudioPlayFsWavBufferRTOS::begin_buffer(void)
 {
   //
   // WARNING: This code is called before main(), due to ResetISR(), so no printf() here.
@@ -27,21 +27,21 @@ void AudioPlayUffsWavBufferRTOS::begin_buffer(void)
   // initialize variables
   memset(&wav_file, 0, sizeof(wav_file));
   looping = false;
-  buffer_state = UFFS_WAV_BUFFER_STATE_STOPPED;
+  buffer_state = FS_WAV_BUFFER_STATE_STOPPED;
   parser.begin_parser();
 
   // update list
   if (buffer_first_update == NULL) {
     buffer_first_update = this;
   } else {
-    AudioPlayUffsWavBufferRTOS *p;
+    AudioPlayFsWavBufferRTOS *p;
     for (p=buffer_first_update; p->buffer_next_update; p = p->buffer_next_update) ;
     p->buffer_next_update = this;
   }
   buffer_next_update = NULL;
 }
 
-void AudioPlayUffsWavBufferRTOS::pretask_init(void)
+void AudioPlayFsWavBufferRTOS::pretask_init(void)
 {
 #if (defined(ENABLE_NO_COPY_WAV_BUFFER) && (ENABLE_NO_COPY_WAV_BUFFER > 0U))
   // create the stream buffer
@@ -53,17 +53,17 @@ void AudioPlayUffsWavBufferRTOS::pretask_init(void)
 #endif
 
   // create the event queue
-  equeue_handle = xQueueCreateStatic(UFFS_WAV_BUFFER_EVENT_QUEUE_SIZE,sizeof(uffs_wav_buffer_event_t),equeue_array,&equeue_struct);
-  vQueueAddToRegistry(equeue_handle, "play_uffs_wav_buffer_event_queue");
+  equeue_handle = xQueueCreateStatic(FS_WAV_BUFFER_EVENT_QUEUE_SIZE,sizeof(fs_wav_buffer_event_t),equeue_array,&equeue_struct);
+  vQueueAddToRegistry(equeue_handle, "play_fs_wav_buffer_event_queue");
 }
 
-bool AudioPlayUffsWavBufferRTOS::start_buffer(const char *filename, bool loop)
+bool AudioPlayFsWavBufferRTOS::start_buffer(const char *filename, bool loop)
 {
   // stop the previous buffer fill oepration
   stop_buffer();
 
-  uffs_wav_buffer_event_t event;
-  event.type = UFFS_WAV_BUFFER_EVENT_START;
+  fs_wav_buffer_event_t event;
+  event.type = FS_WAV_BUFFER_EVENT_START;
   strcpy(event.filename,filename);
   event.loop = loop;
   xQueueSend(equeue_handle, &event, portMAX_DELAY);
@@ -74,10 +74,10 @@ bool AudioPlayUffsWavBufferRTOS::start_buffer(const char *filename, bool loop)
   return true;
 }
 
-bool AudioPlayUffsWavBufferRTOS::stop_buffer(void)
+bool AudioPlayFsWavBufferRTOS::stop_buffer(void)
 {
-  uffs_wav_buffer_event_t event;
-  event.type = UFFS_WAV_BUFFER_EVENT_STOP;
+  fs_wav_buffer_event_t event;
+  event.type = FS_WAV_BUFFER_EVENT_STOP;
   event.filename[0] = '\0';
   event.loop = false;
   xQueueSend(equeue_handle, &event, portMAX_DELAY);
@@ -88,7 +88,7 @@ bool AudioPlayUffsWavBufferRTOS::stop_buffer(void)
   return true;
 }
 
-void AudioPlayUffsWavBufferRTOS::start(uffs_wav_buffer_event_t &event){
+void AudioPlayFsWavBufferRTOS::start(fs_wav_buffer_event_t &event){
   // close any previously open file
   stop();
   // try and open the file
@@ -103,35 +103,35 @@ void AudioPlayUffsWavBufferRTOS::start(uffs_wav_buffer_event_t &event){
     xStreamBufferReset(sbuf_handle);
 #endif
     parser.start_parser();
-    buffer_state = UFFS_WAV_BUFFER_STATE_READING;
+    buffer_state = FS_WAV_BUFFER_STATE_READING;
   }
 }
 
-void AudioPlayUffsWavBufferRTOS::stop(){
+void AudioPlayFsWavBufferRTOS::stop(){
   // close any previously open file
   if(f_is_open(&wav_file)){
     f_close(&wav_file);
     looping = false;
     parser.stop_parser();
-    buffer_state = UFFS_WAV_BUFFER_STATE_STOPPED;
+    buffer_state = FS_WAV_BUFFER_STATE_STOPPED;
   }
 }
 
-bool AudioPlayUffsWavBufferRTOS::buffer_is_idle(){
-  return UFFS_WAV_BUFFER_STATE_STOPPED == buffer_state;
+bool AudioPlayFsWavBufferRTOS::buffer_is_idle(){
+  return FS_WAV_BUFFER_STATE_STOPPED == buffer_state;
 }
 
-bool AudioPlayUffsWavBufferRTOS::fill_buffer(void)
+bool AudioPlayFsWavBufferRTOS::fill_buffer(void)
 {
   // Get the next event, but do not wait for it
-  uffs_wav_buffer_event_t event;
+  fs_wav_buffer_event_t event;
   while ( xQueueReceive(equeue_handle, &event, 0) == pdPASS ) {
     switch(event.type){
-      case UFFS_WAV_BUFFER_EVENT_START:
+      case FS_WAV_BUFFER_EVENT_START:
         start(event);
         break;
 
-      case UFFS_WAV_BUFFER_EVENT_STOP:
+      case FS_WAV_BUFFER_EVENT_STOP:
         stop();
         break;
 
@@ -143,8 +143,8 @@ bool AudioPlayUffsWavBufferRTOS::fill_buffer(void)
 
   // Read, parse, and send audio data from file over audio file stream.
   /*size_t sbuf_spaces_avail = 0;*/
-  if ( f_is_open(&wav_file) && buffer_state == UFFS_WAV_BUFFER_STATE_READING
-      /* && ((sbuf_spaces_avail=xStreamBufferSpacesAvailable(sbuf_handle)) >= WAV_BUFFER_UFFS_READ_CHUNK_SIZE)*/) {
+  if ( f_is_open(&wav_file) && buffer_state == FS_WAV_BUFFER_STATE_READING
+      /* && ((sbuf_spaces_avail=xStreamBufferSpacesAvailable(sbuf_handle)) >= WAV_BUFFER_FS_READ_CHUNK_SIZE)*/) {
 
 //    uint64_t start_us = micros();
 #if (defined(ENABLE_NO_COPY_WAV_BUFFER) && (ENABLE_NO_COPY_WAV_BUFFER > 0U))
@@ -152,13 +152,13 @@ bool AudioPlayUffsWavBufferRTOS::fill_buffer(void)
     // TODO: Choose a better error result value
     FRESULT result = FR_INVALID_PARAMETER;
     smem_return_buf_t rdata;
-    smem_rtos_write_open (&smr, WAV_BUFFER_UFFS_READ_CHUNK_SIZE, &rdata, portMAX_DELAY); // TODO: Check port max delay
+    smem_rtos_write_open (&smr, WAV_BUFFER_FS_READ_CHUNK_SIZE, &rdata, portMAX_DELAY); // TODO: Check port max delay
     void* data = rdata.ptr;
     // TODO: do something if we can't grab memory!
     if(data != NULL){
-      result = f_read(&wav_file, data, WAV_BUFFER_UFFS_READ_CHUNK_SIZE, &data_len);
+      result = f_read(&wav_file, data, WAV_BUFFER_FS_READ_CHUNK_SIZE, &data_len);
     }
-    // LOGV("play_uffs_wav_buffer","read us: %lu", (uint32_t)(micros()-start_us));
+    // LOGV("play_fs_wav_buffer","read us: %lu", (uint32_t)(micros()-start_us));
     if(FR_OK != result){
       stop();
        // TODO: Handle return error of smem_rtos_write_close?
@@ -179,9 +179,9 @@ bool AudioPlayUffsWavBufferRTOS::fill_buffer(void)
 #else
     UINT data_len = 0;
     FRESULT result;
-    result = f_read(&wav_file, data, WAV_BUFFER_UFFS_READ_CHUNK_SIZE, &data_len);
+    result = f_read(&wav_file, data, WAV_BUFFER_FS_READ_CHUNK_SIZE, &data_len);
 
-    // LOGV("play_uffs_wav_buffer","read us: %lu", (uint32_t)(micros()-start_us));
+    // LOGV("play_fs_wav_buffer","read us: %lu", (uint32_t)(micros()-start_us));
     if(FR_OK != result){
       stop();
       return false;
@@ -195,8 +195,8 @@ bool AudioPlayUffsWavBufferRTOS::fill_buffer(void)
 #endif
 
     // Less than the expected data was read, which indicates the file reached its end.
-    if (data_len < WAV_BUFFER_UFFS_READ_CHUNK_SIZE){
-//      LOGV("play_uffs_wav_buffer","wavfile data_len: %u, buf avail spaces: %u",data_len, xStreamBufferSpacesAvailable(sbuf_handle));
+    if (data_len < WAV_BUFFER_FS_READ_CHUNK_SIZE){
+//      LOGV("play_fs_wav_buffer","wavfile data_len: %u, buf avail spaces: %u",data_len, xStreamBufferSpacesAvailable(sbuf_handle));
 
       // Check the looping variable to see if the buffer should be played again.
       if(looping){
@@ -207,7 +207,7 @@ bool AudioPlayUffsWavBufferRTOS::fill_buffer(void)
           stop();
           return false;
         }
-//        LOGV("play_uffs_wav_buffer","seek us: %lu", (uint32_t)(micros()-start_us));
+//        LOGV("play_fs_wav_buffer","seek us: %lu", (uint32_t)(micros()-start_us));
         // reset the parser
         parser.start_parser_at_audio_data_offset();
       }else{
@@ -219,15 +219,15 @@ bool AudioPlayUffsWavBufferRTOS::fill_buffer(void)
   }
 
   // Return TRUE if we are still in the active reading-file state.
-  return (buffer_state == UFFS_WAV_BUFFER_STATE_READING);
+  return (buffer_state == FS_WAV_BUFFER_STATE_READING);
 }
 
 
 #if (defined(ENABLE_NO_COPY_WAV_BUFFER) && (ENABLE_NO_COPY_WAV_BUFFER > 0U))
 
-uffs_wav_buffer_return_t AudioPlayUffsWavBufferRTOS::get_from_buffer(size_t data_len)
+fs_wav_buffer_return_t AudioPlayFsWavBufferRTOS::get_from_buffer(size_t data_len)
 {
-  uffs_wav_buffer_return_t return_value = {0};
+  fs_wav_buffer_return_t return_value = {0};
 
   smem_return_buf_t sm_data;
   /*sm_status_t read_status = */smem_rtos_read_open(&smr, data_len, false, &sm_data, 0);
@@ -240,7 +240,7 @@ uffs_wav_buffer_return_t AudioPlayUffsWavBufferRTOS::get_from_buffer(size_t data
 #else
 
 
-size_t AudioPlayUffsWavBufferRTOS::get_from_buffer(void* data, size_t data_len)
+size_t AudioPlayFsWavBufferRTOS::get_from_buffer(void* data, size_t data_len)
 {
   size_t xReceivedBytes;
   xReceivedBytes = xStreamBufferReceive( sbuf_handle, data, data_len, 0 ); // portMAX_DELAY
@@ -250,7 +250,7 @@ size_t AudioPlayUffsWavBufferRTOS::get_from_buffer(void* data, size_t data_len)
 
 #endif
 
-void  AudioPlayUffsWavBufferRTOS::release_from_buffer()
+void  AudioPlayFsWavBufferRTOS::release_from_buffer()
 {
 #if (defined(ENABLE_NO_COPY_WAV_BUFFER) && (ENABLE_NO_COPY_WAV_BUFFER > 0U))
   smem_rtos_read_close(&smr);
@@ -261,19 +261,19 @@ void  AudioPlayUffsWavBufferRTOS::release_from_buffer()
 
 // Fills the buffer for all wav file objects.
 // Returns TRUE if any wav file object still needs its buffer filled.
-bool AudioPlayUffsWavBufferRTOS::fill_all_buffers(void){
-  AudioPlayUffsWavBufferRTOS *p;
+bool AudioPlayFsWavBufferRTOS::fill_all_buffers(void){
+  AudioPlayFsWavBufferRTOS *p;
   // load additional wav files into buffer
   bool active = false;
-  for (p = AudioPlayUffsWavBufferRTOS::buffer_first_update; p; p = p->buffer_next_update) {
+  for (p = AudioPlayFsWavBufferRTOS::buffer_first_update; p; p = p->buffer_next_update) {
     active |= p->fill_buffer();
   }
   return active;
 }
 
-void AudioPlayUffsWavBufferRTOS::pretask_init_all_buffers(void){
-  AudioPlayUffsWavBufferRTOS *p;
-  for (p = AudioPlayUffsWavBufferRTOS::buffer_first_update; p; p = p->buffer_next_update) {
+void AudioPlayFsWavBufferRTOS::pretask_init_all_buffers(void){
+  AudioPlayFsWavBufferRTOS *p;
+  for (p = AudioPlayFsWavBufferRTOS::buffer_first_update; p; p = p->buffer_next_update) {
     p->pretask_init();
   }
 }

@@ -37,6 +37,10 @@
 
 //#include <Arduino.h>
 #include "synth_pinknoise.h"
+#include "critical_section.h"
+
+/*****************************************************************************/
+// class AudioSynthNoisePink
 
 int16_t AudioSynthNoisePink::instance_cnt = 0;
 
@@ -147,7 +151,16 @@ void AudioSynthNoisePink::update(void)
 
 bool AudioSynthNoisePink::is_idle(void)
 {
-  return level == 0;
+  AUDIO_ENTER_CRITICAL();
+  bool is_idle = (level == 0);
+  AUDIO_EXIT_CRITICAL();
+  return is_idle;
 }
 
-
+void AudioSynthNoisePink::amplitude(float n) {
+  if (n < 0.0) n = 0.0;
+  else if (n > 1.0) n = 1.0;
+  AUDIO_ENTER_CRITICAL();
+  level = (int32_t)(n * 65536.0);
+  AUDIO_EXIT_CRITICAL();
+}

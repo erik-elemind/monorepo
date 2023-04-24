@@ -13,7 +13,7 @@
 #include "ads129x.h"
 #include "eeg_datatypes.h"
 #include "HistoryVar.h"
-#include "audio.h"
+#include "audio_task.h"
 #include "ble_uart_send.h"
 #include "eeg_reader.h"
 #include "eeg_constants.h"

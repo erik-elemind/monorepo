@@ -27,6 +27,10 @@
 //#include <Arduino.h>
 #include "mixer.h"
 #include "utility/dspinst.h"
+#include "critical_section.h"
+
+/*****************************************************************************/
+// class AudioMixer5
 
 #if defined(__ARM_ARCH_7EM__) || defined(__ARM_ARCH_8M_MAIN__)
 #define MULTI_UNITYGAIN 65536
@@ -111,12 +115,7 @@ void AudioMixer5::update(void)
 	unsigned int channel;
 
 	for (channel=0; channel < 5; channel++) {
-	     int32_t mult = 0;
-//        if( xSemaphoreTake( xSemaphore, portMAX_DELAY ) == pdTRUE )
-//        {
-          mult = multiplier[channel];
-//          xSemaphoreGive( xSemaphore );
-//        }
+        int32_t mult = multiplier[channel];
 		if (!out) {
 			out = receiveWritable(channel);
 			if (out) {
@@ -138,8 +137,38 @@ void AudioMixer5::update(void)
 
 bool AudioMixer5::is_idle(void)
 {
+  // AUDIO_ENTER_CRITICAL();
+  // AUDIO_EXIT_CRITICAL();
   return true;
 }
+
+#if defined(__ARM_ARCH_7EM__) || defined(__ARM_ARCH_8M_MAIN__)
+
+void AudioMixer5::gain(unsigned int channel, float gain) {
+	if (channel >= 5) return;
+	if (gain > 32767.0f) gain = 32767.0f;
+	else if (gain < -32767.0f) gain = -32767.0f;
+	AUDIO_ENTER_CRITICAL();
+	multiplier[channel] = gain * 65536.0f; // TODO: proper roundoff?
+	AUDIO_EXIT_CRITICAL();
+}
+
+#elif defined(KINETISL)
+
+void gain(unsigned int channel, float gain) {
+	if (channel >= 5) return;
+	if (gain > 127.0f) gain = 127.0f;
+	else if (gain < -127.0f) gain = -127.0f;
+	AUDIO_ENTER_CRITICAL();
+	multiplier[channel] = gain * 256.0f; // TODO: proper roundoff?
+	AUDIO_EXIT_CRITICAL();
+}
+
+#endif
+
+
+/*****************************************************************************/
+// class AudioAmplifier
 
 void AudioAmplifier::update(void)
 {
@@ -166,4 +195,19 @@ void AudioAmplifier::update(void)
 			release(block);
 		}
 	}
+}
+
+bool AudioAmplifier::is_idle(void)
+{
+  // AUDIO_ENTER_CRITICAL();
+  // AUDIO_EXIT_CRITICAL();
+  return true;
+}
+
+void AudioAmplifier::gain(float n) {
+	if (n > 32767.0f) n = 32767.0f;
+	else if (n < -32767.0f) n = -32767.0f;
+	AUDIO_ENTER_CRITICAL();
+	multiplier = n * 65536.0f;
+	AUDIO_EXIT_CRITICAL();
 }

@@ -39,38 +39,11 @@ public:
       {
 	    setVolume(vol);
 	  }
-	void fadeIn(uint32_t milliseconds) {
-	  if(milliseconds == 0){
-	    setVolume(true);
-	  }else{
-        // TODO: change 441u to 500u, to match sampling rate
-//          uint32_t samples = (uint32_t)(milliseconds * 441u + 5u) / 10u;
-	    // changed to 22kHz sampling rate
-	    uint32_t samples = (uint32_t)(milliseconds * 220u + 5u) / 10u;
-          //Serial.printf("fadeIn, %u samples\n", samples);
-          fadeBegin(0xFFFFFFFFu / samples, 1);
-	  }
-	}
-	void fadeOut(uint32_t milliseconds) {
-	    if(milliseconds == 0){
-	      setVolume(false);
-	    }else{
-        // TODO: change 441u to 500u, to match sampling rate
-//          uint32_t samples = (uint32_t)(milliseconds * 441u + 5u) / 10u;
-	      // changed to 22kHz sampling rate
-	      uint32_t samples = (uint32_t)(milliseconds * 220u + 5u) / 10u;
-          //Serial.printf("fadeOut, %u samples\n", samples);
-          fadeBegin(0xFFFFFFFFu / samples, 0);
-	    }
-	}
-	void setVolume(bool vol){
-	    AUDIO_ENTER_CRITICAL();
-	    // 0 = silent, 0xFFFFFFFF = pass-through
-	    position = vol ? 0xFFFFFFFF : 0;
-	    AUDIO_EXIT_CRITICAL();
-	}
 	virtual void update(void);
 	virtual bool is_idle(void);
+	void fadeIn(uint32_t milliseconds);
+	void fadeOut(uint32_t milliseconds);
+	void setVolume(bool vol);
 private:
 	void fadeBegin(uint32_t newrate, uint8_t dir);
 	uint32_t position; // 0 = off, 0xFFFFFFFF = on

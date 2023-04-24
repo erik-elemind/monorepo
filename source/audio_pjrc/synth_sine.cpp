@@ -29,22 +29,21 @@
 #include "synth_sine.h"
 #include "utility/dspinst.h"
 #include "utils.h"
+#include "critical_section.h"
 
 // data_waveforms.c
 extern "C" {
 extern const int16_t AudioWaveformSine[257];
 }
 
+/*****************************************************************************/
+// class AudioSynthWaveformSine
 
 void AudioSynthWaveformSine::update(void)
 {
 	audio_block_t *block;
 	uint32_t i, ph, inc, index, scale;
 	int32_t val1, val2;
-
-
-//    debug_uart_puts((char*)"sine update");
-
 
 	if (magnitude) {
 		block = allocate();
@@ -76,10 +75,41 @@ void AudioSynthWaveformSine::update(void)
 
 bool AudioSynthWaveformSine::is_idle(void)
 {
-	return magnitude == 0;
+	AUDIO_ENTER_CRITICAL();
+	bool is_idle = (magnitude == 0);
+	AUDIO_EXIT_CRITICAL();
+	return is_idle;
 }
 
+void AudioSynthWaveformSine::frequency(float freq) {
+	if (freq < 0.0) freq = 0.0;
+	else if (freq > AUDIO_SAMPLE_RATE_EXACT/2) freq = AUDIO_SAMPLE_RATE_EXACT/2;
+	AUDIO_ENTER_CRITICAL();
+	phase_increment = freq * (4294967296.0 / AUDIO_SAMPLE_RATE_EXACT);
+	AUDIO_EXIT_CRITICAL();
+}
 
+void AudioSynthWaveformSine::phase(float angle) {
+	if (angle < 0.0) angle = 0.0;
+	else if (angle > 360.0) {
+		angle = angle - 360.0;
+		if (angle >= 360.0) return;
+	}
+	AUDIO_ENTER_CRITICAL();
+	phase_accumulator = angle * (4294967296.0 / 360.0);
+	AUDIO_EXIT_CRITICAL();
+}
+
+void AudioSynthWaveformSine::amplitude(float n) {
+	if (n < 0) n = 0;
+	else if (n > 1.0) n = 1.0;
+	AUDIO_ENTER_CRITICAL();
+	magnitude = n * 65536.0;
+	AUDIO_EXIT_CRITICAL();
+}
+
+/*****************************************************************************/
+// class AudioSynthWaveformSineHires
 
 #if defined(__ARM_ARCH_7EM__) || defined(__ARM_ARCH_8M_MAIN__)
 // High accuracy 11th order Taylor Series Approximation
@@ -145,7 +175,43 @@ void AudioSynthWaveformSineHires::update(void)
 #endif
 }
 
+bool AudioSynthWaveformSineHires::is_idle(void)
+{
+	AUDIO_ENTER_CRITICAL();
+	bool is_idle = (magnitude == 0);
+	AUDIO_EXIT_CRITICAL();
+	return is_idle;
+}
 
+void AudioSynthWaveformSineHires::frequency(float freq) {
+	if (freq < 0.0) freq = 0.0;
+	else if (freq > AUDIO_SAMPLE_RATE_EXACT/2) freq = AUDIO_SAMPLE_RATE_EXACT/2;
+	AUDIO_ENTER_CRITICAL();
+	phase_increment = freq * (4294967296.0 / AUDIO_SAMPLE_RATE_EXACT);
+	AUDIO_EXIT_CRITICAL();
+}
+
+void AudioSynthWaveformSineHires::phase(float angle) {
+	if (angle < 0.0) angle = 0.0;
+	else if (angle > 360.0) {
+		angle = angle - 360.0;
+		if (angle >= 360.0) return;
+	}
+	AUDIO_ENTER_CRITICAL();
+	phase_accumulator = angle * (4294967296.0 / 360.0);
+	AUDIO_EXIT_CRITICAL();
+}
+
+void AudioSynthWaveformSineHires::amplitude(float n) {
+	if (n < 0) n = 0;
+	else if (n > 1.0) n = 1.0;
+	AUDIO_ENTER_CRITICAL();
+	magnitude = n * 65536.0;
+	AUDIO_EXIT_CRITICAL();
+}
+
+/*****************************************************************************/
+// class AudioSynthWaveformSineModulated
 
 #if defined(__ARM_ARCH_7EM__) || defined(__ARM_ARCH_8M_MAIN__)
 
@@ -223,3 +289,37 @@ void AudioSynthWaveformSineModulated::update(void)
 
 #endif
 
+bool AudioSynthWaveformSineModulated::is_idle(void)
+{
+	// AUDIO_ENTER_CRITICAL();
+	// AUDIO_EXIT_CRITICAL();
+	// TODO: Determine how to decide if a modulated sine is idle.
+	return false;
+}
+
+void AudioSynthWaveformSineModulated::frequency(float freq) {
+	if (freq < 0.0) freq = 0.0;
+	else if (freq > AUDIO_SAMPLE_RATE_EXACT/4) freq = AUDIO_SAMPLE_RATE_EXACT/4;
+	AUDIO_ENTER_CRITICAL();
+	phase_increment = freq * (4294967296.0 / AUDIO_SAMPLE_RATE_EXACT);
+	AUDIO_EXIT_CRITICAL();
+}
+
+void AudioSynthWaveformSineModulated::phase(float angle) {
+	if (angle < 0.0) angle = 0.0;
+	else if (angle > 360.0) {
+		angle = angle - 360.0;
+		if (angle >= 360.0) return;
+	}
+	AUDIO_ENTER_CRITICAL();
+	phase_accumulator = angle * (4294967296.0 / 360.0);
+	AUDIO_EXIT_CRITICAL();
+}
+
+void AudioSynthWaveformSineModulated::amplitude(float n) {
+	if (n < 0) n = 0;
+	else if (n > 1.0) n = 1.0;
+	AUDIO_ENTER_CRITICAL();
+	magnitude = n * 65536.0;
+	AUDIO_EXIT_CRITICAL();
+}

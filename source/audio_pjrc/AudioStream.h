@@ -34,7 +34,8 @@
 //#include "fsl_common.h"
 #include "peripherals.h"
 #include "AudioCompat.h"
-#include "audio.h"
+#include "audio_task.h"
+#include "critical_section.h"
 
 
 #ifndef __ASSEMBLER__

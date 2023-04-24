@@ -39,7 +39,7 @@
 #include "system_monitor.h"
 #include "app.h"
 #include "led.h"
-#include "audio.h"
+#include "audio_task.h"
 #include "battery.h"
 #include "fsl_power.h"
 #include "pmic_pca9420.h"

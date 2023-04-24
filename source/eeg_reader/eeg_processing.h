@@ -27,7 +27,7 @@
 
 #include "eeg_filters.h"
 #include "eeg_quality.h"
-#include "audio.h"
+#include "audio_task.h"
 #include "data_log.h"
 #include "HistoryVar.h"
 #include "eeg_constants.h"

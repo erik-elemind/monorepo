@@ -38,23 +38,11 @@ class AudioMixer5 : public AudioStream
 public:
 	AudioMixer5(void) : AudioStream(5, inputQueueArray) {
 		for (int i=0; i<5; i++) multiplier[i] = 65536;
-//		xSemaphore = xSemaphoreCreateMutexStatic( &xMutexBuffer );
 	}
 	virtual void update(void);
 	virtual bool is_idle(void);
-	void gain(unsigned int channel, float gain) {
-		if (channel >= 5) return;
-		if (gain > 32767.0f) gain = 32767.0f;
-		else if (gain < -32767.0f) gain = -32767.0f;
-//        if( xSemaphoreTake( xSemaphore, portMAX_DELAY ) == pdTRUE )
-//        {
-          multiplier[channel] = gain * 65536.0f; // TODO: proper roundoff?
-//          xSemaphoreGive( xSemaphore );
-//        }
-	}
+	void gain(unsigned int channel, float gain);
 private:
-//	SemaphoreHandle_t xSemaphore = NULL;
-//	StaticSemaphore_t xMutexBuffer;
 	int32_t multiplier[5];
 	audio_block_t *inputQueueArray[5];
 
@@ -64,12 +52,8 @@ public:
 		for (int i=0; i<5; i++) multiplier[i] = 256;
 	}
 	virtual void update(void);
-	void gain(unsigned int channel, float gain) {
-		if (channel >= 5) return;
-		if (gain > 127.0f) gain = 127.0f;
-		else if (gain < -127.0f) gain = -127.0f;
-		multiplier[channel] = gain * 256.0f; // TODO: proper roundoff?
-	}
+	virtual bool is_idle(void);
+	void gain(unsigned int channel, float gain);
 private:
 	int16_t multiplier[5];
 	audio_block_t *inputQueueArray[5];
@@ -82,11 +66,8 @@ public:
 	AudioAmplifier(void) : AudioStream(1, inputQueueArray), multiplier(65536) {
 	}
 	virtual void update(void);
-	void gain(float n) {
-		if (n > 32767.0f) n = 32767.0f;
-		else if (n < -32767.0f) n = -32767.0f;
-		multiplier = n * 65536.0f;
-	}
+	virtual bool is_idle(void);
+	void gain(float n);
 private:
 	int32_t multiplier;
 	audio_block_t *inputQueueArray[1];

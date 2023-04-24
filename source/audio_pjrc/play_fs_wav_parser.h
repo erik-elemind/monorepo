@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef play_uffs_wav_parser_h_
-#define play_uffs_wav_parser_h_
+#ifndef play_fs_wav_parser_h_
+#define play_fs_wav_parser_h_
 
 #include "AudioStream.h"
 #include "FreeRTOS.h"
@@ -49,10 +49,10 @@
 #define STATE_STOP          13
 
 
-class AudioPlayUffsWavParser
+class AudioPlayFsWavParser
 {
 public:
-  AudioPlayUffsWavParser(void) { begin_parser(); }
+  AudioPlayFsWavParser(void) { begin_parser(); }
 	void begin_parser(void);
 	bool start_parser(void);
     bool start_parser_at_audio_data_offset(void);
@@ -85,4 +85,4 @@ private:
 
 };
 
-#endif // play_uffs_wav_parser_h_
+#endif // play_fs_wav_parser_h_

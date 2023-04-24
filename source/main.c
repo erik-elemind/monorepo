@@ -32,8 +32,9 @@
 #include "ble_shell.h"
 #include "utils.h"
 #include "led.h"
-#include "audio.h"
-#include "wavbuf.h"
+#include "audio_task.h"
+#include "audio_stream_task.h"
+#include "play_fs_wav_buffer_task.h"
 #include "hrm.h"
 #include "accel.h"
 #include "fatfs_writer.h"  // task to handle slow writes
@@ -103,16 +104,25 @@ StaticTask_t button_task_struct;
 
 #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
 #define AUDIO_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*4) // 5
-#define AUDIO_TASK_PRIORITY 3 // used to be 4
+#define AUDIO_TASK_PRIORITY 1
 StackType_t audio_task_array[ AUDIO_TASK_STACK_SIZE ];
 StaticTask_t audio_task_struct;
 #endif
 
+#if (defined(ENABLE_AUDIO_STREAM_TASK) && (ENABLE_AUDIO_STREAM_TASK > 0U))
+#define AUDIO_STREAM_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*5) // 5
+#define AUDIO_STREAM_TASK_PRIORITY 3 // used to be 4
+StackType_t audio_stream_task_array[ AUDIO_STREAM_TASK_STACK_SIZE ];
+StaticTask_t audio_stream_task_struct;
+#endif
+
+#if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
 #if (defined(ENABLE_WAVBUF_TASK) && (ENABLE_WAVBUF_TASK > 0U))
 #define WAVBUF_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*6) // 8
 #define WAVBUF_TASK_PRIORITY 3 // used to be 4
 StackType_t wavbuf_task_array[ WAVBUF_TASK_STACK_SIZE ];
 StaticTask_t wavbuf_task_struct;
+#endif
 #endif
 
 #if (defined(ENABLE_MP3_TASK) && (ENABLE_MP3_TASK > 0U))
@@ -347,6 +357,14 @@ int main(void)
 	task_handle = xTaskCreateStatic(&audio_task,
 	  "audio", AUDIO_TASK_STACK_SIZE, NULL, AUDIO_TASK_PRIORITY, audio_task_array, &audio_task_struct);
 	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)AUDIO_TASK_STACK_SIZE );
+#endif
+
+#if (defined(ENABLE_AUDIO_STREAM_TASK) && (ENABLE_AUDIO_STREAM_TASK > 0U))
+	LOGV(TAG, "Launching audio compute task...");
+	audio_stream_pretask_init();
+	task_handle = xTaskCreateStatic(&audio_stream_task,
+	  "audio_stream", AUDIO_STREAM_TASK_STACK_SIZE, NULL, AUDIO_STREAM_TASK_PRIORITY, audio_stream_task_array, &audio_stream_task_struct);
+	vTaskSetThreadLocalStoragePointer( task_handle, 0, (void *)AUDIO_STREAM_TASK_STACK_SIZE );
 #endif
 
 #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))

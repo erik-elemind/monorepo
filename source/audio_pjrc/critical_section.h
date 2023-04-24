@@ -15,15 +15,21 @@ extern "C" {
 //void matched_disable_irq();
 //void matched_enable_irq();
 
+void matched_rtos_semaphore_take();
+void matched_rtos_semaphore_give();
+
 #if 0
 #define AUDIO_ENTER_CRITICAL __disable_irq
 #define AUDIO_EXIT_CRITICAL __enable_irq
 #elif 0
 #define AUDIO_ENTER_CRITICAL  taskENTER_CRITICAL
 #define AUDIO_EXIT_CRITICAL  taskEXIT_CRITICAL
-#else
+#elif 0
 #define AUDIO_ENTER_CRITICAL void
 #define AUDIO_EXIT_CRITICAL void
+#else
+#define AUDIO_ENTER_CRITICAL matched_rtos_semaphore_take
+#define AUDIO_EXIT_CRITICAL matched_rtos_semaphore_give
 #endif
 
 

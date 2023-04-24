@@ -24,22 +24,22 @@
  * THE SOFTWARE.
  */
 
-#include "play_uffs_wav_parser.h"
+#include <play_fs_wav_parser.h>
 #include "utils.h"
 #include "loglevels.h"
 #include "stream_memory_rtos.h"
 
 
-void AudioPlayUffsWavParser::begin_parser(void)
+void AudioPlayFsWavParser::begin_parser(void)
 {
 	stop_parser();
 }
 
-uint32_t AudioPlayUffsWavParser::get_audio_data_offset(void) {
+uint32_t AudioPlayFsWavParser::get_audio_data_offset(void) {
   return file_audio_start_offset;
 }
 
-bool AudioPlayUffsWavParser::start_parser(void)
+bool AudioPlayFsWavParser::start_parser(void)
 {
 	stop_parser();
 	buffer_length = 0;
@@ -51,7 +51,7 @@ bool AudioPlayUffsWavParser::start_parser(void)
 	return true;
 }
 
-bool AudioPlayUffsWavParser::start_parser_at_audio_data_offset(void) {
+bool AudioPlayFsWavParser::start_parser_at_audio_data_offset(void) {
   stop_parser();
   buffer_length = 0;   // is reset by parse();
   buffer_offset = 0;   // is reset by parse();
@@ -61,13 +61,13 @@ bool AudioPlayUffsWavParser::start_parser_at_audio_data_offset(void) {
   return true;
 }
 
-void AudioPlayUffsWavParser::stop_parser(void)
+void AudioPlayFsWavParser::stop_parser(void)
 {
 	state = STATE_STOP;
 	data_length = 0;
 }
 
-void AudioPlayUffsWavParser::parse(uint8_t *buffer, uint32_t size, void* audio_out_buf_handle)
+void AudioPlayFsWavParser::parse(uint8_t *buffer, uint32_t size, void* audio_out_buf_handle)
 {
   buffer_length = size;
   buffer_offset = 0;
@@ -88,7 +88,7 @@ void AudioPlayUffsWavParser::parse(uint8_t *buffer, uint32_t size, void* audio_o
 // https://ccrma.stanford.edu/courses/422/projects/WaveFormat/
 
 // Consume already buffered data.  Returns true if audio transmitted.
-bool AudioPlayUffsWavParser::consume(uint8_t *buffer, uint32_t size, void* audio_out_buf_handle)
+bool AudioPlayFsWavParser::consume(uint8_t *buffer, uint32_t size, void* audio_out_buf_handle)
 {
 	uint32_t len;
 	const uint8_t *p;
@@ -394,7 +394,7 @@ start:
 #define B2M_22050 (uint32_t)((double)4294967296000.0 / AUDIO_SAMPLE_RATE_EXACT * 2.0)
 #define B2M_11025 (uint32_t)((double)4294967296000.0 / AUDIO_SAMPLE_RATE_EXACT * 4.0)
 
-bool AudioPlayUffsWavParser::parse_format(void)
+bool AudioPlayFsWavParser::parse_format(void)
 {
 	uint8_t num = 0;
 	uint16_t format;
@@ -464,13 +464,13 @@ bool AudioPlayUffsWavParser::parse_format(void)
 }
 
 
-bool AudioPlayUffsWavParser::isPlaying(void)
+bool AudioPlayFsWavParser::isPlaying(void)
 {
 	uint8_t s = *(volatile uint8_t *)&state;
 	return (s < 8);
 }
 
-uint32_t AudioPlayUffsWavParser::positionMillis(void)
+uint32_t AudioPlayFsWavParser::positionMillis(void)
 {
 	uint8_t s = *(volatile uint8_t *)&state;
 	if (s >= 8) return 0;
@@ -482,7 +482,7 @@ uint32_t AudioPlayUffsWavParser::positionMillis(void)
 }
 
 
-uint32_t AudioPlayUffsWavParser::lengthMillis(void)
+uint32_t AudioPlayFsWavParser::lengthMillis(void)
 {
 	uint8_t s = *(volatile uint8_t *)&state;
 	if (s >= 8) return 0;
