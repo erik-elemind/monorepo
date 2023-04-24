@@ -84,6 +84,7 @@
 #define ENABLE_BUTTON_TASK         (1U)
 
 #define ENABLE_AUDIO_TASK          (1U)
+#define ENABLE_AUDIO_STREAM_TASK   (1U)
 #define ENABLE_WAVBUF_TASK         (1U)
 #define ENABLE_AUDIO_MP3_TASK      (0U) // TODO: Low Priority, Reenable when ALL other tasks are running.
 

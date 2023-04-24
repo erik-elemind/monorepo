@@ -18,11 +18,11 @@
 #include "AudioStream.h"
 #include "micro_clock.h"
 
-#if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
+#if (defined(ENABLE_AUDIO_STREAM_TASK) && (ENABLE_AUDIO_STREAM_TASK > 0U))
 
 static const char *TAG = "audio_stream";   // Logging prefix for this module
 
-#define AUDIO_STREAM_EVENT_QUEUE_SIZE 50
+#define AUDIO_STREAM_EVENT_QUEUE_SIZE 10
 
 //
 // Task events:
@@ -118,6 +118,9 @@ audio_stream_pretask_init(void)
   // Create the event queue before the scheduler starts. Avoids race conditions.
   g_event_queue = xQueueCreateStatic(AUDIO_STREAM_EVENT_QUEUE_SIZE,sizeof(audio_stream_event_t),g_event_queue_array,&g_event_queue_struct);
   vQueueAddToRegistry(g_event_queue, "audio_stream_event_queue");
+
+  // Initialize the streaming block
+  AudioOutputI2S::init();
 }
 
 static void
@@ -125,8 +128,7 @@ task_init()
 {
   // Any post-scheduler init goes here.
 
-  // Initialize the streaming block
-  AudioOutputI2S::init();
+
 
   LOGV(TAG, "Task launched. Entering event loop.");
 }
@@ -151,12 +153,15 @@ audio_stream_task(void *ignored)
 }
 
 
-#else // #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
+#else // #if (defined(ENABLE_AUDIO_STREAM_TASK) && (ENABLE_AUDIO_STREAM_TASK > 0U))
 
 void audio_stream_pretask_init(void){}
 void audio_stream_task(void *ignored){}
 
-void audio_event_update_streams(void){}
-void audio_event_update_streams_from_isr(void){}
+void audio_stream_end(void){}
+void audio_stream_begin(void){}
 
-#endif // #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
+void audio_stream_update(void){}
+void audio_stream_update_from_isr(status_t i2s_completion_status){}
+
+#endif // #if (defined(ENABLE_AUDIO_STREAM_TASK) && (ENABLE_AUDIO_STREAM_TASK > 0U))

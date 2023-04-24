@@ -15,6 +15,7 @@ extern "C" {
 //void matched_disable_irq();
 //void matched_enable_irq();
 
+void matched_rtos_semaphore_init();
 void matched_rtos_semaphore_take();
 void matched_rtos_semaphore_give();
 

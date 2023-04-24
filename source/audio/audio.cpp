@@ -57,7 +57,6 @@ static const char *TAG = "audio";   // Logging prefix for this module
 #define AUDIO_SINE_CHANNEL 4
 
 #define AUDIO_DATA_SIZE 18 // 14
-static /*DMAMEM*/ audio_block_t AUDIO_DATA[AUDIO_DATA_SIZE];
 
 AudioMixer5              mixerLeft;
 AudioMixer5              mixerRight;
@@ -384,7 +383,7 @@ static void audio_set_volume_int(uint8_t volume, bool update_ble)
   snprintf(cbuf, sizeof(cbuf), "%d", volume);
   // TODO: standardize the settings file key naming.
 
-  // do not save audio.volume if alarm is running
+  // do not save  if alarm is running
   if(!interpreter_get_alarm_status())
   {
 	  if (0 != settings_set_string("audio.volume", cbuf))
@@ -1305,7 +1304,7 @@ audio_pretask_init(void)
 
   // Audio connections require memory to work.  For more
   // detailed information, see the MemoryAndCpuUsage example
-  AudioStream::initialize_memory(AUDIO_DATA, AUDIO_DATA_SIZE);
+  AudioMemory(AUDIO_DATA_SIZE);
 
 
 #if (defined(AUDIO_ENABLE_FG_WAV) && (AUDIO_ENABLE_FG_WAV > 0U))
@@ -1346,6 +1345,12 @@ audio_pretask_init(void)
   pink.amplitude(0);
 #endif
 
+
+  // Set the default settings
+  ag_context.mute = false;
+  ag_context.log_volume_step = AUDIO_VOLUME_STEP;
+  ag_context.log_volume = 100; // TODO: This causes BLE task to crash
+
 }
 
 
@@ -1354,17 +1359,9 @@ task_init()
 {
   // Any post-scheduler init goes here.
 
-  // Initialize the streaming block
-  AudioOutputI2S::init();
-
   // Start off with the audio driver disabled.
   // Note this is not a deferred call.
   set_state(AUDIO_STATE_OFF);
-
-  // Set the default settings
-  ag_context.mute = false;
-  ag_context.log_volume_step = AUDIO_VOLUME_STEP;
-  ag_context.log_volume = 100; // TODO: This causes BLE task to crash
 
   // This is a deferred call which enables the audio
 //  audio_power_on();
@@ -1432,7 +1429,7 @@ void audio_set_mute(bool m){}
 bool audio_get_mute(){return false;}
 void audio_set_volume(uint8_t vol){}
 void audio_set_volume_ble(uint8_t vol){}
-void audio_get_volume(uint8_t* log_volume, uint8_t* lin_volume){*log_volume=0;*lin_volume=0;}
+uint8_t audio_get_volume(){return 0;}
 void audio_set_volume_step(uint8_t step){}
 void audio_volume_up(){}
 void audio_volume_down(){}
@@ -1465,5 +1462,8 @@ void audio_pink_mute(bool mute){}
 
 void audio_sine_play(){}
 void audio_sine_stop(){}
+
+void audio_event_update_streams(void){}
+void audio_event_update_streams_from_isr(void){}
 
 #endif // #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))

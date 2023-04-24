@@ -43,12 +43,18 @@ void matched_enable_irq( void ) /* PRIVILEGED_FUNCTION */
 static SemaphoreHandle_t xSemaphore = NULL;
 static StaticSemaphore_t xMutexBuffer;
 
-		//xSemaphoreCreateRecursiveMutexStatic( &xMutexBuffer );
+void matched_rtos_semaphore_init(){
+	xSemaphore = xSemaphoreCreateRecursiveMutexStatic( &xMutexBuffer );
+}
 
 void matched_rtos_semaphore_take(){
-	xSemaphoreTakeRecursive( xSemaphore, portMAX_DELAY );
+	if(xSemaphore){
+		xSemaphoreTakeRecursive( xSemaphore, portMAX_DELAY );
+	}
 }
 
 void matched_rtos_semaphore_give(){
-	xSemaphoreGiveRecursive( xSemaphore );
+	if(xSemaphore){
+		xSemaphoreGiveRecursive( xSemaphore );
+	}
 }
