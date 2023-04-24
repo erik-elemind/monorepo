@@ -43,18 +43,16 @@ void matched_enable_irq( void ) /* PRIVILEGED_FUNCTION */
 static SemaphoreHandle_t xSemaphore = NULL;
 static StaticSemaphore_t xMutexBuffer;
 
-void matched_rtos_semaphore_init(){
-	xSemaphore = xSemaphoreCreateRecursiveMutexStatic( &xMutexBuffer );
-}
-
 void matched_rtos_semaphore_take(){
-	if(xSemaphore){
-		xSemaphoreTakeRecursive( xSemaphore, portMAX_DELAY );
+	// Lazy initialization of the mutex.
+	if(xSemaphore == NULL){
+		xSemaphore = xSemaphoreCreateRecursiveMutexStatic( &xMutexBuffer );
 	}
+	// It is okay to take a semaphore before the RTOS scheduler has started.
+	xSemaphoreTakeRecursive( xSemaphore, portMAX_DELAY );
 }
 
 void matched_rtos_semaphore_give(){
-	if(xSemaphore){
-		xSemaphoreGiveRecursive( xSemaphore );
-	}
+	// It is okay to take a semaphore before the RTOS scheduler has started.
+	xSemaphoreGiveRecursive( xSemaphore );
 }

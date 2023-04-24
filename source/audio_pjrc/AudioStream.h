@@ -121,7 +121,6 @@ protected:
 #define AudioMemory(num) ({ \
 	static /*DMAMEM*/ audio_block_t data[num]; \
 	AudioStream::initialize_memory(data, num); \
-	matched_rtos_semaphore_init(); \
 })
 
 #define CYCLE_COUNTER_APPROX_PERCENT(n) (((n) + (F_CPU / 32 / AUDIO_SAMPLE_RATE * AUDIO_BLOCK_SAMPLES / 100)) / (F_CPU / 16 / AUDIO_SAMPLE_RATE * AUDIO_BLOCK_SAMPLES / 100))
