@@ -27,15 +27,20 @@
 #ifndef play_fs_wav_h_
 #define play_fs_wav_h_
 
-#include <play_fs_wav_buffer_rtos.h>
+#include "play_fs_wav_buffer_rtos.h"
 #include "AudioStream.h"
 #include "config.h"
 
+typedef enum
+{
+  FS_WAV_STATE_STOPPED = 0,
+  FS_WAV_STATE_PLAYING,
+} fs_wav_state_type_t;
 
 class AudioPlayFsWav : public AudioStream, public AudioPlayFsWavBufferRTOS
 {
 public:
-	AudioPlayFsWav(void) : AudioStream(0, NULL), block_left(NULL), block_right(NULL) { begin(); }
+	AudioPlayFsWav(void) : AudioStream(0, NULL), block_left(NULL), block_right(NULL), state(FS_WAV_STATE_STOPPED), buffer_notification_handler(this) { begin(); }
 	virtual void update(void);
 	virtual bool is_idle(void);
 	bool play(const char *filename, bool loop = false);
@@ -59,6 +64,18 @@ private:
 #endif
 	audio_block_t *block_left;
 	audio_block_t *block_right;
+	fs_wav_state_type_t state;
+	SemaphoreHandle_t state_semaphore = NULL;
+	StaticSemaphore_t state_mutex_buffer;
+protected:
+	class BufferHandler: public AudioPlayFsWavBufferNotificationHandler{
+		AudioPlayFsWav* wav_player_;
+	public:
+		BufferHandler(AudioPlayFsWav* wav_player) : wav_player_(wav_player) {}
+		virtual void handle(fs_wav_buffer_notify_type_t notification);
+	} buffer_notification_handler;
+	void set_state(fs_wav_state_type_t state);
+	fs_wav_state_type_t get_state();
 };
 
 

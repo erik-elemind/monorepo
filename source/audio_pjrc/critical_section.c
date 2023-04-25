@@ -40,19 +40,19 @@ void matched_enable_irq( void ) /* PRIVILEGED_FUNCTION */
 #endif
 
 
-static SemaphoreHandle_t xSemaphore = NULL;
-static StaticSemaphore_t xMutexBuffer;
+static SemaphoreHandle_t audio_semaphore = NULL;
+static StaticSemaphore_t audio_mutex_buffer;
 
 void matched_rtos_semaphore_take(){
 	// Lazy initialization of the mutex.
-	if(xSemaphore == NULL){
-		xSemaphore = xSemaphoreCreateRecursiveMutexStatic( &xMutexBuffer );
+	if(audio_semaphore == NULL){
+		audio_semaphore = xSemaphoreCreateRecursiveMutexStatic( &audio_mutex_buffer );
 	}
 	// It is okay to take a semaphore before the RTOS scheduler has started.
-	xSemaphoreTakeRecursive( xSemaphore, portMAX_DELAY );
+	xSemaphoreTakeRecursive( audio_semaphore, portMAX_DELAY );
 }
 
 void matched_rtos_semaphore_give(){
 	// It is okay to take a semaphore before the RTOS scheduler has started.
-	xSemaphoreGiveRecursive( xSemaphore );
+	xSemaphoreGiveRecursive( audio_semaphore );
 }

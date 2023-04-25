@@ -162,6 +162,7 @@ public:
 	void processorUsageMaxReset(void) { cpu_cycles_max = cpu_cycles; }
 	bool isActive(void) { return active; }
     static void update_all_streams(void);
+    static bool is_idle_all_streams(void);
 	uint32_t cpu_cycles;
 	uint32_t cpu_cycles_max;
 	static uint32_t cpu_cycles_total;

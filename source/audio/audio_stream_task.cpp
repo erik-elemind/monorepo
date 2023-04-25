@@ -100,13 +100,18 @@ handle_event(audio_stream_event_t *event)
   // handle non-state dependent events
   switch (event->type) {
     case AUDIO_STREAM_EVENT_SOFTWARE_ISR_OCCURRED:
+    {
         // Handle the software interrupt, but in a scheduled, non-ISR context:
         AudioOutputI2S::handle_audio_i2s_event();
 
-        // TODO: notify the audio task
-        audio_event_update_streams();
-      return;
-
+        static bool prev_audio_idle = false, curr_audio_idle = false;
+        prev_audio_idle = curr_audio_idle;
+        curr_audio_idle = AudioStream::is_idle_all_streams();
+        if(prev_audio_idle != curr_audio_idle){
+        	audio_event_notify_stream_idle(curr_audio_idle);
+        }
+      break;
+    }
     default:
       break;
   }
