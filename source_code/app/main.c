@@ -121,8 +121,8 @@
 
 /** Model. Will be passed to Device Information Service. */
 #if defined(BOARD_FF4)
-#define MODEL_NUM "FF4"
-#define HW_VERSION_STRING "3"
+#define MODEL_NUM "BLE v3.0"
+#define HW_VERSION_STRING "4"
 #elif defined(BOARD_FF3)
 #define MODEL_NUM "FF3"
 #define HW_VERSION_STRING "3"
@@ -225,7 +225,7 @@ APP_TIMER_DEF(m_delayed_advertising_timer_id);
 NRF_RINGBUF_DEF(m_nus_ringbuf, 1024);
 
 /*** Time to delay advertising start by (in milliseconds). */
-#define ADVERTISING_DELAY_MS APP_TIMER_TICKS(100)
+#define ADVERTISING_DELAY_MS APP_TIMER_TICKS(200)
 
 
 /** Handle of the current connection. */
@@ -481,33 +481,30 @@ gap_params_init(void)
     Note that we initialize this service separately, after a delay,
     since it needs information from the LPC.
 */
-static void
-dis_init(void)
+void
+static dis_init(void)
 {
-  // ToDo: Reimplement this. With BLE V2 ran out of RAM space. Needs to be allocated on
-  // linker file and sdk_config.h, going to put that off for further effort
-    
-  // uint32_t err_code;
-  // ble_dis_init_t dis_init;
+  uint32_t err_code;
+  ble_dis_init_t dis_init;
 
-  // // Initialize Device Information Service.
-  // memset(&dis_init, 0, sizeof(dis_init));
+  // Initialize Device Information Service.
+  memset(&dis_init, 0, sizeof(dis_init));
 
-  // ble_srv_ascii_to_utf8(&dis_init.manufact_name_str, (char *)MANUFACTURER_NAME);
-  // ble_srv_ascii_to_utf8(&dis_init.model_num_str, (char *)MODEL_NUM);
-  // ble_srv_ascii_to_utf8(&dis_init.serial_num_str,
-  //   ble_elemind_get_serial_number());
-  // ble_srv_ascii_to_utf8(&dis_init.hw_rev_str, (char *)HW_VERSION_STRING);
-  // ble_srv_ascii_to_utf8(&dis_init.fw_rev_str, (char *)FW_VERSION_STRING);
-  // ble_srv_ascii_to_utf8(&dis_init.sw_rev_str,
-  //   ble_elemind_get_software_version());
+  ble_srv_ascii_to_utf8(&dis_init.manufact_name_str, (char *)MANUFACTURER_NAME);
+  ble_srv_ascii_to_utf8(&dis_init.model_num_str, (char *)MODEL_NUM);
+  ble_srv_ascii_to_utf8(&dis_init.serial_num_str,
+    ble_elemind_get_serial_number());
+  ble_srv_ascii_to_utf8(&dis_init.hw_rev_str, (char *)HW_VERSION_STRING);
+  ble_srv_ascii_to_utf8(&dis_init.fw_rev_str, (char *)FW_VERSION_STRING);
+  ble_srv_ascii_to_utf8(&dis_init.sw_rev_str,
+    ble_elemind_get_software_version());
 
-  // dis_init.dis_char_rd_sec = SEC_OPEN;
+  dis_init.dis_char_rd_sec = SEC_OPEN;
 
-  // NRF_LOG_DEBUG("ble_dis_init");
-  // err_code = ble_dis_init(&dis_init);
-  // NRF_LOG_DEBUG("ble_dis_init: %d", err_code);
-  // APP_ERROR_CHECK(err_code);
+  NRF_LOG_DEBUG("ble_dis_init");
+  err_code = ble_dis_init(&dis_init);
+  NRF_LOG_DEBUG("ble_dis_init: %d", err_code);
+  APP_ERROR_CHECK(err_code);
 }
 
 /** Initialize services that will be used by the application.
