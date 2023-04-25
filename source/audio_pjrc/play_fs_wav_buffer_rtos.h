@@ -86,6 +86,22 @@ typedef struct
   size_t size;
 } fs_wav_buffer_return_t;
 
+typedef enum
+{
+  FS_WAV_BUFFER_NOTIFY_EXT_START_RECVD = 0,
+  FS_WAV_BUFFER_NOTIFY_EXT_START_SUCCESS,
+  FS_WAV_BUFFER_NOTIFY_EXT_START_FAIL,
+  FS_WAV_BUFFER_NOTIFY_EXT_STOP_RECVD,
+  FS_WAV_BUFFER_NOTIFY_EXT_STOP_SUCCESS,
+  FS_WAV_BUFFER_NOTIFY_EXT_STOP_FAIL,
+  FS_WAV_BUFFER_NOTIFY_INT_STOP_EOF,
+  FS_WAV_BUFFER_NOTIFY_INT_STOP_ERROR,
+} fs_wav_buffer_notify_type_t;
+
+class AudioPlayFsWavBufferNotificationHandler {
+public:
+	virtual void handle(fs_wav_buffer_notify_type_t notification) = 0;
+};
 
 class AudioPlayFsWavBufferRTOS {
 public:
@@ -107,11 +123,20 @@ public:
     void get_stream_params(uint8_t &state_play, uint32_t &sample_rate){
       parser.get_stream_params(state_play, sample_rate);
     }
+    void set_notification_handler(AudioPlayFsWavBufferNotificationHandler *handler){
+    	this->handler = handler;
+    }
 protected:
     static AudioPlayFsWavBufferRTOS *buffer_first_update; // init: static in cpp
     AudioPlayFsWavBufferRTOS *buffer_next_update;         // init: begin_buffer()
+    AudioPlayFsWavBufferNotificationHandler *handler;
     void start(fs_wav_buffer_event_t &event);
     void stop();
+    inline void notify(fs_wav_buffer_notify_type_t notification){
+    	if(handler){
+    		handler->handle(notification);
+    	}
+    }
 private:
 #if (defined(ENABLE_NO_COPY_WAV_BUFFER) && (ENABLE_NO_COPY_WAV_BUFFER > 0U))
 #if (defined(USE_SRAMX_AUDIO_BUFFER) && (USE_SRAMX_AUDIO_BUFFER > 0U))

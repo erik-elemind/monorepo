@@ -168,8 +168,7 @@ void audio_sine_play();
 void audio_sine_stop();
 
 
-void audio_event_update_streams(void);
-void audio_event_update_streams_from_isr(void);
+void audio_event_notify_stream_idle(bool is_idle);
 
 // End: Tell C++ compiler to include this C header.
 #ifdef __cplusplus

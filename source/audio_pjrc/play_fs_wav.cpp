@@ -45,10 +45,15 @@ void AudioPlayFsWav::begin(void)
 		release(block_right);
 		block_right = NULL;
 	}
+
+	// create the semaphore that protected the state variable
+	state_semaphore = xSemaphoreCreateRecursiveMutexStatic( &state_mutex_buffer );
+	set_notification_handler(&buffer_notification_handler);
 }
 
 bool AudioPlayFsWav::play(const char *filename, bool loop)
 {
+	set_state(FS_WAV_STATE_PLAYING);
 	return start_buffer(filename, loop);
 }
 
@@ -340,7 +345,7 @@ void AudioPlayFsWav::update(void)
 
 bool AudioPlayFsWav::is_idle(void)
 {
-  return buffer_is_idle();
+	return get_state() == FS_WAV_STATE_STOPPED;
 }
 
 
@@ -376,4 +381,39 @@ uint32_t AudioPlayFsWav::lengthMillis(void)
 
 
 #endif
+
+void AudioPlayFsWav::BufferHandler::handle(fs_wav_buffer_notify_type_t notification){
+	switch(notification){
+	case FS_WAV_BUFFER_NOTIFY_EXT_START_RECVD:  // fall through
+	case FS_WAV_BUFFER_NOTIFY_EXT_START_SUCCESS:
+		wav_player_->set_state(FS_WAV_STATE_PLAYING);
+		break;
+	case FS_WAV_BUFFER_NOTIFY_EXT_START_FAIL:   // fall through
+	case FS_WAV_BUFFER_NOTIFY_EXT_STOP_SUCCESS: // fall through
+	case FS_WAV_BUFFER_NOTIFY_INT_STOP_EOF:     // fall through
+	case FS_WAV_BUFFER_NOTIFY_INT_STOP_ERROR:   // fall through
+		wav_player_->set_state(FS_WAV_STATE_STOPPED);
+		break;
+	case FS_WAV_BUFFER_NOTIFY_EXT_STOP_FAIL:    // fall through
+	case FS_WAV_BUFFER_NOTIFY_EXT_STOP_RECVD:   // fall through
+	default:
+		break;
+	}
+}
+
+void AudioPlayFsWav::set_state(fs_wav_state_type_t state){
+	if (xSemaphoreTakeRecursive( state_semaphore, portMAX_DELAY ) == pdTRUE){
+		this->state = state;
+		xSemaphoreGiveRecursive( state_semaphore );
+	}
+}
+
+fs_wav_state_type_t AudioPlayFsWav::get_state(){
+	fs_wav_state_type_t state;
+	if (xSemaphoreTakeRecursive( state_semaphore, portMAX_DELAY ) == pdTRUE){
+		state = this->state;
+		xSemaphoreGiveRecursive( state_semaphore );
+	}
+	return state;
+}
 

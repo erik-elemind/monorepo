@@ -59,7 +59,7 @@ void AudioPlayFsWavBufferRTOS::pretask_init(void)
 
 bool AudioPlayFsWavBufferRTOS::start_buffer(const char *filename, bool loop)
 {
-  // stop the previous buffer fill oepration
+  // stop the previous buffer fill operation
   stop_buffer();
 
   fs_wav_buffer_event_t event;
@@ -71,6 +71,8 @@ bool AudioPlayFsWavBufferRTOS::start_buffer(const char *filename, bool loop)
 #if (defined(ENABLE_WAVBUF_TASK) && (ENABLE_WAVBUF_TASK))
   wavbuf_task_wakeup();
 #endif
+
+  notify(FS_WAV_BUFFER_NOTIFY_EXT_START_RECVD);
   return true;
 }
 
@@ -85,6 +87,8 @@ bool AudioPlayFsWavBufferRTOS::stop_buffer(void)
 #if (defined(ENABLE_WAVBUF_TASK) && (ENABLE_WAVBUF_TASK))
   wavbuf_task_wakeup();
 #endif
+
+  notify(FS_WAV_BUFFER_NOTIFY_EXT_STOP_RECVD);
   return true;
 }
 
@@ -104,6 +108,9 @@ void AudioPlayFsWavBufferRTOS::start(fs_wav_buffer_event_t &event){
 #endif
     parser.start_parser();
     buffer_state = FS_WAV_BUFFER_STATE_READING;
+    notify(FS_WAV_BUFFER_NOTIFY_EXT_START_SUCCESS);
+  }else{
+	notify(FS_WAV_BUFFER_NOTIFY_EXT_START_FAIL);
   }
 }
 
@@ -133,6 +140,7 @@ bool AudioPlayFsWavBufferRTOS::fill_buffer(void)
 
       case FS_WAV_BUFFER_EVENT_STOP:
         stop();
+        notify(FS_WAV_BUFFER_NOTIFY_EXT_STOP_SUCCESS);
         break;
 
       default:
@@ -163,6 +171,7 @@ bool AudioPlayFsWavBufferRTOS::fill_buffer(void)
       stop();
        // TODO: Handle return error of smem_rtos_write_close?
       smem_rtos_write_close(&smr);
+      notify(FS_WAV_BUFFER_NOTIFY_INT_STOP_ERROR);
       return false;
     }
 
@@ -205,6 +214,7 @@ bool AudioPlayFsWavBufferRTOS::fill_buffer(void)
         result = f_lseek(&wav_file, parser.get_audio_data_offset());
         if(FR_OK != result){
           stop();
+          notify(FS_WAV_BUFFER_NOTIFY_INT_STOP_ERROR);
           return false;
         }
 //        LOGV("play_fs_wav_buffer","seek us: %lu", (uint32_t)(micros()-start_us));
@@ -213,6 +223,7 @@ bool AudioPlayFsWavBufferRTOS::fill_buffer(void)
       }else{
         // The file has ended, and we are NOT looping.
         stop();
+        notify(FS_WAV_BUFFER_NOTIFY_INT_STOP_EOF);
       }
     }
 

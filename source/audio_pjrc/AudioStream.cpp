@@ -387,3 +387,14 @@ void AudioStream::update_all_streams(void)
   update_all();
   AUDIO_EXIT_CRITICAL();
 }
+
+bool AudioStream::is_idle_all_streams(void){
+	AudioStream *p;
+	bool is_idle = true;
+	for (p = AudioStream::first_update; p; p = p->next_update) {
+		if(p->isActive()){
+			is_idle &= p->is_idle();
+		}
+	}
+	return is_idle;
+}

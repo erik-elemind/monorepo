@@ -165,6 +165,8 @@ typedef enum
   AUDIO_EVENT_SINE_PLAY,
   AUDIO_EVENT_SINE_STOP,
 
+  AUDIO_EVENT_NOTIFY_STREAM_IDLE,
+
   // stateless events
   AUDIO_EVENT_SET_MUTE,
   AUDIO_EVENT_SET_VOLUME,
@@ -172,8 +174,6 @@ typedef enum
   AUDIO_EVENT_SET_VOLUME_STEP,
   AUDIO_EVENT_VOLUME_UP,
   AUDIO_EVENT_VOLUME_DOWN,
-  // software ISR
-  AUDIO_EVENT_SOFTWARE_ISR_OCCURRED
 } audio_event_type_t;
 
 //
@@ -287,13 +287,14 @@ audio_event_type_name(audio_event_type_t event_type)
     case AUDIO_EVENT_PINK_FADE_IN:      return "AUDIO_EVENT_PINK_FADE_IN";
     case AUDIO_EVENT_PINK_FADE_OUT:     return "AUDIO_EVENT_PINK_FADE_OUT";
 
+    case AUDIO_EVENT_NOTIFY_STREAM_IDLE:return "AUDIO_EVENT_NOTIFY_STREAM_IDLE";
+
     case AUDIO_EVENT_SET_MUTE:          return "AUDIO_EVENT_SET_MUTE";
     case AUDIO_EVENT_SET_VOLUME:        return "AUDIO_EVENT_SET_VOLUME";
     case AUDIO_EVENT_SET_VOLUME_BLE:    return "AUDIO_EVENT_SET_VOLUME_BLE";
     case AUDIO_EVENT_SET_VOLUME_STEP:   return "AUDIO_EVENT_SET_VOLUME_STEP";
     case AUDIO_EVENT_VOLUME_UP:         return "AUDIO_EVENT_VOLUME_UP";
     case AUDIO_EVENT_VOLUME_DOWN:       return "AUDIO_EVENT_VOLUME_DOWN";
-    case AUDIO_EVENT_SOFTWARE_ISR_OCCURRED: return "AUDIO_EVENT_SOFTWARE_ISR_OCCURRED";
 
     default:
       break;
@@ -799,10 +800,6 @@ static void
 log_event(audio_event_t *event)
 {
   switch (event->type) {
-  case AUDIO_EVENT_SOFTWARE_ISR_OCCURRED:
-    // squelch this one to avoid spamming the console
-    break;
-
   case AUDIO_EVENT_SET_MUTE:
       LOGV(TAG, "[%s] Event: %s %d",
           audio_state_name(ag_context.state),
@@ -1171,49 +1168,18 @@ handle_state_standby(audio_event_t *event)
 #endif
       break;
 
-    case AUDIO_EVENT_SOFTWARE_ISR_OCCURRED:
-      static bool prev_audio_idle = false, curr_audio_idle = false;
-      prev_audio_idle = curr_audio_idle;
-
-      if (
-        1 // this helps enable the compile time flags below ...
-        #if (defined(AUDIO_ENABLE_FG_WAV) && (AUDIO_ENABLE_FG_WAV > 0U))
-        && wavFG.is_idle()
-        && fade_fg_left.is_idle()
-        && fade_fg_right.is_idle()
-        #endif
-        #if (defined(AUDIO_ENABLE_BG_WAV) && (AUDIO_ENABLE_BG_WAV > 0U))
-        && wavBG.is_idle()
-        && bg_fade_left.is_idle()
-        && bg_fade_right.is_idle()
-        #endif
-        #if (defined(AUDIO_ENABLE_PINK) && (AUDIO_ENABLE_PINK > 0U))
-        && pink.is_idle()
-        #endif
-        #if (defined(AUDIO_ENABLE_SINE) && (AUDIO_ENABLE_SINE > 0U))
-        && sineLow.is_idle()
-        && sineHigh.is_idle()
-        #endif
-        #if (defined(AUDIO_ENABLE_MP3) && (AUDIO_ENABLE_MP3 > 0U))
-        && mp3output.is_idle()
-        #endif
-        ) {
-        curr_audio_idle = true;
-      }else{
-        curr_audio_idle = false;
-      }
-
-      // We need to use a delay-timer strategy to turn off power,
-      // because wavBG playback starts by sending an event to
-      // wav_buffer's message queue to tell wav_buffer to start running.
-      // That message can take a little while to process before wav_buffer actually starts running.
-      // But the way we check whether the wavBG playback is idle only considers whether wav_buffer task is running.
-      if (      !prev_audio_idle &&  curr_audio_idle) {
-        xTimerStart(ag_context.audio_power_off_timer_handle, portMAX_DELAY);
-      } else if( prev_audio_idle && !curr_audio_idle) {
-        xTimerStop(ag_context.audio_power_off_timer_handle, portMAX_DELAY);
-      }
-      break;
+    case AUDIO_EVENT_NOTIFY_STREAM_IDLE:
+        // We need to use a delay-timer strategy to turn off power,
+        // because wavBG playback starts by sending an event to
+        // wav_buffer's message queue to tell wav_buffer to start running.
+        // That message can take a little while to process before wav_buffer actually starts running.
+        // But the way we check whether the wavBG playback is idle only considers whether wav_buffer task is running.
+        if ( *(bool*)(event->user_data) ) {
+          xTimerStart(ag_context.audio_power_off_timer_handle, portMAX_DELAY);
+        } else {
+          xTimerStop(ag_context.audio_power_off_timer_handle, portMAX_DELAY);
+        }
+        break;
 
     case AUDIO_EVENT_POWER_OFF_TIMEOUT:
       set_state(AUDIO_STATE_OFF);
@@ -1307,12 +1273,13 @@ audio_pretask_init(void)
   AudioMemory(AUDIO_DATA_SIZE);
 
 
-#if (defined(AUDIO_ENABLE_FG_WAV) && (AUDIO_ENABLE_FG_WAV > 0U))
-  wavFG.pretask_init();
-#endif
-#if (defined(AUDIO_ENABLE_BG_WAV) && (AUDIO_ENABLE_BG_WAV > 0U))
-  wavBG.pretask_init();
-#endif
+  // TODO: pretask_init() is already being called in wavbuf task
+//#if (defined(AUDIO_ENABLE_FG_WAV) && (AUDIO_ENABLE_FG_WAV > 0U))
+//  wavFG.pretask_init();
+//#endif
+//#if (defined(AUDIO_ENABLE_BG_WAV) && (AUDIO_ENABLE_BG_WAV > 0U))
+//  wavBG.pretask_init();
+//#endif
 
   // TODO: Set gain back to 0.
 #if (defined(AUDIO_ENABLE_FG_WAV) && (AUDIO_ENABLE_FG_WAV > 0U))
@@ -1347,6 +1314,7 @@ audio_pretask_init(void)
 
 
   // Set the default settings
+  // TODO: Get these settings from settings.ini file.
   ag_context.mute = false;
   ag_context.log_volume_step = AUDIO_VOLUME_STEP;
   ag_context.log_volume = 100; // TODO: This causes BLE task to crash
@@ -1393,27 +1361,18 @@ audio_task(void *ignored)
   }
 }
 
-// Non-ISR version of this function
-void audio_event_update_streams(void)
-{
+void audio_event_notify_stream_idle(bool is_idle){
   // NOTE: This is called immediately upon boot-up due to I2S DMA ISR, before the scheduler
   // is started. So we guard against that (we can't call xQueueSend() without a scheduler):
-  audio_event_t event = {.type = AUDIO_EVENT_SOFTWARE_ISR_OCCURRED };
   if (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING) {
-    xQueueSend(g_event_queue, &event, 0);
+    bool* data = AUDIO_MALLOC(bool);
+    if(data!=NULL){
+	  *data = is_idle;
+	  audio_event_t event = { .type = AUDIO_EVENT_NOTIFY_STREAM_IDLE, .user_data = data };
+	  xQueueSend(g_event_queue, &event, portMAX_DELAY);
+    }
   }
 }
-
-void audio_event_update_streams_from_isr(void)
-{
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    audio_event_t event = {.type = AUDIO_EVENT_SOFTWARE_ISR_OCCURRED };
-    xQueueSendFromISR(g_event_queue, &event, &xHigherPriorityTaskWoken);
-
-    // Always do this when calling a FreeRTOS "...FromISR()" function:
-    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-}
-
 
 #else // #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
 
@@ -1463,7 +1422,6 @@ void audio_pink_mute(bool mute){}
 void audio_sine_play(){}
 void audio_sine_stop(){}
 
-void audio_event_update_streams(void){}
-void audio_event_update_streams_from_isr(void){}
+void audio_event_notify_stream_idle(bool is_idle){}
 
 #endif // #if (defined(ENABLE_AUDIO_TASK) && (ENABLE_AUDIO_TASK > 0U))
