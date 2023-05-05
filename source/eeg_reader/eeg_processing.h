@@ -439,7 +439,7 @@ public:
     data_log_eeg( f_sample );
 
     // send ML input data
-    ml_event_input(f_sample);
+    ml_event_eeg_input(f_sample);
 
 
     // log initial values

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -13,9 +14,39 @@
 #include "data_log_commands.h"
 #include "user_metrics.h"
 
-#include "rt_nonfinite.h"
-#include "sleepstagescorer.h"
-#include "sleepstagescorer_terminate.h"
+///>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> TEMP Placeholder for final model implementation
+#include "sample_input.h" // For testing, will remove at some point
+
+// Model input data FLASH section
+extern const char input_section[];
+#define INPUT_DATA_START  ((void *)input_section)
+// Model weights FLASH section
+extern const char weights_section[];
+#define WEIGHT_DATA_START ((void *)weights_section)
+// Model reference data FLASH section
+extern const char output_section[];
+#define OUTPUT_DATA_START ((void **)output_section)
+
+// Statically allocate memory for constant weights.
+GLOW_MEM_ALIGN(TEST_MODEL_MEM_ALIGN)
+uint8_t constantWeight[TEST_MODEL_CONSTANT_MEM_SIZE];
+
+// Statically allocate memory for mutable weights (model input/output data).
+GLOW_MEM_ALIGN(TEST_MODEL_MEM_ALIGN)
+uint8_t mutableWeight[TEST_MODEL_MUTABLE_MEM_SIZE];
+
+// Statically allocate memory for activations (model intermediate results).
+GLOW_MEM_ALIGN(TEST_MODEL_MEM_ALIGN)
+uint8_t activations[TEST_MODEL_ACTIVATIONS_MEM_SIZE];
+//
+//// Bundle input/output data absolute addresses.
+uint8_t *bundleInpAddr = GLOW_GET_ADDR(mutableWeight, TEST_MODEL_serving_default_input_0);
+uint8_t *bundleOutAddr = GLOW_GET_ADDR(mutableWeight, TEST_MODEL_StatefulPartitionedCall_0);
+
+// Model number of output classes.
+#define OUTPUT_NUM_CLASS 5
+///>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 
 // Note: It looks like one "inference" takes a little less than 3 seconds.
 // During inference the event queue is not being emptied.
@@ -24,7 +55,6 @@
 // To provide buffer size, we're allocating a queue size of 1000 events.
 #define ML_EVENT_QUEUE_SIZE 1000
 #define INPUT_SIZE 1250
-#define OUTPUT_NUM_CLASS 5
 
 static const char *TAG = "ml";	// Logging prefix for this module
 
@@ -113,7 +143,7 @@ void ml_disable(void)
 	g_context.enabled = 0;
 }
 
-void ml_event_input(ads129x_frontal_sample* f_sample)
+void ml_event_eeg_input(ads129x_frontal_sample* f_sample)
 {
   if (f_sample->eeg_sample_number % 2 == 0) // ML model expects downsampled (1/2) input
   {
@@ -121,6 +151,16 @@ void ml_event_input(ads129x_frontal_sample* f_sample)
     memcpy(&(event.eeg_fpz_sample), &(f_sample->eeg_channels[EEG_FPZ]), sizeof(f_sample->eeg_channels[EEG_FPZ]));
     xQueueSend(g_event_queue, &event, portMAX_DELAY);
   }
+}
+
+void ml_event_hr_input(uint8_t hr_sample)
+{
+
+}
+
+void ml_event_acc_input(lis2dtw12_sample_t acc_sample)
+{
+
 }
 
 void ml_event_stop(void)
@@ -228,33 +268,50 @@ static void handle_state_input(ml_event_t *event)
 
 static void handle_state_inference(ml_event_t *event)
 {
-  switch (event->type) {
-    case ML_EVENT_ENTER:
-      // Generic code to always execute when entering this state goes here.
+	float max_val = 0.0;
+	uint16_t max_idx = 0;
 
-      // hifi_inference(constantWeight, mutableWeight, activations);
-      sleepstagescorer(model_input, output);
+	switch (event->type) {
+		case ML_EVENT_ENTER:
+			// Generic code to always execute when entering this state goes here.
 
-      // choose highest probability as predicted class
-      float max_val = 0.0;
-      int max_idx = 0;
-      for (int i = 0; i < OUTPUT_NUM_CLASS; i++)
-      {
-    	  if (output[i] > max_val)
-    	  {
-    		  max_val = output[i];
-    		  max_idx = i;
-    	  }
-      }
-      LOGV(TAG, "Inference output: %f, %f, %f, %f, %f\n\r", output[0], output[1], output[2], output[3], output[4]);
-      LOGV(TAG, "Prediction: %d", max_idx);
-      user_metrics_event_input(max_idx, HYPNOGRAM_DATA);
-      set_state(ML_STATE_STANDBY, event);
-      break;
+			// Load up sample input data
+			memcpy(bundleInpAddr, ((char *)TEST_MODEL_INPUT), sizeof(TEST_MODEL_INPUT));
 
-    default:
-      log_event_ignored(event);
-      break;
+			// Run model inference
+			int rc = test_model(constantWeight, mutableWeight, activations);
+
+			if(rc != 0)
+			{
+				LOGE(TAG, "Inference failed: %d", rc);
+				set_state(ML_STATE_STANDBY, event);
+				return;
+			}
+
+			float *out_data  = (float *)(bundleOutAddr);
+
+
+			// choose highest probability as predicted class
+			for (int i = 0; i < OUTPUT_NUM_CLASS; i++)
+			{
+				if (out_data[i] > max_val)
+				{
+					max_val = out_data[i];
+					max_idx = i;
+				}
+			}
+
+			LOGV(TAG, "Inference output: %f, %f, %f, %f, %f\n\r", out_data[0], out_data[1], out_data[2], out_data[3], out_data[4]);
+			LOGV(TAG, "Prediction: %d", max_idx);
+
+			user_metrics_event_input(max_idx, HYPNOGRAM_DATA);
+
+			set_state(ML_STATE_STANDBY, event);
+			break;
+
+		default:
+			log_event_ignored(event);
+			break;
   }
 }
 
@@ -283,6 +340,9 @@ static void handle_event(ml_event_t *event)
 void ml_pretask_init(void)
 {
   // Any pre-scheduler init goes here.
+
+  // Load up constant weights for ML model
+  memcpy(constantWeight, WEIGHT_DATA_START, TEST_MODEL_CONSTANT_MEM_SIZE);
 
   // Create the event queue before the scheduler starts. Avoids race conditions.
   g_event_queue = xQueueCreateStatic(ML_EVENT_QUEUE_SIZE,sizeof(ml_event_t),g_event_queue_array,&g_event_queue_struct);
