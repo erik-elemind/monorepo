@@ -122,7 +122,6 @@ default: nrf52832_xxaa_s132
 	@echo Packaging $(PACKAGE_NAME)
 	nrfutil pkg generate --hw-version 52 --bootloader-version 1 \
 		--sd-req $(SD132_7_0_1_FW_ID) \
-		--softdevice $(SD_HEX) \
 		--bootloader $(APP_HEX) \
 		--app-boot-validation VALIDATE_GENERATED_SHA256 \
 		--key-file $(SOURCE_DIR)/../private-key.pem \
