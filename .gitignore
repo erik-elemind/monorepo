@@ -3,6 +3,7 @@
 
 # Object files
 *.o
+!test_model.o
 *.ko
 *.obj
 *.elf
