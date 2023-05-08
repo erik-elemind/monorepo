@@ -54,11 +54,6 @@
 
 #include "fsl_usart_rtos_additional.h"
 
-
-#include "main.h"
-#include "rt_nonfinite.h"
-#include "sleepstagescorer.h"
-#include "sleepstagescorer_terminate.h"
 #include <stdio.h>
 #include "fsl_iopctl.h"
 #include "fsl_dsp.h"

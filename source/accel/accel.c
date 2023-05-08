@@ -312,6 +312,8 @@ handle_state_sample(const accel_event_t *event)
             );
           }
 
+          // ToDo Send samples to the ML task
+
           // TODO: placeholder until activity calculation figured out
           count++;
           if (count == 10) // 25 samples every second and each iteration
