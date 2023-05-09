@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 int memfault_test_logging_command(int argc, char *argv[]);
+int memfault_test_export_command(int argc, char *argv[]);
 
 // End: Tell C++ compiler to include this C header.
 #ifdef __cplusplus

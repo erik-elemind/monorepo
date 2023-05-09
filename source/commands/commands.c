@@ -454,6 +454,7 @@ const shell_command_t commands[] = {
 
 	// Memfault diagnostics
 	{P_SHELL, "memfault_test_logging", memfault_test_logging_command, "Memfault Logging Test"},
+	{P_SHELL, "memfault_test_export", memfault_test_export_command, "Memfault Export Test"},
 
 
 
