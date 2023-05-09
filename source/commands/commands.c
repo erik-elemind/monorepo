@@ -43,6 +43,7 @@
 #include "skin_temp_commands.h"
 #include "pmic_commands.h"
 #include "ml.h"
+#include "memfault_commands.h"
 
 //static const char *TAG = "commands";  // Logging prefix for this module
 
@@ -450,6 +451,11 @@ const shell_command_t commands[] = {
 	{ P_BLE, "ble_connected", ble_connected, ""},
 	{ P_BLE, "ble_disconnected", ble_disconnected, ""},
 	{ P_BLE, "ble_ota_start", ble_ota_started, ""},
+
+	// Memfault diagnostics
+	{P_SHELL, "memfault_test_logging", memfault_test_logging_command, "Memfault Logging Test"},
+
+
 
     // Misc low level tests
 #if (defined(ENABLE_STREAM_MEMORY_TEST_COMMANDS) && (ENABLE_STREAM_MEMORY_TEST_COMMANDS > 0U))

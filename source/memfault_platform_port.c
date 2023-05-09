@@ -59,7 +59,7 @@ void memfault_platform_log(eMemfaultPlatformLogLevel level, const char *fmt,
   char log_buf[128];
   vsnprintf(log_buf, sizeof(log_buf), fmt, args);
 
-  PRINTF("[%s] MFLT: %s\n", lvl_str, log_buf);
+  printf("[%s] MFLT: %s\n", lvl_str, log_buf);
 
   va_end(args);
 }
