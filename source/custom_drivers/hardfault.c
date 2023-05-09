@@ -122,10 +122,10 @@ void MemManage_Handler(void){
 //  HARDFAULT_HANDLING_ASM();
 //}
 
-void vApplicationStackOverflowHook( TaskHandle_t xTask, char * pcTaskName ){
-	printf("vApplicationStackOverflowHook!\n");
-	HARDFAULT_HANDLING_ASM();
-}
+//void vApplicationStackOverflowHook( TaskHandle_t xTask, char * pcTaskName ){
+//	printf("vApplicationStackOverflowHook!\n");
+//	HARDFAULT_HANDLING_ASM();
+//}
 
 void vApplicationMallocFailedHook( void ){
 	printf("vApplicationMallocFailedHook!\n");

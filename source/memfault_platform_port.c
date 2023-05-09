@@ -20,6 +20,7 @@
 
 #include "memfault/components.h"
 #include "memfault/ports/reboot_reason.h"
+#include "memfault/ports/freertos.h"
 
 #include <stdbool.h>
 
@@ -61,18 +62,6 @@ void memfault_platform_log(eMemfaultPlatformLogLevel level, const char *fmt,
   PRINTF("[%s] MFLT: %s\n", lvl_str, log_buf);
 
   va_end(args);
-}
-
-bool memfault_platform_metrics_timer_boot(
-    uint32_t period_sec, MemfaultPlatformTimerCallback callback) {
-  (void)period_sec, (void)callback;
-  // Schedule a timer to invoke callback() repeatedly after period_sec
-  return true;
-}
-
-uint64_t memfault_platform_get_time_since_boot_ms(void) {
-  // Return time since boot in ms, this is used for relative timings.
-  return 0;
 }
 
 MEMFAULT_PUT_IN_SECTION(".noinit.mflt_reboot_tracking")
@@ -173,6 +162,7 @@ size_t memfault_platform_sanitize_address_range(void *start_addr, size_t desired
 int memfault_platform_boot(void) {
   // !FIXME: Add init to any platform specific ports here.
   // (This will be done in later steps in the getting started Guide)
+  memfault_freertos_port_boot();
 
   memfault_build_info_dump();
   memfault_device_info_dump();

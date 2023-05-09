@@ -29,6 +29,7 @@
 
 #include "MIMXRT685S_cm33.h"
 #include "config_tracealyzer.h"
+#include "memfault/ports/freertos_trace.h"
 
 #ifdef __cplusplus
 extern "C" {
