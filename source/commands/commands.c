@@ -455,7 +455,10 @@ const shell_command_t commands[] = {
 	// Memfault diagnostics
 	{P_SHELL, "memfault_test_logging", memfault_test_logging_command, "Memfault Logging Test"},
 	{P_SHELL, "memfault_test_export", memfault_test_export_command, "Memfault Export Test"},
-
+    {P_SHELL, "memfault_test_coredump_storage", memfault_test_coredump_storage_command, "Memfault Coredump Storage Test"},
+	{P_SHELL, "memfault_test_heartbeat", memfault_test_heartbeat_command, "Memfault Logging Test"},
+	{P_SHELL, "memfault_test_trace", memfault_test_trace_command, "Memfault Logging Test"},
+	{P_SHELL, "memfault_test_reboot", memfault_test_reboot_command, "Memfault Logging Test"},
 
 
     // Misc low level tests

@@ -74,10 +74,26 @@ MEMFAULT_WEAK void memfault_platform_reboot_tracking_boot(void) {
 }
 
 void memfault_reboot_reason_get(sResetBootupInfo *info) {
-  const uint32_t reset_cause = 0;  // TODO: Populate with MCU reset reason
+  const uint32_t reset_cause = RSTCTL0->SYSRSTSTAT;
   eMemfaultRebootReason reset_reason = kMfltRebootReason_Unknown;
 
   // TODO: Convert MCU specific reboot reason to memfault enum
+  if (reset_cause & (RSTCTL0_SYSRSTSTAT_VDD_POR_MASK | RSTCTL0_SYSRSTSTAT_PAD_RESET_MASK | RSTCTL0_SYSRSTSTAT_ARM_APD_RESET_MASK))
+  {
+	  reset_reason = kMfltRebootReason_SoftwareReset;
+  }
+  else if (reset_cause & (RSTCTL0_SYSRSTSTAT_VDD_POR_MASK | RSTCTL0_SYSRSTSTAT_PAD_RESET_MASK))
+  {
+	  reset_reason = kMfltRebootReason_PinReset;
+  }
+  else if (reset_cause & RSTCTL0_SYSRSTSTAT_VDD_POR_MASK)
+  {
+	  reset_reason = kMfltRebootReason_PowerOnReset;
+  }
+  else
+  {
+	  reset_reason = kMfltRebootReason_Unknown;
+  }
 
   *info = (sResetBootupInfo){
       .reset_reason_reg = reset_cause,
@@ -99,16 +115,16 @@ void memfault_platform_get_device_info(sMemfaultDeviceInfo *info) {
     .device_serial = "DEMOSERIAL",
      // A name to represent the firmware running on the MCU.
     // (i.e "ble-fw", "main-fw", or a codename for your project)
-    .software_type = "app-fw",
+    .software_type = "imxrt685-fw",
     // The version of the "software_type" currently running.
     // "software_type" + "software_version" must uniquely represent
     // a single binary
-    .software_version = "1.0.0",
+    .software_version = "0.12.0",
     // The revision of hardware for the device. This value must remain
     // the same for a unique device.
     // (i.e evt, dvt, pvt, or rev1, rev2, etc)
     // Regular expression defining valid hardware versions: ^[-a-zA-Z0-9_\.\+]+$
-    .hardware_version = "dvt1",
+    .hardware_version = "alpha1",
   };
 }
 
@@ -118,7 +134,7 @@ void memfault_platform_reboot(void) {
   // !FIXME: Perform any final system cleanup here
 
   // !FIXME: Reset System
-  // NVIC_SystemReset()
+  NVIC_SystemReset();
   while (1) { } // unreachable
 }
 
