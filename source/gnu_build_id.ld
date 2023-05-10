@@ -9,6 +9,6 @@ SECTIONS
     {
         __start_gnu_build_id_start = .;
         KEEP(*(.note.gnu.build-id))
-    }
+    } > SRAM AT>QSPI_FLASH
 }
 INSERT AFTER .text;

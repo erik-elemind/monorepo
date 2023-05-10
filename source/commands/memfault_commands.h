@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 void memfault_test_logging_command(int argc, char *argv[]);
+void memfault_info_dump_command(int argc, char *argv[]);
 void memfault_test_export_command(int argc, char *argv[]);
 void memfault_test_coredump_storage_command(int argc, char *argv[]);
 void memfault_test_heartbeat_command(int argc, char *argv[]);

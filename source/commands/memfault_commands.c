@@ -10,6 +10,11 @@ void memfault_test_logging_command(int argc, char *argv[]) {
   MEMFAULT_LOG_ERROR("Error log!");
 }
 
+void memfault_info_dump_command(int argc, char *argv[]) {
+  memfault_build_info_dump();
+  memfault_device_info_dump();
+}
+
 // Dump Memfault data collected to console
 void memfault_test_export_command(int argc, char *argv[]) {
   memfault_data_export_dump_chunks();
