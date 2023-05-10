@@ -26,6 +26,8 @@ extern "C" {
 
 // For example, decide if you want to use the Gnu Build ID.
 #define MEMFAULT_USE_GNU_BUILD_ID 1
+#define MEMFAULT_PLATFORM_COREDUMP_NOINIT_SECTION_NAME ".noinit"
+
 
 #ifdef __cplusplus
 }

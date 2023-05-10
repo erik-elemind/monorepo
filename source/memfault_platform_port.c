@@ -64,7 +64,7 @@ void memfault_platform_log(eMemfaultPlatformLogLevel level, const char *fmt,
   va_end(args);
 }
 
-MEMFAULT_PUT_IN_SECTION(".noinit.mflt_reboot_tracking")
+MEMFAULT_PUT_IN_SECTION(".noinit")
 static uint8_t s_reboot_tracking[MEMFAULT_REBOOT_TRACKING_REGION_SIZE];
 
 MEMFAULT_WEAK void memfault_platform_reboot_tracking_boot(void) {
@@ -112,14 +112,14 @@ void memfault_platform_get_device_info(sMemfaultDeviceInfo *info) {
     // An ID that uniquely identifies the device in your fleet
     // (i.e serial number, mac addr, chip id, etc)
     // Regular expression defining valid device serials: ^[-a-zA-Z0-9_]+$
-    .device_serial = "DEMOSERIAL",
+    .device_serial = "ERIK_B07",
      // A name to represent the firmware running on the MCU.
     // (i.e "ble-fw", "main-fw", or a codename for your project)
     .software_type = "imxrt685-fw",
     // The version of the "software_type" currently running.
     // "software_type" + "software_version" must uniquely represent
     // a single binary
-    .software_version = "0.12.0",
+    .software_version = "0.13.0",
     // The revision of hardware for the device. This value must remain
     // the same for a unique device.
     // (i.e evt, dvt, pvt, or rev1, rev2, etc)
