@@ -21,7 +21,7 @@ typedef struct {
 } shell_command_t;
 
 // Maximum number of commands
-#define MAX_COMMANDS 256*2 //was 128,140,192
+#define MAX_COMMANDS 512 //was 128,140,192, 256
 
 // The commands are defined elsewhere:
 extern const shell_command_t commands[];

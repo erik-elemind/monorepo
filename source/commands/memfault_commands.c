@@ -2,6 +2,7 @@
 #include "cmsis_gcc.h"
 #include <stdio.h>
 
+// Test platform ports
 void memfault_test_logging_command(int argc, char *argv[]) {
   MEMFAULT_LOG_DEBUG("Debug log!");
   MEMFAULT_LOG_INFO("Info log!");
@@ -26,6 +27,7 @@ void memfault_test_coredump_storage_command(int argc, char *argv[]) {
   memfault_coredump_storage_debug_test_finish();
 }
 
+// Test core SDK functionality
 // Triggers an immediate heartbeat capture (instead of waiting for timer
 // to expire)
 void memfault_test_heartbeat_command(int argc, char *argv[]) {
@@ -41,3 +43,21 @@ void memfault_test_reboot_command(int argc, char *argv[]) {
   memfault_reboot_tracking_mark_reset_imminent(kMfltRebootReason_UserReset, NULL);
   memfault_platform_reboot();
 }
+
+// Test different crash types where a coredump should be captured
+void memfault_test_assert_command(int argc, char *argv[]) {
+  MEMFAULT_ASSERT(0);
+  MEMFAULT_LOG_ERROR("test assert failed!"); // should never get here
+}
+
+void memfault_test_fault_command(int argc, char *argv[]) {
+  void (*bad_func)(void) = (void *)0xEEEEDEAD;
+  bad_func();
+  MEMFAULT_LOG_ERROR("test fault failed!"); // should never get here
+}
+
+void memfault_test_hang_command(int argc, char *argv[]) {
+  while (1) {}
+  MEMFAULT_LOG_ERROR("test hang failed!"); // should never get here
+}
+
