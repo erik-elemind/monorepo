@@ -63,6 +63,15 @@ via `make dist`. Currently, we use version 2019-q3, which is available from the 
 
 `make dist` also downloads [nrfjprog and mergehex](https://www.nordicsemi.com/Products/Development-tools/nrf-command-line-tools) which are used in the build. -->
 
+## NRF-Command-Line-Tools
+Some of the nrf-command-line-tools (mergehex in particular) are required to build the NRF application firmware
+These tools can be installed with 
+- `sudo wget https://nsscprodmedia.blob.core.windows.net/prod/software-and-other-downloads/desktop-software/nrf-command-line-tools/sw/versions-10-x-x/10-21-0/nrf-command-line-tools-10.21.0_linux-amd64.tar.gz`
+- `sudo tar -xvf nrf-command-line-tools-xx.xx.x_Linux-amd64.tar.gz`
+
+Make sure you add the utilities to your PATH:
+- `export PATH=<installation_directory>/nrf-command-line-tools/bin:$PATH`
+
 ## Build process
 
 To build the main NRF application firmware, run the following command.
@@ -107,6 +116,20 @@ Then provide the path to the LPC hex file to the script, like so:
 ```
 ./lpcpkg.sh -f ../../images/morpheus_firmware.hex
 ``` -->
+
+## Flashing 
+Once the .hex has been built, we use [JLinkCommander](https://www.segger.com/downloads/jlink/) to flash the NRF52. After installation, navigate to the generated hex file within your WSL installation (either in the Linux tab on the sidebar or under /mnt/c/home/<user>/.../build/app-ff4/_build/) and copy the filepath.
+
+Launch JLinkCommander and run
+-`connnect`
+When prompted, select the NRF52832_XXAA (either enter ? and select from dialogue or press enter to continue if already selected)
+Select SWD for connection type and use the default 4000 kHz speed
+
+This needs to be done before every NRF flash
+
+To flash the NRF, 
+-`loadfile <path_to_hex>`
+Then reset and start the processor with `r` and `g` respectively
 
 ## External source: NRF SDK
 
