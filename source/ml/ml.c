@@ -47,14 +47,50 @@ uint8_t *bundleOutAddr = GLOW_GET_ADDR(mutableWeight, TEST_MODEL_StatefulPartiti
 #define OUTPUT_NUM_CLASS 5
 ///>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+#define EEG_BUF_SIZE 7500 	    	// 250 Hz  * 30 second epoch
+#define ACCEL_BUF_SIZE 3750 		// 125 Hz  * 30 second epoch
+#define HR_BUF_SIZE 3750  	    	// 125 Hz  * 30 second epoch
 
-// Note: It looks like one "inference" takes a little less than 3 seconds.
-// During inference the event queue is not being emptied.
-// Since the event queue dominantly receives EEG sample events, which occur at 250Hz.
-// 3 seconds * 250 Hz = 750 sample events.
-// To provide buffer size, we're allocating a queue size of 1000 events.
-#define ML_EVENT_QUEUE_SIZE 1000
-#define INPUT_SIZE 1250
+#define EEG_PREPROCESS_SIZE 7500 	// 250 Hz * 30 second epoch
+#define ACCEL_PREPROCESS_SIZE 750 	// 25 Hz  * 30 second epoch
+#define HR_PREPROCESS_SIZE 30  	    // 1 Hz   * 30 second epoch
+
+// Variables needed for double buffering method of ML data
+static float g_eeg_A[EEG_BUF_SIZE];
+static float g_eeg_B[EEG_BUF_SIZE];
+static float* g_eeg_fill_p = g_eeg_A;
+static float* g_eeg_ready_p = g_eeg_B;
+
+static size_t g_eeg_fill_idx = 0;
+static bool g_eeg_buf_ready = false;
+
+static float g_accelx_A[ACCEL_BUF_SIZE];
+static float g_accelx_B[ACCEL_BUF_SIZE];
+static float g_accely_A[ACCEL_BUF_SIZE];
+static float g_accely_B[ACCEL_BUF_SIZE];
+static float g_accelz_A[ACCEL_BUF_SIZE];
+static float g_accelz_B[ACCEL_BUF_SIZE];
+
+static float* g_accelx_fill_p = g_accelx_A;
+static float* g_accelx_ready_p = g_accelx_B;
+static float* g_accely_fill_p = g_accely_A;
+static float* g_accely_ready_p = g_accely_B;
+static float* g_accelz_fill_p = g_accelz_A;
+static float* g_accelz_ready_p = g_accelz_B;
+
+static size_t g_accel_fill_idx = 0;
+static bool g_accel_buf_ready = false;
+
+static float g_hr_A[HR_BUF_SIZE];
+static float g_hr_B[HR_BUF_SIZE];
+static float* g_hr_fill_p = g_hr_A;
+static float* g_hr_ready_p = g_hr_B;
+
+static size_t g_hr_fill_idx = 0;
+static bool g_hr_buf_ready = false;
+
+static SemaphoreHandle_t g_sem;
+#define ML_EVENT_QUEUE_SIZE 10
 
 static const char *TAG = "ml";	// Logging prefix for this module
 
@@ -64,7 +100,6 @@ static const char *TAG = "ml";	// Logging prefix for this module
 typedef enum
 {
   ML_EVENT_ENTER,	// (used for state transitions)
-  ML_EVENT_INPUT,
   ML_EVENT_STOP
 } ml_event_type_t;
 
@@ -76,14 +111,13 @@ typedef struct
   int32_t eeg_fpz_sample;
 } ml_event_t;
 
-
 //
 // State machine states:
 //
 typedef enum
 {
   ML_STATE_STANDBY,
-  ML_STATE_INPUT,
+  ML_STATE_PREPROCESS_DATA,
   ML_STATE_INFERENCE
 } ml_state_t;
 
@@ -104,16 +138,15 @@ static uint8_t g_event_queue_array[ML_EVENT_QUEUE_SIZE*sizeof(ml_event_t)];
 static StaticQueue_t g_event_queue_struct;
 static QueueHandle_t g_event_queue;
 static void handle_event(ml_event_t *event);
-
+static void set_state(ml_state_t state);
 float output[OUTPUT_NUM_CLASS];
-float model_input[INPUT_SIZE];
 
 // For logging and debug:
 static const char * ml_state_name(ml_state_t state)
 {
   switch (state) {
     case ML_STATE_STANDBY: return "ML_STATE_STANDBY";
-    case ML_STATE_INPUT: return "ML_STATE_INPUT";
+    case ML_STATE_PREPROCESS_DATA: return "ML_STATE_PREPROCESS_DATA";
     case ML_STATE_INFERENCE: return "ML_STATE_INFERENCE";
     default:
       break;
@@ -125,7 +158,6 @@ static const char * ml_event_type_name(ml_event_type_t event_type)
 {
   switch (event_type) {
     case ML_EVENT_ENTER: return "ML_EVENT_ENTER";
-    case ML_EVENT_INPUT: return "ML_EVENT_INPUT";
     case ML_EVENT_STOP: return "ML_EVENT_STOP";
     default:
       break;
@@ -145,22 +177,151 @@ void ml_disable(void)
 
 void ml_event_eeg_input(ads129x_frontal_sample* f_sample)
 {
-  if (f_sample->eeg_sample_number % 2 == 0) // ML model expects downsampled (1/2) input
-  {
-    ml_event_t event = {.type = ML_EVENT_INPUT};
-    memcpy(&(event.eeg_fpz_sample), &(f_sample->eeg_channels[EEG_FPZ]), sizeof(f_sample->eeg_channels[EEG_FPZ]));
-    xQueueSend(g_event_queue, &event, portMAX_DELAY);
-  }
+	// take pointer semaphore
+	if ( xSemaphoreTake(g_sem, portMAX_DELAY) == pdTRUE )
+	{
+		if(!g_eeg_buf_ready)
+		{
+			g_eeg_fill_p[g_eeg_fill_idx] = f_sample->eeg_channels[EEG_FPZ]; // TODO: Implement smart channel switching
+			g_eeg_fill_idx++;
+			if(g_eeg_fill_idx == EEG_PREPROCESS_SIZE){
+				g_eeg_fill_idx = 0;
+				// flip double buffer
+				if(g_eeg_fill_p == g_eeg_A)
+				{
+					g_eeg_fill_p = g_eeg_B;
+					g_eeg_ready_p = g_eeg_A;
+				}
+				else
+				{
+					g_eeg_fill_p = g_eeg_A;
+					g_eeg_ready_p = g_eeg_B;
+				}
+				memset(g_eeg_fill_p, 0, sizeof(g_eeg_fill_p));
+				// update ready booleans
+				g_eeg_buf_ready = true;
+				// provide a synchronization point across all sensors
+				if(g_eeg_buf_ready && g_accel_buf_ready && g_hr_buf_ready)
+				{
+					g_eeg_buf_ready = false;
+					g_accel_buf_ready = false;
+					g_hr_buf_ready = false;
+
+					set_state(ML_STATE_PREPROCESS_DATA);
+				}
+			}
+		}
+		// give pointer semaphore
+		xSemaphoreGive(g_sem);
+	}
+}
+
+void ml_event_acc_input(lis2dtw12_sample_t* acc_sample)
+{
+	// take pointer semaphore
+	if ( xSemaphoreTake(g_sem, portMAX_DELAY) == pdTRUE )
+	{
+		for(uint8_t i=0;i<32;i++)
+		{
+			if(!g_accel_buf_ready)
+			{
+				g_accelx_fill_p[g_accel_fill_idx] = (float) acc_sample[i].x;
+				g_accely_fill_p[g_accel_fill_idx] = (float) acc_sample[i].y;
+				g_accelz_fill_p[g_accel_fill_idx] = (float) acc_sample[i].z;
+
+				g_accel_fill_idx++;
+
+				if(g_accel_fill_idx == ACCEL_PREPROCESS_SIZE){
+					g_accel_fill_idx = 0;
+					// flip double buffer
+					if(g_accelx_fill_p == g_accelx_A)
+					{
+						g_accelx_fill_p = g_accelx_B;
+						g_accelx_ready_p = g_accelx_A;
+
+						g_accely_fill_p = g_accely_B;
+						g_accely_ready_p = g_accely_A;
+
+						g_accelz_fill_p = g_accelz_B;
+						g_accelz_ready_p = g_accelz_A;
+					}
+					else
+					{
+						g_accelx_fill_p = g_accelx_A;
+						g_accelx_ready_p = g_accelx_B;
+
+						g_accely_fill_p = g_accely_A;
+						g_accely_ready_p = g_accely_B;
+
+						g_accelz_fill_p = g_accelz_A;
+						g_accelz_ready_p = g_accelz_B;
+					}
+
+					memset(g_accelx_fill_p, 0, sizeof(g_accelx_fill_p));
+					memset(g_accely_fill_p, 0, sizeof(g_accely_fill_p));
+					memset(g_accelz_fill_p, 0, sizeof(g_accelz_fill_p));
+					// update ready booleans
+					g_accel_buf_ready = true;
+					// provide a synchronization point across all sensors
+					if(g_eeg_buf_ready && g_accel_buf_ready && g_hr_buf_ready)
+					{
+						g_eeg_buf_ready = false;
+						g_accel_buf_ready = false;
+						g_hr_buf_ready = false;
+
+						set_state(ML_STATE_PREPROCESS_DATA);
+					}
+				}
+			}
+			else
+			{
+				break;
+			}
+		}
+		// give pointer semaphore
+		xSemaphoreGive(g_sem);
+	}
 }
 
 void ml_event_hr_input(uint8_t hr_sample)
 {
+	// take pointer semaphore
+	if ( xSemaphoreTake(g_sem, portMAX_DELAY) == pdTRUE )
+	{
+		if(!g_hr_buf_ready)
+		{
+			g_hr_fill_p[g_hr_fill_idx] = (float) hr_sample;
+			g_hr_fill_idx++;
+			if(g_hr_fill_idx == HR_PREPROCESS_SIZE){
+				g_hr_fill_idx = 0;
+				// flip double buffer
+				if(g_hr_fill_p == g_hr_A)
+				{
+					g_hr_fill_p = g_hr_B;
+					g_hr_ready_p = g_hr_A;
+				}
+				else
+				{
+					g_hr_fill_p = g_hr_A;
+					g_hr_ready_p = g_hr_B;
+				}
+				memset(g_hr_fill_p, 0, sizeof(g_hr_fill_p));
+				// update ready booleans
+				g_hr_buf_ready = true;
+				// provide a synchronization point across all sensors
+				if(g_eeg_buf_ready && g_accel_buf_ready && g_hr_buf_ready)
+				{
+					g_eeg_buf_ready = false;
+					g_accel_buf_ready = false;
+					g_hr_buf_ready = false;
 
-}
-
-void ml_event_acc_input(lis2dtw12_sample_t acc_sample)
-{
-
+					set_state(ML_STATE_PREPROCESS_DATA);
+				}
+			}
+		}
+		// give pointer semaphore
+		xSemaphoreGive(g_sem);
+	}
 }
 
 void ml_event_stop(void)
@@ -172,8 +333,6 @@ void ml_event_stop(void)
 static void log_event(ml_event_t *event)
 {
   switch (event->type) {
-  case ML_EVENT_INPUT:
-	  break;
     default:
       LOGV(TAG, "[%s] Event: %s\n\r", ml_state_name(g_context.state), ml_event_type_name(event->type));
       break;
@@ -189,25 +348,17 @@ static void log_event_ignored(ml_event_t *event)
 //
 // Event handlers for the various application states:
 //
-static void set_state(ml_state_t state, ml_event_t *cur_event)
+static void set_state(ml_state_t state)
 {
   LOGD(TAG, "[%s] -> [%s]", ml_state_name(g_context.state), ml_state_name(state));
 
   g_context.state = state;
 
-  // process the first input received
-  if (cur_event->type == ML_EVENT_INPUT)
-  {
-    ml_event_t event = { .type = ML_EVENT_ENTER, .eeg_fpz_sample = cur_event->eeg_fpz_sample};
-    handle_event(&event);
-  }
-  else
-  {
-    // Immediately process an ENTER_STATE event, before any other pending events.
-    // This allows the app to do state-specific init/setup when changing states.
-    ml_event_t event = { ML_EVENT_ENTER, (void *) state };
-    handle_event(&event);
-  }
+  // Immediately process an ENTER_STATE event, before any other pending events.
+  // This allows the app to do state-specific init/setup when changing states.
+  ml_event_t event = { ML_EVENT_ENTER };
+  handle_event(&event);
+
 }
 
 static void handle_state_standby(ml_event_t *event)
@@ -218,46 +369,19 @@ static void handle_state_standby(ml_event_t *event)
       // Generic code to always execute when entering this state goes here.
       break;
 
-    case ML_EVENT_INPUT:
-      set_state(ML_STATE_INPUT, event);
-      break;
-
-    case ML_EVENT_STOP:
-      ml_disable();
-      break;
-
     default:
       log_event_ignored(event);
       break;
   }
 }
 
-static void handle_state_input(ml_event_t *event)
+static void handle_state_preprocess_data(ml_event_t *event)
 {
-  static int currentCount = 0;
   switch (event->type) {
-    case ML_EVENT_ENTER:
-    	currentCount = 0;
-    case ML_EVENT_INPUT:{
-      // Generic code to always execute when entering this state goes here.
-      // Convert and store raw data to model input buffer (in V)
-      
-      model_input[currentCount] = (float) event->eeg_fpz_sample * EEG_SCALAR_V;
-      currentCount++;
-
-    	if (currentCount == INPUT_SIZE) // raw data is downsampled by half
-    	{
-    		(g_context.enabled > 0) ? set_state(ML_STATE_INFERENCE, event) : set_state(ML_STATE_STANDBY, event);
-    		currentCount = 0;
-    	}
-
+    case ML_EVENT_ENTER:{
+      // Todo: Implement pre-processing of all data for inference
+    	(g_context.enabled > 0) ? set_state(ML_STATE_INFERENCE) : set_state(ML_STATE_STANDBY);
       break;
-    }
-    case ML_EVENT_STOP:{
-    	set_state(ML_STATE_STANDBY, event);
-    	currentCount = 0;
-    	ml_disable();
-    	break;
     }
 
     default:
@@ -284,7 +408,7 @@ static void handle_state_inference(ml_event_t *event)
 			if(rc != 0)
 			{
 				LOGE(TAG, "Inference failed: %d", rc);
-				set_state(ML_STATE_STANDBY, event);
+				set_state(ML_STATE_STANDBY);
 				return;
 			}
 
@@ -306,7 +430,7 @@ static void handle_state_inference(ml_event_t *event)
 
 			user_metrics_event_input(max_idx, HYPNOGRAM_DATA);
 
-			set_state(ML_STATE_STANDBY, event);
+			set_state(ML_STATE_STANDBY);
 			break;
 
 		default:
@@ -317,15 +441,45 @@ static void handle_state_inference(ml_event_t *event)
 
 static void handle_event(ml_event_t *event)
 {
+
+  switch (event->type) {
+    case ML_EVENT_STOP:
+      ml_disable();
+
+      g_eeg_fill_p = g_eeg_A;
+      g_eeg_ready_p = g_eeg_B;
+
+      g_eeg_fill_idx = 0;
+      g_eeg_buf_ready = false;
+
+      g_accelx_fill_p = g_accelx_A;
+      g_accelx_ready_p = g_accelx_B;
+      g_accely_fill_p = g_accely_A;
+      g_accely_ready_p = g_accely_B;
+      g_accelz_fill_p = g_accelz_A;
+      g_accelz_ready_p = g_accelz_B;
+
+      g_accel_fill_idx = 0;
+      g_accel_buf_ready = false;
+
+      g_hr_fill_p = g_hr_A;
+      g_hr_ready_p = g_hr_B;
+
+      g_hr_fill_idx = 0;
+      g_hr_buf_ready = false;
+      return;
+
+    default:
+      break;
+  }
+
   switch (g_context.state) {
     case ML_STATE_STANDBY:
       handle_state_standby(event);
       break;
-
-    case ML_STATE_INPUT:
-      handle_state_input(event);
+    case ML_STATE_PREPROCESS_DATA:
+      handle_state_preprocess_data(event);
       break;
-
     case ML_STATE_INFERENCE:
       handle_state_inference(event);
       break;
@@ -344,6 +498,18 @@ void ml_pretask_init(void)
   // Load up constant weights for ML model
   memcpy(constantWeight, WEIGHT_DATA_START, TEST_MODEL_CONSTANT_MEM_SIZE);
 
+  g_sem = xSemaphoreCreateBinary();
+
+  if (g_sem == NULL)
+  {
+	/* There was not enough heap memory space to create the semaphore. Handle this case here. */
+	LOGE(TAG, "Could not create semaphore");
+  }
+  else
+  {
+	  xSemaphoreGive(g_sem);
+  }
+
   // Create the event queue before the scheduler starts. Avoids race conditions.
   g_event_queue = xQueueCreateStatic(ML_EVENT_QUEUE_SIZE,sizeof(ml_event_t),g_event_queue_array,&g_event_queue_struct);
   vQueueAddToRegistry(g_event_queue, "ml_event_queue");
@@ -355,7 +521,7 @@ static void task_init()
 {
   // Any post-scheduler init goes here.
   ml_disable();
-  set_state(ML_STATE_STANDBY, NULL);
+  set_state(ML_STATE_STANDBY);
   LOGV(TAG, "Task launched. Entering event loop.\n\r");
 }
 

@@ -16,7 +16,7 @@ void ml_task(void *ignored);
 // Send various event types to this task:
 void ml_event_eeg_input(ads129x_frontal_sample* f_sample);
 void ml_event_hr_input(uint8_t hr_sample);
-void ml_event_acc_input(lis2dtw12_sample_t acc_sample);
+void ml_event_acc_input(lis2dtw12_sample_t* acc_sample);
 
 void ml_event_stop(void);
 void ml_enable(void);
