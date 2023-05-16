@@ -441,7 +441,6 @@ public:
     // send ML input data
     ml_event_eeg_input(f_sample);
 
-
     // log initial values
     if(first_run){
       first_run = false;

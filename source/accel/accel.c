@@ -26,6 +26,7 @@
 #include "timers.h"
 #include "queue.h"
 #include "user_metrics.h"
+#include "ml.h"
 
 #if (defined(ENABLE_ACCEL_TASK) && (ENABLE_ACCEL_TASK > 0U))
 
@@ -311,6 +312,8 @@ handle_state_sample(const accel_event_t *event)
               g_context.samples[i].z
             );
           }
+
+          ml_event_acc_input( g_context.samples);
 
           // ToDo Send samples to the ML task
 

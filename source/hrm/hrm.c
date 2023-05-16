@@ -25,6 +25,7 @@
 #include "peripherals.h"
 #include "hrm.h"
 #include "user_metrics.h"
+#include "ml.h"
 
 #if (defined(ENABLE_HRM_TASK) && (ENABLE_HRM_TASK > 0U))
 
@@ -359,6 +360,8 @@ static void
 handle_state_process(const hrm_event_t *event)
 {
 	static int count = 0;
+	static int count_ml = 0;
+
   switch (event->type) {
     case HRM_EVENT_ENTER_STATE:
       // Process the Data
@@ -377,6 +380,14 @@ handle_state_process(const hrm_event_t *event)
       {
     	  user_metrics_event_input((rand() % 35)+50, HRM_DATA);
     	  count = 0;
+      }
+
+      // ToDo: Place holder, running 10HZ feed a random HR to ML every 1 second
+      count_ml++;
+      if(count_ml == 10)
+      {
+    	  count_ml=0;
+    	  ml_event_hr_input((rand() % 35)+50);
       }
         // Wait for the timer to start the next sample
         set_state(HRM_STATE_STANDBY);
