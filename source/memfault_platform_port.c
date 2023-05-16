@@ -64,7 +64,7 @@ void memfault_platform_log(eMemfaultPlatformLogLevel level, const char *fmt,
   va_end(args);
 }
 
-MEMFAULT_PUT_IN_SECTION(".noinit")
+MEMFAULT_PUT_IN_SECTION(".noinit.mflt_reboot_tracking")
 static uint8_t s_reboot_tracking[MEMFAULT_REBOOT_TRACKING_REGION_SIZE];
 
 MEMFAULT_WEAK void memfault_platform_reboot_tracking_boot(void) {
@@ -132,6 +132,11 @@ void memfault_platform_get_device_info(sMemfaultDeviceInfo *info) {
 //! any final cleanup and then reset the device
 void memfault_platform_reboot(void) {
   // !FIXME: Perform any final system cleanup here
+  size_t total_size = 0;
+  if (memfault_coredump_has_valid_coredump(&total_size)) {
+    MEMFAULT_LOG_INFO("reboot: coredump present!");
+    memfault_data_export_dump_chunks();
+  } else {MEMFAULT_LOG_INFO("reboot: coredump NOT present!");}
 
   // !FIXME: Reset System
   NVIC_SystemReset();
@@ -183,6 +188,11 @@ int memfault_platform_boot(void) {
   memfault_build_info_dump();
   memfault_device_info_dump();
   memfault_platform_reboot_tracking_boot();
+
+  size_t total_size = 0;
+  if (memfault_coredump_has_valid_coredump(&total_size)) {
+    MEMFAULT_LOG_INFO("boot: coredump present! size=%d", total_size);
+  } else {MEMFAULT_LOG_INFO("boot: coredump NOT present!");}
 
   // initialize the event storage buffer
   static uint8_t s_event_storage[1024];
