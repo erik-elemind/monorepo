@@ -382,6 +382,7 @@ handle_state_process(const hrm_event_t *event)
     	  count = 0;
       }
 
+      // ToDo: Place holder, running 10HZ feed a random HR to ML every 1 second
       count_ml++;
       if(count_ml == 10)
       {
