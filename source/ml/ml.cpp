@@ -14,6 +14,10 @@
 #include "data_log_commands.h"
 #include "user_metrics.h"
 
+#include "ml_utils.h"
+
+// compile with iso c++17
+
 ///>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> TEMP Placeholder for final model implementation
 #include "sample_input.h" // For testing, will remove at some point
 
@@ -55,6 +59,10 @@ uint8_t *bundleOutAddr = GLOW_GET_ADDR(mutableWeight, TEST_MODEL_StatefulPartiti
 #define ACCEL_PREPROCESS_SIZE 750 	// 25 Hz  * 30 second epoch
 #define HR_PREPROCESS_SIZE 30  	    // 1 Hz   * 30 second epoch
 
+#define ACCEL_HPF_ORDER 2
+#define ACCEL_FS 25
+#define ACCEL_FH 0.1
+
 // Variables needed for double buffering method of ML data
 static float g_eeg_A[EEG_BUF_SIZE];
 static float g_eeg_B[EEG_BUF_SIZE];
@@ -71,6 +79,9 @@ static float g_accely_B[ACCEL_BUF_SIZE];
 static float g_accelz_A[ACCEL_BUF_SIZE];
 static float g_accelz_B[ACCEL_BUF_SIZE];
 
+// // Adds an extra 
+// static float g_accelx_processed[ACCEL_BUF_SIZE]
+
 static float* g_accelx_fill_p = g_accelx_A;
 static float* g_accelx_ready_p = g_accelx_B;
 static float* g_accely_fill_p = g_accely_A;
@@ -80,6 +91,7 @@ static float* g_accelz_ready_p = g_accelz_B;
 
 static size_t g_accel_fill_idx = 0;
 static bool g_accel_buf_ready = false;
+static bool g_accel_process_done = false;
 
 static float g_hr_A[HR_BUF_SIZE];
 static float g_hr_B[HR_BUF_SIZE];
@@ -128,7 +140,9 @@ typedef struct
 {
   ml_state_t state;
   // TODO: Other "global" vars shared between events or states goes here.
-  uint8_t enabled;
+  uint8_t ml_enabled;
+  bool accel_filt_en;
+  bool hr_filt_en;
 } ml_context_t;
 
 static ml_context_t g_context;
@@ -140,6 +154,14 @@ static QueueHandle_t g_event_queue;
 static void handle_event(ml_event_t *event);
 static void set_state(ml_state_t state);
 float output[OUTPUT_NUM_CLASS];
+
+static accel_filter<FILT_TYPE, MAX_ACCEL_FILT_ORDER> g_accel_filt;
+
+void filter_init(){
+	// 2nd Order Butterworth filter. 0.1 Hz cutoff. Use the same filter for all dimensions
+	g_accel_filt.designAccelFilter(ACCEL_HPF_ORDER, ACCEL_FS, ACCEL_FS, true); // reset cache by default
+
+}
 
 // For logging and debug:
 static const char * ml_state_name(ml_state_t state)
@@ -167,12 +189,12 @@ static const char * ml_event_type_name(ml_event_type_t event_type)
 
 void ml_enable(void)
 {
-	g_context.enabled = 1;
+	g_context.ml_enabled = 1;
 }
 
 void ml_disable(void)
 {
-	g_context.enabled = 0;
+	g_context.ml_enabled = 0;
 }
 
 void ml_event_eeg_input(ads129x_frontal_sample* f_sample)
@@ -375,12 +397,45 @@ static void handle_state_standby(ml_event_t *event)
   }
 }
 
+// Should we include events for configuration like in eeg_processor.cpp?
+// Depends on how often we plan to live reconfigure the preprocessing pipeline 
 static void handle_state_preprocess_data(ml_event_t *event)
 {
   switch (event->type) {
     case ML_EVENT_ENTER:{
       // Todo: Implement pre-processing of all data for inference
-    	(g_context.enabled > 0) ? set_state(ML_STATE_INFERENCE) : set_state(ML_STATE_STANDBY);
+    	(g_context.ml_enabled > 0) ? set_state(ML_STATE_INFERENCE) : set_state(ML_STATE_STANDBY);
+		// Assume no race condition since we have the whople double buffer thing anyway?
+		if (g_context.accel_filt_en && g_accel_buf_ready) {
+			g_accel_process_done = false;
+
+			// 2nd order Butterworth Filter
+			for (int i; i < ACCEL_BUF_SIZE; i++){ 
+				g_accelx_ready_p[i] = g_accel_filt.filter(g_accelx_ready_p[i]); // feed values in one at a time
+				g_accely_ready_p[i] = g_accel_filt.filter(g_accely_ready_p[i]); // check eeg filt again to see how david advances the buffer
+				g_accelz_ready_p[i] = g_accel_filt.filter(g_accelz_ready_p[i]);
+			}
+			
+			// Cast to vector to resample
+			std::vector<float> accelx_vec(g_accelx_ready_p, g_accelx_ready_p + ACCEL_BUF_SIZE);
+			std::vector<float> accely_vec(g_accely_ready_p, g_accely_ready_p + ACCEL_BUF_SIZE);
+			std::vector<float> accelz_vec(g_accelz_ready_p, g_accelz_ready_p + ACCEL_BUF_SIZE);
+
+			// Upsampling to 125 Hz -> make these defines
+			int fs_orig = 25; // Hz
+			int fs_new = 125; // Hz
+
+			resample<float> (fs_orig, fs_new, accelx_vec, accelx_vec);
+			resample<float> (fs_orig, fs_new, accely_vec, accely_vec);
+			resample<float> (fs_orig, fs_new, accelz_vec, accelz_vec);
+
+			accelx_vec = z_score_normalize(accelx_vec);
+			accely_vec = z_score_normalize(accely_vec);
+			accelz_vec = z_score_normalize(accelz_vec);
+
+			g_accel_process_done = true;
+			// send semaphore to inference task that buffer is ready
+		} 
       break;
     }
 
@@ -396,7 +451,7 @@ static void handle_state_inference(ml_event_t *event)
 	uint16_t max_idx = 0;
 
 	switch (event->type) {
-		case ML_EVENT_ENTER:
+		case ML_EVENT_ENTER:{
 			// Generic code to always execute when entering this state goes here.
 
 			// Load up sample input data
@@ -432,7 +487,7 @@ static void handle_state_inference(ml_event_t *event)
 
 			set_state(ML_STATE_STANDBY);
 			break;
-
+		}
 		default:
 			log_event_ignored(event);
 			break;
@@ -528,6 +583,7 @@ static void task_init()
 void ml_task(void *ignored)
 {
   task_init();
+  filter_init();
 
   ml_event_t event;
 
