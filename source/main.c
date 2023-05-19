@@ -57,6 +57,7 @@
 #include <stdio.h>
 #include "fsl_iopctl.h"
 #include "fsl_dsp.h"
+#include "memfault/components.h"
 
 
 /*******************************************************************************
@@ -309,6 +310,9 @@ int main(void)
 	dhara_pretask_init();
 	// Filesystem init
 	mount_fatfs_drive_and_format_if_needed();
+
+	//memfault
+	memfault_platform_boot();
 
     //
     // Launch all Tasks:

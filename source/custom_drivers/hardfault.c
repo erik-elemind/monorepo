@@ -102,30 +102,30 @@ void my_fault_handler_c(sContextStateFrame *frame) {
 #endif
 }
 
-void HardFault_Handler(void) {
-  printf("HardFault handler!\n");
-  HARDFAULT_HANDLING_ASM();
-}
+//void HardFault_Handler(void) {
+//  printf("HardFault handler!\n");
+//  HARDFAULT_HANDLING_ASM();
+//}
 
 void MemManage_Handler(void){
   printf("MemManage handler!\n");
   HARDFAULT_HANDLING_ASM();
 }
 
-void BusFault_Handler(void){
-  printf("BusFault handler!\n");
-  HARDFAULT_HANDLING_ASM();
-}
+//void BusFault_Handler(void){
+//  printf("BusFault handler!\n");
+//  HARDFAULT_HANDLING_ASM();
+//}
+//
+//void UsageFault_Handler(void){
+//  printf("UsageFault_Handler!\n");
+//  HARDFAULT_HANDLING_ASM();
+//}
 
-void UsageFault_Handler(void){
-  printf("UsageFault_Handler!\n");
-  HARDFAULT_HANDLING_ASM();
-}
-
-void vApplicationStackOverflowHook( TaskHandle_t xTask, char * pcTaskName ){
-	printf("vApplicationStackOverflowHook!\n");
-	HARDFAULT_HANDLING_ASM();
-}
+//void vApplicationStackOverflowHook( TaskHandle_t xTask, char * pcTaskName ){
+//	printf("vApplicationStackOverflowHook!\n");
+//	HARDFAULT_HANDLING_ASM();
+//}
 
 void vApplicationMallocFailedHook( void ){
 	printf("vApplicationMallocFailedHook!\n");

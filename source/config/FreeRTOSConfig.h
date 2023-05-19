@@ -29,6 +29,7 @@
 
 #include "MIMXRT685S_cm33.h"
 #include "config_tracealyzer.h"
+#include "memfault/ports/freertos_trace.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -154,18 +155,21 @@ extern void BOARD_ToggleDebugLED(void);
 
 
 
-// Debug LED toggle delay for configASSERT()
-#define DEBUG_LED_DELAY 500000
+//// Debug LED toggle delay for configASSERT()
+//#define DEBUG_LED_DELAY 500000
+//
+void vAssertCalled(const char *file, int line);
+#define configASSERT(x) if ((x) == 0){ vAssertCalled( __FILE__, __LINE__ );}
 
-/* Define to trap errors during development. */
-#define configASSERT(x) \
-  if((x) == 0) { \
-    portDISABLE_INTERRUPTS(); \
-    for (;;) { \
-      BOARD_ToggleDebugLED(); \
-      for(int i = 0; i < DEBUG_LED_DELAY; i++) {} \
-    }; \
-  }
+///* Define to trap errors during development. */
+//#define configASSERT(x) \
+//  if((x) == 0) { \
+//    portDISABLE_INTERRUPTS(); \
+//    for (;;) { \
+//      BOARD_ToggleDebugLED(); \
+//      for(int i = 0; i < DEBUG_LED_DELAY; i++) {} \
+//    }; \
+//  }
 
 /* Optional functions - most linkers will remove unused functions anyway. */
 #define INCLUDE_vTaskPrioritySet                1
