@@ -32,7 +32,7 @@ static const char *TAG = "ble";	// Logging prefix for this module
 #define   BLE_POWER_OFF_DELAY_MS 50
 
 #define MEMORY_LEVEL_WARN_THRESHOLD 180000000
-#define MEMORY_LEVEL_FULL_THRESHOLD 300000000
+#define MEMORY_LEVEL_OK_THRESHOLD 300000000
 
 typedef enum
 {
@@ -1052,9 +1052,9 @@ handle_memory_level_request(ble_event_t *event)
 	// Check the current memory level on the file system, and update char
 	if(f_getfreebytes(&free_bytes, NULL) == FR_OK)
 	{
-		if(free_bytes >= MEMORY_LEVEL_FULL_THRESHOLD)
+		if(free_bytes >= MEMORY_LEVEL_OK_THRESHOLD)
 		{
-			g_ble_context.memory_level = MEMORY_LEVEL_FULL;
+			g_ble_context.memory_level = MEMORY_LEVEL_OK;
 		}
 		else if(free_bytes >= MEMORY_LEVEL_WARN_THRESHOLD)
 		{
@@ -1062,7 +1062,7 @@ handle_memory_level_request(ble_event_t *event)
 		}
 		else
 		{
-			g_ble_context.memory_level = MEMORY_LEVEL_OK;
+			g_ble_context.memory_level = MEMORY_LEVEL_FULL;
 		}
 
 		ble_uart_send_memory_level(g_ble_context.memory_level);
