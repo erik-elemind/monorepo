@@ -26,6 +26,7 @@ extern "C" {
 
 // For example, decide if you want to use the Gnu Build ID.
 #define MEMFAULT_USE_GNU_BUILD_ID 1
+#define MEMFAULT_METRICS_HEARTBEAT_INTERVAL_SECS 3600 // TODO: default 1 hr, change as needed
 
 #ifdef __cplusplus
 }
