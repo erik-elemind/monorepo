@@ -30,6 +30,8 @@ void *mm_rtos_malloc (mm_rtos_t* mm, size_t size, TickType_t ticks_to_wait){
         // we got a pointer, exit the loop
         break;
       }else{
+        // LOGE(TAG, "no ptr sadge");
+        // -> not getting pointer for some reason, and no handling so it hangs
         // we did NOT get a pointer, wait for a notification
         // wait for memory available notify semaphore
         // TODO: Properly compute the elapsed ticks_to_wait

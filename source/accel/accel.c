@@ -312,7 +312,7 @@ handle_state_sample(const accel_event_t *event)
               g_context.samples[i].z
             );
           }
-
+          
           ml_event_acc_input( g_context.samples);
 
           // ToDo Send samples to the ML task
