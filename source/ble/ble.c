@@ -22,6 +22,7 @@
 #include "settings.h"
 #include "fs_commands.h"
 #include "fatfs_utils.h"
+#include "memfault/metrics/metrics.h"
 
 #if (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
 
@@ -1302,12 +1303,15 @@ handle_ble_connected(ble_event_t *event)
 
 	// Measure and send memory level to BLE
 	ble_memory_level_request();
+
+	memfault_metrics_heartbeat_add(MEMFAULT_METRICS_KEY(ble_num_connections), 1);
 }
 
 static void
 handle_ble_disconnected(ble_event_t *event)
 {
 	eeg_reader_event_ble_disconnected();
+	memfault_metrics_heartbeat_add(MEMFAULT_METRICS_KEY(ble_num_disconnections), 1);
 }
 
 static void

@@ -17,6 +17,10 @@
 //! Glue layer between the Memfault SDK and the underlying platform
 //!
 //! TODO: Fill in FIXMEs below for your platform
+#include "fw_version.h"
+#include "fatfs_utils.h"
+#include "rtc.h"
+#include "memfault/metrics/platform/overrides.h"
 
 #include "memfault/components.h"
 #include "memfault/ports/reboot_reason.h"
@@ -112,14 +116,14 @@ void memfault_platform_get_device_info(sMemfaultDeviceInfo *info) {
     // An ID that uniquely identifies the device in your fleet
     // (i.e serial number, mac addr, chip id, etc)
     // Regular expression defining valid device serials: ^[-a-zA-Z0-9_]+$
-    .device_serial = "ERIK_B07",
+    .device_serial = "1234567890",
      // A name to represent the firmware running on the MCU.
     // (i.e "ble-fw", "main-fw", or a codename for your project)
     .software_type = "imxrt685-fw",
     // The version of the "software_type" currently running.
     // "software_type" + "software_version" must uniquely represent
     // a single binary
-    .software_version = "0.13.0",
+    .software_version = FW_VERSION_FULL,
     // The revision of hardware for the device. This value must remain
     // the same for a unique device.
     // (i.e evt, dvt, pvt, or rev1, rev2, etc)
@@ -132,11 +136,11 @@ void memfault_platform_get_device_info(sMemfaultDeviceInfo *info) {
 //! any final cleanup and then reset the device
 void memfault_platform_reboot(void) {
   // !FIXME: Perform any final system cleanup here
-  size_t total_size = 0;
-  if (memfault_coredump_has_valid_coredump(&total_size)) {
-    MEMFAULT_LOG_INFO("reboot: coredump present!");
-    memfault_data_export_dump_chunks();
-  } else {MEMFAULT_LOG_INFO("reboot: coredump NOT present!");}
+//  size_t total_size = 0;
+//  if (memfault_coredump_has_valid_coredump(&total_size)) {
+//    MEMFAULT_LOG_INFO("reboot: coredump present!");
+//    memfault_data_export_dump_chunks();
+//  } else {MEMFAULT_LOG_INFO("reboot: coredump NOT present!");}
 
   // !FIXME: Reset System
   NVIC_SystemReset();
@@ -150,12 +154,30 @@ bool memfault_platform_time_get_current(sMemfaultCurrentTime *time) {
   *time = (sMemfaultCurrentTime) {
     .type = kMemfaultCurrentTimeType_UnixEpochTimeSec,
     .info = {
-      .unix_timestamp_secs = 0
+      .unix_timestamp_secs = (uint64_t) rtc_get()
     },
   };
 
   // !FIXME: If device does not track time, return false, else return true if time is valid
+  if (time->info.unix_timestamp_secs > 0)
+  {
+	  return true;
+  }
   return false;
+}
+
+void memfault_metrics_heartbeat_collect_data(void) {
+  
+  // get current memory every heartbeat interval
+  unsigned long fs_free_bytes;
+  f_getfreebytes(&fs_free_bytes, NULL);
+  memfault_metrics_heartbeat_set_unsigned(MEMFAULT_METRICS_KEY(fatfs_free_bytes), fs_free_bytes);
+
+  // FAKE (battery_pct)
+  static uint8_t fake_pct = 100;
+  memfault_metrics_heartbeat_set_unsigned(MEMFAULT_METRICS_KEY(battery_pct), fake_pct);
+  fake_pct--;
+  if (fake_pct == 0) fake_pct = 100;
 }
 
 size_t memfault_platform_sanitize_address_range(void *start_addr, size_t desired_size) {
@@ -214,4 +236,8 @@ int memfault_platform_boot(void) {
   MEMFAULT_LOG_INFO("Memfault Initialized!");
 
   return 0;
+}
+
+void vApplicationMallocFailedHook(void) {
+  MEMFAULT_ASSERT(0);
 }

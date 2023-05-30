@@ -37,6 +37,7 @@
 #include "data_log_commands.h"
 #include "ml.h"
 #include "led.h"
+#include "memfault/metrics/metrics.h"
 
 #if (defined(ENABLE_INTERPRETER_TASK) && (ENABLE_INTERPRETER_TASK > 0U))
 
@@ -392,6 +393,7 @@ interpreter_event_start_therapy(therapy_type_t therapy_type)
 
   LOGV(TAG, "Starting therapy script: %s", therapy_fname);
   ble_therapy_update(THERAPY_TYPE_THERAPY);
+  memfault_metrics_heartbeat_add(MEMFAULT_METRICS_KEY(num_therapy_sessions), 1); 
 
   // TODO: somehow start the script, given only a therapy number
   interpreter_event_start_script((char*)therapy_fname);
