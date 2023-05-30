@@ -19,6 +19,7 @@
 //! TODO: Fill in FIXMEs below for your platform
 #include "fw_version.h"
 #include "fatfs_utils.h"
+#include "rtc.h"
 #include "memfault/metrics/platform/overrides.h"
 
 #include "memfault/components.h"
@@ -153,11 +154,15 @@ bool memfault_platform_time_get_current(sMemfaultCurrentTime *time) {
   *time = (sMemfaultCurrentTime) {
     .type = kMemfaultCurrentTimeType_UnixEpochTimeSec,
     .info = {
-      .unix_timestamp_secs = 0
+      .unix_timestamp_secs = (uint64_t) rtc_get()
     },
   };
 
   // !FIXME: If device does not track time, return false, else return true if time is valid
+  if (time->info.unix_timestamp_secs > 0)
+  {
+	  return true;
+  }
   return false;
 }
 
