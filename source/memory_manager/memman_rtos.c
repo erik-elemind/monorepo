@@ -21,17 +21,15 @@ void *mm_rtos_malloc (mm_rtos_t* mm, size_t size, TickType_t ticks_to_wait){
   void* ptr = NULL;
   while(true){
     // take semaphore
-    if( xSemaphoreTake( mm->sem, portMAX_DELAY) == pdTRUE ){
+    if( xSemaphoreTake( mm->sem, portMAX_DELAY) == pdTRUE ){ // the mem_brk address, i.e the start of the header, contains a top 4 bytes and a bottom 4 bytes, where the last 3 bits (since they are always aligned on boundaries) are flags
       // allocate memory
       ptr = mm_malloc(&(mm->mm), size);
       // give semaphore
-      xSemaphoreGive( mm->sem );
+      xSemaphoreGive( mm->sem ); 
       if(ptr != NULL){
         // we got a pointer, exit the loop
         break;
       }else{
-        // LOGE(TAG, "no ptr sadge");
-        // -> not getting pointer for some reason, and no handling so it hangs
         // we did NOT get a pointer, wait for a notification
         // wait for memory available notify semaphore
         // TODO: Properly compute the elapsed ticks_to_wait

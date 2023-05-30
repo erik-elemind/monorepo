@@ -17,15 +17,17 @@
 #include <numeric>
 #include <algorithm>
 #include "memman_rtos.h"
+#include <iostream>
 
 using std::vector;
 
+#define ALLOC_MEM 2500
+
 // more globals yay
-static float* alloc_mem_buf[32768];
-static mm_rtos_t alloc_mem; 
+mm_rtos_t alloc_mem;
+float* alloc_mem_buf[ALLOC_MEM]; // changing this size changes the memory location of the firl buffers fuk
 
 // Custom vector allocator
-// NOOOOO I NEED THE CUSTOM ALLOCATOR IN ALL OF THE RESAMPLING CODE
 template <typename T>
 class bufferAllocator {
   public:
@@ -110,7 +112,11 @@ std::vector<T, bufferAllocator<T>> firls (
     int freqSize = freq.size ();
     int weightSize = freqSize / 2;
 
-    vector<T, bufferAllocator<T>> weight(weightSize, 1.0);
+    // somehow it hardfaults but not in the malloc code, in the task scheduler code from the semaphore part of memman
+    // making a semaphore is pushing it over the edge? 
+    // maybe something is trying to take a sem before it's given?
+    // -> IT HANGS TRYING TO RETURN THE SEMAPHORE
+    vector<T, bufferAllocator<T>> weight(weightSize, 1.0); //2, 1.0
 
     int filterLength = length + 1;
 
@@ -119,7 +125,7 @@ std::vector<T, bufferAllocator<T>> firls (
 
     length = ( filterLength - 1 ) / 2;
     bool Nodd = filterLength & 1;
-    vector<T, bufferAllocator<T>> k( length + 1 );
+    vector<T, bufferAllocator<T>> k( length + 1 ); // this vector isn't valid to start (_M FINISH is -1/nan)
     std::iota(k.begin(), k.end(), 0.0);
     if (!Nodd) {
         for (auto &it : k)
@@ -131,7 +137,7 @@ std::vector<T, bufferAllocator<T>> firls (
         k.erase(k.begin());
     }
 
-    vector<T, bufferAllocator<T>> b(k.size(), 0.0);
+    vector<T, bufferAllocator<T>> b(k.size(), 0.0); // the vectors overlap, which isn't a problem until you realloc
     for ( int i = 0; i < freqSize; i += 2 )
     {
         auto Fi = freq[i];
@@ -155,9 +161,13 @@ std::vector<T, bufferAllocator<T>> firls (
             Fi*(m_s*Fi+b1)*sinc<T>(2*k*Fi))*wt2;});
     }
 
+    vector<T, bufferAllocator<T>> beb(100); // still fucks up - it's just that the current block is full
+    fill(beb.begin(), beb.end(), 232.0);
     if (Nodd)
     {
-        b.insert(b.begin(), b0);
+//        b.capacity();
+    	//
+        b.insert(b.begin(), b0); //hmm maybe not -> starts at 0x15b638, 0x15b700 is where the next block should start, because that's where the vector ends, otherwise it's reading vector content
     }
 
     auto w0 = weight[0];
@@ -230,7 +240,8 @@ void resample ( int upFactor, int downFactor,
 
     vector<T, bufferAllocator<T>> firlsFreqsV = { 0.0, 2 * firlsFreq, 2 * firlsFreq, 1.0 };
     vector<T, bufferAllocator<T>> firlsAmplitudeV =  { 1.0, 1.0, 0.0, 0.0 };
-    vector<T, bufferAllocator<T>> coefficients = firls<T> ( length - 1, firlsFreqsV, firlsAmplitudeV);
+    // below here there be bugs
+    vector<T, bufferAllocator<T>> coefficients = firls<T> ( length - 1, firlsFreqsV, firlsAmplitudeV); // 2500, 4, 4
     vector<T, bufferAllocator<T>> window = kaiser<T> ( length, bta );
 
     int coefficientsSize = coefficients.size();
@@ -309,7 +320,6 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// using namespace std;
 
 template<class S1, class S2, class C>
 class Resampler{
@@ -340,18 +350,6 @@ private:
     int        _xOffset;
     
 };
-
-
-#include <iostream>
-#include <cmath>
-
-/*
-using std::cout;
-using std::endl;
-
-using std::fill;
-using std::copy;
-*/
 
 using std::invalid_argument;
 
