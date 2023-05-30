@@ -135,11 +135,11 @@ void memfault_platform_get_device_info(sMemfaultDeviceInfo *info) {
 //! any final cleanup and then reset the device
 void memfault_platform_reboot(void) {
   // !FIXME: Perform any final system cleanup here
-  size_t total_size = 0;
-  if (memfault_coredump_has_valid_coredump(&total_size)) {
-    MEMFAULT_LOG_INFO("reboot: coredump present!");
-    memfault_data_export_dump_chunks();
-  } else {MEMFAULT_LOG_INFO("reboot: coredump NOT present!");}
+//  size_t total_size = 0;
+//  if (memfault_coredump_has_valid_coredump(&total_size)) {
+//    MEMFAULT_LOG_INFO("reboot: coredump present!");
+//    memfault_data_export_dump_chunks();
+//  } else {MEMFAULT_LOG_INFO("reboot: coredump NOT present!");}
 
   // !FIXME: Reset System
   NVIC_SystemReset();
@@ -231,4 +231,8 @@ int memfault_platform_boot(void) {
   MEMFAULT_LOG_INFO("Memfault Initialized!");
 
   return 0;
+}
+
+void vApplicationMallocFailedHook(void) {
+  MEMFAULT_ASSERT(0);
 }
