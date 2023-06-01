@@ -178,8 +178,7 @@ static int rb_find_exact(mm_t* mm, void *block){
  */
 static void* rb_successor(mm_t* mm, void *node){
     void *succ, *left;
-    if((succ = RB_RIGHT(node)) != mm->rb_null){ // so succ is getting assigned by RB_RIGHT to a value outside of the space bc the macro is being weird
-//      if (succ != mm->rb_null){
+    if((succ = RB_RIGHT(node)) != mm->rb_null){
     	while((left = RB_LEFT(succ)) != mm->rb_null){
             succ = left;
         }
