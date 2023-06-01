@@ -44,6 +44,7 @@
 #include "fsl_power.h"
 #include "pmic_pca9420.h"
 #include "../interpreter/interpreter.h"
+#include "memfault/metrics/metrics.h"
 
 #if (defined(ENABLE_APP_TASK) && (ENABLE_APP_TASK > 0U))
 
@@ -634,9 +635,11 @@ handle_event(app_event_t *event)
     switch(event->type){
     case APP_EVENT_VOLUP_BUTTON_CLICK:
       audio_volume_up();
+      memfault_metrics_heartbeat_add(MEMFAULT_METRICS_KEY(vol_up_button_presses), 1);
       return;
     case APP_EVENT_VOLDN_BUTTON_CLICK:
       audio_volume_down();
+      memfault_metrics_heartbeat_add(MEMFAULT_METRICS_KEY(vol_down_button_presses), 1);
       return;
     case APP_EVENT_BLE_ACTIVITY:
       restart_ble_off_timer();
