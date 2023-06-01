@@ -519,9 +519,9 @@ void* mm_malloc(mm_t* mm, size_t size)
     if(free_block == mm->rb_null){ // proper free block not found
         /* set free_block to the end of last block in heap */
         free_block = mem_heap_hi(&(mm->mem)) - 3;
-        if(PREV_FREE(free_block)){ // if the last block is free //0x15be4 is the end of the current blocks, 0x16427c should be end of alloc buffer
+        if(PREV_FREE(free_block)){ // if the last block is free 
             /* set free_block to the last block */
-//            free_block -= PREV_SIZE_MASKED(free_block);
+        //    free_block -= PREV_SIZE_MASKED(free_block);
         	free_block = mem_heap_hi(&(mm->mem)) - 3;
             if(IS_IN_RB(free_block)){
                 rb_delete(mm, free_block);
