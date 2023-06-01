@@ -106,28 +106,6 @@
 #define RB_LEFT(p) (*(void**)((p) + 8))
 #define RB_RIGHT(p) (*(void**)((p) + 12))
 #define RB_PARENT(p) (*(void**)((p) + 16))
-
-#define BEB_FACTOR 1
-
-#define RB_1(p) (*(void*)((p) + 1*BEB_FACTOR))
-#define RB_2(p) (*(void*)((p) + 2*BEB_FACTOR))
-#define RB_3(p) (*(void*)((p) + 3*BEB_FACTOR))
-#define RB_4(p) (*(void*)((p) + 4*BEB_FACTOR))
-#define RB_5(p) (*(void*)((p) + 5*BEB_FACTOR))
-#define RB_6(p) (*(void*)((p) + 6*BEB_FACTOR))
-#define RB_7(p) (*(void*)((p) + 7*BEB_FACTOR))
-#define RB_8(p) (*(void*)((p) + 8*BEB_FACTOR))
-#define RB_9(p) (*(void*)((p) + 9*BEB_FACTOR))
-#define RB_10(p) (*(void*)((p) + 10*BEB_FACTOR))
-#define RB_11(p) (*(void*)((p) + 11*BEB_FACTOR))
-#define RB_12(p) (*(void*)((p) + 12*BEB_FACTOR))
-#define RB_13(p) (*(void*)((p) + 13*BEB_FACTOR))
-#define RB_14(p) (*(void*)((p) + 14*BEB_FACTOR))
-#define RB_15(p) (*(void*)((p) + 15*BEB_FACTOR))
-#define RB_16(p) (*(void*)((p) + 16*BEB_FACTOR))
-
-
-
 #define RB_RED(p) (*(int*)((p) + 20))
 #define PREV_BLOCK(p, sz) ((p) - (sz))
 #define NEXT_BLOCK(p, sz) ((p) + (sz))
@@ -200,23 +178,6 @@ static int rb_find_exact(mm_t* mm, void *block){
  */
 static void* rb_successor(mm_t* mm, void *node){
     void *succ, *left;
-    // void *one, *two, *three, *four, *five, *six, *seven, *eight, *nine, *ten, *eleven, *twelve, *thirteen, *fourteen, *fifteen, *sixteen;
-    // one = RB_1(node);
-    // two = RB_2(node);
-    // three = RB_3(node);
-    // four = RB_4(node);
-    // five = RB_5(node);
-    // six = RB_6(node);
-    // seven = RB_7(node);
-    // eight = RB_8(node);
-    // nine = RB_9(node);
-    // ten = RB_10(node);
-    // eleven = RB_11(node);
-    // twelve = RB_12(node);
-    // thirteen = RB_13(node);
-    // fourteen = RB_14(node);
-    // fifteen = RB_15(node);
-    // sixteen = RB_16(node);
     if((succ = RB_RIGHT(node)) != mm->rb_null){ // so succ is getting assigned by RB_RIGHT to a value outside of the space bc the macro is being weird
 //      if (succ != mm->rb_null){
     	while((left = RB_LEFT(succ)) != mm->rb_null){

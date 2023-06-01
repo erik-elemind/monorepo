@@ -429,15 +429,26 @@ static void handle_state_preprocess_data(ml_event_t *event)
 			int fs_new = 125; // Hz
 			
 			// Cast to vector to resample
+			// first vector. at beginning of alloc_buf
+			// previous and current block sizes are 0, is first block
+			// left and right child is just this block (0015A6C8)
+
+			// need to allocate new block
+			// allocates 0x0EB0 bytes, 3760 (for 8 byte boundary)
 			std::vector<float, bufferAllocator<float>> accelx_vec(g_accelx_ready_p, g_accelx_ready_p + ACCEL_BUF_SIZE);
 			// std::vector<float, bufferAllocator<float>> accely_vec(g_accely_ready_p, g_accely_ready_p + ACCEL_BUF_SIZE);
 			// std::vector<float, bufferAllocator<float>> accelz_vec(g_accelz_ready_p, g_accelz_ready_p + ACCEL_BUF_SIZE);
 
-			// std::vector<float, bufferAllocator<float>> accelx_vec_out;
+			std::vector<float, bufferAllocator<float>> accelx_vec_out; // lets see where this starts
+//			accelx_vec_out.reserve(ACCEL_BUF_SIZE);
+
 			// std::vector<float, bufferAllocator<float>> accely_vec_out;
 			// std::vector<float, bufferAllocator<float>> accelz_vec_out;
 
-			resample<float> (fs_orig, fs_new, accelx_vec, accelx_vec);
+			// the output signal reserve in resample (and prob insert too)is trying to access a block within accelx_vec_out
+			// accelx_vec_out stops at 0x15e180
+
+			resample<float> (fs_orig, fs_new, accelx_vec, accelx_vec_out);
 			// resample<float> (fs_orig, fs_new, accely_vec, accely_vec);
 			// resample<float> (fs_orig, fs_new, accelz_vec, accelz_vec);
 
@@ -519,7 +530,7 @@ static void handle_event(ml_event_t *event)
     case ML_EVENT_STOP:
       ml_disable();
 
-      g_eeg_fill_p = g_eeg_A; // the alloc mem buf is moving into this memory and fucking things up
+      g_eeg_fill_p = g_eeg_A; 
       g_eeg_ready_p = g_eeg_B;
 
       g_eeg_fill_idx = 0;
