@@ -412,7 +412,6 @@ static void handle_state_preprocess_data(ml_event_t *event)
     case ML_EVENT_ENTER:{
       // Todo: Implement pre-processing of all data for inference
 		if (g_accel_filt_en && g_accel_buf_ready) {
-			LOGI(TAG, "enter the beb");
 			g_accel_process_done = false;
 
 			// 2nd order Butterworth Filter
@@ -449,7 +448,7 @@ static void handle_state_preprocess_data(ml_event_t *event)
 			// send semaphore to inference task that buffer is ready
 		} 
 
-    	// (g_context.ml_enabled > 0) ? set_state(ML_STATE_INFERENCE) : set_state(ML_STATE_STANDBY);
+    	(g_context.ml_enabled > 0) ? set_state(ML_STATE_INFERENCE) : set_state(ML_STATE_STANDBY);
 		// Assume no race condition since we have the whole double buffer thing anyway?
 
       break;

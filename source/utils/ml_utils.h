@@ -1,10 +1,6 @@
 #ifndef ML_UTILS_H
 #define ML_UTILS_H
 
-// filters
-// resample
-// z score normalization
-
 //TODO fix vector init to static at init
 
 #include "ml.h"
@@ -23,7 +19,6 @@ using std::vector;
 
 #define ALLOC_MEM 30000
 
-// more globals yay
 mm_rtos_t alloc_mem;
 static float* alloc_mem_buf[ALLOC_MEM]; 
 
