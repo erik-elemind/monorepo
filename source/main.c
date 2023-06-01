@@ -147,7 +147,7 @@ StaticTask_t hrm_task_struct;
 #endif
 
 #if (defined(ENABLE_ACCEL_TASK) && (ENABLE_ACCEL_TASK > 0U))
-#define ACCEL_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*2000) // the current task while the malloc semaphore was running was the accel task??? YES MORE MEMORY
+#define ACCEL_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*2000)
 #define ACCEL_TASK_PRIORITY 2
 StackType_t accel_task_array[ ACCEL_TASK_STACK_SIZE ];
 StaticTask_t accel_task_struct;
@@ -217,7 +217,7 @@ StaticTask_t app_task_struct;
 #endif
 
 #if (defined(ENABLE_ML_TASK) && (ENABLE_ML_TASK > 0U))
-#define ML_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*1000) //TODO: change to more appropriate value
+#define ML_TASK_STACK_SIZE           (configMINIMAL_STACK_SIZE*100) //TODO: change to more appropriate value
 #define ML_TASK_PRIORITY 2 
 StackType_t ml_task_array[ ML_TASK_STACK_SIZE ];
 StaticTask_t ml_task_struct;
