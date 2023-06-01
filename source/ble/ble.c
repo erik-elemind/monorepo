@@ -22,6 +22,7 @@
 #include "settings.h"
 #include "fs_commands.h"
 #include "fatfs_utils.h"
+#include "memfault/metrics/metrics.h"
 
 #if (defined(ENABLE_BLE_TASK) && (ENABLE_BLE_TASK > 0U))
 
@@ -32,7 +33,7 @@ static const char *TAG = "ble";	// Logging prefix for this module
 #define   BLE_POWER_OFF_DELAY_MS 50
 
 #define MEMORY_LEVEL_WARN_THRESHOLD 180000000
-#define MEMORY_LEVEL_FULL_THRESHOLD 300000000
+#define MEMORY_LEVEL_OK_THRESHOLD 300000000
 
 typedef enum
 {
@@ -1052,9 +1053,9 @@ handle_memory_level_request(ble_event_t *event)
 	// Check the current memory level on the file system, and update char
 	if(f_getfreebytes(&free_bytes, NULL) == FR_OK)
 	{
-		if(free_bytes >= MEMORY_LEVEL_FULL_THRESHOLD)
+		if(free_bytes >= MEMORY_LEVEL_OK_THRESHOLD)
 		{
-			g_ble_context.memory_level = MEMORY_LEVEL_FULL;
+			g_ble_context.memory_level = MEMORY_LEVEL_OK;
 		}
 		else if(free_bytes >= MEMORY_LEVEL_WARN_THRESHOLD)
 		{
@@ -1062,7 +1063,7 @@ handle_memory_level_request(ble_event_t *event)
 		}
 		else
 		{
-			g_ble_context.memory_level = MEMORY_LEVEL_OK;
+			g_ble_context.memory_level = MEMORY_LEVEL_FULL;
 		}
 
 		ble_uart_send_memory_level(g_ble_context.memory_level);
@@ -1302,12 +1303,15 @@ handle_ble_connected(ble_event_t *event)
 
 	// Measure and send memory level to BLE
 	ble_memory_level_request();
+
+	memfault_metrics_heartbeat_add(MEMFAULT_METRICS_KEY(ble_num_connections), 1);
 }
 
 static void
 handle_ble_disconnected(ble_event_t *event)
 {
 	eeg_reader_event_ble_disconnected();
+	memfault_metrics_heartbeat_add(MEMFAULT_METRICS_KEY(ble_num_disconnections), 1);
 }
 
 static void

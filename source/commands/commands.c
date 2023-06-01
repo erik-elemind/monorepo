@@ -43,6 +43,7 @@
 #include "skin_temp_commands.h"
 #include "pmic_commands.h"
 #include "ml.h"
+#include "memfault_commands.h"
 
 //static const char *TAG = "commands";  // Logging prefix for this module
 
@@ -450,6 +451,19 @@ const shell_command_t commands[] = {
 	{ P_BLE, "ble_connected", ble_connected, ""},
 	{ P_BLE, "ble_disconnected", ble_disconnected, ""},
 	{ P_BLE, "ble_ota_start", ble_ota_started, ""},
+
+	// Memfault Tests
+	{P_SHELL, "memfault_test_logging", memfault_test_logging_command, "Memfault Logging Test"},
+    {P_SHELL, "memfault_info_dump", memfault_info_dump_command, "Memfault Build and Device Info Dump"},
+	{P_SHELL, "memfault_test_export", memfault_test_export_command, "Memfault Export Test"},
+    {P_SHELL, "memfault_test_coredump_storage", memfault_test_coredump_storage_command, "Memfault Coredump Storage Test"},
+	{P_SHELL, "memfault_test_heartbeat", memfault_test_heartbeat_command, "Memfault Heartbeat Test"},
+	{P_SHELL, "memfault_test_trace", memfault_test_trace_command, "Memfault Trace Test"},
+	{P_SHELL, "memfault_test_reboot", memfault_test_reboot_command, "Memfault Reboot Test"},
+	{P_SHELL, "memfault_test_assert", memfault_test_assert_command, "Memfault Assert Test"},
+	{P_SHELL, "memfault_test_fault", memfault_test_fault_command, "Memfault Fault Test"},
+	{P_SHELL, "memfault_test_hang", memfault_test_hang_command, "Memfault Hang Test"},
+
 
     // Misc low level tests
 #if (defined(ENABLE_STREAM_MEMORY_TEST_COMMANDS) && (ENABLE_STREAM_MEMORY_TEST_COMMANDS > 0U))

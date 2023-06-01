@@ -1,0 +1,20 @@
+//! Define custom system metrics to track. For example,
+
+//! Define therapy metrics
+MEMFAULT_METRICS_KEY_DEFINE(num_therapy_sessions, kMemfaultMetricType_Unsigned)
+
+//! Define button metrics
+MEMFAULT_METRICS_KEY_DEFINE(vol_up_button_presses, kMemfaultMetricType_Unsigned)
+MEMFAULT_METRICS_KEY_DEFINE(vol_down_button_presses, kMemfaultMetricType_Unsigned)
+//MEMFAULT_METRICS_KEY_DEFINE(activity_button_presses, kMemfaultMetricType_Unsigned)
+
+//! Define memory metrics
+MEMFAULT_METRICS_KEY_DEFINE(fatfs_free_bytes, kMemfaultMetricType_Unsigned)
+
+//! Define power metrics
+//MEMFAULT_METRICS_KEY_DEFINE(num_wake_events, kMemfaultMetricType_Unsigned)
+MEMFAULT_METRICS_KEY_DEFINE(battery_pct, kMemfaultMetricType_Unsigned)
+
+//! Define BLE metrics
+MEMFAULT_METRICS_KEY_DEFINE(ble_num_connections, kMemfaultMetricType_Unsigned)
+MEMFAULT_METRICS_KEY_DEFINE(ble_num_disconnections, kMemfaultMetricType_Unsigned)
