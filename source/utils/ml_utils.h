@@ -21,11 +21,11 @@
 
 using std::vector;
 
-#define ALLOC_MEM 2500
+#define ALLOC_MEM 30000
 
 // more globals yay
 mm_rtos_t alloc_mem;
-float* alloc_mem_buf[ALLOC_MEM]; // changing this size changes the memory location of the firl buffers fuk
+static float* alloc_mem_buf[ALLOC_MEM]; 
 
 // Custom vector allocator
 template <typename T>
@@ -39,7 +39,7 @@ class bufferAllocator {
 
     T* allocate(std::size_t n)
     {
-      if (auto p = static_cast<T*>(mm_rtos_malloc(&alloc_mem, n, portMAX_DELAY)))
+      if (auto p = static_cast<T*>(mm_rtos_malloc(&alloc_mem, n*sizeof(T), portMAX_DELAY)))
       {
         return p;
       }
@@ -62,6 +62,14 @@ class bufferAllocator {
     bool operator!=( const bufferAllocator<U>& cmp ) noexcept 
     {
         return false;
+    }
+
+    static void* operator new(std::size_t size) {
+        return bufferAllocator::allocate(size);
+    }
+
+    static void operator delete(void* ptr) noexcept {
+        bufferAllocator::deallocate(ptr);
     }
 };
 
@@ -112,11 +120,7 @@ std::vector<T, bufferAllocator<T>> firls (
     int freqSize = freq.size ();
     int weightSize = freqSize / 2;
 
-    // somehow it hardfaults but not in the malloc code, in the task scheduler code from the semaphore part of memman
-    // making a semaphore is pushing it over the edge? 
-    // maybe something is trying to take a sem before it's given?
-    // -> IT HANGS TRYING TO RETURN THE SEMAPHORE
-    vector<T, bufferAllocator<T>> weight(weightSize, 1.0); //2, 1.0
+    vector<T, bufferAllocator<T>> weight(weightSize, 1.0); 
 
     int filterLength = length + 1;
 
@@ -125,7 +129,7 @@ std::vector<T, bufferAllocator<T>> firls (
 
     length = ( filterLength - 1 ) / 2;
     bool Nodd = filterLength & 1;
-    vector<T, bufferAllocator<T>> k( length + 1 ); // this vector isn't valid to start (_M FINISH is -1/nan)
+    vector<T, bufferAllocator<T>> k( length + 1 ); 
     std::iota(k.begin(), k.end(), 0.0);
     if (!Nodd) {
         for (auto &it : k)
@@ -137,7 +141,7 @@ std::vector<T, bufferAllocator<T>> firls (
         k.erase(k.begin());
     }
 
-    vector<T, bufferAllocator<T>> b(k.size(), 0.0); // the vectors overlap, which isn't a problem until you realloc
+    vector<T, bufferAllocator<T>> b(k.size(), 0.0); 
     for ( int i = 0; i < freqSize; i += 2 )
     {
         auto Fi = freq[i];
@@ -161,14 +165,11 @@ std::vector<T, bufferAllocator<T>> firls (
             Fi*(m_s*Fi+b1)*sinc<T>(2*k*Fi))*wt2;});
     }
 
-    vector<T, bufferAllocator<T>> beb(100); // still fucks up - it's just that the current block is full
-    fill(beb.begin(), beb.end(), 232.0);
     if (Nodd)
     {
-//        b.capacity();
-    	//
-        b.insert(b.begin(), b0); //hmm maybe not -> starts at 0x15b638, 0x15b700 is where the next block should start, because that's where the vector ends, otherwise it's reading vector content
+        b.insert(b.begin(), b0); 
     }
+
 
     auto w0 = weight[0];
     vector<T, bufferAllocator<T>> a(b.size());
@@ -240,8 +241,7 @@ void resample ( int upFactor, int downFactor,
 
     vector<T, bufferAllocator<T>> firlsFreqsV = { 0.0, 2 * firlsFreq, 2 * firlsFreq, 1.0 };
     vector<T, bufferAllocator<T>> firlsAmplitudeV =  { 1.0, 1.0, 0.0, 0.0 };
-    // below here there be bugs
-    vector<T, bufferAllocator<T>> coefficients = firls<T> ( length - 1, firlsFreqsV, firlsAmplitudeV); // 2500, 4, 4
+    vector<T, bufferAllocator<T>> coefficients = firls<T> ( length - 1, firlsFreqsV, firlsAmplitudeV);
     vector<T, bufferAllocator<T>> window = kaiser<T> ( length, bta );
 
     int coefficientsSize = coefficients.size();
@@ -467,7 +467,7 @@ int Resampler<S1, S2, C>::apply(S1* in, int inCount,
 
 template<class S1, class S2, class C>
 void upfirdn(int upRate, int downRate, 
-             S1 *input, int inLength, C *filter, int filterLength, 
+             float *input, int inLength, C *filter, int filterLength, 
              vector<S2, bufferAllocator<S2>> &results)
 /*
 This template function provides a one-shot resampling.  Extra samples
@@ -489,7 +489,9 @@ the original version of this function.
 
     // pad input by length of one polyphase of filter to flush all values out
     int padding = theResampler.coefsPerPhase() - 1;
-    S1 *inputPadded = new S1[inLength + padding];
+    float inputPadded[inLength + padding]; // HACK
+//    vector<S1, bufferAllocator<S1>> inputPadded;
+//    inputPadded.reserve(inLength + padding);
     for (int i = 0; i < inLength + padding; i++) {
         if (i < inLength)
             inputPadded[i] = input[i];
@@ -505,7 +507,7 @@ the original version of this function.
     // run filtering
     int numSamplesComputed = theResampler.apply(inputPadded, 
             inLength + padding, &results[0], resultsCount);
-    delete[] inputPadded;
+    // delete[] inputPadded;
 }
 
 template<class S1, class S2, class C>
