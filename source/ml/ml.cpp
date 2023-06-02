@@ -289,11 +289,10 @@ void ml_event_acc_input(lis2dtw12_sample_t* acc_sample)
 					// update ready booleans
 					g_accel_buf_ready = true;
 
-
-					LOGI(TAG, "preprocess the beb");
 					set_state(ML_STATE_PREPROCESS_DATA);
 
-					// provide a synchronization point across all sensors
+					// TODO reimplement when multiple streams ready
+					// // provide a synchronization point across all sensors
 					// if(g_eeg_buf_ready && g_accel_buf_ready && g_hr_buf_ready)
 					// {
 					// 	g_eeg_buf_ready = false;
@@ -433,7 +432,6 @@ static void handle_state_preprocess_data(ml_event_t *event)
 			std::vector<float, bufferAllocator<float>> accely_vec_out;
 			std::vector<float, bufferAllocator<float>> accelz_vec_out;
 
-
 			resample<float> (fs_orig, fs_new, accelx_vec, accelx_vec_out);
 			resample<float> (fs_orig, fs_new, accely_vec, accely_vec);
 			resample<float> (fs_orig, fs_new, accelz_vec, accelz_vec);
@@ -444,7 +442,6 @@ static void handle_state_preprocess_data(ml_event_t *event)
 
 			g_accel_process_done = true;
 
-			LOGI(TAG, "processed the beb");
 			// send semaphore to inference task that buffer is ready
 		} 
 
