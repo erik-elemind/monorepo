@@ -520,8 +520,7 @@ void* mm_malloc(mm_t* mm, size_t size)
         free_block = mem_heap_hi(&(mm->mem)) - 3;
         if(PREV_FREE(free_block)){ // if the last block is free 
             /* set free_block to the last block */
-        //    free_block -= PREV_SIZE_MASKED(free_block);
-        	free_block = mem_heap_hi(&(mm->mem)) - 3;
+           free_block -= PREV_SIZE_MASKED(free_block);
             if(IS_IN_RB(free_block)){
                 rb_delete(mm, free_block);
             }

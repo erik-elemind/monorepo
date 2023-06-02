@@ -147,7 +147,7 @@ StaticTask_t hrm_task_struct;
 #endif
 
 #if (defined(ENABLE_ACCEL_TASK) && (ENABLE_ACCEL_TASK > 0U))
-#define ACCEL_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*2000)
+#define ACCEL_TASK_STACK_SIZE        (configMINIMAL_STACK_SIZE*500)
 #define ACCEL_TASK_PRIORITY 2
 StackType_t accel_task_array[ ACCEL_TASK_STACK_SIZE ];
 StaticTask_t accel_task_struct;
