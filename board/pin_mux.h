@@ -30,6 +30,7 @@ void BOARD_InitBootPins(void);
 #define IOPCTL_PIO_FULLDRIVE_DI 0x00u     /*!<@brief Normal drive */
 #define IOPCTL_PIO_FUNC0 0x00u            /*!<@brief Selects pin function 0 */
 #define IOPCTL_PIO_FUNC1 0x01u            /*!<@brief Selects pin function 1 */
+#define IOPCTL_PIO_FUNC2 0x02u            /*!<@brief Selects pin function 2 */
 #define IOPCTL_PIO_FUNC3 0x03u            /*!<@brief Selects pin function 3 */
 #define IOPCTL_PIO_FUNC5 0x05u            /*!<@brief Selects pin function 5 */
 #define IOPCTL_PIO_FUNC6 0x06u            /*!<@brief Selects pin function 6 */
@@ -86,105 +87,12 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_NAND_D3_SIGNAL FLEXSPI_A_DATA3   /*!<@brief Signal name */
                                                         /* @} */
 
-/*! @name PIO0_6 (coord E1), ALS_INTn
+/*! @name FC2_CTS_SDA_SSEL0 (coord D7), MAX86140_CSB
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_ALS_INTn_PERIPHERAL GPIO          /*!<@brief Peripheral name */
-#define BOARD_INITPINS_ALS_INTn_SIGNAL PIO0              /*!<@brief Signal name */
-#define BOARD_INITPINS_ALS_INTn_CHANNEL 6                /*!<@brief Signal channel */
-
-/* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_ALS_INTn_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_ALS_INTn_GPIO_PIN_MASK (1U << 6U) /*!<@brief GPIO pin mask */
-#define BOARD_INITPINS_ALS_INTn_PORT 0U                  /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_ALS_INTn_PIN 6U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_ALS_INTn_PIN_MASK (1U << 6U)      /*!<@brief PORT pin mask */
-                                                         /* @} */
-
-/*! @name PIO0_14 (coord A3), DEBUG_LEDn
-  @{ */
-/* Routed pin properties */
-#define BOARD_INITPINS_DEBUG_LEDn_PERIPHERAL GPIO                    /*!<@brief Peripheral name */
-#define BOARD_INITPINS_DEBUG_LEDn_SIGNAL PIO0                        /*!<@brief Signal name */
-#define BOARD_INITPINS_DEBUG_LEDn_CHANNEL 14                         /*!<@brief Signal channel */
-
-/* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_DEBUG_LEDn_GPIO GPIO                          /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_DEBUG_LEDn_GPIO_PIN_MASK (1U << 14U)          /*!<@brief GPIO pin mask */
-#define BOARD_INITPINS_DEBUG_LEDn_PORT 0U                            /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_DEBUG_LEDn_PIN 14U                            /*!<@brief PORT pin number */
-#define BOARD_INITPINS_DEBUG_LEDn_PIN_MASK (1U << 14U)               /*!<@brief PORT pin mask */
-                                                                     /* @} */
-
-/*! @name PIO0_15 (coord A5), BLE_RESETn
-  @{ */
-/* Routed pin properties */
-#define BOARD_INITPINS_BLE_RESETn_PERIPHERAL GPIO           /*!<@brief Peripheral name */
-#define BOARD_INITPINS_BLE_RESETn_SIGNAL PIO0               /*!<@brief Signal name */
-#define BOARD_INITPINS_BLE_RESETn_CHANNEL 15                /*!<@brief Signal channel */
-
-/* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_BLE_RESETn_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_BLE_RESETn_GPIO_PIN_MASK (1U << 15U) /*!<@brief GPIO pin mask */
-#define BOARD_INITPINS_BLE_RESETn_PORT 0U                   /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_BLE_RESETn_PIN 15U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_BLE_RESETn_PIN_MASK (1U << 15U)      /*!<@brief PORT pin mask */
-                                                            /* @} */
-
-/*! @name FC2_CTS_SDA_SSEL0 (coord D7), I2C5_SDA
-  @{ */
-/* Routed pin properties */
-#define BOARD_INITPINS_I2C5_SDA_PERIPHERAL FLEXCOMM2       /*!<@brief Peripheral name */
-#define BOARD_INITPINS_I2C5_SDA_SIGNAL CTS_SDA_SSEL0       /*!<@brief Signal name */
-                                                           /* @} */
-
-/*! @name FC2_RTS_SCL_SSEL1 (coord B7), I2C5_SCL
-  @{ */
-/* Routed pin properties */
-#define BOARD_INITPINS_I2C5_SCL_PERIPHERAL FLEXCOMM2       /*!<@brief Peripheral name */
-#define BOARD_INITPINS_I2C5_SCL_SIGNAL RTS_SCL_SSEL1       /*!<@brief Signal name */
-                                                           /* @} */
-
-/*! @name PIO0_19 (coord A1), BAT_INTn
-  @{ */
-/* Routed pin properties */
-#define BOARD_INITPINS_BAT_INTn_PERIPHERAL PINT           /*!<@brief Peripheral name */
-#define BOARD_INITPINS_BAT_INTn_SIGNAL PINT               /*!<@brief Signal name */
-#define BOARD_INITPINS_BAT_INTn_CHANNEL 1                 /*!<@brief Signal channel */
-#define BOARD_INITPINS_BAT_INTn_PORT 0U                   /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_BAT_INTn_PIN 19U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_BAT_INTn_PIN_MASK (1U << 19U)      /*!<@brief PORT pin mask */
-                                                          /* @} */
-
-/*! @name PIO0_21 (coord C7), BAT_STATn
-  @{ */
-/* Routed pin properties */
-#define BOARD_INITPINS_BAT_STATn_PERIPHERAL GPIO                   /*!<@brief Peripheral name */
-#define BOARD_INITPINS_BAT_STATn_SIGNAL PIO0                       /*!<@brief Signal name */
-#define BOARD_INITPINS_BAT_STATn_CHANNEL 21                        /*!<@brief Signal channel */
-
-/* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_BAT_STATn_GPIO GPIO                         /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_BAT_STATn_GPIO_PIN_MASK (1U << 21U)         /*!<@brief GPIO pin mask */
-#define BOARD_INITPINS_BAT_STATn_PORT 0U                           /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_BAT_STATn_PIN 21U                           /*!<@brief PORT pin number */
-#define BOARD_INITPINS_BAT_STATn_PIN_MASK (1U << 21U)              /*!<@brief PORT pin mask */
-                                                                   /* @} */
-
-/*! @name PIO0_23 (coord C9), BAT_CD
-  @{ */
-/* Routed pin properties */
-#define BOARD_INITPINS_BAT_CD_PERIPHERAL GPIO                    /*!<@brief Peripheral name */
-#define BOARD_INITPINS_BAT_CD_SIGNAL PIO0                        /*!<@brief Signal name */
-#define BOARD_INITPINS_BAT_CD_CHANNEL 23                         /*!<@brief Signal channel */
-
-/* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_BAT_CD_GPIO GPIO                          /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_BAT_CD_GPIO_PIN_MASK (1U << 23U)          /*!<@brief GPIO pin mask */
-#define BOARD_INITPINS_BAT_CD_PORT 0U                            /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_BAT_CD_PIN 23U                            /*!<@brief PORT pin number */
-#define BOARD_INITPINS_BAT_CD_PIN_MASK (1U << 23U)               /*!<@brief PORT pin mask */
-                                                                 /* @} */
+#define BOARD_INITPINS_MAX86140_CSB_PERIPHERAL FLEXCOMM2       /*!<@brief Peripheral name */
+#define BOARD_INITPINS_MAX86140_CSB_SIGNAL CTS_SDA_SSEL0       /*!<@brief Signal name */
+                                                               /* @} */
 
 /*! @name FC3_CTS_SDA_SSEL0 (coord B9), I2C6_SDA
   @{ */
@@ -312,16 +220,16 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_MEMS_ANALOG_CHANNEL 4           /*!<@brief Signal channel */
                                                        /* @} */
 
-/*! @name PIO1_6 (coord J17), PB_INTn
+/*! @name PIO1_6 (coord J17), EEG_DRDYn
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_PB_INTn_PERIPHERAL PINT          /*!<@brief Peripheral name */
-#define BOARD_INITPINS_PB_INTn_SIGNAL PINT              /*!<@brief Signal name */
-#define BOARD_INITPINS_PB_INTn_CHANNEL 2                /*!<@brief Signal channel */
-#define BOARD_INITPINS_PB_INTn_PORT 1U                  /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_PB_INTn_PIN 6U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_PB_INTn_PIN_MASK (1U << 6U)      /*!<@brief PORT pin mask */
-                                                        /* @} */
+#define BOARD_INITPINS_EEG_DRDYn_PERIPHERAL PINT          /*!<@brief Peripheral name */
+#define BOARD_INITPINS_EEG_DRDYn_SIGNAL PINT              /*!<@brief Signal name */
+#define BOARD_INITPINS_EEG_DRDYn_CHANNEL 2                /*!<@brief Signal channel */
+#define BOARD_INITPINS_EEG_DRDYn_PORT 1U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_EEG_DRDYn_PIN 6U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_EEG_DRDYn_PIN_MASK (1U << 6U)      /*!<@brief PORT pin mask */
+                                                          /* @} */
 
 /*! @name PIO1_9 (coord B1), HRM_INTn
   @{ */
@@ -481,17 +389,6 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_PS_HOLD_PIN_MASK (1U << 8U)                /*!<@brief PORT pin mask */
                                                                   /* @} */
 
-/*! @name PIO0_16 (coord D6), USER_BUTTON1
-  @{ */
-/* Routed pin properties */
-#define BOARD_INITPINS_USER_BUTTON1_PERIPHERAL PINT           /*!<@brief Peripheral name */
-#define BOARD_INITPINS_USER_BUTTON1_SIGNAL PINT               /*!<@brief Signal name */
-#define BOARD_INITPINS_USER_BUTTON1_CHANNEL 5                 /*!<@brief Signal channel */
-#define BOARD_INITPINS_USER_BUTTON1_PORT 0U                   /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_USER_BUTTON1_PIN 16U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_USER_BUTTON1_PIN_MASK (1U << 16U)      /*!<@brief PORT pin mask */
-                                                              /* @} */
-
 /*! @name PIO0_20 (coord B2), USER_BUTTON2
   @{ */
 /* Routed pin properties */
@@ -503,16 +400,16 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_USER_BUTTON2_PIN_MASK (1U << 20U)      /*!<@brief PORT pin mask */
                                                               /* @} */
 
-/*! @name PIO0_22 (coord D8), POWER_BTNn
+/*! @name PIO0_22 (coord D8), ACTIVITY_BUTTON
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_POWER_BTNn_PERIPHERAL PINT           /*!<@brief Peripheral name */
-#define BOARD_INITPINS_POWER_BTNn_SIGNAL PINT               /*!<@brief Signal name */
-#define BOARD_INITPINS_POWER_BTNn_CHANNEL 7                 /*!<@brief Signal channel */
-#define BOARD_INITPINS_POWER_BTNn_PORT 0U                   /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_POWER_BTNn_PIN 22U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_POWER_BTNn_PIN_MASK (1U << 22U)      /*!<@brief PORT pin mask */
-                                                            /* @} */
+#define BOARD_INITPINS_ACTIVITY_BUTTON_PERIPHERAL PINT           /*!<@brief Peripheral name */
+#define BOARD_INITPINS_ACTIVITY_BUTTON_SIGNAL PINT               /*!<@brief Signal name */
+#define BOARD_INITPINS_ACTIVITY_BUTTON_CHANNEL 7                 /*!<@brief Signal channel */
+#define BOARD_INITPINS_ACTIVITY_BUTTON_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_ACTIVITY_BUTTON_PIN 22U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_ACTIVITY_BUTTON_PIN_MASK (1U << 22U)      /*!<@brief PORT pin mask */
+                                                                 /* @} */
 
 /*! @name PIO1_1 (coord G15), ISP_ENTRY
   @{ */
@@ -668,14 +565,6 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_EEG_LDO_EN_PIN_MASK (1U << 7U)                /*!<@brief PORT pin mask */
                                                                      /* @} */
 
-/*! @name SCT0_OUT2 (coord E3), LEDB_PWM
-  @{ */
-/* Routed pin properties */
-#define BOARD_INITPINS_LEDB_PWM_PERIPHERAL SCT0    /*!<@brief Peripheral name */
-#define BOARD_INITPINS_LEDB_PWM_SIGNAL OUT         /*!<@brief Signal name */
-#define BOARD_INITPINS_LEDB_PWM_CHANNEL 2          /*!<@brief Signal channel */
-                                                   /* @} */
-
 /*! @name SCT0_OUT6 (coord A2), LEDG_PWM
   @{ */
 /* Routed pin properties */
@@ -691,21 +580,6 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_LEDR_PWM_SIGNAL OUT         /*!<@brief Signal name */
 #define BOARD_INITPINS_LEDR_PWM_CHANNEL 7          /*!<@brief Signal channel */
                                                    /* @} */
-
-/*! @name PIO0_13 (coord G3), EEG_DRDYn
-  @{ */
-/* Routed pin properties */
-#define BOARD_INITPINS_EEG_DRDYn_PERIPHERAL GPIO                   /*!<@brief Peripheral name */
-#define BOARD_INITPINS_EEG_DRDYn_SIGNAL PIO0                       /*!<@brief Signal name */
-#define BOARD_INITPINS_EEG_DRDYn_CHANNEL 13                        /*!<@brief Signal channel */
-
-/* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_EEG_DRDYn_GPIO GPIO                         /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_EEG_DRDYn_GPIO_PIN_MASK (1U << 13U)         /*!<@brief GPIO pin mask */
-#define BOARD_INITPINS_EEG_DRDYn_PORT 0U                           /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_EEG_DRDYn_PIN 13U                           /*!<@brief PORT pin number */
-#define BOARD_INITPINS_EEG_DRDYn_PIN_MASK (1U << 13U)              /*!<@brief PORT pin mask */
-                                                                   /* @} */
 
 /*! @name PMIC_I2C_SCL (coord E16), PMIC_I2C_SCL
   @{ */
@@ -750,6 +624,107 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_PMIC_IRQ_N_PERIPHERAL PMC      /*!<@brief Peripheral name */
 #define BOARD_INITPINS_PMIC_IRQ_N_SIGNAL PMIC_IRQ     /*!<@brief Signal name */
                                                       /* @} */
+
+/*! @name FC2_RXD_SDA_MOSI_DATA (coord D6), MAX86140_SDI
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_MAX86140_SDI_PERIPHERAL FLEXCOMM2           /*!<@brief Peripheral name */
+#define BOARD_INITPINS_MAX86140_SDI_SIGNAL RXD_SDA_MOSI_DATA       /*!<@brief Signal name */
+                                                                   /* @} */
+
+/*! @name FC2_TXD_SCL_MISO_WS (coord A5), MAX86140_SDO
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_MAX86140_SDO_PERIPHERAL FLEXCOMM2         /*!<@brief Peripheral name */
+#define BOARD_INITPINS_MAX86140_SDO_SIGNAL TXD_SCL_MISO_WS       /*!<@brief Signal name */
+                                                                 /* @} */
+
+/*! @name FC2_SCK (coord A3), MAX86140_SCK
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_MAX86140_SCK_PERIPHERAL FLEXCOMM2 /*!<@brief Peripheral name */
+#define BOARD_INITPINS_MAX86140_SCK_SIGNAL SCK           /*!<@brief Signal name */
+                                                         /* @} */
+
+/*! @name ADC0_9 (coord G3), ADC_NTC1
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_ADC_NTC1_PERIPHERAL ADC0  /*!<@brief Peripheral name */
+#define BOARD_INITPINS_ADC_NTC1_SIGNAL CH        /*!<@brief Signal name */
+#define BOARD_INITPINS_ADC_NTC1_CHANNEL 9        /*!<@brief Signal channel */
+                                                 /* @} */
+
+/*! @name PIO0_18 (coord B7), USER_BUTTON1
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_USER_BUTTON1_PERIPHERAL PINT           /*!<@brief Peripheral name */
+#define BOARD_INITPINS_USER_BUTTON1_SIGNAL PINT               /*!<@brief Signal name */
+#define BOARD_INITPINS_USER_BUTTON1_CHANNEL 0                 /*!<@brief Signal channel */
+#define BOARD_INITPINS_USER_BUTTON1_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_USER_BUTTON1_PIN 18U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_USER_BUTTON1_PIN_MASK (1U << 18U)      /*!<@brief PORT pin mask */
+                                                              /* @} */
+
+/*! @name ADC0_2 (coord A1), VBATT_SENSE
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_VBATT_SENSE_PERIPHERAL ADC0     /*!<@brief Peripheral name */
+#define BOARD_INITPINS_VBATT_SENSE_SIGNAL CH           /*!<@brief Signal name */
+#define BOARD_INITPINS_VBATT_SENSE_CHANNEL 2           /*!<@brief Signal channel */
+                                                       /* @} */
+
+/*! @name PIO2_0 (coord R11), DEBUG_LEDn
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_DEBUG_LEDn_PERIPHERAL GPIO                    /*!<@brief Peripheral name */
+#define BOARD_INITPINS_DEBUG_LEDn_SIGNAL PIO2                        /*!<@brief Signal name */
+#define BOARD_INITPINS_DEBUG_LEDn_CHANNEL 0                          /*!<@brief Signal channel */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_INITPINS_DEBUG_LEDn_GPIO GPIO                          /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_DEBUG_LEDn_GPIO_PIN_MASK (1U << 0U)           /*!<@brief GPIO pin mask */
+#define BOARD_INITPINS_DEBUG_LEDn_PORT 2U                            /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_DEBUG_LEDn_PIN 0U                             /*!<@brief PORT pin number */
+#define BOARD_INITPINS_DEBUG_LEDn_PIN_MASK (1U << 0U)                /*!<@brief PORT pin mask */
+                                                                     /* @} */
+
+/*! @name PIO2_1 (coord T11), BLE_RESETn
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_BLE_RESETn_PERIPHERAL GPIO                    /*!<@brief Peripheral name */
+#define BOARD_INITPINS_BLE_RESETn_SIGNAL PIO2                        /*!<@brief Signal name */
+#define BOARD_INITPINS_BLE_RESETn_CHANNEL 1                          /*!<@brief Signal channel */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_INITPINS_BLE_RESETn_GPIO GPIO                          /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_BLE_RESETn_GPIO_PIN_MASK (1U << 1U)           /*!<@brief GPIO pin mask */
+#define BOARD_INITPINS_BLE_RESETn_PORT 2U                            /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_BLE_RESETn_PIN 1U                             /*!<@brief PORT pin number */
+#define BOARD_INITPINS_BLE_RESETn_PIN_MASK (1U << 1U)                /*!<@brief PORT pin mask */
+                                                                     /* @} */
+
+/*! @name PIO2_2 (coord U11), BOOST_EN
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_BOOST_EN_PERIPHERAL GPIO                    /*!<@brief Peripheral name */
+#define BOARD_INITPINS_BOOST_EN_SIGNAL PIO2                        /*!<@brief Signal name */
+#define BOARD_INITPINS_BOOST_EN_CHANNEL 2                          /*!<@brief Signal channel */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_INITPINS_BOOST_EN_GPIO GPIO                          /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_BOOST_EN_GPIO_PIN_MASK (1U << 2U)           /*!<@brief GPIO pin mask */
+#define BOARD_INITPINS_BOOST_EN_PORT 2U                            /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_BOOST_EN_PIN 2U                             /*!<@brief PORT pin number */
+#define BOARD_INITPINS_BOOST_EN_PIN_MASK (1U << 2U)                /*!<@brief PORT pin mask */
+                                                                   /* @} */
+
+/*! @name SCT0_OUT8 (coord C1), LED_B_PWM
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_LED_B_PWM_PERIPHERAL SCT0    /*!<@brief Peripheral name */
+#define BOARD_INITPINS_LED_B_PWM_SIGNAL OUT         /*!<@brief Signal name */
+#define BOARD_INITPINS_LED_B_PWM_CHANNEL 8          /*!<@brief Signal channel */
+                                                    /* @} */
 
 /*!
  * @brief 

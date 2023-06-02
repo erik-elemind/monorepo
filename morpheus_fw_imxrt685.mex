@@ -27,7 +27,7 @@
             <pin_labels>
                <pin_label pin_num="G2" pin_signal="PIO0_1/FC0_TXD_SCL_MISO_WS/CTIMER0_MAT1/I2S_BRIDGE_WS_IN/SEC_PIO0_1" label="BT_UART_TXD" identifier="BT_UART_TXD"/>
                <pin_label pin_num="F4" pin_signal="PIO0_5/FC0_SSEL2/SCT0_GPI0/SCT0_OUT0/CTIMER_INP1/SEC_PIO0_5/ADC0_0" label="TEMP_SENSE_BAND" identifier="TEMP_SENSE_BAND"/>
-               <pin_label pin_num="G3" pin_signal="PIO0_13/FC1_SSEL3/SCT0_GPI3/SCT0_OUT3/CTIMER0_MAT1/SEC_PIO0_13/ADC0_9" label="EEG_DRDYn" identifier="EEG_DRDYn"/>
+               <pin_label pin_num="G3" pin_signal="PIO0_13/FC1_SSEL3/SCT0_GPI3/SCT0_OUT3/CTIMER0_MAT1/SEC_PIO0_13/ADC0_9" label="ADC_NTC1" identifier="ADC_NTC1"/>
                <pin_label pin_num="U16" pin_signal="PIO2_7/SD0_D6/SCT0_GPI5/CTIMER1_MAT1" label="EEG_LDO_EN" identifier="EEG_LDO_EN"/>
                <pin_label pin_num="T9" pin_signal="PIO1_18/FLEXSPI0A_SCLK/SCT0_GPI0/CTIMER3_MAT3" label="NAND_SCK" identifier="NAND_SCK"/>
                <pin_label pin_num="T4" pin_signal="PIO1_19/FLEXSPI0A_SS0_N/SCT0_OUT0/CTIMER4_MAT0" label="NAND_CSn" identifier="NAND_CSn"/>
@@ -35,13 +35,12 @@
                <pin_label pin_num="U5" pin_signal="PIO1_21/FLEXSPI0A_DATA1/SCT0_OUT1/CTIMER4_MAT2" label="NAND_D1" identifier="NAND_D1"/>
                <pin_label pin_num="P6" pin_signal="PIO1_22/FLEXSPI0A_DATA2/SCT0_GPI2/CTIMER4_MAT3" label="NAND_D2" identifier="NAND_D2"/>
                <pin_label pin_num="P7" pin_signal="PIO1_23/FLEXSPI0A_DATA3/SCT0_OUT2/CTIMER_INP8" label="NAND_D3" identifier="NAND_D3"/>
-               <pin_label pin_num="E1" pin_signal="PIO0_6/FC0_SSEL3/SCT0_GPI1/SCT0_OUT1/CTIMER0_MAT0/SEC_PIO0_6/ADC0_8" label="ALS_INTn" identifier="ALS_INTn"/>
-               <pin_label pin_num="E3" pin_signal="PIO0_12/FC1_SSEL2/SCT0_GPI2/SCT0_OUT2/CTIMER_INP3/SEC_PIO0_12/ADC0_1" label="LEDB_PWM" identifier="LEDB_PWM"/>
-               <pin_label pin_num="A3" pin_signal="PIO0_14/FC2_SCK/SCT0_GPI0/SCT0_OUT0/CTIMER2_MAT0/I2S_BRIDGE_CLK_IN/SEC_PIO0_14" label="DEBUG_LEDn" identifier="DEBUG_LEDn"/>
-               <pin_label pin_num="A5" pin_signal="PIO0_15/FC2_TXD_SCL_MISO_WS/SCT0_GPI1/SCT0_OUT1/CTIMER2_MAT1/I2S_BRIDGE_WS_IN/SEC_PIO0_15" label="BLE_RESETn" identifier="BLE_RESETn"/>
-               <pin_label pin_num="D7" pin_signal="PIO0_17/FC2_CTS_SDA_SSEL0/SCT0_GPI3/SCT0_OUT3/CTIMER2_MAT3/FC5_SSEL2/SEC_PIO0_17" label="I2C5_SDA" identifier="I2C5_SDA"/>
-               <pin_label pin_num="B7" pin_signal="PIO0_18/FC2_RTS_SCL_SSEL1/SCT0_GPI6/SCT0_OUT6/CTIMER_INP4/FC5_SSEL3/SEC_PIO0_18" label="I2C5_SCL" identifier="I2C5_SCL"/>
-               <pin_label pin_num="A1" pin_signal="PIO0_19/FC2_SSEL2/SCT0_GPI4/SCT0_OUT4/CTIMER_INP5/UTICK_CAP0/SEC_PIO0_19/ADC0_2" label="BAT_INTn" identifier="BAT_INTn"/>
+               <pin_label pin_num="E1" pin_signal="PIO0_6/FC0_SSEL3/SCT0_GPI1/SCT0_OUT1/CTIMER0_MAT0/SEC_PIO0_6/ADC0_8" label="ADC_NTC0" identifier="ADC_NTC0"/>
+               <pin_label pin_num="E3" pin_signal="PIO0_12/FC1_SSEL2/SCT0_GPI2/SCT0_OUT2/CTIMER_INP3/SEC_PIO0_12/ADC0_1" label="MEMS_BYPASS" identifier="MEMS_BYPASS"/>
+               <pin_label pin_num="A3" pin_signal="PIO0_14/FC2_SCK/SCT0_GPI0/SCT0_OUT0/CTIMER2_MAT0/I2S_BRIDGE_CLK_IN/SEC_PIO0_14" label="MAX86140_SCK" identifier="MAX86140_SCK"/>
+               <pin_label pin_num="A5" pin_signal="PIO0_15/FC2_TXD_SCL_MISO_WS/SCT0_GPI1/SCT0_OUT1/CTIMER2_MAT1/I2S_BRIDGE_WS_IN/SEC_PIO0_15" label="MAX86140_SDO" identifier="MAX86140_SDO"/>
+               <pin_label pin_num="D7" pin_signal="PIO0_17/FC2_CTS_SDA_SSEL0/SCT0_GPI3/SCT0_OUT3/CTIMER2_MAT3/FC5_SSEL2/SEC_PIO0_17" label="MAX86140_CSB" identifier="MAX86140_CSB"/>
+               <pin_label pin_num="A1" pin_signal="PIO0_19/FC2_SSEL2/SCT0_GPI4/SCT0_OUT4/CTIMER_INP5/UTICK_CAP0/SEC_PIO0_19/ADC0_2" label="VBATT_SENSE" identifier="VBATT_SENSE"/>
                <pin_label pin_num="C7" pin_signal="PIO0_21/FC3_SCK/CTIMER3_MAT0/TRACECLK/SEC_PIO0_21" label="BAT_STATn" identifier="BAT_STATn"/>
                <pin_label pin_num="C9" pin_signal="PIO0_23/FC3_RXD_SDA_MOSI_DATA/CTIMER3_MAT2/TRACEDATA(1)/SEC_PIO0_23" label="BAT_CD" identifier="BAT_CD"/>
                <pin_label pin_num="B9" pin_signal="PIO0_24/FC3_CTS_SDA_SSEL0/CTIMER3_MAT3/FC2_SSEL2/TRACEDATA(2)/CLKOUT/SEC_PIO0_24" label="I2C6_SDA" identifier="I2C6_SDA"/>
@@ -56,7 +55,7 @@
                <pin_label pin_num="G16" pin_signal="PIO1_3/FC5_SCK" label="SSM2518_SHTDNn" identifier="SSM2518_SHTDNn"/>
                <pin_label pin_num="G17" pin_signal="PIO1_4/FC5_TXD_SCL_MISO_WS" label="DEBUG_UART_TXD" identifier="DEBUG_UART_TXD"/>
                <pin_label pin_num="J16" pin_signal="PIO1_5/FC5_RXD_SDA_MOSI_DATA" label="DEBUG_UART_RXD" identifier="DEBUG_UART_RXD"/>
-               <pin_label pin_num="J17" pin_signal="PIO1_6/FC5_CTS_SDA_SSEL0/SCT0_GPI4/SCT0_OUT4/FC4_SSEL2" label="PB_INTn" identifier="PB_INTn"/>
+               <pin_label pin_num="J17" pin_signal="PIO1_6/FC5_CTS_SDA_SSEL0/SCT0_GPI4/SCT0_OUT4/FC4_SSEL2" label="EEG_DRDYn" identifier="EEG_DRDYn"/>
                <pin_label pin_num="B5" pin_signal="PIO1_8/FC5_SSEL2/SCT0_GPI6/CTIMER_INP12/CTIMER1_MAT2/ADC0_4" label="MEMS_ANALOG" identifier="MEMS_ANALOG"/>
                <pin_label pin_num="B1" pin_signal="PIO1_9/FC5_SSEL3/SCT0_GPI7/UTICK_CAP1/CTIMER1_MAT3/ADC0_12" label="HRM_INTn" identifier="HRM_INTn"/>
                <pin_label pin_num="N1" pin_signal="PIO1_13/HS_SPI_MOSI/CTIMER2_MAT2/FLEXSPI0B_DATA2" label="NOR_D2"/>
@@ -64,7 +63,7 @@
                <pin_label pin_num="U7" pin_signal="PIO1_25/FLEXSPI0A_DATA5/SCT0_OUT3" label="HRM_IR_ANODE_EN" identifier="HRM_IR_ANODE_EN"/>
                <pin_label pin_num="T8" pin_signal="PIO1_27/FLEXSPI0A_DATA7/SCT0_OUT4" label="FLASH_MUX_EN" identifier="FLASH_MUX_EN"/>
                <pin_label pin_num="U9" pin_signal="PIO1_28/FLEXSPI0A_DQS/SCT0_GPI5" label="COLOR_LED"/>
-               <pin_label pin_num="U11" pin_signal="PIO2_2/SD0_D2/SCT0_OUT0" label="IR_LED"/>
+               <pin_label pin_num="U11" pin_signal="PIO2_2/SD0_D2/SCT0_OUT0" label="BOOST_EN" identifier="BOOST_EN"/>
                <pin_label pin_num="T12" pin_signal="PIO2_3/SD0_D3/SCT0_OUT1" label="AUX_GPIO1" identifier="AUX_GPIO1"/>
                <pin_label pin_num="T13" pin_signal="PIO2_4/SD0_WR_PRT/SCT0_OUT2/SD0_DS" label="AUX_GPIO2" identifier="AUX_GPIO2"/>
                <pin_label pin_num="U15" pin_signal="PIO2_6/SD0_D5/SCT0_GPI4/CTIMER1_MAT0" label="AUX_GPIO3" identifier="AUX_GPIO3"/>
@@ -83,8 +82,8 @@
                <pin_label pin_num="K16" pin_signal="PIO1_10/MCLK/FREQME_GPIO_CLK/CTIMER_INP10/CLKOUT" label="ACCEL_INT" identifier="ACCEL_INT"/>
                <pin_label pin_num="P10" pin_signal="PIO1_30/SD0_CLK/SCT0_GPI0" label="HRM_RED_ANODE_EN" identifier="HRM_RED_ANODE_EN"/>
                <pin_label pin_num="U3" pin_signal="PIO1_29/FLEXSPI0A_SS1_N/SCT0_OUT5/UTICK_CAP2/CTIMER_INP13/FLEXSPI0B_SCLK" label="NOR_SCK"/>
-               <pin_label pin_num="D6" pin_signal="PIO0_16/FC2_RXD_SDA_MOSI_DATA/SCT0_GPI2/SCT0_OUT2/CTIMER2_MAT2/I2S_BRIDGE_DATA_IN/SEC_PIO0_16" label="USER_BUTTON1" identifier="USER_BUTTON1"/>
-               <pin_label pin_num="D8" pin_signal="PIO0_22/FC3_TXD_SCL_MISO_WS/CTIMER3_MAT1/TRACEDATA(0)/SEC_PIO0_22" label="POWER_BTNn" identifier="POWER_BTNn"/>
+               <pin_label pin_num="D6" pin_signal="PIO0_16/FC2_RXD_SDA_MOSI_DATA/SCT0_GPI2/SCT0_OUT2/CTIMER2_MAT2/I2S_BRIDGE_DATA_IN/SEC_PIO0_16" label="MAX86140_SDI" identifier="MAX86140_SDI"/>
+               <pin_label pin_num="D8" pin_signal="PIO0_22/FC3_TXD_SCL_MISO_WS/CTIMER3_MAT1/TRACEDATA(0)/SEC_PIO0_22" label="ACTIVITY_BUTTON" identifier="ACTIVITY_BUTTON"/>
                <pin_label pin_num="B2" pin_signal="PIO0_20/FC2_SSEL3/SCT0_GPI5/SCT0_OUT5/CTIMER0_MAT2/CTIMER_INP11/SEC_PIO0_20/ADC0_10" label="USER_BUTTON2" identifier="USER_BUTTON2"/>
                <pin_label pin_num="G15" pin_signal="PIO1_1/FC4_SSEL2/SCT0_GPI2/SCT0_OUT8/CTIMER1_MAT0" label="ISP_ENTRY" identifier="ISP_ENTRY"/>
                <pin_label pin_num="G4" pin_signal="PIO0_2/FC0_RXD_SDA_MOSI_DATA/CTIMER0_MAT2/I2S_BRIDGE_DATA_IN/SEC_PIO0_2" label="BT_UART_RXD" identifier="BT_UART_RXD"/>
@@ -103,6 +102,11 @@
                <pin_label pin_num="A16" pin_signal="LDO_ENABLE" label="PMIC_LDO_ENABLE" identifier="PMIC_LDO_ENABLE"/>
                <pin_label pin_num="C15" pin_signal="PMIC_MODE0" label="PMIC_MODE0" identifier="PMIC_MODE0"/>
                <pin_label pin_num="A15" pin_signal="PMIC_IRQ_N" label="PMIC_IRQ_N" identifier="PMIC_IRQ_N"/>
+               <pin_label pin_num="B7" pin_signal="PIO0_18/FC2_RTS_SCL_SSEL1/SCT0_GPI6/SCT0_OUT6/CTIMER_INP4/FC5_SSEL3/SEC_PIO0_18" label="USER_BUTTON1" identifier="USER_BUTTON1"/>
+               <pin_label pin_num="E17" pin_signal="PIO1_0/FC4_RTS_SCL_SSEL1/SCT0_GPI1/SCT0_OUT7/CTIMER_INP8/FC3_SSEL3" label="SSM2518_MCLK" identifier="SSM2518_MCLK"/>
+               <pin_label pin_num="R11" pin_signal="PIO2_0/SD0_D0/SCT0_GPI2" label="DEBUG_LEDn" identifier="DEBUG_LEDn"/>
+               <pin_label pin_num="T11" pin_signal="PIO2_1/SD0_D1/SCT0_GPI3" label="BLE_RESETn" identifier="BLE_RESETn"/>
+               <pin_label pin_num="C1" pin_signal="PIO2_14/SCT0_OUT8/CTIMER_INP1/CMP0_A" label="LED_B_PWM" identifier="LED_B_PWM"/>
             </pin_labels>
          </pins_profile>
          <functions_list>
@@ -166,47 +170,8 @@
                         <pin_feature name="drive" value="normal"/>
                      </pin_features>
                   </pin>
-                  <pin peripheral="PINT" signal="PINT, 0" pin_num="G3" pin_signal="PIO0_13/FC1_SSEL3/SCT0_GPI3/SCT0_OUT3/CTIMER0_MAT1/SEC_PIO0_13/ADC0_9">
-                     <pin_features>
-                        <pin_feature name="identifier" value=""/>
-                        <pin_feature name="pupdena" value="enabled"/>
-                        <pin_feature name="pupdsel" value="pullUp"/>
-                        <pin_feature name="ibena" value="enabled"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="GPIO" signal="PIO0, 6" pin_num="E1" pin_signal="PIO0_6/FC0_SSEL3/SCT0_GPI1/SCT0_OUT1/CTIMER0_MAT0/SEC_PIO0_6/ADC0_8"/>
-                  <pin peripheral="GPIO" signal="PIO0, 14" pin_num="A3" pin_signal="PIO0_14/FC2_SCK/SCT0_GPI0/SCT0_OUT0/CTIMER2_MAT0/I2S_BRIDGE_CLK_IN/SEC_PIO0_14">
-                     <pin_features>
-                        <pin_feature name="direction" value="OUTPUT"/>
-                        <pin_feature name="gpio_init_state" value="true"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="GPIO" signal="PIO0, 15" pin_num="A5" pin_signal="PIO0_15/FC2_TXD_SCL_MISO_WS/SCT0_GPI1/SCT0_OUT1/CTIMER2_MAT1/I2S_BRIDGE_WS_IN/SEC_PIO0_15"/>
                   <pin peripheral="FLEXCOMM2" signal="CTS_SDA_SSEL0" pin_num="D7" pin_signal="PIO0_17/FC2_CTS_SDA_SSEL0/SCT0_GPI3/SCT0_OUT3/CTIMER2_MAT3/FC5_SSEL2/SEC_PIO0_17">
                      <pin_features>
-                        <pin_feature name="ibena" value="enabled"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="FLEXCOMM2" signal="RTS_SCL_SSEL1" pin_num="B7" pin_signal="PIO0_18/FC2_RTS_SCL_SSEL1/SCT0_GPI6/SCT0_OUT6/CTIMER_INP4/FC5_SSEL3/SEC_PIO0_18">
-                     <pin_features>
-                        <pin_feature name="ibena" value="enabled"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="PINT" signal="PINT, 1" pin_num="A1" pin_signal="PIO0_19/FC2_SSEL2/SCT0_GPI4/SCT0_OUT4/CTIMER_INP5/UTICK_CAP0/SEC_PIO0_19/ADC0_2">
-                     <pin_features>
-                        <pin_feature name="ibena" value="enabled"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="GPIO" signal="PIO0, 21" pin_num="C7" pin_signal="PIO0_21/FC3_SCK/CTIMER3_MAT0/TRACECLK/SEC_PIO0_21">
-                     <pin_features>
-                        <pin_feature name="direction" value="INPUT"/>
-                        <pin_feature name="ibena" value="enabled"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="GPIO" signal="PIO0, 23" pin_num="C9" pin_signal="PIO0_23/FC3_RXD_SDA_MOSI_DATA/CTIMER3_MAT2/TRACEDATA(1)/SEC_PIO0_23">
-                     <pin_features>
-                        <pin_feature name="direction" value="OUTPUT"/>
-                        <pin_feature name="gpio_init_state" value="false"/>
                         <pin_feature name="ibena" value="enabled"/>
                      </pin_features>
                   </pin>
@@ -300,11 +265,6 @@
                         <pin_feature name="ibena" value="enabled"/>
                      </pin_features>
                   </pin>
-                  <pin peripheral="PINT" signal="PINT, 5" pin_num="D6" pin_signal="PIO0_16/FC2_RXD_SDA_MOSI_DATA/SCT0_GPI2/SCT0_OUT2/CTIMER2_MAT2/I2S_BRIDGE_DATA_IN/SEC_PIO0_16">
-                     <pin_features>
-                        <pin_feature name="ibena" value="enabled"/>
-                     </pin_features>
-                  </pin>
                   <pin peripheral="PINT" signal="PINT, 6" pin_num="B2" pin_signal="PIO0_20/FC2_SSEL3/SCT0_GPI5/SCT0_OUT5/CTIMER0_MAT2/CTIMER_INP11/SEC_PIO0_20/ADC0_10">
                      <pin_features>
                         <pin_feature name="ibena" value="enabled"/>
@@ -367,7 +327,6 @@
                         <pin_feature name="gpio_init_state" value="true"/>
                      </pin_features>
                   </pin>
-                  <pin peripheral="GPIO" signal="PIO2, 9" pin_num="R13" pin_signal="PIO2_9/SD0_CARD_DET_N/SCT0_OUT5/CTIMER1_MAT3"/>
                   <pin peripheral="ADC0" signal="CH, 0" pin_num="F4" pin_signal="PIO0_5/FC0_SSEL2/SCT0_GPI0/SCT0_OUT0/CTIMER_INP1/SEC_PIO0_5/ADC0_0"/>
                   <pin peripheral="GPIO" signal="PIO1, 7" pin_num="J15" pin_signal="PIO1_7/FC5_RTS_SCL_SSEL1/SCT0_GPI5/SCT0_OUT5/CTIMER_INP9/FC4_SSEL3">
                      <pin_features>
@@ -387,16 +346,8 @@
                   <pin peripheral="FLEXSPI" signal="FLEXSPI_B_DATA2" pin_num="N1" pin_signal="PIO1_13/HS_SPI_MOSI/CTIMER2_MAT2/FLEXSPI0B_DATA2"/>
                   <pin peripheral="FLEXSPI" signal="FLEXSPI_B_DATA3" pin_num="N2" pin_signal="PIO1_14/HS_SPI_SSEL0/CTIMER2_MAT3/FLEXSPI0B_DATA3"/>
                   <pin peripheral="FLEXSPI" signal="FLEXSPI_B_SCLK" pin_num="U3" pin_signal="PIO1_29/FLEXSPI0A_SS1_N/SCT0_OUT5/UTICK_CAP2/CTIMER_INP13/FLEXSPI0B_SCLK"/>
-                  <pin peripheral="SCT0" signal="OUT, 2" pin_num="E3" pin_signal="PIO0_12/FC1_SSEL2/SCT0_GPI2/SCT0_OUT2/CTIMER_INP3/SEC_PIO0_12/ADC0_1"/>
                   <pin peripheral="SCT0" signal="OUT, 6" pin_num="A2" pin_signal="PIO0_26/FC3_SSEL2/SCT0_GPI6/SCT0_OUT6/CTIMER_INP7/SEC_PIO0_26/ADC0_3"/>
                   <pin peripheral="SCT0" signal="OUT, 7" pin_num="B3" pin_signal="PIO0_27/FC3_SSEL3/SCT0_GPI7/SCT0_OUT7/CTIMER0_MAT3/SEC_PIO0_27/ADC0_11"/>
-                  <pin peripheral="GPIO" signal="PIO0, 13" pin_num="G3" pin_signal="PIO0_13/FC1_SSEL3/SCT0_GPI3/SCT0_OUT3/CTIMER0_MAT1/SEC_PIO0_13/ADC0_9">
-                     <pin_features>
-                        <pin_feature name="direction" value="INPUT"/>
-                        <pin_feature name="pupdsel" value="pullUp"/>
-                        <pin_feature name="ibena" value="enabled"/>
-                     </pin_features>
-                  </pin>
                   <pin peripheral="FLEXCOMM15" signal="SCL" pin_num="E16" pin_signal="PMIC_I2C_SCL">
                      <pin_features>
                         <pin_feature name="pupdena" value="enabled"/>
@@ -417,6 +368,33 @@
                   <pin peripheral="PMC" signal="PMIC_LDO_ENABLE" pin_num="A16" pin_signal="LDO_ENABLE"/>
                   <pin peripheral="PMC" signal="PMIC_MODE, 0" pin_num="C15" pin_signal="PMIC_MODE0"/>
                   <pin peripheral="PMC" signal="PMIC_IRQ" pin_num="A15" pin_signal="PMIC_IRQ_N"/>
+                  <pin peripheral="ADC0" signal="CH, 8" pin_num="E1" pin_signal="PIO0_6/FC0_SSEL3/SCT0_GPI1/SCT0_OUT1/CTIMER0_MAT0/SEC_PIO0_6/ADC0_8">
+                     <pin_features>
+                        <pin_feature name="identifier" value=""/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="FLEXCOMM2" signal="RXD_SDA_MOSI_DATA" pin_num="D6" pin_signal="PIO0_16/FC2_RXD_SDA_MOSI_DATA/SCT0_GPI2/SCT0_OUT2/CTIMER2_MAT2/I2S_BRIDGE_DATA_IN/SEC_PIO0_16"/>
+                  <pin peripheral="FLEXCOMM2" signal="TXD_SCL_MISO_WS" pin_num="A5" pin_signal="PIO0_15/FC2_TXD_SCL_MISO_WS/SCT0_GPI1/SCT0_OUT1/CTIMER2_MAT1/I2S_BRIDGE_WS_IN/SEC_PIO0_15"/>
+                  <pin peripheral="FLEXCOMM2" signal="SCK" pin_num="A3" pin_signal="PIO0_14/FC2_SCK/SCT0_GPI0/SCT0_OUT0/CTIMER2_MAT0/I2S_BRIDGE_CLK_IN/SEC_PIO0_14"/>
+                  <pin peripheral="ADC0" signal="CH, 9" pin_num="G3" pin_signal="PIO0_13/FC1_SSEL3/SCT0_GPI3/SCT0_OUT3/CTIMER0_MAT1/SEC_PIO0_13/ADC0_9"/>
+                  <pin peripheral="PINT" signal="PINT, 0" pin_num="B7" pin_signal="PIO0_18/FC2_RTS_SCL_SSEL1/SCT0_GPI6/SCT0_OUT6/CTIMER_INP4/FC5_SSEL3/SEC_PIO0_18"/>
+                  <pin peripheral="ADC0" signal="CH, 2" pin_num="A1" pin_signal="PIO0_19/FC2_SSEL2/SCT0_GPI4/SCT0_OUT4/CTIMER_INP5/UTICK_CAP0/SEC_PIO0_19/ADC0_2"/>
+                  <pin peripheral="GPIO" signal="PIO2, 0" pin_num="R11" pin_signal="PIO2_0/SD0_D0/SCT0_GPI2">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO" signal="PIO2, 1" pin_num="T11" pin_signal="PIO2_1/SD0_D1/SCT0_GPI3">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO" signal="PIO2, 2" pin_num="U11" pin_signal="PIO2_2/SD0_D2/SCT0_OUT0">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="SCT0" signal="OUT, 8" pin_num="C1" pin_signal="PIO2_14/SCT0_OUT8/CTIMER_INP1/CMP0_A"/>
                </pins>
             </function>
          </functions_list>
