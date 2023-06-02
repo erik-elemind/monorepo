@@ -38,11 +38,11 @@ static const button_timing_t button_timing2 =
 
 static button_param_t button_param_arr[] =
 {
-#ifdef POWER_BUTTON_PORT
+#ifdef ACTIVITY_BUTTON_PORT
   {
-    .port          = POWER_BUTTON_PORT,
-    .pin           = POWER_BUTTON_PIN,
-    .up_level      = POWER_BUTTON_UP_LEVEL,
+    .port          = ACTIVITY_BUTTON_PORT,
+    .pin           = ACTIVITY_BUTTON_PIN,
+    .up_level      = ACTIVITY_BUTTON_UP_LEVEL,
     .cb_down       = app_event_power_button_down,
     .cb_up         = app_event_power_button_up,
     .cb_click      = app_event_power_button_click,

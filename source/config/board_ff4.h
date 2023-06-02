@@ -211,11 +211,11 @@ void BOARD_InitFlashSPI();
  * Battery Charger
  *****************************************************************************/
 
-#define BATTERY_CHARGER_ENABLE_PORT BOARD_INITPINS_BAT_CD_PORT
-#define BATTERY_CHARGER_ENABLE_PIN BOARD_INITPINS_BAT_CD_PIN
+#define BATTERY_CHARGER_ENABLE_PORT 0 //ToDo: Remove for revD
+#define BATTERY_CHARGER_ENABLE_PIN 0 //ToDo: Remove for revD
 
-#define BATTERY_CHARGER_STATUS_PORT BOARD_INITPINS_BAT_STATn_PORT
-#define BATTERY_CHARGER_STATUS_PIN BOARD_INITPINS_BAT_STATn_PIN
+#define BATTERY_CHARGER_STATUS_PORT 0 //ToDo: Remove for revD
+#define BATTERY_CHARGER_STATUS_PIN 0 //ToDo: Remove for revD
 
 /******************************************************************************
  * RED/GREEN/BLUE LED PWM
@@ -265,9 +265,9 @@ void led_set_rgb(uint8_t red_duty_cycle_percent, uint8_t grn_duty_cycle_percent,
  * This define structure makes it easier to add BUTTON_3_*** defines in the future,
  * with minimal changes in button_config.c.
  */
-#define POWER_BUTTON_PORT     BOARD_INITPINS_POWER_BTNn_PORT
-#define POWER_BUTTON_PIN      BOARD_INITPINS_POWER_BTNn_PIN
-#define POWER_BUTTON_UP_LEVEL 1
+#define ACTIVITY_BUTTON_PORT     BOARD_INITPINS_ACTIVITY_BUTTON_PORT
+#define ACTIVITY_BUTTON_PIN      BOARD_INITPINS_ACTIVITY_BUTTON_PIN
+#define ACTIVITY_BUTTON_UP_LEVEL 1
 
 #define VOL_UP_BUTTON_PORT     BOARD_INITPINS_USER_BUTTON1_PORT
 #define VOL_UP_BUTTON_PIN      BOARD_INITPINS_USER_BUTTON1_PIN
