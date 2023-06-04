@@ -132,9 +132,6 @@ static StaticQueue_t g_event_queue_struct;
 static QueueHandle_t g_event_queue;
 static void handle_event(system_monitor_event_t *event);
 
-/// Battery charger handle
-battery_charger_handle_t g_battery_charger_handle;
-
 // For logging and debug:
 static const char *
 system_monitor_state_name(system_monitor_state_t state)
@@ -479,8 +476,7 @@ handle_battery_event(void)
 {
   static battery_charger_status_t prev_status = -1;
 
-  battery_charger_status_t battery_status = battery_charger_get_status(
-    &g_battery_charger_handle);
+  battery_charger_status_t battery_status = battery_charger_get_status();
 
   //battery_level_get(); // ToDo: Need to bring up proper battery reading
 
@@ -710,12 +706,10 @@ task_init()
 
 
   // Initialize battery charger driver
-  battery_charger_init(&g_battery_charger_handle, &BATT_I2C_RTOS_HANDLE,
-    BATTERY_CHARGER_ENABLE_PORT, BATTERY_CHARGER_ENABLE_PIN,
-    BATTERY_CHARGER_STATUS_PORT, BATTERY_CHARGER_STATUS_PIN);
+  battery_charger_init();
 
   // Enable battery charging whenever USB is plugged in
-  battery_charger_enable(&g_battery_charger_handle, true);
+  battery_charger_enable(true);
 
   // Initialize ADC for battery level reads
   //adc_init(); // ToDo: Need to bring up ADC for battery and sensors

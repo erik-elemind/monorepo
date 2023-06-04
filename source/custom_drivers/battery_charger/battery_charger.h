@@ -26,18 +26,6 @@
 extern "C" {
 #endif
 
-/// Battery charger device handle. Must be initialized by
-/// battery_charger_init().
-typedef struct {
-  i2c_rtos_handle_t* i2c_handle;
-  uint8_t charge_enable_port;
-  uint8_t charge_enable_pin;
-  uint8_t status_port;
-  uint8_t status_pin;
-  TimerHandle_t recharge_timer_handle;
-  StaticTimer_t recharge_timer_struct;
-} battery_charger_handle_t;
-
 /// Battery charger status
 typedef enum {
   BATTERY_CHARGER_STATUS_ON_BATTERY, ///< No input source or bad input source
@@ -49,64 +37,30 @@ typedef enum {
 
 /** Initialize battery charger driver.
 
-    Sets up GPIOs and BQ25887 registers for the Morpheus board, and
-    creates a timer to restart the charging cycle.
-
-    Note that we don't provide an I2C address here, since address is
-    not configurable for this chip.
-
-    @param handle Handle structure to initialize
-    @param i2c_handle I2C handle from I2C_RTOS_Init()
-    @param charge_enable_port Port for BAT_CEn GPIO
-    @param charge_enable_pin Pin for BAT_CEn GPIO
-    @param status_port Port for BAT_STATn GPIO
-    @param status_pin Pin for BAT_STATn GPIO
+  ToDo Implement for REVD (not sure this will be needed)
  */
-void
-battery_charger_init(
-  battery_charger_handle_t* handle,
-  i2c_rtos_handle_t* i2c_handle,
-  uint8_t charge_enable_port,
-  uint8_t charge_enable_pin,
-  uint8_t status_port,
-  uint8_t status_pin
-  );
+void battery_charger_init(void);
 
 /** Enable/disable charging.
 
-    @param handle Handle from battery_charger_init()
     @param enable True to enable charging, false to disable
 
     @return kStatus_Success if successful
  */
-status_t
-battery_charger_enable(
-  battery_charger_handle_t* handle,
-  bool enable
-  );
+status_t battery_charger_enable(bool enable);
 
 /** Get charging enabled state.
 
-    @param handle Handle from battery_charger_init()
-
     @return True if charging is enabled, false if disabled.
  */
-bool
-battery_charger_is_enabled(
-  battery_charger_handle_t* handle
-  );
+bool battery_charger_is_enabled(void);
 
 
 /** Get charger status.
 
-    @param handle Handle from battery_charger_init()
-
     @return Battery charger status value from enum
  */
-battery_charger_status_t
-battery_charger_get_status(
-  battery_charger_handle_t* handle
-  );
+battery_charger_status_t battery_charger_get_status();
 
 /** Output detailed charger status.
 
@@ -115,28 +69,10 @@ battery_charger_get_status(
     to expose the internal register structures and constants outside
     the driver, since this is a debug-only function.
 
-    @param handle Handle from battery_charger_init()
-
     @return kStatus_Success if successful
  */
-status_t
-battery_charger_print_detailed_status(
-  battery_charger_handle_t* handle
-  );
+status_t battery_charger_print_detailed_status();
 
-/** Enable or Disable ADC.
-
-    Enable ADC
-
-    @param handle Handle from battery_charger_init()
-
-    @return kStatus_Success if successful
- */
-status_t
-battery_charger_set_adc_enable(
-  battery_charger_handle_t* handle,
-  bool enable
-  );
 
 #ifdef __cplusplus
 }
