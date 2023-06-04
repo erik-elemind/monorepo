@@ -14,9 +14,6 @@ extern "C" {
 // to 0 will never sleep, and always sample at MIC_TIMER_MS.
 #define MIC_SAMPLES_BEFORE_SLEEP 1
 
-/// Battery charger handle
-extern battery_charger_handle_t g_battery_charger_handle;
-
 // Init called before vTaskStartScheduler() launches our Task in main():
 void system_monitor_pretask_init(void);
 
