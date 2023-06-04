@@ -25,7 +25,7 @@ extern unsigned int *_HeapSize;
   #define configLINKER_HEAP_SIZE_SYMBOL HEAP_SIZE
 #endif
 
-#define GPIO_PORT_MAX 1
+#define GPIO_PORT_MAX 2
 #define GPIO_PIN_MAX 31
 
 
