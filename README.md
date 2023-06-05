@@ -8,6 +8,8 @@ MCUXpresso
 A JLink is needed for wired flashing (optional). Please download and install the 
 [Segger Software and Documentation pack](https://www.segger.com/downloads/jlink/#J-LinkSoftwareAndDocumentationPack).
 
+**THIS REPO USES GIT SUBMODULES**
+Please run `git submodule update --init`, clean and refresh project prior to building.
 
 ## Build process
 Use MCUXPresso
