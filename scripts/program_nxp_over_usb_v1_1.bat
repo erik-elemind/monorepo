@@ -1,6 +1,6 @@
 @echo off
 
-ECHO FIRMWARE UPGRADE SCRIPT v1.0
+ECHO FIRMWARE UPGRADE SCRIPT v1.1
 
 :: Get the first .bin file found in the folder
 FOR %%F IN (./*.bin) DO (
