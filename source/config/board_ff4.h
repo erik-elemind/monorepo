@@ -246,8 +246,8 @@ void BOARD_InitFlashSPI();
 #define LED_RED_PIN  (27U)
 #define LED_GRN_PORT (0U)
 #define LED_GRN_PIN  (26U)
-#define LED_BLU_PORT (0U)
-#define LED_BLU_PIN  (12U)
+#define LED_BLU_PORT (2U)
+#define LED_BLU_PIN  (14U)
 
 // duty_cycle values range from 1 to 100 precent.
 void led_set_rgb(uint8_t red_duty_cycle_percent, uint8_t grn_duty_cycle_percent, uint8_t blu_duty_cycle_percent, bool tristate);
