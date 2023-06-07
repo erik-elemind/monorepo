@@ -365,7 +365,7 @@ instance:
       - 4:
         - interrupt_id: 'INT_6'
         - interrupt_selection: 'PINT.6'
-        - interrupt_type: 'kPINT_PinIntEnableBothEdges'
+        - interrupt_type: 'kPINT_PinIntEnableFallEdge'
         - callback_function: 'user_button2_isr'
         - enable_callback: 'true'
         - interrupt:
@@ -421,7 +421,7 @@ static void PINT_init(void) {
   /* PINT PINT.5 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_5, kPINT_PinIntEnableBothEdges, user_button1_isr);
   /* PINT PINT.6 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_6, kPINT_PinIntEnableBothEdges, user_button2_isr);
+  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_6, kPINT_PinIntEnableFallEdge, user_button2_isr);
   /* PINT PINT.0 configuration */
   PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_0, kPINT_PinIntEnableFallEdge, eeg_drdy_pint_isr);
   /* PINT PINT.7 configuration */
