@@ -249,7 +249,6 @@ static void system_boot_up(void)
 	RESET_PeripheralReset(kHSGPIO0_RST_SHIFT_RSTn);
 	RESET_PeripheralReset(kHSGPIO1_RST_SHIFT_RSTn);
 	RESET_PeripheralReset(kHSGPIO2_RST_SHIFT_RSTn);
-	RESET_PeripheralReset(kADC0_RST_SHIFT_RSTn);
 
 	// Init board hardware
 	BOARD_InitBootPins();
