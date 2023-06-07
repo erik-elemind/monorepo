@@ -80,6 +80,7 @@ int lpc_send_ack(void);
  * 
  * @retval  0 on success. Non-zero on failure.
  */
+int lpc_send_flash_erase_all(void);
 int lpc_send_flash_erase_region1(void);
 int lpc_send_flash_erase_region2(void);
 

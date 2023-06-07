@@ -200,13 +200,17 @@ int lpc_protocol_apply_fw(uint32_t file_sz)
     NRF_LOG_INFO("Configure Memory success .");
 
     // Erase the LPC flash. This also unlocks the device.
-    RETURN_IF_NONZERO(lpc_send_flash_erase_region1());
+    RETURN_IF_NONZERO(lpc_send_flash_erase_all());
     RETURN_IF_NONZERO(wait_for_pkt_rsp(PKT_CMDRSP_TAG_GENERIC_RSP, 0, NULL));
-    NRF_LOG_INFO("Flash erase 1 success .");
+    NRF_LOG_INFO("Flash erase success .");
 
-    RETURN_IF_NONZERO(lpc_send_flash_erase_region2());
-    RETURN_IF_NONZERO(wait_for_pkt_rsp(PKT_CMDRSP_TAG_GENERIC_RSP, 0, NULL));
-    NRF_LOG_INFO("Flash erase 2 success .");
+    // RETURN_IF_NONZERO(lpc_send_flash_erase_region1());
+    // RETURN_IF_NONZERO(wait_for_pkt_rsp(PKT_CMDRSP_TAG_GENERIC_RSP, 0, NULL));
+    // NRF_LOG_INFO("Flash erase 1 success .");
+
+    // RETURN_IF_NONZERO(lpc_send_flash_erase_region2());
+    // RETURN_IF_NONZERO(wait_for_pkt_rsp(PKT_CMDRSP_TAG_GENERIC_RSP, 0, NULL));
+    // NRF_LOG_INFO("Flash erase 2 success .");
 
     // Read the max packet size
     RETURN_IF_NONZERO(lpc_send_get_property(PROP_MAX_PACKET_SIZE));

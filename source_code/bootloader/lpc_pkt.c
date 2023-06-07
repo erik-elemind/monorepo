@@ -502,23 +502,31 @@ static int send_cmdrsp(pkt_cmdrsp_tag_e tag, uint32_t param_count, const uint32_
     return -1;
 }
 
-int lpc_send_flash_erase_region1(void)
+int lpc_send_flash_erase_all(void)
 {
-    static const uint32_t params1[] = {
-        0x8000000 ,        // start addr
-        0x400000       // len
+    static const uint32_t params[] = {
+        0x0009 // memoryID = Serial NOR through FlexSPI
     };
-    return send_cmdrsp(PKT_CMDRSP_TAG_FLASH_ERASE_REGION, ARRAY_SIZE(params1), params1, 0);
+    return send_cmdrsp(PKT_CMDRSP_TAG_FLASH_ERASE_ALL, ARRAY_SIZE(params), params, 0);
 }
 
-int lpc_send_flash_erase_region2(void)
-{
-    static const uint32_t params2[] = {
-        0x8400000 ,        // start addr
-        0x400000       // len
-    };
-    return send_cmdrsp(PKT_CMDRSP_TAG_FLASH_ERASE_REGION, ARRAY_SIZE(params2), params2, 0);
-}
+// int lpc_send_flash_erase_region1(void)
+// {
+//     static const uint32_t params1[] = {
+//         0x8000000 ,        // start addr
+//         0x400000       // len
+//     };
+//     return send_cmdrsp(PKT_CMDRSP_TAG_FLASH_ERASE_REGION, ARRAY_SIZE(params1), params1, 0);
+// }
+
+// int lpc_send_flash_erase_region2(void)
+// {
+//     static const uint32_t params2[] = {
+//         0x8400000 ,        // start addr
+//         0x400000       // len
+//     };
+//     return send_cmdrsp(PKT_CMDRSP_TAG_FLASH_ERASE_REGION, ARRAY_SIZE(params2), params2, 0);
+// }
 
 
 int lpc_send_get_property(property_type_t prop)
