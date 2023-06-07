@@ -44,8 +44,7 @@
 #include "pmic_commands.h"
 #include "ml.h"
 #include "memfault_commands.h"
-
-//static const char *TAG = "commands";  // Logging prefix for this module
+#include "adc_commands.h"
 
 // This one needs to be defined after the declaration of shell_commands:
 static void shell_list(int argc, char **argv);
@@ -463,6 +462,8 @@ const shell_command_t commands[] = {
 	{P_SHELL, "memfault_test_fault", memfault_test_fault_command, "Memfault Fault Test"},
 	{P_SHELL, "memfault_test_hang", memfault_test_hang_command, "Memfault Hang Test"},
 
+	// ADC Tests
+	{P_SHELL, "adc_read", adc_read_command, "ADC Read Test"},
 
     // Misc low level tests
 #if (defined(ENABLE_STREAM_MEMORY_TEST_COMMANDS) && (ENABLE_STREAM_MEMORY_TEST_COMMANDS > 0U))

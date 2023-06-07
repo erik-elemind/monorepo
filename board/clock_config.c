@@ -84,6 +84,7 @@ void BOARD_InitBootClocks(void)
 name: BOARD_BootClockRUN
 called_from_default_init: true
 outputs:
+- {id: ADC_clock.outFreq, value: 16 MHz}
 - {id: CTIMER0_clock.outFreq, value: 16 MHz}
 - {id: FLEXSPI_clock.outFreq, value: 1188/19 MHz}
 - {id: FXCOM0_clock.outFreq, value: 16 MHz}
@@ -100,6 +101,8 @@ outputs:
 - {id: WAKE_32K_clock.outFreq, value: 32.768 kHz}
 settings:
 - {id: PLL0_PFD0_CLK_GATE, value: Enabled}
+- {id: SYSCON.ADC0FCLKSEL0.sel, value: SYSCON.sfro}
+- {id: SYSCON.ADC0FCLKSEL1.sel, value: SYSCON.ADC0FCLKSEL0}
 - {id: SYSCON.AUDIOPLL0CLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.AUDIOPLL0_PFD0_DIV.scale, value: '23', locked: true}
 - {id: SYSCON.AUDIO_PLL0_PFD0_MUL.scale, value: '18', locked: true}
@@ -210,9 +213,11 @@ void BOARD_BootClockRUN(void)
     CLOCK_AttachClk(kFRG_to_FLEXCOMM4);                 /* Switch FLEXCOMM4 to FRG */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM5);                 /* Switch FLEXCOMM5 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM15);                 /* Switch FLEXCOMM15 to SFRO */
+    CLOCK_AttachClk(kSFRO_to_ADC_CLK);                 /* Switch ADC_CLK to SFRO */
 
     /* Set up dividers */
     CLOCK_SetClkDiv(kCLOCK_DivPllFrgClk, 177U);         /* Set FRGPLLCLKDIV divider to value 177 */
+    CLOCK_SetClkDiv(kCLOCK_DivAdcClk, 1U);         /* Set ADC0FCLKDIV divider to value 1 */
 
     /* Call weak function BOARD_SetFlexspiClock() to set user configured clock source/divider for FLEXSPI. */
     BOARD_SetFlexspiClock(0U, 8U);

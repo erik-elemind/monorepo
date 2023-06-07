@@ -712,7 +712,7 @@ task_init()
   battery_charger_enable(true);
 
   // Initialize ADC for battery level reads
-  //adc_init(); // ToDo: Need to bring up ADC for battery and sensors
+  adc_init();
 
   // Force a battery event to get power-on battery state
   handle_battery_event();
