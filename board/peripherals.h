@@ -81,10 +81,6 @@ extern "C" {
 /* Definition of peripheral ID */
 #define PINT_PERIPHERAL ((PINT_Type *) PINT_BASE)
 /* PINT interrupt vector ID (number). */
-#define PINT_PINT_1_IRQN PIN_INT1_IRQn
-/* PINT interrupt vector priority. */
-#define PINT_PINT_1_IRQ_PRIORITY 5
-/* PINT interrupt vector ID (number). */
 #define PINT_PINT_3_IRQN PIN_INT3_IRQn
 /* PINT interrupt vector priority. */
 #define PINT_PINT_3_IRQ_PRIORITY 5
@@ -93,35 +89,33 @@ extern "C" {
 /* PINT interrupt vector priority. */
 #define PINT_PINT_4_IRQ_PRIORITY 5
 /* PINT interrupt vector ID (number). */
-#define PINT_PINT_5_IRQN PIN_INT5_IRQn
+#define PINT_PINT_1_IRQN PIN_INT1_IRQn
 /* PINT interrupt vector priority. */
-#define PINT_PINT_5_IRQ_PRIORITY 5
+#define PINT_PINT_1_IRQ_PRIORITY 5
 /* PINT interrupt vector ID (number). */
 #define PINT_PINT_6_IRQN PIN_INT6_IRQn
 /* PINT interrupt vector priority. */
 #define PINT_PINT_6_IRQ_PRIORITY 5
 /* PINT interrupt vector ID (number). */
-#define PINT_PINT_0_IRQN PIN_INT0_IRQn
+#define PINT_PINT_2_IRQN PIN_INT2_IRQn
 /* PINT interrupt vector priority. */
-#define PINT_PINT_0_IRQ_PRIORITY 3
+#define PINT_PINT_2_IRQ_PRIORITY 3
 /* PINT interrupt vector ID (number). */
 #define PINT_PINT_7_IRQN PIN_INT7_IRQn
 /* PINT interrupt vector priority. */
 #define PINT_PINT_7_IRQ_PRIORITY 5
-/* Definition of PINT interrupt ID for interrupt 1  */
-#define PINT_INT_1 kPINT_PinInt1
 /* Definition of PINT interrupt ID for interrupt 3  */
-#define PINT_INT_3 kPINT_PinInt3
+#define PINT_INT_3_HRM kPINT_PinInt3
 /* Definition of PINT interrupt ID for interrupt 4  */
-#define PINT_INT_4 kPINT_PinInt4
-/* Definition of PINT interrupt ID for interrupt 5  */
-#define PINT_INT_5 kPINT_PinInt5
+#define PINT_INT_4_ACCEL kPINT_PinInt4
+/* Definition of PINT interrupt ID for interrupt 1  */
+#define PINT_INT_1_UB1 kPINT_PinInt1
 /* Definition of PINT interrupt ID for interrupt 6  */
-#define PINT_INT_6 kPINT_PinInt6
-/* Definition of PINT interrupt ID for interrupt 0  */
-#define PINT_INT_0 kPINT_PinInt0
+#define PINT_INT_6_UB2 kPINT_PinInt6
+/* Definition of PINT interrupt ID for interrupt 2  */
+#define PINT_INT_2_EEG_DRDY kPINT_PinInt2
 /* Definition of PINT interrupt ID for interrupt 7  */
-#define PINT_INT_7 kPINT_PinInt7
+#define PINT_INT_7_ACTB kPINT_PinInt7
 /* Definition of peripheral ID */
 #define FC0_BLE_UART_PERIPHERAL ((USART_Type *)FLEXCOMM0)
 /* Definition of the clock source frequency */
@@ -220,19 +214,17 @@ extern const i2c_master_config_t FC15_PMIC_config;
 /***********************************************************************************************************************
  * Callback functions
  **********************************************************************************************************************/
-/* INT_1 callback function for the PINT component */
-extern void charger_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
-/* INT_3 callback function for the PINT component */
+/* INT_3_HRM callback function for the PINT component */
 extern void hrm_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
-/* INT_4 callback function for the PINT component */
+/* INT_4_ACCEL callback function for the PINT component */
 extern void accel_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
-/* INT_5 callback function for the PINT component */
+/* INT_1_UB1 callback function for the PINT component */
 extern void user_button1_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
-/* INT_6 callback function for the PINT component */
+/* INT_6_UB2 callback function for the PINT component */
 extern void user_button2_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
-/* INT_0 callback function for the PINT component */
+/* INT_2_EEG_DRDY callback function for the PINT component */
 extern void eeg_drdy_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
-/* INT_7 callback function for the PINT component */
+/* INT_7_ACTB callback function for the PINT component */
 extern void power_button_isr(pint_pin_int_t pintr, uint32_t pmatch_status);
 /* FLEXSPI DMA callback function for the NAND_FLEXSPI component (init. function BOARD_InitPeripherals)*/
 extern void nand_flexspi_isr(FLEXSPI_Type *, flexspi_dma_handle_t *, status_t, void *);

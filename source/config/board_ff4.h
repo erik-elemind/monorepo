@@ -267,7 +267,7 @@ void led_set_rgb(uint8_t red_duty_cycle_percent, uint8_t grn_duty_cycle_percent,
  */
 #define ACTIVITY_BUTTON_PORT     BOARD_INITPINS_ACTIVITY_BUTTON_PORT
 #define ACTIVITY_BUTTON_PIN      BOARD_INITPINS_ACTIVITY_BUTTON_PIN
-#define ACTIVITY_BUTTON_UP_LEVEL 1
+#define ACTIVITY_BUTTON_UP_LEVEL 0
 
 #define VOL_UP_BUTTON_PORT     BOARD_INITPINS_USER_BUTTON1_PORT
 #define VOL_UP_BUTTON_PIN      BOARD_INITPINS_USER_BUTTON1_PIN
@@ -275,7 +275,7 @@ void led_set_rgb(uint8_t red_duty_cycle_percent, uint8_t grn_duty_cycle_percent,
 
 #define VOL_DOWN_BUTTON_PORT     BOARD_INITPINS_USER_BUTTON2_PORT
 #define VOL_DOWN_BUTTON_PIN      BOARD_INITPINS_USER_BUTTON2_PIN
-#define VOL_DOWN_BUTTON_UP_LEVEL 1
+#define VOL_DOWN_BUTTON_UP_LEVEL 0
 
 /******************************************************************************
  * DEBUG LED
