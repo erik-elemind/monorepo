@@ -28,6 +28,7 @@ void memfault_test_export_command(int argc, char *argv[]) {
 	  size_t buf_len = sizeof(buf);
 
 	  // make sure dir exists
+	  f_mkdir("memfault/");
 	  f_mkdir("memfault/chunks");
 
 	  while (memfault_packetizer_get_chunk(buf, &buf_len))
@@ -50,7 +51,7 @@ void memfault_test_export_command(int argc, char *argv[]) {
 		if (result != FR_OK)
 		{
 			printf("Failed to open file! Error: %d\n", result);
-			return;
+			break;
 		}
 
 		UINT bytesWritten;
@@ -58,14 +59,14 @@ void memfault_test_export_command(int argc, char *argv[]) {
 		if (result != FR_OK)
 		{
 			printf("Failed to write to file! Error: %d\n", result);
-			return;
+			break;
 		}
 
 		result = f_close(&file);
 		if (result != FR_OK)
 		{
 			printf("Failed to close file! Error: %d\n", result);
-			return;
+			break;
 		}
 		printf("Data saved to file %s successfully!\n", log_fname);
 		chunk_num++;
