@@ -104,9 +104,9 @@ void BOARD_InitBootPins(void);
 /*! @name FC3_RTS_SCL_SSEL1 (coord A9), I2C6_SCL
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_I2C6_SCL_PERIPHERAL FLEXCOMM3       /*!<@brief Peripheral name */
-#define BOARD_INITPINS_I2C6_SCL_SIGNAL RTS_SCL_SSEL1       /*!<@brief Signal name */
-                                                           /* @} */
+#define BOARD_INITPINS_I2C6_SCL_PERIPHERAL FLEXCOMM3               /*!<@brief Peripheral name */
+#define BOARD_INITPINS_I2C6_SCL_SIGNAL RTS_SCL_SSEL1               /*!<@brief Signal name */
+                                                                   /* @} */
 
 /*! @name FC4_SCK (coord D11), SSM2518_BCLK
   @{ */
@@ -654,17 +654,6 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_ADC_NTC1_CHANNEL 9        /*!<@brief Signal channel */
                                                  /* @} */
 
-/*! @name PIO0_18 (coord B7), USER_BUTTON1
-  @{ */
-/* Routed pin properties */
-#define BOARD_INITPINS_USER_BUTTON1_PERIPHERAL PINT           /*!<@brief Peripheral name */
-#define BOARD_INITPINS_USER_BUTTON1_SIGNAL PINT               /*!<@brief Signal name */
-#define BOARD_INITPINS_USER_BUTTON1_CHANNEL 0                 /*!<@brief Signal channel */
-#define BOARD_INITPINS_USER_BUTTON1_PORT 0U                   /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_USER_BUTTON1_PIN 18U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_USER_BUTTON1_PIN_MASK (1U << 18U)      /*!<@brief PORT pin mask */
-                                                              /* @} */
-
 /*! @name ADC0_2 (coord A1), VBATT_SENSE
   @{ */
 /* Routed pin properties */
@@ -725,6 +714,17 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_LED_B_PWM_SIGNAL OUT         /*!<@brief Signal name */
 #define BOARD_INITPINS_LED_B_PWM_CHANNEL 8          /*!<@brief Signal channel */
                                                     /* @} */
+
+/*! @name PIO0_18 (coord B7), USER_BUTTON1
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_USER_BUTTON1_PERIPHERAL PINT           /*!<@brief Peripheral name */
+#define BOARD_INITPINS_USER_BUTTON1_SIGNAL PINT               /*!<@brief Signal name */
+#define BOARD_INITPINS_USER_BUTTON1_CHANNEL 1                 /*!<@brief Signal channel */
+#define BOARD_INITPINS_USER_BUTTON1_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_USER_BUTTON1_PIN 18U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_USER_BUTTON1_PIN_MASK (1U << 18U)      /*!<@brief PORT pin mask */
+                                                              /* @} */
 
 /*!
  * @brief 
