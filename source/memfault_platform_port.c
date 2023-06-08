@@ -68,6 +68,10 @@ void memfault_platform_log(eMemfaultPlatformLogLevel level, const char *fmt,
   va_end(args);
 }
 
+#define MEMFAULT_COREDUMP_NVADDR (290800)
+#define MEMFAULT_COREDUMP_NV_BLKADDR (4075)
+#define MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE 1024
+
 MEMFAULT_PUT_IN_SECTION(".noinit.mflt_reboot_tracking")
 static uint8_t s_reboot_tracking[MEMFAULT_REBOOT_TRACKING_REGION_SIZE];
 
@@ -198,6 +202,128 @@ size_t memfault_platform_sanitize_address_range(void *start_addr, size_t desired
   }
 
   return 0;
+}
+
+// MEMFAULT_PLATFORM_COREDUMP_STORAGE_USE_FLASH = 1
+#if !MEMFAULT_PLATFORM_COREDUMP_STORAGE_REGIONS_CUSTOM
+//! Collect the active stack as part of the coredump capture.
+//! User can implement their own version to override the implementation
+const sMfltCoredumpRegion *memfault_platform_coredump_get_regions(
+    const sCoredumpCrashInfo *crash_info, size_t *num_regions) {
+   static sMfltCoredumpRegion s_coredump_regions[1];
+
+   const size_t stack_size = memfault_platform_sanitize_address_range(
+       crash_info->stack_address, MEMFAULT_PLATFORM_ACTIVE_STACK_SIZE_TO_COLLECT);
+
+   s_coredump_regions[0] = MEMFAULT_COREDUMP_MEMORY_REGION_INIT(
+       crash_info->stack_address, stack_size);
+   *num_regions = MEMFAULT_ARRAY_SIZE(s_coredump_regions);
+   return &s_coredump_regions[0];
+}
+#endif
+
+void memfault_platform_coredump_storage_get_info(sMfltCoredumpStorageInfo *info) {
+  *info = (sMfltCoredumpStorageInfo) {
+    .size = MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE,
+  };
+}
+
+static bool prv_op_within_flash_bounds(uint32_t offset, size_t data_len) {
+  sMfltCoredumpStorageInfo info = { 0 };
+  memfault_platform_coredump_storage_get_info(&info);
+  return (offset + data_len) <= info.size;
+}
+
+#include "nand_W25N04KW.h"
+// Create nand_user data struct
+static nand_user_data_t g_nand_handle = {
+  .chipinfo = &nand_chipinfo,
+};
+
+bool memfault_platform_coredump_storage_erase(uint32_t offset, size_t erase_size) {
+  if (!prv_op_within_flash_bounds(offset, erase_size)) {
+    return false;
+  }
+
+  // erase block 4075 corresponding to page_addr 260800
+  if(nand_erase_block(&g_nand_handle, MEMFAULT_COREDUMP_NVADDR) < 0) {
+	  return false;
+  }
+
+  return true;
+}
+
+bool memfault_platform_coredump_storage_read(uint32_t offset, void *data,
+                                             size_t read_len) {
+  if (!prv_op_within_flash_bounds(offset, read_len)) {
+    return false;
+  }
+
+  int status;
+  uint8_t buffer[MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE] = {0};
+  status = nand_read_page_into_cache(&g_nand_handle, MEMFAULT_COREDUMP_NVADDR);
+  // If ECC_FAIL, still try to read out the page data below (despite ECC errors).
+  if (status < 0 && status != NAND_ECC_FAIL) {
+    return false;
+  }
+
+  status = nand_read_page_from_cache(&g_nand_handle, offset, buffer, read_len);
+  if (status == NAND_ECC_FAIL)
+  {
+	  return false;
+  }
+
+  memcpy(data, buffer, read_len);
+
+  return true;
+}
+
+bool memfault_platform_coredump_storage_write(uint32_t offset, const void *data,
+                                              size_t data_len) {
+  if (!prv_op_within_flash_bounds(offset, data_len)) {
+    return false;
+  }
+
+  int status;
+
+  // Read-Modify-Write
+  uint8_t page_buff[MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE] = {0};
+  if(memfault_platform_coredump_storage_read(0, page_buff, MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE))
+  {
+	  // Modify
+	  memcpy(page_buff+offset, data, data_len);
+
+	  // Erase
+	  if(memfault_platform_coredump_storage_erase(0,MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE))
+	  {
+		  // Write full page to cache
+		  status = nand_write_into_page_cache(&g_nand_handle, 0, page_buff, MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE);
+		  if (status < 0) {
+		    return false;
+		  }
+
+		  // Program data
+		  status = nand_program_page_cache(&g_nand_handle, MEMFAULT_COREDUMP_NVADDR);
+		  if (status < 0) {
+		    return false;
+		  }
+	  }
+	  else
+	  {
+		  return false;
+	  }
+  }
+  else
+  {
+	  return false;
+  }
+
+  return true;
+}
+
+void memfault_platform_coredump_storage_clear(void) {
+  const uint8_t clear_byte = 0x0;
+  memfault_platform_coredump_storage_write(0, &clear_byte, sizeof(clear_byte));
 }
 
 //! !FIXME: This function _must_ be called by your main() routine prior

@@ -15,6 +15,7 @@ void memfault_test_reboot_command(int argc, char *argv[]);
 void memfault_test_assert_command(int argc, char *argv[]);
 void memfault_test_fault_command(int argc, char *argv[]);
 void memfault_test_hang_command(int argc, char *argv[]);
+void memfault_check_coredump(int argc, char *argv[]);
 
 // End: Tell C++ compiler to include this C header.
 #ifdef __cplusplus
