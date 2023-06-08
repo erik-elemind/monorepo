@@ -1070,7 +1070,7 @@
                            <struct name="3">
                               <setting name="interrupt_id" value="INT_6_UB2"/>
                               <setting name="interrupt_selection" value="PINT.6"/>
-                              <setting name="interrupt_type" value="kPINT_PinIntEnableFallEdge"/>
+                              <setting name="interrupt_type" value="kPINT_PinIntEnableBothEdges"/>
                               <setting name="callback_function" value="user_button2_isr"/>
                               <setting name="enable_callback" value="true"/>
                               <struct name="interrupt">
