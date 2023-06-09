@@ -203,6 +203,8 @@ const shell_command_t commands[] = {
     { P_ALL, "als", als_read_once_command, "Read Ambient light sensor lux" },
     { P_ALL, "als_start_sample", als_start_sample_command, ""},
     { P_ALL, "als_stop", als_stop_command, ""},
+	{ P_ALL, "als_test", als_test_command, ""},
+
 
     // MEMS commands
     { P_ALL, "mic", mic_read_once_command, "Read mems microphone" },

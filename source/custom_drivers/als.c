@@ -18,12 +18,6 @@ static const int CONV_TIME_MS = 5 * WAIT_TIME + (2.888 + 2.625 * (ALS_TIME + 1))
 static int
 als_read_reg(uint8_t reg_addr, uint8_t* data, uint8_t len) 
 {
-//  status_t status = i2c_mem_read(
-//    &ALS_I2C_RTOS_HANDLE,
-//    ALS_DPDIC17_ADDR,
-//    reg_addr, sizeof(reg_addr),
-//    data, len);
-
   status_t status = i2c_mem_read(
       &ALS_I2C_RTOS_HANDLE,
       ALS_VEML7700_ADDR,
@@ -33,13 +27,13 @@ als_read_reg(uint8_t reg_addr, uint8_t* data, uint8_t len)
 }
 
 static int
-als_write_reg(uint8_t reg_addr, uint8_t data) 
+als_write_reg(uint8_t reg_addr, uint8_t* data)
 {
   status_t status = i2c_mem_write(
     &ALS_I2C_RTOS_HANDLE,
-    ALS_DPDIC17_ADDR,
+	ALS_VEML7700_ADDR,
     reg_addr, sizeof(reg_addr),
-    &data, 1);
+    data, 2);
   return kStatus_Success == status ? 0 : -1;
 }
 
@@ -56,12 +50,12 @@ void als_init(void) {
 //  als_dpdic17_set_als_time(ALS_TIME);
 //  als_start();
 
-
+	als_veml7700_init(als_read_reg, als_write_reg);
 }
 
 void als_start(void) {
-  als_dpdic17_clear_int();
-  als_dpdic17_enable_als(true);
+//  als_dpdic17_clear_int();
+//  als_dpdic17_enable_als(true);
 }
 
 /* Blocking wait.  For performance sensitive applications, do a
@@ -69,11 +63,11 @@ void als_start(void) {
  * als_get_lux()
  */
 void als_wait(void) {
-  vTaskDelay(pdMS_TO_TICKS(als_wait_time()));
+//  vTaskDelay(pdMS_TO_TICKS(als_wait_time()));
 }
 
 void als_stop(void) {
-  als_dpdic17_enable_als(false);
+//  als_dpdic17_enable_als(false);
 }
 
 // in ms
@@ -83,50 +77,50 @@ int als_wait_time(void) {
 
 // Calculate lux using algorithm and constants from page 16 of datasheet.
 int als_get_lux(float* lux) {
-  uint16_t data0;
-  uint16_t data1;
-  bool err;
-  static const float K1 = .41f;
-  static const float K2 = .57f;
-  static const float K3 = 1.58f;
-  float K;
-  float d;
-
-  if (ALS_DPDIC17_STATUS_SUCCESS != als_dpdic17_get_por(&err)) {
-    LOGE(TAG, "ALS error calling get_por");
-    return -1;
-  }
-  if (err) {
-    LOGE(TAG, "ALS: POR error\n\r");
-    return -1;
-  }
-  if (ALS_DPDIC17_STATUS_SUCCESS != als_dpdic17_get_error(&err)) {
-    LOGE(TAG, "ALS error calling get_error");
-    return -1;
-  }
-  if (err) {
-    LOGE(TAG, "Error in ALS conversion");
-    return -1;
-  }
-  if (ALS_DPDIC17_STATUS_SUCCESS != als_dpdic17_get_ch0(&data0)) {
-    LOGE(TAG, "ALS error calling get_ch0");
-    return -1;
-  }
-  if (ALS_DPDIC17_STATUS_SUCCESS != als_dpdic17_get_ch1(&data1)) {
-    LOGE(TAG, "ALS error calling get_ch1");
-    return -1;
-  }
-
-  d = (float)data0 / (float)data1;
-
-  if (d < .42f) {
-    K = K1;
-  } else if (d > .61f) {
-    K = K3;
-  } else {
-    K = K2;
-  }
-  *lux = ((float)data0 / PGA_ALS) * ((64.0f) / (ALS_TIME + 1)) * K;
+//  uint16_t data0;
+//  uint16_t data1;
+//  bool err;
+//  static const float K1 = .41f;
+//  static const float K2 = .57f;
+//  static const float K3 = 1.58f;
+//  float K;
+//  float d;
+//
+//  if (ALS_DPDIC17_STATUS_SUCCESS != als_dpdic17_get_por(&err)) {
+//    LOGE(TAG, "ALS error calling get_por");
+//    return -1;
+//  }
+//  if (err) {
+//    LOGE(TAG, "ALS: POR error\n\r");
+//    return -1;
+//  }
+//  if (ALS_DPDIC17_STATUS_SUCCESS != als_dpdic17_get_error(&err)) {
+//    LOGE(TAG, "ALS error calling get_error");
+//    return -1;
+//  }
+//  if (err) {
+//    LOGE(TAG, "Error in ALS conversion");
+//    return -1;
+//  }
+//  if (ALS_DPDIC17_STATUS_SUCCESS != als_dpdic17_get_ch0(&data0)) {
+//    LOGE(TAG, "ALS error calling get_ch0");
+//    return -1;
+//  }
+//  if (ALS_DPDIC17_STATUS_SUCCESS != als_dpdic17_get_ch1(&data1)) {
+//    LOGE(TAG, "ALS error calling get_ch1");
+//    return -1;
+//  }
+//
+//  d = (float)data0 / (float)data1;
+//
+//  if (d < .42f) {
+//    K = K1;
+//  } else if (d > .61f) {
+//    K = K3;
+//  } else {
+//    K = K2;
+//  }
+//  *lux = ((float)data0 / PGA_ALS) * ((64.0f) / (ALS_TIME + 1)) * K;
 
   return 0;
 }
