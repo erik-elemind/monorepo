@@ -1,4 +1,4 @@
-#include "als-dpdic17.h"
+#include "als-veml7700.h"
 #include "als.h"
 #include "i2c.h"
 #include "config.h"
@@ -17,11 +17,17 @@ static const int CONV_TIME_MS = 5 * WAIT_TIME + (2.888 + 2.625 * (ALS_TIME + 1))
 static int
 als_read_reg(uint8_t reg_addr, uint8_t* data, uint8_t len) 
 {
+//  status_t status = i2c_mem_read(
+//    &ALS_I2C_RTOS_HANDLE,
+//    ALS_DPDIC17_ADDR,
+//    reg_addr, sizeof(reg_addr),
+//    data, len);
+
   status_t status = i2c_mem_read(
-    &ALS_I2C_RTOS_HANDLE,
-    ALS_DPDIC17_ADDR,
-    reg_addr, sizeof(reg_addr),
-    data, len);
+      &ALS_I2C_RTOS_HANDLE,
+      ALS_VEML7700_ADDR,
+      reg_addr, sizeof(reg_addr),
+      data, len);
   return kStatus_Success == status ? 0 : -1;
 }
 
@@ -38,16 +44,18 @@ als_write_reg(uint8_t reg_addr, uint8_t data)
 
 void als_init(void) {
   // TODO: add return code checks
-  als_dpdic17_init(als_read_reg, als_write_reg);
-  uint16_t als_product_id;
-  als_dpdic17_get_product_id(&als_product_id);
-  if(als_product_id != ALS_DPDIC17_PRODUCT_ID) {
-    LOGE(TAG, "Invalid ALS product ID");
-  }
-  als_dpdic17_set_wait_time(WAIT_TIME);
-  als_dpdic17_set_wait(true);
-  als_dpdic17_set_als_time(ALS_TIME);
-  als_start(); 
+//  als_dpdic17_init(als_read_reg, als_write_reg);
+//  uint16_t als_product_id;
+//  als_dpdic17_get_product_id(&als_product_id);
+//  if(als_product_id != ALS_DPDIC17_PRODUCT_ID) {
+//    LOGE(TAG, "Invalid ALS product ID");
+//  }
+//  als_dpdic17_set_wait_time(WAIT_TIME);
+//  als_dpdic17_set_wait(true);
+//  als_dpdic17_set_als_time(ALS_TIME);
+//  als_start();
+
+
 }
 
 void als_start(void) {
