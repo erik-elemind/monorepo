@@ -136,7 +136,8 @@ BOARD_InitPins:
   - {pin_num: D11, peripheral: FLEXCOMM4, signal: SCK, pin_signal: PIO0_28/FC4_SCK/CTIMER4_MAT0/I2S_BRIDGE_CLK_OUT/SEC_PIO0_28, ibena: enabled, iiena: disabled}
   - {pin_num: B10, peripheral: FLEXCOMM4, signal: TXD_SCL_MISO_WS, pin_signal: PIO0_29/FC4_TXD_SCL_MISO_WS/CTIMER4_MAT1/I2S_BRIDGE_WS_OUT/SEC_PIO0_29, ibena: enabled}
   - {pin_num: C11, peripheral: FLEXCOMM4, signal: RXD_SDA_MOSI_DATA, pin_signal: PIO0_30/FC4_RXD_SDA_MOSI_DATA/CTIMER4_MAT2/I2S_BRIDGE_DATA_OUT/SEC_PIO0_30, ibena: enabled}
-  - {pin_num: A11, peripheral: GPIO, signal: 'PIO0, 31', pin_signal: PIO0_31/FC4_CTS_SDA_SSEL0/SCT0_GPI0/SCT0_OUT6/CTIMER4_MAT3/FC3_SSEL2/SEC_PIO0_31}
+  - {pin_num: A11, peripheral: GPIO, signal: 'PIO0, 31', pin_signal: PIO0_31/FC4_CTS_SDA_SSEL0/SCT0_GPI0/SCT0_OUT6/CTIMER4_MAT3/FC3_SSEL2/SEC_PIO0_31, direction: INPUT,
+    ibena: enabled}
   - {pin_num: A7, peripheral: GPIO, signal: 'PIO1, 2', pin_signal: PIO1_2/FC4_SSEL3/SCT0_GPI3/SCT0_OUT9/CTIMER1_MAT1/CMP0_C}
   - {pin_num: G16, peripheral: GPIO, signal: 'PIO1, 3', pin_signal: PIO1_3/FC5_SCK, direction: OUTPUT}
   - {pin_num: G17, peripheral: FLEXCOMM5, signal: TXD_SCL_MISO_WS, pin_signal: PIO1_4/FC5_TXD_SCL_MISO_WS, direction: OUTPUT, pupdsel: no_init}
@@ -156,7 +157,7 @@ BOARD_InitPins:
   - {pin_num: B2, peripheral: PINT, signal: 'PINT, 6', pin_signal: PIO0_20/FC2_SSEL3/SCT0_GPI5/SCT0_OUT5/CTIMER0_MAT2/CTIMER_INP11/SEC_PIO0_20/ADC0_10, ibena: enabled}
   - {pin_num: D8, peripheral: PINT, signal: 'PINT, 7', pin_signal: PIO0_22/FC3_TXD_SCL_MISO_WS/CTIMER3_MAT1/TRACEDATA(0)/SEC_PIO0_22, ibena: enabled}
   - {pin_num: G15, peripheral: GPIO, signal: 'PIO1, 1', pin_signal: PIO1_1/FC4_SSEL2/SCT0_GPI2/SCT0_OUT8/CTIMER1_MAT0}
-  - {pin_num: T1, peripheral: GPIO, signal: 'PIO2, 13', pin_signal: PIO2_13/SCT0_OUT7/CTIMER2_MAT3/CMP0_OUT}
+  - {pin_num: T1, peripheral: GPIO, signal: 'PIO2, 13', pin_signal: PIO2_13/SCT0_OUT7/CTIMER2_MAT3/CMP0_OUT, direction: OUTPUT, gpio_init_state: 'true'}
   - {pin_num: G2, peripheral: FLEXCOMM0, signal: TXD_SCL_MISO_WS, pin_signal: PIO0_1/FC0_TXD_SCL_MISO_WS/CTIMER0_MAT1/I2S_BRIDGE_WS_IN/SEC_PIO0_1, ibena: enabled}
   - {pin_num: G4, peripheral: FLEXCOMM0, signal: RXD_SDA_MOSI_DATA, pin_signal: PIO0_2/FC0_RXD_SDA_MOSI_DATA/CTIMER0_MAT2/I2S_BRIDGE_DATA_IN/SEC_PIO0_2, ibena: enabled}
   - {pin_num: H2, peripheral: FLEXCOMM0, signal: CTS_SDA_SSEL0, pin_signal: PIO0_3/FC0_CTS_SDA_SSEL0/CTIMER0_MAT3/FC1_SSEL2/SEC_PIO0_3, ibena: enabled}
@@ -199,6 +200,7 @@ BOARD_InitPins:
   - {pin_num: U11, peripheral: GPIO, signal: 'PIO2, 2', pin_signal: PIO2_2/SD0_D2/SCT0_OUT0, direction: OUTPUT}
   - {pin_num: C1, peripheral: SCT0, signal: 'OUT, 8', pin_signal: PIO2_14/SCT0_OUT8/CTIMER_INP1/CMP0_A}
   - {pin_num: B7, peripheral: PINT, signal: 'PINT, 1', pin_signal: PIO0_18/FC2_RTS_SCL_SSEL1/SCT0_GPI6/SCT0_OUT6/CTIMER_INP4/FC5_SSEL3/SEC_PIO0_18, ibena: enabled}
+  - {pin_num: E3, peripheral: ADC0, signal: 'CH, 1', pin_signal: PIO0_12/FC1_SSEL2/SCT0_GPI2/SCT0_OUT2/CTIMER_INP3/SEC_PIO0_12/ADC0_1}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -237,6 +239,13 @@ void BOARD_InitPins(void)
     };
     /* Initialize GPIO functionality on pin PIO0_11 (pin L1)  */
     GPIO_PinInit(BOARD_INITPINS_EEG_PWDn_GPIO, BOARD_INITPINS_EEG_PWDn_PORT, BOARD_INITPINS_EEG_PWDn_PIN, &EEG_PWDn_config);
+
+    gpio_pin_config_t MEMS_WAKE_config = {
+        .pinDirection = kGPIO_DigitalInput,
+        .outputLogic = 0U
+    };
+    /* Initialize GPIO functionality on pin PIO0_31 (pin A11)  */
+    GPIO_PinInit(BOARD_INITPINS_MEMS_WAKE_GPIO, BOARD_INITPINS_MEMS_WAKE_PORT, BOARD_INITPINS_MEMS_WAKE_PIN, &MEMS_WAKE_config);
 
     gpio_pin_config_t SSM2518_SHTDNn_config = {
         .pinDirection = kGPIO_DigitalOutput,
@@ -293,6 +302,13 @@ void BOARD_InitPins(void)
     };
     /* Initialize GPIO functionality on pin PIO2_8 (pin U17)  */
     GPIO_PinInit(BOARD_INITPINS_PS_HOLD_GPIO, BOARD_INITPINS_PS_HOLD_PORT, BOARD_INITPINS_PS_HOLD_PIN, &PS_HOLD_config);
+
+    gpio_pin_config_t MEMS_MODE_config = {
+        .pinDirection = kGPIO_DigitalOutput,
+        .outputLogic = 1U
+    };
+    /* Initialize GPIO functionality on pin PIO2_13 (pin T1)  */
+    GPIO_PinInit(BOARD_INITPINS_MEMS_MODE_GPIO, BOARD_INITPINS_MEMS_MODE_PORT, BOARD_INITPINS_MEMS_MODE_PIN, &MEMS_MODE_config);
     /* PIO0_18 is selected for PINT input 1 */
     INPUTMUX_AttachSignal(INPUTMUX, 1U, kINPUTMUX_GpioPort0Pin18ToPintsel);
     /* PIO1_6 is selected for PINT input 2 */
@@ -431,6 +447,27 @@ void BOARD_InitPins(void)
                                IOPCTL_PIO_INV_DI);
     /* PORT0 PIN11 (coords: L1) is configured as PIO0_11 */
     IOPCTL_PinMuxSet(IOPCTL, BOARD_INITPINS_EEG_PWDn_PORT, BOARD_INITPINS_EEG_PWDn_PIN, EEG_PWDn);
+
+    const uint32_t port0_pin12_config = (/* Pin is configured as ADC0_1 */
+                                         IOPCTL_PIO_FUNC0 |
+                                         /* Disable pull-up / pull-down function */
+                                         IOPCTL_PIO_PUPD_DI |
+                                         /* Enable pull-down function */
+                                         IOPCTL_PIO_PULLDOWN_EN |
+                                         /* Disable input buffer function */
+                                         IOPCTL_PIO_INBUF_DI |
+                                         /* Normal mode */
+                                         IOPCTL_PIO_SLEW_RATE_NORMAL |
+                                         /* Normal drive */
+                                         IOPCTL_PIO_FULLDRIVE_DI |
+                                         /* Analog mux is enabled */
+                                         IOPCTL_PIO_ANAMUX_EN |
+                                         /* Pseudo Output Drain is disabled */
+                                         IOPCTL_PIO_PSEDRAIN_DI |
+                                         /* Input function is not inverted */
+                                         IOPCTL_PIO_INV_DI);
+    /* PORT0 PIN12 (coords: E3) is configured as ADC0_1 */
+    IOPCTL_PinMuxSet(IOPCTL, 0U, 12U, port0_pin12_config);
 
     const uint32_t port0_pin13_config = (/* Pin is configured as ADC0_9 */
                                          IOPCTL_PIO_FUNC0 |
@@ -816,8 +853,8 @@ void BOARD_InitPins(void)
                                 IOPCTL_PIO_PUPD_DI |
                                 /* Enable pull-down function */
                                 IOPCTL_PIO_PULLDOWN_EN |
-                                /* Disable input buffer function */
-                                IOPCTL_PIO_INBUF_DI |
+                                /* Enables input buffer function */
+                                IOPCTL_PIO_INBUF_EN |
                                 /* Normal mode */
                                 IOPCTL_PIO_SLEW_RATE_NORMAL |
                                 /* Normal drive */

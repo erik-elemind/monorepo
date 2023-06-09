@@ -132,17 +132,17 @@ void BOARD_InitBootPins(void);
 /*! @name PIO0_31 (coord A11), MEMS_WAKE
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_MEMS_WAKE_PERIPHERAL GPIO           /*!<@brief Peripheral name */
-#define BOARD_INITPINS_MEMS_WAKE_SIGNAL PIO0               /*!<@brief Signal name */
-#define BOARD_INITPINS_MEMS_WAKE_CHANNEL 31                /*!<@brief Signal channel */
+#define BOARD_INITPINS_MEMS_WAKE_PERIPHERAL GPIO                   /*!<@brief Peripheral name */
+#define BOARD_INITPINS_MEMS_WAKE_SIGNAL PIO0                       /*!<@brief Signal name */
+#define BOARD_INITPINS_MEMS_WAKE_CHANNEL 31                        /*!<@brief Signal channel */
 
 /* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_MEMS_WAKE_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_MEMS_WAKE_GPIO_PIN_MASK (1U << 31U) /*!<@brief GPIO pin mask */
-#define BOARD_INITPINS_MEMS_WAKE_PORT 0U                   /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_MEMS_WAKE_PIN 31U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_MEMS_WAKE_PIN_MASK (1U << 31U)      /*!<@brief PORT pin mask */
-                                                           /* @} */
+#define BOARD_INITPINS_MEMS_WAKE_GPIO GPIO                         /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_MEMS_WAKE_GPIO_PIN_MASK (1U << 31U)         /*!<@brief GPIO pin mask */
+#define BOARD_INITPINS_MEMS_WAKE_PORT 0U                           /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_MEMS_WAKE_PIN 31U                           /*!<@brief PORT pin number */
+#define BOARD_INITPINS_MEMS_WAKE_PIN_MASK (1U << 31U)              /*!<@brief PORT pin mask */
+                                                                   /* @} */
 
 /*! @name PIO1_2 (coord A7), BLE_BOOTn
   @{ */
@@ -429,17 +429,17 @@ void BOARD_InitBootPins(void);
 /*! @name PIO2_13 (coord T1), MEMS_MODE
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_MEMS_MODE_PERIPHERAL GPIO           /*!<@brief Peripheral name */
-#define BOARD_INITPINS_MEMS_MODE_SIGNAL PIO2               /*!<@brief Signal name */
-#define BOARD_INITPINS_MEMS_MODE_CHANNEL 13                /*!<@brief Signal channel */
+#define BOARD_INITPINS_MEMS_MODE_PERIPHERAL GPIO                    /*!<@brief Peripheral name */
+#define BOARD_INITPINS_MEMS_MODE_SIGNAL PIO2                        /*!<@brief Signal name */
+#define BOARD_INITPINS_MEMS_MODE_CHANNEL 13                         /*!<@brief Signal channel */
 
 /* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_MEMS_MODE_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_MEMS_MODE_GPIO_PIN_MASK (1U << 13U) /*!<@brief GPIO pin mask */
-#define BOARD_INITPINS_MEMS_MODE_PORT 2U                   /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_MEMS_MODE_PIN 13U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_MEMS_MODE_PIN_MASK (1U << 13U)      /*!<@brief PORT pin mask */
-                                                           /* @} */
+#define BOARD_INITPINS_MEMS_MODE_GPIO GPIO                          /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_MEMS_MODE_GPIO_PIN_MASK (1U << 13U)          /*!<@brief GPIO pin mask */
+#define BOARD_INITPINS_MEMS_MODE_PORT 2U                            /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_MEMS_MODE_PIN 13U                            /*!<@brief PORT pin number */
+#define BOARD_INITPINS_MEMS_MODE_PIN_MASK (1U << 13U)               /*!<@brief PORT pin mask */
+                                                                    /* @} */
 
 /*! @name FC0_TXD_SCL_MISO_WS (coord G2), BT_UART_TXD
   @{ */
@@ -725,6 +725,14 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_USER_BUTTON1_PIN 18U                   /*!<@brief PORT pin number */
 #define BOARD_INITPINS_USER_BUTTON1_PIN_MASK (1U << 18U)      /*!<@brief PORT pin mask */
                                                               /* @} */
+
+/*! @name ADC0_1 (coord E3), MEMS_BYPASS
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_MEMS_BYPASS_PERIPHERAL ADC0     /*!<@brief Peripheral name */
+#define BOARD_INITPINS_MEMS_BYPASS_SIGNAL CH           /*!<@brief Signal name */
+#define BOARD_INITPINS_MEMS_BYPASS_CHANNEL 1           /*!<@brief Signal channel */
+                                                       /* @} */
 
 /*!
  * @brief 

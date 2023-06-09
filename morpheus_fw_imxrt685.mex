@@ -206,7 +206,12 @@
                         <pin_feature name="ibena" value="enabled"/>
                      </pin_features>
                   </pin>
-                  <pin peripheral="GPIO" signal="PIO0, 31" pin_num="A11" pin_signal="PIO0_31/FC4_CTS_SDA_SSEL0/SCT0_GPI0/SCT0_OUT6/CTIMER4_MAT3/FC3_SSEL2/SEC_PIO0_31"/>
+                  <pin peripheral="GPIO" signal="PIO0, 31" pin_num="A11" pin_signal="PIO0_31/FC4_CTS_SDA_SSEL0/SCT0_GPI0/SCT0_OUT6/CTIMER4_MAT3/FC3_SSEL2/SEC_PIO0_31">
+                     <pin_features>
+                        <pin_feature name="direction" value="INPUT"/>
+                        <pin_feature name="ibena" value="enabled"/>
+                     </pin_features>
+                  </pin>
                   <pin peripheral="GPIO" signal="PIO1, 2" pin_num="A7" pin_signal="PIO1_2/FC4_SSEL3/SCT0_GPI3/SCT0_OUT9/CTIMER1_MAT1/CMP0_C"/>
                   <pin peripheral="GPIO" signal="PIO1, 3" pin_num="G16" pin_signal="PIO1_3/FC5_SCK">
                      <pin_features>
@@ -285,7 +290,12 @@
                      </pin_features>
                   </pin>
                   <pin peripheral="GPIO" signal="PIO1, 1" pin_num="G15" pin_signal="PIO1_1/FC4_SSEL2/SCT0_GPI2/SCT0_OUT8/CTIMER1_MAT0"/>
-                  <pin peripheral="GPIO" signal="PIO2, 13" pin_num="T1" pin_signal="PIO2_13/SCT0_OUT7/CTIMER2_MAT3/CMP0_OUT"/>
+                  <pin peripheral="GPIO" signal="PIO2, 13" pin_num="T1" pin_signal="PIO2_13/SCT0_OUT7/CTIMER2_MAT3/CMP0_OUT">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                        <pin_feature name="gpio_init_state" value="true"/>
+                     </pin_features>
+                  </pin>
                   <pin peripheral="FLEXCOMM0" signal="TXD_SCL_MISO_WS" pin_num="G2" pin_signal="PIO0_1/FC0_TXD_SCL_MISO_WS/CTIMER0_MAT1/I2S_BRIDGE_WS_IN/SEC_PIO0_1">
                      <pin_features>
                         <pin_feature name="ibena" value="enabled"/>
@@ -414,6 +424,7 @@
                         <pin_feature name="ibena" value="enabled"/>
                      </pin_features>
                   </pin>
+                  <pin peripheral="ADC0" signal="CH, 1" pin_num="E3" pin_signal="PIO0_12/FC1_SSEL2/SCT0_GPI2/SCT0_OUT2/CTIMER_INP3/SEC_PIO0_12/ADC0_1"/>
                </pins>
             </function>
          </functions_list>
