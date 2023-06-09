@@ -197,7 +197,7 @@ BOARD_InitPins:
   - {pin_num: A1, peripheral: ADC0, signal: 'CH, 2', pin_signal: PIO0_19/FC2_SSEL2/SCT0_GPI4/SCT0_OUT4/CTIMER_INP5/UTICK_CAP0/SEC_PIO0_19/ADC0_2}
   - {pin_num: R11, peripheral: GPIO, signal: 'PIO2, 0', pin_signal: PIO2_0/SD0_D0/SCT0_GPI2, direction: OUTPUT}
   - {pin_num: T11, peripheral: GPIO, signal: 'PIO2, 1', pin_signal: PIO2_1/SD0_D1/SCT0_GPI3, direction: OUTPUT, gpio_init_state: 'true'}
-  - {pin_num: U11, peripheral: GPIO, signal: 'PIO2, 2', pin_signal: PIO2_2/SD0_D2/SCT0_OUT0, direction: OUTPUT}
+  - {pin_num: U11, peripheral: GPIO, signal: 'PIO2, 2', pin_signal: PIO2_2/SD0_D2/SCT0_OUT0, direction: OUTPUT, gpio_init_state: 'true'}
   - {pin_num: C1, peripheral: SCT0, signal: 'OUT, 8', pin_signal: PIO2_14/SCT0_OUT8/CTIMER_INP1/CMP0_A}
   - {pin_num: B7, peripheral: PINT, signal: 'PINT, 1', pin_signal: PIO0_18/FC2_RTS_SCL_SSEL1/SCT0_GPI6/SCT0_OUT6/CTIMER_INP4/FC5_SSEL3/SEC_PIO0_18, ibena: enabled}
   - {pin_num: E3, peripheral: ADC0, signal: 'CH, 1', pin_signal: PIO0_12/FC1_SSEL2/SCT0_GPI2/SCT0_OUT2/CTIMER_INP3/SEC_PIO0_12/ADC0_1}
@@ -284,7 +284,7 @@ void BOARD_InitPins(void)
 
     gpio_pin_config_t BOOST_EN_config = {
         .pinDirection = kGPIO_DigitalOutput,
-        .outputLogic = 0U
+        .outputLogic = 1U
     };
     /* Initialize GPIO functionality on pin PIO2_2 (pin U11)  */
     GPIO_PinInit(BOARD_INITPINS_BOOST_EN_GPIO, BOARD_INITPINS_BOOST_EN_PORT, BOARD_INITPINS_BOOST_EN_PIN, &BOOST_EN_config);

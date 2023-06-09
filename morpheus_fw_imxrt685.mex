@@ -416,6 +416,7 @@
                   <pin peripheral="GPIO" signal="PIO2, 2" pin_num="U11" pin_signal="PIO2_2/SD0_D2/SCT0_OUT0">
                      <pin_features>
                         <pin_feature name="direction" value="OUTPUT"/>
+                        <pin_feature name="gpio_init_state" value="true"/>
                      </pin_features>
                   </pin>
                   <pin peripheral="SCT0" signal="OUT, 8" pin_num="C1" pin_signal="PIO2_14/SCT0_OUT8/CTIMER_INP1/CMP0_A"/>
