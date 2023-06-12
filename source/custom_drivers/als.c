@@ -1,5 +1,4 @@
 #include "als-veml7700.h"
-#include "als-dpdic17.h"
 #include "als.h"
 #include "i2c.h"
 #include "config.h"

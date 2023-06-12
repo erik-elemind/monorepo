@@ -119,13 +119,9 @@ void BOARD_InitFlashSPI();
  *   Battery Charger
  *****************************************************************************/
 
-// This define redirects to a define from peripheral.h/c
-#define BATT_I2C_RTOS_HANDLE      FC2_BATT_I2C_rtosHandle
-
 /******************************************************************************
  * EEG
  *****************************************************************************/
-
 
 #define EEG_DRDY_GPIO  BOARD_INITPINS_EEG_DRDYn_GPIO
 #define EEG_DRDY_PORT  BOARD_INITPINS_EEG_DRDYn_PORT
@@ -236,7 +232,6 @@ void BOARD_InitFlashSPI();
 #define LED_SCT_RED_INDEX          0
 #define LED_SCT_GRN_INDEX          1
 #define LED_SCT_BLU_INDEX          2
-
 
 #define LED_PIO_PERIPHERAL        IOPCTL
 // MCUXpresso Config Tools configures the GPIO pin separately from the SCTimer
