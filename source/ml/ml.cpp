@@ -236,23 +236,50 @@ void ml_event_eeg_input(ads129x_frontal_sample* f_sample)
 	{
 		if(!g_eeg_buf_ready)
 		{
-			// g_eeg_fill_p[g_eeg_fill_idx] = f_sample->eeg_channels[EEG_FPZ]; // TODO: Implement smart channel switching
+			g_eegfp1_fill_p[g_eeg_fill_idx] = f_sample->eeg_channels[EEG_FP1];
+			g_eegfpz_fill_p[g_eeg_fill_idx] = f_sample->eeg_channels[EEG_FPZ]; // TODO: Implement smart channel switching
+			g_eegfp2_fill_p[g_eeg_fill_idx] = f_sample->eeg_channels[EEG_FP2];
+
+			// g_eeg_fill_p[g_eeg_fill_idx] = f_sample->eeg_channels[EEG_FPZ];
 
 			g_eeg_fill_idx++;
 			if(g_eeg_fill_idx == EEG_PREPROCESS_SIZE){
 				g_eeg_fill_idx = 0;
 				// flip double buffer
-				if(g_eeg_fill_p == g_eeg_A)
+				if(g_eegfp1_fill_p == g_eegfp1_A)
 				{
-					g_eeg_fill_p = g_eeg_B;
-					g_eeg_ready_p = g_eeg_A;
+					g_eegfp1_fill_p = g_eegfp1_B;
+					g_eegfp1_ready_p = g_eegfp1_A;
+
+					g_eegfpz_fill_p = g_eegfpz_B;
+					g_eegfpz_ready_p = g_eegfpz_A;
+
+					g_eegfp2_fill_p = g_eegfp2_B;
+					g_eegfp2_ready_p = g_eegfp2_A;
+
+					// g_eeg_fill_p = g_eeg_B;
+					// g_eeg_ready_p = g_eeg_A;
 				}
 				else
 				{
-					g_eeg_fill_p = g_eeg_A;
-					g_eeg_ready_p = g_eeg_B;
+					g_eegfp1_fill_p = g_eegfp1_A;
+					g_eegfp1_ready_p = g_eegfp1_B;
+
+					g_eegfpz_fill_p = g_eegfpz_A;
+					g_eegfpz_ready_p = g_eegfpz_B;
+
+					g_eegfp2_fill_p = g_eegfp2_A;
+					g_eegfp2_ready_p = g_eegfp2_B;
+
+					// g_eeg_fill_p = g_eeg_A;
+					// g_eeg_ready_p = g_eeg_B;
 				}
-				memset(g_eeg_fill_p, 0, sizeof(g_eeg_fill_p));
+				
+				// memset(g_eeg_fill_p, 0, sizeof(g_eeg_fill_p));
+				memset(g_eegfp1_fill_p, 0, sizeof(g_eegfp1_fill_p));
+				memset(g_eegfpz_fill_p, 0, sizeof(g_eegfpz_fill_p));
+				memset(g_eegfp2_fill_p, 0, sizeof(g_eegfp2_fill_p));
+
 				// update ready booleans
 				g_eeg_buf_ready = true;
 				// provide a synchronization point across all sensors
@@ -491,19 +518,41 @@ static void handle_state_preprocess_data(ml_event_t *event)
 			g_hr_process_done = true;
 		}
 
-		// Channel switching is done in ml_event_eeg_input; preprocessing here is assuming a single channel
 		if (g_eeg_filt_en && g_eeg_buf_ready)
 		{
 			g_eeg_process_done = false;
 
+			// Channel Switching
+
+			int eeg_select = EEG_FPZ; // FPZ
+			float eeg_chns[] = {g_eegfp1_ready_p, g_eegfpz_ready_p, g_eegfp2_ready_p};	
+			float fp1_max = findAbsMax(g_eegfp1_ready_p, EEG_BUF_SIZE);
+			float fpz_max = findAbsMax(g_eegfpz_ready_p, EEG_BUF_SIZE);
+			float fp2_max = findAbsMax(g_eegfp2_ready_p, EEG_BUF_SIZE);
+
+			if (fpz_max < SWITCH_THRESH)
+			{
+				if (fp1_max > SWITCH_THRESH)
+				{
+					eeg_select = EEG_FP1;
+				}
+				else if (fp2_max > SWITCH_THRESH)
+				{
+					eeg_select = EEG_FP2;
+				}
+				
+			}
+
 			// 4th order butterworth BPF
 			for (int i; i < EEG_BUF_SIZE; i++)
 			{
-				g_eeg_ready_p[i] = g_eeg_filt.filter(g_eeg_ready_p[i]);
+				// g_eeg_ready_p[i] = g_eeg_filt.filter(g_eeg_ready_p[i]);
+				eeg_chns[eeg_select][i] = g_eeg_filt.filter(eeg_chns[eeg_select][i]);
 			}
 
-			// Downsampling to 125 Hz
-			std::vector<float, bufferAllocator<float>> eeg_vec(g_eeg_ready_p, g_eeg_ready_p + EEG_BUF_SIZE);
+			// // Downsampling to 125 Hz
+			// std::vector<float, bufferAllocator<float>> eeg_vec(g_eeg_ready_p, g_eeg_ready_p + EEG_BUF_SIZE);
+			std::vector<float, bufferAllocator<float>> eeg_vec(eeg_chns[eeg_select],eeg_chns[eeg_select]+EEG_BUF_SIZE);
 			std::vector<float, bufferAllocator<float>> eeg_vec_out;
 			resample<float> (EEG_FS, FS_OUT, eeg_vec, eeg_vec_out);
 

@@ -592,4 +592,18 @@ std::vector<float, bufferAllocator<float>> z_score_normalize(std::vector<float, 
     return result;
 }
 
+/***************************************************************************/
+
+float findAbsMax(float arr[], int size) {
+    int max = abs(arr[0]);  // Assuming the first element is the maximum
+
+    for (int i = 1; i < size; i++) {
+        if (abs(arr[i]) > max) {
+            max = abs(arr[i]);  // Update max if a larger element is found
+        }
+    }
+
+    return max;
+}
+
 #endif // ML_UTILS_H
