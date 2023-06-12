@@ -138,6 +138,8 @@ const shell_command_t commands[] = {
 #endif // FLASH_COMMANDS_H
 
 	{ P_ALL, "pmic_status", pmic_status_command, "" },
+	{ P_ALL, "pmic_test", pmic_test_command, "" },
+	{ P_ALL, "pmic_enter_ship_mode", pmic_enter_ship_mode_command, "" },
 
 #ifdef NAND_COMMANDS_H
     { P_ALL, "nand_id", nand_id_command, "Read SPI Flash ID register" },

@@ -17,7 +17,9 @@ extern "C" {
 #endif
 
 void pmic_dump_modes(void);
-void pmic_init();
+void pmic_test(void);
+void pmic_init(void);
+void pmic_enter_ship_mode(void);
 void BOARD_SetPmicVoltageBeforeDeepSleep(void);
 void BOARD_RestorePmicVoltageAfterDeepSleep(void);
 void BOARD_SetPmicVoltageBeforeDeepPowerDown(void);

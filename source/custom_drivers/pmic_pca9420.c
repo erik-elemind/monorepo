@@ -9,6 +9,8 @@
 #include "pmic_pca9420.h"
 #include "peripherals.h"
 
+#define REG_ADDR_MODECFG_0_0 0x22
+
 static pca9420_handle_t pca9420Handle;
 static pca9420_modecfg_t pca9420CurrModeCfg;
 static pca9420_mode_t pca9420CurrMode;
@@ -166,6 +168,19 @@ static void pmic_config_default_modes(pca9420_modecfg_t *cfg, uint32_t num){
     }
 }
 
+void pmic_test(void)
+{
+	uint8_t val;
+	if(PCA9420_ReadRegs(&pca9420Handle, 0x00, &val, 1) == true)
+	{
+		printf("PMIC ID: 0x%2X\r\n", val);
+	}
+	else
+	{
+		printf("Read failed\r\n");
+	}
+}
+
 /*
  * The following function is based on functions
  * BOARD_ConfigPMICModes()
@@ -242,6 +257,27 @@ void pmic_init(){
     /* Enable PMIC interrupts. */
     PCA9420_EnableInterrupts(&pca9420Handle, kPCA9420_IntSrcSysAll | kPCA9420_IntSrcRegulatorAll);
 
+}
+
+void pmic_enter_ship_mode(void)
+{
+	uint8_t val;
+
+	// Read mode 0 config 0 register
+	if(PCA9420_ReadRegs(&pca9420Handle, REG_ADDR_MODECFG_0_0, &val, 1) == true)
+	{
+		printf("PMIC Mode 0 control: 0x%2X\r\n", val);
+	}
+	else
+	{
+		printf("Read failed\r\n");
+	}
+
+	// Set ship enable bit, MSB of register
+	val |= 0x80;
+
+	// This will put device into the ship mode
+	PCA9420_WriteRegs(&pca9420Handle, REG_ADDR_MODECFG_0_0, &val, 1);
 }
 
 bool BOARD_SetPmicVoltageForFreq(power_part_temp_range_t tempRange,
