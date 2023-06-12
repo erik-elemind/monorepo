@@ -9,6 +9,7 @@
 #define _FREQZ_H_
 
 #include <math.h>
+#include "math_util.h"
 
 
 template<typename T>

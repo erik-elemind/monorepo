@@ -174,12 +174,12 @@ static int rb_find_exact(mm_t* mm, void *block){
 
 
 /*
- * rb_successor - find the next node of node in ascending order.
+ * rb_successor - find the next node of node in ascending order
  */
 static void* rb_successor(mm_t* mm, void *node){
     void *succ, *left;
     if((succ = RB_RIGHT(node)) != mm->rb_null){
-        while((left = RB_LEFT(succ)) != mm->rb_null){
+    	while((left = RB_LEFT(succ)) != mm->rb_null){
             succ = left;
         }
         return succ;
@@ -518,9 +518,9 @@ void* mm_malloc(mm_t* mm, size_t size)
     if(free_block == mm->rb_null){ // proper free block not found
         /* set free_block to the end of last block in heap */
         free_block = mem_heap_hi(&(mm->mem)) - 3;
-        if(PREV_FREE(free_block)){ // if the last block is free
+        if(PREV_FREE(free_block)){ // if the last block is free 
             /* set free_block to the last block */
-            free_block -= PREV_SIZE_MASKED(free_block);
+           free_block -= PREV_SIZE_MASKED(free_block);
             if(IS_IN_RB(free_block)){
                 rb_delete(mm, free_block);
             }

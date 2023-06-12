@@ -24,7 +24,7 @@
 								<option id="com.crt.advproject.cpp.hdrlib.1610967306" name="Library headers" superClass="com.crt.advproject.cpp.hdrlib" useByScannerDiscovery="false"/>
 								<option id="com.crt.advproject.cpp.fpu.1321490397" name="Floating point" superClass="com.crt.advproject.cpp.fpu" useByScannerDiscovery="true" value="com.crt.advproject.cpp.fpu.fpv5sp.hard" valueType="enumerated"/>
 								<option id="com.crt.advproject.cpp.arch.1097687567" name="Architecture" superClass="com.crt.advproject.cpp.arch" useByScannerDiscovery="true" value="com.crt.advproject.cpp.target.cm33" valueType="enumerated"/>
-								<option id="com.crt.advproject.cpp.misc.dialect.600982145" name="Language standard" superClass="com.crt.advproject.cpp.misc.dialect" useByScannerDiscovery="true"/>
+								<option id="com.crt.advproject.cpp.misc.dialect.600982145" name="Language standard" superClass="com.crt.advproject.cpp.misc.dialect" useByScannerDiscovery="true" value="com.crt.advproject.misc.dialect.cpp17" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.dialect.flags.1495161608" name="Other dialect flags" superClass="gnu.cpp.compiler.option.dialect.flags" useByScannerDiscovery="true"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.nostdinc.1078664963" name="Do not search system directories (-nostdinc)" superClass="gnu.cpp.compiler.option.preprocessor.nostdinc" useByScannerDiscovery="false"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.preprocess.1145014647" name="Preprocess only (-E)" superClass="gnu.cpp.compiler.option.preprocessor.preprocess" useByScannerDiscovery="false"/>
@@ -497,7 +497,7 @@
 								<option id="com.crt.advproject.link.cpp.lto.optmization.level.894912301" name="Link-time optimization level" superClass="com.crt.advproject.link.cpp.lto.optmization.level" useByScannerDiscovery="false"/>
 								<option id="com.crt.advproject.link.cpp.thumb.2098321736" name="Thumb mode" superClass="com.crt.advproject.link.cpp.thumb" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option id="com.crt.advproject.link.cpp.manage.597909117" name="Manage linker script" superClass="com.crt.advproject.link.cpp.manage" useByScannerDiscovery="false" value="true" valueType="boolean"/>
-								<option id="com.crt.advproject.link.cpp.script.820004460" name="Linker script" superClass="com.crt.advproject.link.cpp.script" useByScannerDiscovery="false" value="&quot;morpheus_fw_imxrt685_Debug.ld&quot;" valueType="string"/>
+								<option id="com.crt.advproject.link.cpp.script.820004460" name="Linker script" superClass="com.crt.advproject.link.cpp.script" useByScannerDiscovery="false" value="morpheus_fw_imxrt685_Debug.ld" valueType="string"/>
 								<option id="com.crt.advproject.link.cpp.scriptdir.2017627662" name="Script path" superClass="com.crt.advproject.link.cpp.scriptdir" useByScannerDiscovery="false" value="" valueType="string"/>
 								<option id="com.crt.advproject.link.cpp.crpenable.1830931203" name="Enable automatic placement of Code Read Protection field in image" superClass="com.crt.advproject.link.cpp.crpenable" useByScannerDiscovery="false"/>
 								<option id="com.crt.advproject.link.cpp.flashconfigenable.627255678" name="Enable automatic placement of Flash Configuration field in image" superClass="com.crt.advproject.link.cpp.flashconfigenable" useByScannerDiscovery="false" value="true" valueType="boolean"/>
@@ -1296,7 +1296,7 @@
 								<option id="com.crt.advproject.miscellaneous.pvHeapLimit.1289652221" name="Maximum extent of heap" superClass="com.crt.advproject.miscellaneous.pvHeapLimit"/>
 								<option id="com.crt.advproject.debugger.security.nonsecureimageenable.1308705797" name="Enable pre-programming of Non-Secure Image" superClass="com.crt.advproject.debugger.security.nonsecureimageenable"/>
 								<option id="com.crt.advproject.debugger.security.nonsecureimage.1160695972" name="Non-Secure Project" superClass="com.crt.advproject.debugger.security.nonsecureimage"/>
-								<option id="com.crt.advproject.linkserver.debug.prevent.release.1016542170" name="Prevent Debugging" superClass="com.crt.advproject.linkserver.debug.prevent.release"/>
+								<option id="com.crt.advproject.linkserver.debug.prevent.release.82352432" name="Prevent Debugging" superClass="com.crt.advproject.linkserver.debug.prevent.release"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
@@ -1368,9 +1368,9 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="com.nxp.mcuxpresso.core.datamodels">
-		<sdkName>SDK_2.x_MIMXRT685S</sdkName>
+		<sdkName>SDK_2.x_EVK-MIMXRT685</sdkName>
 		<sdkExample>evkmimxrt685_hello_world</sdkExample>
-		<sdkVersion>2.12.0</sdkVersion>
+		<sdkVersion>2.11.1</sdkVersion>
 		<sdkComponents>utility.debug_console_lite.MIMXRT685S;platform.utilities.assert_lite.MIMXRT685S;platform.drivers.common.MIMXRT685S;platform.drivers.clock.MIMXRT685S;platform.drivers.power.MIMXRT685S;platform.drivers.reset.MIMXRT685S;device.MIMXRT685S_CMSIS.MIMXRT685S;component.usart_adapter.MIMXRT685S;platform.drivers.flash_config.evkmimxrt685.MIMXRT685S;platform.drivers.flexspi.MIMXRT685S;platform.drivers.cache_cache64.MIMXRT685S;component.lists.MIMXRT685S;platform.drivers.flexcomm_usart.MIMXRT685S;device.MIMXRT685S_startup.MIMXRT685S;platform.drivers.flexcomm.MIMXRT685S;platform.drivers.lpc_iopctl.MIMXRT685S;platform.drivers.lpc_gpio.MIMXRT685S;CMSIS_Include_core_cm.MIMXRT685S;platform.utilities.misc_utilities.MIMXRT685S;evkmimxrt685_hello_world;platform.drivers.inputmux.MIMXRT685S;platform.drivers.inputmux_connections.MIMXRT685S;platform.drivers.flexcomm_spi.MIMXRT685S;platform.drivers.flexcomm_i2c.MIMXRT685S;platform.drivers.flexcomm_i2s.MIMXRT685S;platform.drivers.lpc_dma.MIMXRT685S;utility.debug_console.MIMXRT685S;component.serial_manager.MIMXRT685S;component.serial_manager_uart.MIMXRT685S;platform.utilities.assert.MIMXRT685S;middleware.usb.common_header.MIMXRT685S;middleware.usb.device.common_header.MIMXRT685S;middleware.usb.device.controller.driver.MIMXRT685S;middleware.usb.device_controller_ip3511hs.MIMXRT685S;middleware.usb.phy.MIMXRT685S;component.osa.MIMXRT685S;middleware.usb.host.ip3516hs_config_header.MIMXRT685S;middleware.usb.device.ip3511hs_config_header.MIMXRT685S;project_template.MIMXRT685S.MIMXRT685S;utility.shell.MIMXRT685S;project_template.evkmimxrt685.MIMXRT685S;docs.USB.MIMXRT685S;middleware.usb.device.cdc.external.MIMXRT685S;middleware.usb.device.stack.external.MIMXRT685S;platform.drivers.wwdt.MIMXRT685S;platform.drivers.pint.MIMXRT685S;platform.drivers.flexcomm_spi_dma.MIMXRT685S;platform.drivers.flexspi_dma.MIMXRT685S;platform.drivers.flexcomm_usart_freertos.MIMXRT685S;platform.drivers.flexcomm_i2c_freertos.MIMXRT685S;CMSIS_DSP_Include.MIMXRT685S;platform.drivers.powerquad.MIMXRT685S;platform.drivers.flexcomm_i2c_dma.MIMXRT685S;platform.drivers.lpadc.MIMXRT685S;platform.drivers.ctimer.MIMXRT685S;middleware.freertos-kernel.MIMXRT685S;platform.drivers.sctimer.MIMXRT685S;middleware.freertos-kernel.template.MIMXRT685S;middleware.freertos-kernel.extension.MIMXRT685S;platform.drivers.flexcomm_i2s_dma.MIMXRT685S;platform.drivers.powerquad_cmsis.MIMXRT685S;platform.drivers.lpc_rtc.MIMXRT685S;</sdkComponents>
 		<boardId>evkmimxrt685</boardId>
 		<package>MIMXRT685SFVKB</package>
@@ -1390,7 +1390,7 @@
 &lt;memory can_program="true" id="Flash" is_ro="true" size="0" type="Flash"/&gt;&#13;
 &lt;memory id="RAM" size="4608" type="RAM"/&gt;&#13;
 &lt;memoryInstance derived_from="Flash" edited="true" id="QSPI_FLASH" location="0x8000000" size="0x800000"/&gt;&#13;
-&lt;memoryInstance derived_from="RAM" edited="true" id="SRAM" location="0x80000" size="0x200000"/&gt;&#13;
+&lt;memoryInstance derived_from="RAM" edited="true" id="SRAM" location="0x80000" size="0x400000"/&gt;&#13;
 &lt;memoryInstance derived_from="RAM" edited="true" id="USB_RAM" location="0x40140000" size="0x4000"/&gt;&#13;
 &lt;/chip&gt;&#13;
 &lt;processor&gt;&#13;
