@@ -5,7 +5,7 @@
 
 #include "ml.h"
 #include "ButterworthHighpass.h"
-// #include "ButterworthBandpass.h"
+#include "ButterworthBandpass.h"
 
 #include <complex>
 #include <vector>
@@ -101,6 +101,9 @@ class bufferAllocator {
     }
 };
 
+/***************************************************************************/
+
+// TODO consolidate filter classes
 
 // Accelerometer filter 
 template<typename T, int MAX_ACC_FILT_ORDER>
@@ -120,6 +123,45 @@ public:
     }
 
 };
+
+// // HRM filter 
+// template<typename T, int MAX_HRM_FILT_ORDER>
+// class hrm_filter {
+// private:
+//     ButterworthHighpass<T, MAX_ACC_FILT_ORDER> hrm_filt;
+
+// public:
+
+//     T filter(T hrm_data) {
+//         hrm_data = hrm_filt.step(hrm_data);
+//         return hrm_data;
+//     }
+
+//     void designHRMFilter(int order, double cutoffFreq, double sampleFreq, bool resetCache){
+//         hrm_filt.design(order, cutoffFreq, sampleFreq, resetCache);
+//     }
+
+// };
+
+template<typename T, int MAX_EEG_FILT_ORDER>
+class eeg_filter {
+private:
+    ButterworthBandpass<T, MAX_EEG_FILT_ORDER> eeg_filt;
+
+public:
+
+    T filter(T eeg_data) {
+        eeg_data = eeg_filt.step(eeg_data);
+        return eeg_data;
+    }
+
+    void designEEGFilter(int order, double lowFreq, double highFreq, double sampleFreq, bool resetCache){
+        eeg_filt.design(order, lowFreq, highFreq, sampleFreq, resetCache);
+    }
+
+};
+
+/***************************************************************************/
 
 // Resampling 
 // Taken from https://github.com/terrygta/SignalResampler
@@ -549,7 +591,5 @@ std::vector<float, bufferAllocator<float>> z_score_normalize(std::vector<float, 
     
     return result;
 }
-
-
 
 #endif // ML_UTILS_H
