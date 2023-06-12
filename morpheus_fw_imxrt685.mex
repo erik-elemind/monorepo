@@ -206,7 +206,12 @@
                         <pin_feature name="ibena" value="enabled"/>
                      </pin_features>
                   </pin>
-                  <pin peripheral="GPIO" signal="PIO0, 31" pin_num="A11" pin_signal="PIO0_31/FC4_CTS_SDA_SSEL0/SCT0_GPI0/SCT0_OUT6/CTIMER4_MAT3/FC3_SSEL2/SEC_PIO0_31"/>
+                  <pin peripheral="GPIO" signal="PIO0, 31" pin_num="A11" pin_signal="PIO0_31/FC4_CTS_SDA_SSEL0/SCT0_GPI0/SCT0_OUT6/CTIMER4_MAT3/FC3_SSEL2/SEC_PIO0_31">
+                     <pin_features>
+                        <pin_feature name="direction" value="INPUT"/>
+                        <pin_feature name="ibena" value="enabled"/>
+                     </pin_features>
+                  </pin>
                   <pin peripheral="GPIO" signal="PIO1, 2" pin_num="A7" pin_signal="PIO1_2/FC4_SSEL3/SCT0_GPI3/SCT0_OUT9/CTIMER1_MAT1/CMP0_C"/>
                   <pin peripheral="GPIO" signal="PIO1, 3" pin_num="G16" pin_signal="PIO1_3/FC5_SCK">
                      <pin_features>
@@ -285,7 +290,12 @@
                      </pin_features>
                   </pin>
                   <pin peripheral="GPIO" signal="PIO1, 1" pin_num="G15" pin_signal="PIO1_1/FC4_SSEL2/SCT0_GPI2/SCT0_OUT8/CTIMER1_MAT0"/>
-                  <pin peripheral="GPIO" signal="PIO2, 13" pin_num="T1" pin_signal="PIO2_13/SCT0_OUT7/CTIMER2_MAT3/CMP0_OUT"/>
+                  <pin peripheral="GPIO" signal="PIO2, 13" pin_num="T1" pin_signal="PIO2_13/SCT0_OUT7/CTIMER2_MAT3/CMP0_OUT">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                        <pin_feature name="gpio_init_state" value="true"/>
+                     </pin_features>
+                  </pin>
                   <pin peripheral="FLEXCOMM0" signal="TXD_SCL_MISO_WS" pin_num="G2" pin_signal="PIO0_1/FC0_TXD_SCL_MISO_WS/CTIMER0_MAT1/I2S_BRIDGE_WS_IN/SEC_PIO0_1">
                      <pin_features>
                         <pin_feature name="ibena" value="enabled"/>
@@ -383,9 +393,21 @@
                         <pin_feature name="ibena" value="enabled"/>
                      </pin_features>
                   </pin>
-                  <pin peripheral="FLEXCOMM2" signal="RXD_SDA_MOSI_DATA" pin_num="D6" pin_signal="PIO0_16/FC2_RXD_SDA_MOSI_DATA/SCT0_GPI2/SCT0_OUT2/CTIMER2_MAT2/I2S_BRIDGE_DATA_IN/SEC_PIO0_16"/>
-                  <pin peripheral="FLEXCOMM2" signal="TXD_SCL_MISO_WS" pin_num="A5" pin_signal="PIO0_15/FC2_TXD_SCL_MISO_WS/SCT0_GPI1/SCT0_OUT1/CTIMER2_MAT1/I2S_BRIDGE_WS_IN/SEC_PIO0_15"/>
-                  <pin peripheral="FLEXCOMM2" signal="SCK" pin_num="A3" pin_signal="PIO0_14/FC2_SCK/SCT0_GPI0/SCT0_OUT0/CTIMER2_MAT0/I2S_BRIDGE_CLK_IN/SEC_PIO0_14"/>
+                  <pin peripheral="FLEXCOMM2" signal="RXD_SDA_MOSI_DATA" pin_num="D6" pin_signal="PIO0_16/FC2_RXD_SDA_MOSI_DATA/SCT0_GPI2/SCT0_OUT2/CTIMER2_MAT2/I2S_BRIDGE_DATA_IN/SEC_PIO0_16">
+                     <pin_features>
+                        <pin_feature name="ibena" value="enabled"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="FLEXCOMM2" signal="TXD_SCL_MISO_WS" pin_num="A5" pin_signal="PIO0_15/FC2_TXD_SCL_MISO_WS/SCT0_GPI1/SCT0_OUT1/CTIMER2_MAT1/I2S_BRIDGE_WS_IN/SEC_PIO0_15">
+                     <pin_features>
+                        <pin_feature name="ibena" value="enabled"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="FLEXCOMM2" signal="SCK" pin_num="A3" pin_signal="PIO0_14/FC2_SCK/SCT0_GPI0/SCT0_OUT0/CTIMER2_MAT0/I2S_BRIDGE_CLK_IN/SEC_PIO0_14">
+                     <pin_features>
+                        <pin_feature name="ibena" value="enabled"/>
+                     </pin_features>
+                  </pin>
                   <pin peripheral="ADC0" signal="CH, 9" pin_num="G3" pin_signal="PIO0_13/FC1_SSEL3/SCT0_GPI3/SCT0_OUT3/CTIMER0_MAT1/SEC_PIO0_13/ADC0_9">
                      <pin_features>
                         <pin_feature name="ibena" value="enabled"/>
@@ -406,6 +428,7 @@
                   <pin peripheral="GPIO" signal="PIO2, 2" pin_num="U11" pin_signal="PIO2_2/SD0_D2/SCT0_OUT0">
                      <pin_features>
                         <pin_feature name="direction" value="OUTPUT"/>
+                        <pin_feature name="gpio_init_state" value="true"/>
                      </pin_features>
                   </pin>
                   <pin peripheral="SCT0" signal="OUT, 8" pin_num="C1" pin_signal="PIO2_14/SCT0_OUT8/CTIMER_INP1/CMP0_A"/>
@@ -414,6 +437,7 @@
                         <pin_feature name="ibena" value="enabled"/>
                      </pin_features>
                   </pin>
+                  <pin peripheral="ADC0" signal="CH, 1" pin_num="E3" pin_signal="PIO0_12/FC1_SSEL2/SCT0_GPI2/SCT0_OUT2/CTIMER_INP3/SEC_PIO0_12/ADC0_1"/>
                </pins>
             </function>
          </functions_list>
@@ -663,31 +687,6 @@
                <description></description>
                <options/>
                <dependencies>
-                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXCOMM2.i2c_scl" description="Signal I2C serial clock is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="routed" evaluation="">
-                        <data type="Boolean">true</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXCOMM2.i2c_sda" description="Signal I2C serial data is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="routed" evaluation="">
-                        <data type="Boolean">true</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="SWComponent" resourceId="platform.drivers.flexcomm_i2c_freertos" description="The fsl_i2c_freertos driver is missing in the project  (required for the FreeRTOS mode)." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="enabled" evaluation="equal">
-                        <data type="Boolean">true</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="SWComponent" resourceId="platform.drivers.flexcomm_i2c_freertos" description="The compatible version of the fsl_i2c_freertos driver is not available in the project  (required for the FreeRTOS mode)." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="version" evaluation="compatible">
-                        <data type="Version">2.0.0</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="ClockOutput" resourceId="FXCOM2_clock" description="FXCOM2 clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
-                     <feature name="frequency" evaluation="greaterThan">
-                        <data type="Frequency" unit="Hz">0</data>
-                     </feature>
-                  </dependency>
                   <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXCOMM3.i2c_scl" description="Signal I2C serial clock is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
                      <feature name="routed" evaluation="">
                         <data type="Boolean">true</data>
@@ -833,7 +832,7 @@
                         <data type="Boolean">true</data>
                      </feature>
                   </dependency>
-                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="SCT0.out.2" description="Signal output 2 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="SCT0.out.8" description="Signal output 8 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
                      <feature name="routed" evaluation="equal">
                         <data type="Boolean">true</data>
                      </feature>
@@ -928,6 +927,31 @@
                         <data type="Frequency" unit="Hz">0</data>
                      </feature>
                   </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXCOMM2.spi_miso" description="Signal SPI master data in, slave data out is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXCOMM2.spi_mosi" description="Signal SPI master data out, slave data in is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXCOMM2.spi_sck" description="Signal SPI serial clock pin is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="FLEXCOMM2.spi_ss0" description="Signal SPI slave select 0 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="ClockOutput" resourceId="FXCOM2_clock" description="FXCOM2 clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="frequency" evaluation="greaterThan">
+                        <data type="Frequency" unit="Hz">0</data>
+                     </feature>
+                  </dependency>
                </dependencies>
                <instances>
                   <instance name="NVIC" uuid="653970ab-e215-4f80-a534-8b7c6ec66a07" type="nvic" type_id="nvic_57b5eef3774cc60acaede6f5b8bddc67" mode="general" peripheral="NVIC" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
@@ -950,27 +974,6 @@
                            <struct name="14"/>
                         </array>
                         <array name="interrupts"/>
-                     </config_set>
-                  </instance>
-                  <instance name="FC2_BATT_I2C" uuid="fe96c63b-ad9a-48af-bbca-ce5ce790a79a" type="flexcomm_i2c" type_id="flexcomm_i2c_c8597948f61bd571ab263ea4330b9dd6" mode="freertos" peripheral="FLEXCOMM2" enabled="true" comment="" custom_name_enabled="true" editing_lock="false">
-                     <config_set name="fsl_i2c">
-                        <setting name="i2c_mode" value="kI2C_Master"/>
-                        <setting name="clockSource" value="FXCOMFunctionClock"/>
-                        <setting name="clockSourceFreq" value="BOARD_BootClockRUN"/>
-                        <struct name="rtos_handle">
-                           <setting name="enable_custom_name" value="false"/>
-                        </struct>
-                        <struct name="i2c_master_config">
-                           <setting name="enableMaster" value="true"/>
-                           <setting name="baudRate_Bps" value="100000"/>
-                           <setting name="enableTimeout" value="false"/>
-                           <setting name="timeout_Ms" value="35"/>
-                        </struct>
-                        <struct name="interrupt_priority">
-                           <setting name="IRQn" value="FLEXCOMM2_IRQn"/>
-                           <setting name="enable_priority" value="true"/>
-                           <setting name="priority" value="5"/>
-                        </struct>
                      </config_set>
                   </instance>
                   <instance name="FC3_SENSOR_I2C" uuid="4749edf5-83e8-45b8-886d-302c7131eb61" type="flexcomm_i2c" type_id="flexcomm_i2c_c8597948f61bd571ab263ea4330b9dd6" mode="freertos" peripheral="FLEXCOMM3" enabled="true" comment="" custom_name_enabled="true" editing_lock="false">
@@ -1208,7 +1211,7 @@
                               <setting name="dutyCyclePercent" value="1"/>
                            </struct>
                            <struct name="2">
-                              <setting name="output" value="kSCTIMER_Out_2"/>
+                              <setting name="output" value="kSCTIMER_Out_8"/>
                               <setting name="level" value="kSCTIMER_LowTrue"/>
                               <setting name="dutyCyclePercent" value="1"/>
                            </struct>
@@ -1480,6 +1483,53 @@
                            <setting name="baudRate_Bps" value="100000"/>
                            <setting name="enableTimeout" value="false"/>
                            <setting name="timeout_Ms" value="35"/>
+                        </struct>
+                     </config_set>
+                  </instance>
+                  <instance name="FC2_HRM_SPI" uuid="968897d9-823c-4d43-92e1-6ce3d02db49e" type="flexcomm_spi" type_id="flexcomm_spi_481dadba00035f986f31ed9ac95af181" mode="SPI_Transfer" peripheral="FLEXCOMM2" enabled="true" comment="" custom_name_enabled="true" editing_lock="false">
+                     <config_set name="transferCfg" quick_selection="QuickSelection1">
+                        <struct name="transfer">
+                           <setting name="init_transfer" value="true"/>
+                           <struct name="transfer_cfg">
+                              <setting name="halfDuplex" value="false"/>
+                              <setting name="txDataBufferEnable" value="true"/>
+                              <setting name="rxDataBufferEnable" value="true"/>
+                              <setting name="dataSize" value="10"/>
+                           </struct>
+                           <setting name="init_callback" value="false"/>
+                           <setting name="callback_fcn" value=""/>
+                           <setting name="user_data" value=""/>
+                        </struct>
+                     </config_set>
+                     <config_set name="fsl_spi">
+                        <setting name="spi_mode" value="kSPI_Master"/>
+                        <setting name="clockSource" value="FXCOMFunctionClock"/>
+                        <setting name="clockSourceFreq" value="BOARD_BootClockRUN"/>
+                        <struct name="spi_master_config">
+                           <setting name="enableLoopback" value="false"/>
+                           <setting name="enableMaster" value="true"/>
+                           <setting name="polarity" value="kSPI_ClockPolarityActiveHigh"/>
+                           <setting name="phase" value="kSPI_ClockPhaseFirstEdge"/>
+                           <setting name="direction" value="kSPI_MsbFirst"/>
+                           <setting name="baudRate_Bps" value="2000000"/>
+                           <setting name="dataWidth" value="kSPI_Data8Bits"/>
+                           <setting name="sselNum" value="kSPI_Ssel0"/>
+                           <set name="sselPol_set">
+                              <selected/>
+                           </set>
+                           <setting name="txWatermark" value="kSPI_TxFifo0"/>
+                           <setting name="rxWatermark" value="kSPI_RxFifo1"/>
+                           <struct name="delayConfig">
+                              <setting name="preDelay" value="0"/>
+                              <setting name="postDelay" value="0"/>
+                              <setting name="frameDelay" value="0"/>
+                              <setting name="transferDelay" value="0"/>
+                           </struct>
+                        </struct>
+                        <struct name="interrupt_priority">
+                           <setting name="IRQn" value="FLEXCOMM2_IRQn"/>
+                           <setting name="enable_priority" value="false"/>
+                           <setting name="priority" value="0"/>
                         </struct>
                      </config_set>
                   </instance>

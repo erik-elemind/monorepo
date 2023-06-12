@@ -49,15 +49,6 @@ extern "C" {
 #define DMA1_IRQ_PRIORITY 5
 /* DMA1 interrupt handler identifier. */
 #define DMA1_DriverIRQHandler DMA1_IRQHandler
-/* BOARD_InitPeripherals defines for FLEXCOMM2 */
-/* Definition of peripheral ID */
-#define FC2_BATT_I2C_PERIPHERAL ((I2C_Type *)FLEXCOMM2)
-/* Definition of the clock source frequency */
-#define FC2_BATT_I2C_CLOCK_SOURCE 16000000UL
-/* FC2_BATT_I2C interrupt vector ID (number). */
-#define FC2_BATT_I2C_FLEXCOMM_IRQN FLEXCOMM2_IRQn
-/* FC2_BATT_I2C interrupt vector priority. */
-#define FC2_BATT_I2C_FLEXCOMM_IRQ_PRIORITY 5
 /* BOARD_InitPeripherals defines for FLEXCOMM3 */
 /* Definition of peripheral ID */
 #define FC3_SENSOR_I2C_PERIPHERAL ((I2C_Type *)FLEXCOMM3)
@@ -182,12 +173,19 @@ extern "C" {
 #define FC15_PMIC_PERIPHERAL ((I2C_Type *)FLEXCOMM15)
 /* Definition of the clock source frequency */
 #define FC15_PMIC_CLOCK_SOURCE 16000000UL
+/* BOARD_InitPeripherals defines for FLEXCOMM2 */
+/* Definition of peripheral ID */
+#define FC2_HRM_SPI_PERIPHERAL ((SPI_Type *)FLEXCOMM2)
+/* Definition of the clock source frequency */
+#define FC2_HRM_SPI_CLOCK_SOURCE 16000000UL
+/* FC2_HRM_SPI interrupt vector ID (number). */
+#define FC2_HRM_SPI_FLEXCOMM_IRQN FLEXCOMM2_IRQn
+/* Transfer buffer size. */
+#define FC2_HRM_SPI_BUFFER_SIZE 10
 
 /***********************************************************************************************************************
  * Global variables
  **********************************************************************************************************************/
-extern i2c_rtos_handle_t FC2_BATT_I2C_rtosHandle;
-extern const i2c_master_config_t FC2_BATT_I2C_config;
 extern i2c_rtos_handle_t FC3_SENSOR_I2C_rtosHandle;
 extern const i2c_master_config_t FC3_SENSOR_I2C_config;
 extern usart_rtos_handle_t FC5_DEBUG_UART_rtos_handle;
@@ -210,6 +208,10 @@ extern dma_handle_t NAND_FLEXSPI_RX_Handle;
 extern dma_handle_t NAND_FLEXSPI_TX_Handle;
 extern flexspi_dma_handle_t NAND_FLEXSPI_DMA_Handle;
 extern const i2c_master_config_t FC15_PMIC_config;
+extern const spi_master_config_t FC2_HRM_SPI_config;
+extern spi_master_handle_t FC2_HRM_SPI_handle;
+extern uint8_t FC2_HRM_SPI_txBuffer[FC2_HRM_SPI_BUFFER_SIZE];
+extern uint8_t FC2_HRM_SPI_rxBuffer[FC2_HRM_SPI_BUFFER_SIZE];
 
 /***********************************************************************************************************************
  * Callback functions

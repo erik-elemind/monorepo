@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #define DEMO_LPADC_BASE             ADC0
-#define DEMO_LPADC_USER_CHANNEL     2U
+#define DEMO_LPADC_USER_CHANNEL     1U
 #define DEMO_LPADC_USER_CMDID       15U
 
 #define ADC_COMMAND_ID 15U

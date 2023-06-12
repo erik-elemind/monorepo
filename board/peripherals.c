@@ -165,52 +165,6 @@ static void NVIC_init(void) {
 } */
 
 /***********************************************************************************************************************
- * FC2_BATT_I2C initialization code
- **********************************************************************************************************************/
-/* clang-format off */
-/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
-instance:
-- name: 'FC2_BATT_I2C'
-- type: 'flexcomm_i2c'
-- mode: 'freertos'
-- custom_name_enabled: 'true'
-- type_id: 'flexcomm_i2c_c8597948f61bd571ab263ea4330b9dd6'
-- functional_group: 'BOARD_InitPeripherals'
-- peripheral: 'FLEXCOMM2'
-- config_sets:
-  - fsl_i2c:
-    - i2c_mode: 'kI2C_Master'
-    - clockSource: 'FXCOMFunctionClock'
-    - clockSourceFreq: 'BOARD_BootClockRUN'
-    - rtos_handle:
-      - enable_custom_name: 'false'
-    - i2c_master_config:
-      - enableMaster: 'true'
-      - baudRate_Bps: '100000'
-      - enableTimeout: 'false'
-      - timeout_Ms: '35'
-    - interrupt_priority:
-      - IRQn: 'FLEXCOMM2_IRQn'
-      - enable_priority: 'true'
-      - priority: '5'
- * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
-/* clang-format on */
-i2c_rtos_handle_t FC2_BATT_I2C_rtosHandle;
-const i2c_master_config_t FC2_BATT_I2C_config = {
-  .enableMaster = true,
-  .baudRate_Bps = 100000UL,
-  .enableTimeout = false,
-  .timeout_Ms = 35U
-};
-
-static void FC2_BATT_I2C_init(void) {
-  /* Initialization function */
-  I2C_RTOS_Init(&FC2_BATT_I2C_rtosHandle, FC2_BATT_I2C_PERIPHERAL, &FC2_BATT_I2C_config, FC2_BATT_I2C_CLOCK_SOURCE);
-  /* Interrupt vector FLEXCOMM2_IRQn priority settings in the NVIC. */
-  NVIC_SetPriority(FC2_BATT_I2C_FLEXCOMM_IRQN, FC2_BATT_I2C_FLEXCOMM_IRQ_PRIORITY);
-}
-
-/***********************************************************************************************************************
  * FC3_SENSOR_I2C initialization code
  **********************************************************************************************************************/
 /* clang-format off */
@@ -597,7 +551,7 @@ instance:
         - level: 'kSCTIMER_LowTrue'
         - dutyCyclePercent: '1'
       - 2:
-        - output: 'kSCTIMER_Out_2'
+        - output: 'kSCTIMER_Out_8'
         - level: 'kSCTIMER_LowTrue'
         - dutyCyclePercent: '1'
     - pwmMode: 'kSCTIMER_EdgeAlignedPwm'
@@ -631,7 +585,7 @@ const sctimer_pwm_signal_param_t SCT0_pwmSignalsConfig[3] = {
     .dutyCyclePercent = 1U
   },
   {
-    .output = kSCTIMER_Out_2,
+    .output = kSCTIMER_Out_8,
     .level = kSCTIMER_LowTrue,
     .dutyCyclePercent = 1U
   }
@@ -1079,6 +1033,88 @@ static void FC15_PMIC_init(void) {
 }
 
 /***********************************************************************************************************************
+ * FC2_HRM_SPI initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'FC2_HRM_SPI'
+- type: 'flexcomm_spi'
+- mode: 'SPI_Transfer'
+- custom_name_enabled: 'true'
+- type_id: 'flexcomm_spi_481dadba00035f986f31ed9ac95af181'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'FLEXCOMM2'
+- config_sets:
+  - transferCfg:
+    - transfer:
+      - init_transfer: 'true'
+      - transfer_cfg:
+        - halfDuplex: 'false'
+        - txDataBufferEnable: 'true'
+        - rxDataBufferEnable: 'true'
+        - dataSize: '10'
+      - init_callback: 'false'
+      - callback_fcn: ''
+      - user_data: ''
+    - quick_selection: 'QuickSelection1'
+  - fsl_spi:
+    - spi_mode: 'kSPI_Master'
+    - clockSource: 'FXCOMFunctionClock'
+    - clockSourceFreq: 'BOARD_BootClockRUN'
+    - spi_master_config:
+      - enableLoopback: 'false'
+      - enableMaster: 'true'
+      - polarity: 'kSPI_ClockPolarityActiveHigh'
+      - phase: 'kSPI_ClockPhaseFirstEdge'
+      - direction: 'kSPI_MsbFirst'
+      - baudRate_Bps: '2000000'
+      - dataWidth: 'kSPI_Data8Bits'
+      - sselNum: 'kSPI_Ssel0'
+      - sselPol_set: ''
+      - txWatermark: 'kSPI_TxFifo0'
+      - rxWatermark: 'kSPI_RxFifo1'
+      - delayConfig:
+        - preDelay: '0'
+        - postDelay: '0'
+        - frameDelay: '0'
+        - transferDelay: '0'
+    - interrupt_priority:
+      - IRQn: 'FLEXCOMM2_IRQn'
+      - enable_priority: 'false'
+      - priority: '0'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const spi_master_config_t FC2_HRM_SPI_config = {
+  .enableLoopback = false,
+  .enableMaster = true,
+  .polarity = kSPI_ClockPolarityActiveHigh,
+  .phase = kSPI_ClockPhaseFirstEdge,
+  .direction = kSPI_MsbFirst,
+  .baudRate_Bps = 2000000UL,
+  .dataWidth = kSPI_Data8Bits,
+  .sselNum = kSPI_Ssel0,
+  .sselPol = kSPI_SpolActiveAllLow,
+  .txWatermark = kSPI_TxFifo0,
+  .rxWatermark = kSPI_RxFifo1,
+  .delayConfig = {
+    .preDelay = 0U,
+    .postDelay = 0U,
+    .frameDelay = 0U,
+    .transferDelay = 0U
+  }
+};
+spi_master_handle_t FC2_HRM_SPI_handle;
+uint8_t FC2_HRM_SPI_txBuffer[FC2_HRM_SPI_BUFFER_SIZE];
+uint8_t FC2_HRM_SPI_rxBuffer[FC2_HRM_SPI_BUFFER_SIZE];
+
+static void FC2_HRM_SPI_init(void) {
+  /* Initialization function */
+  SPI_MasterInit(FC2_HRM_SPI_PERIPHERAL, &FC2_HRM_SPI_config, FC2_HRM_SPI_CLOCK_SOURCE);
+  SPI_MasterTransferCreateHandle(FC2_HRM_SPI_PERIPHERAL, &FC2_HRM_SPI_handle, NULL, NULL);
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 void BOARD_InitPeripherals(void)
@@ -1090,7 +1126,6 @@ void BOARD_InitPeripherals(void)
   /* Initialize components */
   DMA0_init();
   DMA1_init();
-  FC2_BATT_I2C_init();
   FC3_SENSOR_I2C_init();
   FC5_DEBUG_UART_init();
   PINT_init();
@@ -1101,6 +1136,7 @@ void BOARD_InitPeripherals(void)
   NAND_FLEXSPI_init();
   RTC_init();
   FC15_PMIC_init();
+  FC2_HRM_SPI_init();
 }
 
 /***********************************************************************************************************************

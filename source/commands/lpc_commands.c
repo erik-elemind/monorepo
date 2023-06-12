@@ -153,11 +153,6 @@ void i2c_sensor_scan(int argc, char **argv)
   i2c_scan(&SENSOR_I2C_RTOS_HANDLE);
 }
 
-void i2c_batt_scan(int argc, char **argv)
-{
-  i2c_scan(&BATT_I2C_RTOS_HANDLE);
-}
-
 static void i2c_read_byte(i2c_rtos_handle_t *handle, int argc, char **argv)
 {
   if (argc != 3) {
@@ -234,19 +229,6 @@ void i2c_sensor_write_byte(int argc, char **argv)
 {
   i2c_write_byte(&SENSOR_I2C_RTOS_HANDLE, argc, argv);
 }
-
-void i2c_batt_read_byte(int argc, char **argv)
-{
-  i2c_read_byte(&BATT_I2C_RTOS_HANDLE, argc, argv);
-}
-
-void i2c_batt_write_byte(int argc, char **argv)
-{
-  i2c_write_byte(&BATT_I2C_RTOS_HANDLE, argc, argv);
-}
-
-
-
 
 void gpio_read(int argc, char **argv)
 {
