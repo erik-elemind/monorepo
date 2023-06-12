@@ -53,7 +53,7 @@ using std::vector;
 #define ALLOC_MEM 30000
 
 mm_rtos_t alloc_mem;
-static float* alloc_mem_buf[ALLOC_MEM]; 
+float* alloc_mem_buf[ALLOC_MEM]; 
 
 // Custom vector allocator
 template <typename T>

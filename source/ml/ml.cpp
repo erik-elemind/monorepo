@@ -103,8 +103,8 @@ static size_t g_hr_fill_idx = 0;
 static bool g_hr_buf_ready = false;
 static bool g_hr_filt_en = false;
 
-SemaphoreHandle_t g_sem = NULL;
-StaticSemaphore_t g_ml_sem_buf;
+static SemaphoreHandle_t g_sem = NULL;
+static StaticSemaphore_t g_ml_sem_buf;
 #define ML_EVENT_QUEUE_SIZE 10
 
 // Global memory
@@ -568,7 +568,6 @@ void ml_pretask_init(void)
   // Load up constant weights for ML model
   memcpy(constantWeight, WEIGHT_DATA_START, TEST_MODEL_CONSTANT_MEM_SIZE);
 
-//   g_sem = xSemaphoreCreateBinary();
   g_sem = xSemaphoreCreateBinaryStatic(&g_ml_sem_buf);
 
   if (g_sem == NULL)
