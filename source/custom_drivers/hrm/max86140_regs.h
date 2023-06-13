@@ -65,6 +65,9 @@ extern "C" {
 #define MAX86140_REG_MEMORY_DATA                    0xF4
 #define MAX86140_REG_PART_ID                        0xFF
 
+#define REG_SYSTEM_CONTROL_SHDN_BIT 1
+#define REG_SYSTEM_CONTROL_RESET_BIT 0
+#define REG_SYSTEM_CONTROL_LP_MODE_BIT 2
 
 // End: Tell C++ compiler to include this C header.
 #ifdef __cplusplus

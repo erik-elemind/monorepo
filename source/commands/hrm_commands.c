@@ -8,7 +8,7 @@ void hrm_off(int argc, char **argv){
     return;
   }
 
-  hrm_event_turn_off();
+  max86140_stop();
 }
 
 void hrm_on(int argc, char **argv){
@@ -17,7 +17,7 @@ void hrm_on(int argc, char **argv){
     return;
   }
 
-  hrm_event_turn_on();
+  max86140_start();
 }
 
 void hrm_test(int argc, char **argv){

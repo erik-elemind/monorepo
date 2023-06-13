@@ -8,6 +8,9 @@
 
 static const char *TAG = "hrm";  // Logging prefix for this module
 
+static void rreg(uint8_t reg, uint8_t* val);
+static void wreg(uint8_t reg, uint8_t val);
+static void max86140_print_all_regs(void);
 
 static void rreg(uint8_t reg, uint8_t* val)
 {
@@ -71,12 +74,119 @@ static void wreg(uint8_t reg, uint8_t val)
 
 }
 
-void max86140_init(void)
+void max86140_start(void)
 {
+	uint8_t regVal=0;
 
+	// Soft Reset the device using System Control Reg
+	rreg(MAX86140_REG_SYSTEM_CONTROL, &regVal);
+	regVal |= 0x01 << REG_SYSTEM_CONTROL_RESET_BIT;
+	wreg(MAX86140_REG_SYSTEM_CONTROL, regVal);
+
+	util_delay_ms(2);
+
+	// Clear interrupts, by reading interrupt registers
+	rreg(MAX86140_REG_INT_STATUS_1, &regVal);
+	rreg(MAX86140_REG_INT_STATUS_2, &regVal);
+
+	// Shut down device
+	rreg(MAX86140_REG_SYSTEM_CONTROL, &regVal);
+	regVal |= 0x01 << REG_SYSTEM_CONTROL_SHDN_BIT;
+	wreg(MAX86140_REG_SYSTEM_CONTROL, regVal);
+
+	// Configure PPG1 Config settings
+	rreg(MAX86140_REG_PPG_CONFIGURATION_1, &regVal);
+	regVal |= 0x03; // Set pulse width to 117.3 uS
+	regVal |= 0x03 << 2; // Set ADC range to 32 uA
+	wreg(MAX86140_REG_PPG_CONFIGURATION_1, regVal);
+
+	// PPG2 Config settings
+	// Set sample average to 1 (disabled)
+	// Set sample rate to 200 sps
+	regVal = 0x20;
+	wreg(MAX86140_REG_PPG_CONFIGURATION_2, regVal);
+
+	// PPG3 Config settings
+	// Settling time = 12uS
+	// Digital Filter, use CDM
+	// Burst rate = 8Hz
+	// Burst disabled
+	regVal = 0xC0;
+	wreg(MAX86140_REG_PPG_CONFIGURATION_3, regVal);
+
+	// Photo Diode Bias
+	// Photo bias 0-65 pF
+	regVal = 0x01;
+	wreg(MAX86140_REG_PHOTO_DIODE_BIAS, regVal);
+
+	// Set LED Driver values to ~5 m
+	regVal = 0x2A;
+	wreg(MAX86140_REG_LED1_PA, regVal);
+	wreg(MAX86140_REG_LED2_PA, regVal);
+	wreg(MAX86140_REG_LED3_PA, regVal);
+
+	// Enable Low Power Mode
+	rreg(MAX86140_REG_SYSTEM_CONTROL, &regVal);
+	regVal |= 0x01 << REG_SYSTEM_CONTROL_LP_MODE_BIT;
+	wreg(MAX86140_REG_SYSTEM_CONTROL, regVal);
+
+	// Set FIFO Configuration 1
+	// Generate interupt at 100 samples
+	regVal = 0x1C;
+	wreg(MAX86140_REG_FIFO_CONFIGURATION_1, regVal);
+
+	// Set FIFO Configuration 1
+	// Flush FIFO
+	// Enable roll over
+	regVal = 0x12;
+	wreg(MAX86140_REG_FIFO_CONFIGURATION_2, regVal);
+
+	// Enable FIFO_A_FULL interrupt
+	regVal = 0x80;
+	wreg(MAX86140_REG_INT_ENABLE_1, regVal);
+
+	// Write in LED Sequences, LED1, LED2, LED3, Ambient
+	regVal = 0x21;
+	wreg(MAX86140_REG_LED_SEQUENCE_REGISTER_1, regVal);
+	regVal = 0x93;
+	wreg(MAX86140_REG_LED_SEQUENCE_REGISTER_2, regVal);
+	regVal = 0x00;
+	wreg(MAX86140_REG_LED_SEQUENCE_REGISTER_3, regVal);
+
+
+	// Disable SHDN to start sampling
+	rreg(MAX86140_REG_SYSTEM_CONTROL, &regVal);
+	regVal &= ~(0x01 << REG_SYSTEM_CONTROL_SHDN_BIT);
+	wreg(MAX86140_REG_SYSTEM_CONTROL, regVal);
+}
+
+void max86140_stop(void)
+{
+	uint8_t regVal=0;
+
+	// Soft Reset the device using System Control Reg
+	rreg(MAX86140_REG_SYSTEM_CONTROL, &regVal);
+	regVal |= 0x01 << REG_SYSTEM_CONTROL_RESET_BIT;
+	wreg(MAX86140_REG_SYSTEM_CONTROL, regVal);
+
+	util_delay_ms(2);
+
+	// Clear interrupts, by reading interrupt registers
+	rreg(MAX86140_REG_INT_STATUS_1, &regVal);
+	rreg(MAX86140_REG_INT_STATUS_2, &regVal);
+
+	// Shut down device
+	rreg(MAX86140_REG_SYSTEM_CONTROL, &regVal);
+	regVal |= 0x01 << REG_SYSTEM_CONTROL_SHDN_BIT;
+	wreg(MAX86140_REG_SYSTEM_CONTROL, regVal);
 }
 
 void max86140_test(void)
+{
+	max86140_print_all_regs();
+}
+
+static void max86140_print_all_regs(void)
 {
 	uint8_t val;
 
@@ -197,6 +307,5 @@ void max86140_test_read(uint8_t regAdd)
 void max86140_test_write(uint8_t regAdd, uint8_t val)
 {
 	wreg(regAdd, val);
-
 
 }
