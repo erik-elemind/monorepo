@@ -464,6 +464,9 @@ const shell_command_t commands[] = {
 	{P_SHELL, "memfault_test_fault", memfault_test_fault_command, "Memfault Fault Test"},
 	{P_SHELL, "memfault_test_hang", memfault_test_hang_command, "Memfault Hang Test"},
 	{P_SHELL, "memfault_check_coredump", memfault_check_coredump, "Memfault Check Coredump Validity"},
+	{P_SHELL, "memfault_check_coredump_nand", memfault_check_coredump_nand, "Memfault Check coredump NAND"},
+	{P_SHELL, "memfault_test_coredump_nand_write", memfault_test_coredump_nand_write, "Memfault Test coredump NAND write"},
+	{P_SHELL, "memfault_test_coredump_nand_erase", memfault_test_coredump_nand_erase, "Memfault Test coredump NAND erase"},
 
 
     // Misc low level tests

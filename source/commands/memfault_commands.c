@@ -131,3 +131,19 @@ void memfault_check_coredump(int argc, char *argv[]) {
 	}
 }
 
+void memfault_check_coredump_nand(int argc, char *argv[]) {
+	static uint8_t buf[2048];
+	memset(buf, 0x00, sizeof(buf));
+	memfault_platform_coredump_storage_read(0, buf, sizeof(buf));
+	hex_dump(buf, 2048+16, 0);
+}
+
+void memfault_test_coredump_nand_write(int argc, char *argv[]) {
+	static uint8_t data[2048] = {0};
+	memset(data, 0xE4, sizeof(data));
+	memfault_platform_coredump_storage_write(0, data, sizeof(data));
+}
+
+void memfault_test_coredump_nand_erase(int argc, char *argv[]) {
+	memfault_platform_coredump_storage_erase(0, 2048);
+}

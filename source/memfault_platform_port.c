@@ -70,7 +70,8 @@ void memfault_platform_log(eMemfaultPlatformLogLevel level, const char *fmt,
 
 #define MEMFAULT_COREDUMP_NVADDR (290800)
 #define MEMFAULT_COREDUMP_NV_BLKADDR (4075)
-#define MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE 1024
+#define MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE 2048
+
 
 MEMFAULT_PUT_IN_SECTION(".noinit.mflt_reboot_tracking")
 static uint8_t s_reboot_tracking[MEMFAULT_REBOOT_TRACKING_REGION_SIZE];
@@ -260,20 +261,21 @@ bool memfault_platform_coredump_storage_read(uint32_t offset, void *data,
   }
 
   int status;
-  uint8_t buffer[MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE] = {0};
+  static uint8_t read_buffer[MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE];
+  memset(read_buffer, 0x00, sizeof(read_buffer));
   status = nand_read_page_into_cache(&g_nand_handle, MEMFAULT_COREDUMP_NVADDR);
   // If ECC_FAIL, still try to read out the page data below (despite ECC errors).
   if (status < 0 && status != NAND_ECC_FAIL) {
     return false;
   }
 
-  status = nand_read_page_from_cache(&g_nand_handle, offset, buffer, read_len);
+  status = nand_read_page_from_cache(&g_nand_handle, offset, read_buffer, read_len);
   if (status == NAND_ECC_FAIL)
   {
 	  return false;
   }
 
-  memcpy(data, buffer, read_len);
+  memcpy(data, read_buffer, read_len);
 
   return true;
 }
@@ -287,17 +289,18 @@ bool memfault_platform_coredump_storage_write(uint32_t offset, const void *data,
   int status;
 
   // Read-Modify-Write
-  uint8_t page_buff[MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE] = {0};
-  if(memfault_platform_coredump_storage_read(0, page_buff, MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE))
+  static uint8_t write_buffer[MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE];
+  memset(write_buffer, 0x00, sizeof(write_buffer));
+  if(memfault_platform_coredump_storage_read(0, write_buffer, MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE))
   {
 	  // Modify
-	  memcpy(page_buff+offset, data, data_len);
+	  memcpy(write_buffer+offset, data, data_len);
 
 	  // Erase
 	  if(memfault_platform_coredump_storage_erase(0,MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE))
 	  {
 		  // Write full page to cache
-		  status = nand_write_into_page_cache(&g_nand_handle, 0, page_buff, MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE);
+		  status = nand_write_into_page_cache(&g_nand_handle, 0, write_buffer, MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE);
 		  if (status < 0) {
 		    return false;
 		  }
