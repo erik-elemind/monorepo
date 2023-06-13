@@ -65,13 +65,34 @@ static void wreg(uint8_t reg, uint8_t val)
 	LOGV(TAG, "SPI master: error during transfer.");
 	return;
 	}
-	else
-	{
-		printf("spi transaction worked\r\n"); // ToDo remove for final merge in
-	}
 
 	return;
+}
 
+static void burst_sample_read(uint8_t* buff, uint8_t sampleCnt)
+{
+	 /* Setup TX/RX buffers */
+	  uint8_t tx_cmd[MAX_FIFO_SAMPLES*3 + 2] = {0};  		// 3 bytes per sample, plus 2 for command
+	  tx_cmd[0] = MAX86140_REG_FIFO_DATA_REGISTER; 	// register address to read
+	  tx_cmd[1] = 0x80;         					// Read command
+
+	  /* Setup master transfer */
+	  status_t status;
+	  spi_transfer_t masterXfer = {0};
+	  masterXfer.txData   = tx_cmd;
+	  masterXfer.dataSize = sampleCnt*3 + 2;
+	  masterXfer.rxData   = buff;
+	  masterXfer.configFlags |= kSPI_FrameAssert;
+
+	  /* Start master transfer */
+	  status = SPI_MasterTransferBlocking(FC2_HRM_SPI_PERIPHERAL, &masterXfer);
+	  if (status != kStatus_Success)
+	  {
+	    LOGV(TAG, "SPI master: error during transfer.");
+	    return;
+	  }
+
+	  return;
 }
 
 void max86140_start(void)
@@ -138,7 +159,9 @@ void max86140_start(void)
 	// Set FIFO Configuration 1
 	// Flush FIFO
 	// Enable roll over
-	regVal = 0x12;
+	// Read Data Clear interrupt
+	// Turn off AFULL repeat
+	regVal = 0x1E;
 	wreg(MAX86140_REG_FIFO_CONFIGURATION_2, regVal);
 
 	// Enable FIFO_A_FULL interrupt
@@ -179,6 +202,40 @@ void max86140_stop(void)
 	rreg(MAX86140_REG_SYSTEM_CONTROL, &regVal);
 	regVal |= 0x01 << REG_SYSTEM_CONTROL_SHDN_BIT;
 	wreg(MAX86140_REG_SYSTEM_CONTROL, regVal);
+}
+
+void max86140_process_fifo(uint8_t* buff, uint8_t* len)
+{
+	uint8_t regVal=0;
+	uint8_t sampleCount=0;
+
+	*len = 0;
+
+	// Verify that FIFO A interrupt was generated
+	rreg(MAX86140_REG_INT_STATUS_1, &regVal);
+	if(regVal != 0x80)
+	{
+		LOGE(TAG, "Interrupt status is incorrect");
+		return;
+	}
+
+	// Check how many samples are ready
+	rreg(MAX86140_REG_FIFO_DATA_COUNTER, &sampleCount);
+
+	if(sampleCount > 0)
+	{
+		burst_sample_read(buff, sampleCount);
+	}
+	else
+	{
+		LOGE(TAG, "No samples ready");
+		return;
+	}
+
+	// Read interrupt status to clear
+	rreg(MAX86140_REG_INT_STATUS_1, &regVal);
+
+	*len = sampleCount;
 }
 
 void max86140_test(void)
