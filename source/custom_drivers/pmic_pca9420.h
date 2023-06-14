@@ -16,6 +16,24 @@
 extern "C" {
 #endif
 
+#define PCA9420_REG_CHG_STATUS_0 0x18
+#define PCA9420_REG_CHG_STATUS_1 0x19
+#define PCA9420_REG_CHG_STATUS_2 0x1A
+#define PCA9420_REG_CHG_STATUS_3 0x1B
+
+/// Battery charger status
+typedef enum {
+  BATTERY_CHARGER_STATUS_ON_BATTERY, ///< No input source or bad input source
+  BATTERY_CHARGER_STATUS_CHARGING, ///< Good input source, charging
+  BATTERY_CHARGER_STATUS_CHARGE_COMPLETE, ///< Good input source, not charging
+  BATTERY_CHARGER_STATUS_FAULT ///< Problem with battery or input source
+} battery_charger_status_t;
+
+
+void battery_charger_init(void);
+battery_charger_status_t battery_charger_get_status(void);
+status_t battery_charger_print_detailed_status(void);
+
 void pmic_dump_modes(void);
 void pmic_test(void);
 void pmic_init(void);

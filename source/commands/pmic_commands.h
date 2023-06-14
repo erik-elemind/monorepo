@@ -15,6 +15,7 @@ extern "C" {
 void pmic_status_command(int argc, char **argv);
 void pmic_test_command(int argc, char **argv);
 void pmic_enter_ship_mode_command(int argc, char **argv);
+void pmic_batt_status(int argc, char **argv);
 
 #ifdef __cplusplus
 }

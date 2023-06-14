@@ -9,7 +9,7 @@
 #include "button.h"
 #include "interpreter.h"
 
-// TODO: Global GPIO ISRs go in this file.
+//Global GPIO ISRs go in this file.
 
 #define TAG "gint"
 
@@ -21,15 +21,6 @@
 void als_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status)
 {
     /* Take action for pin interrupt */
-}
-
-/*
- * Pin change interrupt callback for pin PIO1_3,
- * connected to battery charger.
- */
-void charger_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status)
-{
-  system_monitor_event_battery_from_isr();
 }
 
 void mems_pint_isr(pint_pin_int_t pintr, uint32_t pmatch_status) {

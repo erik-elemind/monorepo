@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include "pmic_pca9420.h"
 #include "peripherals.h"
+#include "loglevels.h"
+
+#define TAG "pmic"
 
 #define REG_ADDR_MODECFG_0_0 0x22
 
@@ -399,5 +402,74 @@ void BOARD_SetPmicVoltageBeforeDeepPowerDown(void)
     else
     {
     }
+}
+
+// Global function definitions
+void battery_charger_init(void)
+{
+  LOGV(TAG, "battery_charger_init");
+}
+
+battery_charger_status_t battery_charger_get_status(void)
+{
+	uint8_t charger_status_0=0;
+	uint8_t charger_status_2=0;
+	uint8_t batt_charge_status=0;
+
+	if(PCA9420_ReadRegs(&pca9420Handle, PCA9420_REG_CHG_STATUS_0, &charger_status_0, 1) != true)
+	{
+		LOGE(TAG, "Error reading charger status 0 register");
+		return BATTERY_CHARGER_STATUS_FAULT;
+	}
+	if(PCA9420_ReadRegs(&pca9420Handle, PCA9420_REG_CHG_STATUS_2, &charger_status_2, 1) != true)
+	{
+		LOGE(TAG, "Error reading charger status 2 register");
+		return BATTERY_CHARGER_STATUS_FAULT;
+	}
+
+	batt_charge_status = (charger_status_2 & 0x07);
+
+	if(charger_status_0 == 0xD0 && charger_status_2 == 0x70) // Check if on battery
+	{
+		return BATTERY_CHARGER_STATUS_ON_BATTERY;
+	}
+	else if(charger_status_0 == 0xF0)
+	{
+		if((batt_charge_status == 5) || (batt_charge_status == 6))
+		{
+			return BATTERY_CHARGER_STATUS_CHARGE_COMPLETE;
+		}
+		else if((batt_charge_status >= 1) && (batt_charge_status < 5))
+		{
+			return BATTERY_CHARGER_STATUS_CHARGING;
+		}
+	}
+
+	// If other cases are not valid, treat it as a fault
+	return BATTERY_CHARGER_STATUS_FAULT;
+}
+
+status_t battery_charger_print_detailed_status(void)
+{
+	uint8_t charger_regs[4];
+	if(PCA9420_ReadRegs(&pca9420Handle, 0x18, charger_regs, 4) != true)
+	{
+		LOGE(TAG, "Error reading charger status registers");
+		return kStatus_Fail;
+	}
+
+	printf("ONREG:\r\n");
+	for(uint8_t i=0;i<4;i++)
+	{
+		printf("Charger Status %d: %02X\r\n", i, charger_regs[i]);
+	}
+
+//	printf("ONBATT:\r\n");
+//	for(uint8_t i=0;i<4;i++)
+//	{
+//		printf("Charger Status %d: %02X\r\n", i, charger_off_batt[i]);
+//	}
+
+	return kStatus_Success;
 }
 

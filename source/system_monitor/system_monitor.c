@@ -188,23 +188,6 @@ system_monitor_event_battery(void)
   xQueueSend(g_event_queue, &event, portMAX_DELAY);
 }
 
-void
-system_monitor_event_battery_from_isr(void)
-{
-#if (defined(ENABLE_TRACEALYZER) && (ENABLE_TRACEALYZER > 0U))
-    vTraceStoreISRBegin(SYSTEM_MONITOR_CHARGER_TIMEOUT_ISR_TRACE);
-#endif
-
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    system_monitor_event_t event = {
-      .type = SYSTEM_MONITOR_EVENT_BATTERY
-    };
-    xQueueSendFromISR(g_event_queue, &event, &xHigherPriorityTaskWoken);
-//    portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
-#if (defined(ENABLE_TRACEALYZER) && (ENABLE_TRACEALYZER > 0U))
-    vTraceStoreISREnd( xHigherPriorityTaskWoken );
-#endif
-}
 
 void
 system_monitor_event_power_off()
@@ -707,9 +690,6 @@ task_init()
 
   // Initialize battery charger driver
   battery_charger_init();
-
-  // Enable battery charging whenever USB is plugged in
-  battery_charger_enable(true);
 
   // Initialize ADC for battery level reads
   adc_init();
