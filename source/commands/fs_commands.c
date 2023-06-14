@@ -87,10 +87,16 @@ fs_read_command(int argc, char **argv)
   FRESULT result;
   FIL file;
   UINT bytes_read;
+  const char *name = "/test";
 
-  CHK_ARGC(1, 1);
+  CHK_ARGC(1, 2);
 
-  result = f_open(&file, "/test", FA_READ);
+  if (argc > 1)
+  {
+	  name = argv[1];
+  }
+
+  result = f_open(&file, name, FA_READ);
   if (FR_OK != result) {
     printf("f_open(): error: %d\n", result);
   }

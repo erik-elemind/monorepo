@@ -1,5 +1,6 @@
 #include "memfault/components.h"
 #include "cmsis_gcc.h"
+#include "ff.h"
 #include <stdio.h>
 
 // Test platform ports
@@ -15,9 +16,62 @@ void memfault_info_dump_command(int argc, char *argv[]) {
   memfault_device_info_dump();
 }
 
-// Dump Memfault data collected to console
+// Dump Memfault data collected to console/file
 void memfault_test_export_command(int argc, char *argv[]) {
-  memfault_data_export_dump_chunks();
+      //memfault_data_export_dump_chunks(); // Send to console (base64 encoded)
+	  int chunk_num = 0;
+	  FIL file;
+	  FRESULT result;
+
+	  // buffer to copy chunk data into
+	  uint8_t buf[MEMFAULT_DATA_EXPORT_CHUNK_MAX_LEN];
+	  size_t buf_len = sizeof(buf);
+
+	  // make sure dir exists
+	  f_mkdir("memfault/");
+	  f_mkdir("memfault/chunks");
+
+	  while (memfault_packetizer_get_chunk(buf, &buf_len))
+	  {
+		//save single chunk to memfault/chunks dir as single file
+		char log_fnum_buf[15];
+		snprintf ( log_fnum_buf, sizeof(log_fnum_buf), "%d", chunk_num );
+
+		// create log file name
+		char log_fname[128];
+		size_t log_fsize = 0;
+		log_fsize = str_append2(log_fname, log_fsize, "memfault/chunks"); // directory
+		log_fsize = str_append2(log_fname, log_fsize, "/");               // path separator
+		log_fsize = str_append2(log_fname, log_fsize, "chunk");                      // file name
+		log_fsize = str_append2(log_fname, log_fsize, log_fnum_buf);                        // sequence number
+		log_fsize = str_append2(log_fname, log_fsize, ".bin");                       // suffix
+		printf("%s\n", log_fname);
+		// create and write chunk file
+		result = f_open(&file, log_fname, FA_CREATE_NEW | FA_WRITE);
+		if (result != FR_OK)
+		{
+			printf("Failed to open file! Error: %d\n", result);
+			break;
+		}
+
+		UINT bytesWritten;
+		result = f_write(&file, buf, buf_len, &bytesWritten);
+		if (result != FR_OK)
+		{
+			printf("Failed to write to file! Error: %d\n", result);
+			break;
+		}
+
+		result = f_close(&file);
+		if (result != FR_OK)
+		{
+			printf("Failed to close file! Error: %d\n", result);
+			break;
+		}
+		printf("Data saved to file %s successfully!\n", log_fname);
+		chunk_num++;
+	  }
+	  printf("Saved all data\n");
 }
 
 // Runs a sanity test to confirm coredump port is working as expected
