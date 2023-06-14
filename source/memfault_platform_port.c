@@ -25,6 +25,7 @@
 #include "memfault/components.h"
 #include "memfault/ports/reboot_reason.h"
 #include "memfault/ports/freertos.h"
+#include "nand_W25N04KW.h"
 
 #include <stdbool.h>
 
@@ -70,7 +71,7 @@ void memfault_platform_log(eMemfaultPlatformLogLevel level, const char *fmt,
 
 #define MEMFAULT_COREDUMP_NVADDR (290800)
 #define MEMFAULT_COREDUMP_NV_BLKADDR (4075)
-#define MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE 2048
+#define MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE NAND_BLOCK_SIZE
 
 
 MEMFAULT_PUT_IN_SECTION(".noinit.mflt_reboot_tracking")
@@ -235,7 +236,6 @@ static bool prv_op_within_flash_bounds(uint32_t offset, size_t data_len) {
   return (offset + data_len) <= info.size;
 }
 
-#include "nand_W25N04KW.h"
 // Create nand_user data struct
 static nand_user_data_t g_nand_handle = {
   .chipinfo = &nand_chipinfo,
@@ -261,15 +261,20 @@ bool memfault_platform_coredump_storage_read(uint32_t offset, void *data,
   }
 
   int status;
-  static uint8_t read_buffer[MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE];
+  static uint8_t read_buffer[NAND_PAGE_SIZE];
   memset(read_buffer, 0x00, sizeof(read_buffer));
-  status = nand_read_page_into_cache(&g_nand_handle, MEMFAULT_COREDUMP_NVADDR);
+
+  // map offset to page_addr and offset
+  uint32_t page_num = offset / NAND_PAGE_SIZE;
+  uint32_t page_offset = offset % NAND_PAGE_SIZE;
+
+  status = nand_read_page_into_cache(&g_nand_handle, MEMFAULT_COREDUMP_NVADDR + page_num);
   // If ECC_FAIL, still try to read out the page data below (despite ECC errors).
   if (status < 0 && status != NAND_ECC_FAIL) {
     return false;
   }
 
-  status = nand_read_page_from_cache(&g_nand_handle, offset, read_buffer, read_len);
+  status = nand_read_page_from_cache(&g_nand_handle, page_offset, read_buffer, read_len);
   if (status == NAND_ECC_FAIL)
   {
 	  return false;
@@ -288,32 +293,41 @@ bool memfault_platform_coredump_storage_write(uint32_t offset, const void *data,
 
   int status;
 
-  // Read-Modify-Write
-  static uint8_t write_buffer[MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE];
+  static uint8_t write_buffer[NAND_PAGE_SIZE];
   memset(write_buffer, 0x00, sizeof(write_buffer));
-  if(memfault_platform_coredump_storage_read(0, write_buffer, MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE))
+
+  uint32_t page_num = offset / NAND_PAGE_SIZE;
+  uint32_t page_offset = offset % NAND_PAGE_SIZE;
+
+  // Read-Modify-Write
+
+  // Read
+  status = nand_read_page_into_cache(&g_nand_handle, MEMFAULT_COREDUMP_NVADDR + page_num);
+  // If ECC_FAIL, still try to read out the page data below (despite ECC errors).
+  if (status < 0 && status != NAND_ECC_FAIL) {
+    return false;
+  }
+  status = nand_read_page_from_cache(&g_nand_handle, 0, write_buffer, NAND_PAGE_SIZE); // always read from start of page here
+  if (status == NAND_ECC_FAIL)
   {
-	  // Modify
-	  memcpy(write_buffer+offset, data, data_len);
+	  return false;
+  }
+  // Modify
+  memcpy(write_buffer+page_offset, data, data_len);
 
-	  // Erase
-	  if(memfault_platform_coredump_storage_erase(0,MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE))
-	  {
-		  // Write full page to cache
-		  status = nand_write_into_page_cache(&g_nand_handle, 0, write_buffer, MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE);
-		  if (status < 0) {
-		    return false;
-		  }
-
-		  // Program data
-		  status = nand_program_page_cache(&g_nand_handle, MEMFAULT_COREDUMP_NVADDR);
-		  if (status < 0) {
-		    return false;
-		  }
+  // Erase
+  if(memfault_platform_coredump_storage_erase(0,MEMFAULT_PLATFORM_COREDUMP_NVSTORAGE_SIZE))
+  {
+	  // Write full page to cache
+	  status = nand_write_into_page_cache(&g_nand_handle, 0, write_buffer, NAND_PAGE_SIZE);
+	  if (status < 0) {
+		return false;
 	  }
-	  else
-	  {
-		  return false;
+
+	  // Program data
+	  status = nand_program_page_cache(&g_nand_handle, MEMFAULT_COREDUMP_NVADDR + page_num);
+	  if (status < 0) {
+		return false;
 	  }
   }
   else
