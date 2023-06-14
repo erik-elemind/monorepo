@@ -59,10 +59,12 @@ uint8_t *bundleOutAddr = GLOW_GET_ADDR(mutableWeight, TEST_MODEL_StatefulPartiti
 #define ACCEL_PREPROCESS_SIZE 750 	// 25 Hz  * 30 second epoch
 #define HR_PREPROCESS_SIZE 30  	    // 1 Hz   * 30 second epoch
 
+#define MAX_ACCEL_FILT_ORDER 2
 #define ACCEL_HPF_ORDER 2
 #define ACCEL_FS 25
 #define ACCEL_FH 0.1
 
+#define MAX_EEG_FILT_ORDER 4
 #define EEG_BPF_ORDER 4
 #define EEG_FS 250
 #define EEG_FL 0.5
@@ -525,7 +527,7 @@ static void handle_state_preprocess_data(ml_event_t *event)
 			// Channel Switching
 
 			int eeg_select = EEG_FPZ; // FPZ
-			float eeg_chns[] = {g_eegfp1_ready_p, g_eegfpz_ready_p, g_eegfp2_ready_p};	
+			float* eeg_chns[] = {g_eegfp1_ready_p, g_eegfpz_ready_p, g_eegfp2_ready_p};	
 			float fp1_max = findAbsMax(g_eegfp1_ready_p, EEG_BUF_SIZE);
 			float fpz_max = findAbsMax(g_eegfpz_ready_p, EEG_BUF_SIZE);
 			float fp2_max = findAbsMax(g_eegfp2_ready_p, EEG_BUF_SIZE);
@@ -630,8 +632,17 @@ static void handle_event(ml_event_t *event)
     case ML_EVENT_STOP:
       ml_disable();
 
-      g_eeg_fill_p = g_eeg_A; 
-      g_eeg_ready_p = g_eeg_B;
+    //   g_eeg_fill_p = g_eeg_A; 
+    //   g_eeg_ready_p = g_eeg_B;
+
+	  g_eegfp1_fill_p = g_eegfp1_A;
+	  g_eegfp1_ready_p = g_eegfp1_B;
+
+	  g_eegfpz_fill_p = g_eegfpz_A;
+	  g_eegfpz_ready_p = g_eegfpz_B;
+
+	  g_eegfp2_fill_p = g_eegfp2_A;
+	  g_eegfp2_ready_p = g_eegfp2_B;
 
       g_eeg_fill_idx = 0;
       g_eeg_buf_ready = false;

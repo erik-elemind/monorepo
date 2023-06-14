@@ -11,7 +11,6 @@ extern "C" {
 #endif
 
 #define FILT_TYPE float
-#define MAX_ACCEL_FILT_ORDER 2
 
 void ml_pretask_init(void);
 void ml_task(void *ignored);
