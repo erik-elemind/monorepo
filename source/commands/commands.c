@@ -31,7 +31,6 @@
 #include "led_commands.h"
 #include "command_helpers.h"
 #include "hrm_commands.h"
-#include "charger_commands.h"
 #include "accel_commands.h"
 #include "dhara_ppstress.h"
 #include "settings_commands.h"
@@ -138,6 +137,9 @@ const shell_command_t commands[] = {
 #endif // FLASH_COMMANDS_H
 
 	{ P_ALL, "pmic_status", pmic_status_command, "" },
+	{ P_ALL, "pmic_test", pmic_test_command, "" },
+	{ P_ALL, "pmic_enter_ship_mode", pmic_enter_ship_mode_command, "" },
+	{ P_ALL, "pmic_batt_status", pmic_batt_status, "Get battery charging status from PCA9420 charge controller" },
 
 #ifdef NAND_COMMANDS_H
     { P_ALL, "nand_id", nand_id_command, "Read SPI Flash ID register" },
@@ -359,9 +361,6 @@ const shell_command_t commands[] = {
     { P_ALL, "i2c_sensor_scan", i2c_sensor_scan, "Scan the Flexcomm (accel, als, audio, hrm) I2C bus. Prints address and state code of active devices." },
     { P_ALL, "i2c_sensor_read_byte", i2c_sensor_read_byte, "Read byte from I2C device on Flexcomm (accel, als, audio, hrm) bus " },
     { P_ALL, "i2c_sensor_write_byte", i2c_sensor_write_byte, "Write byte to I2C device on Flexcomm (accel, als, audio, hrm) bus" },
-    { P_ALL, "batt_charge_enable", batt_charge_enable, "Enable battery charging on BQ25887 charge controller" },
-    { P_ALL, "batt_charge_disable", batt_charge_disable, "Disable battery charging on BQ25887 charge controller" },
-    { P_ALL, "batt_status", batt_status, "Get battery charging status from BQ25887 charge controller" },
     { P_ALL, "hrm_off", hrm_off, "Turn on heart rate monitor" },
     { P_ALL, "hrm_on", hrm_on, "Turn off heart rate monitor" },
 	{ P_ALL, "hrm_test", hrm_test, "" },

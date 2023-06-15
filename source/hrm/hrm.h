@@ -1,8 +1,7 @@
 #ifndef HRM_H
 #define HRM_H
 
-#include "vcnl4020c.h"
-#include "hrm_vcnl4020c.h"
+#include "max86140.h"
 
 // Start: Tell C++ compiler to include this C header.
 #ifdef __cplusplus

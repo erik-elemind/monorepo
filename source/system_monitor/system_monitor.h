@@ -1,7 +1,7 @@
 #ifndef SYSTEM_MONITOR_H
 #define SYSTEM_MONITOR_H
 
-#include "battery_charger.h"
+#include "pmic_pca9420.h"
 
 #ifdef __cplusplus
 extern "C" {

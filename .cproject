@@ -704,7 +704,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/commands"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/compression"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/config"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/custom_drivers"/>
+						<entry excluding="battery_charger/battery_charger.h|battery_charger/battery_charger.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/custom_drivers"/>
 						<entry excluding="offline" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/data_log"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/dhara_interface"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source/eeg_reader"/>
