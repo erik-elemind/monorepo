@@ -9,10 +9,9 @@
 #include "pmic_pca9420.h"
 #include "peripherals.h"
 #include "loglevels.h"
+#include "util_delay.h"
 
 #define TAG "pmic"
-
-#define REG_ADDR_MODECFG_0_0 0x22
 
 static pca9420_handle_t pca9420Handle;
 static pca9420_modecfg_t pca9420CurrModeCfg;
@@ -173,15 +172,25 @@ static void pmic_config_default_modes(pca9420_modecfg_t *cfg, uint32_t num){
 
 void pmic_test(void)
 {
-	uint8_t val;
-	if(PCA9420_ReadRegs(&pca9420Handle, 0x00, &val, 1) == true)
+	uint8_t regVal;
+	if(PCA9420_ReadRegs(&pca9420Handle, PCA9420_DEV_INFO, &regVal, 1) == true)
 	{
-		printf("PMIC ID: 0x%2X\r\n", val);
+		printf("PMIC ID: 0x%2X\r\n", regVal);
 	}
 	else
 	{
 		printf("Read failed\r\n");
 	}
+
+    // Soft reset all register values
+    regVal = 0x05;
+	if(PCA9420_WriteRegs(&pca9420Handle, PCA9420_TOP_CNTL3, &regVal, 1) != true)
+	{
+		LOGE(TAG, "Error writing to the PMIC");
+	}
+
+	// Should never get here, device will reset
+	util_delay_ms(3);
 }
 
 /*
@@ -241,6 +250,7 @@ void pmic_init(){
     // Init PMIC
 	pca9420_config_t pca9420Config;
 	pca9420_modecfg_t pca9420ModeCfg[4];
+	uint8_t regVal=0;
 
     /* Init PCA9420 Component. */
     PCA9420_GetDefaultConfig(&pca9420Config);
@@ -260,6 +270,34 @@ void pmic_init(){
     /* Enable PMIC interrupts. */
     PCA9420_EnableInterrupts(&pca9420Handle, kPCA9420_IntSrcSysAll | kPCA9420_IntSrcRegulatorAll);
 
+    // Set charging parameters
+
+    // Unlock CHG_LOCK
+    regVal = 0xAB;
+	if(PCA9420_WriteRegs(&pca9420Handle, PCA9420_CHG_CNTL0, &regVal, 1) != true)
+	{
+		LOGE(TAG, "Error writing to the PMIC");
+	}
+
+    // ICHG_CC to 315 mA
+    regVal = 0x3F;
+    if(PCA9420_WriteRegs(&pca9420Handle, PCA9420_CHG_CNTL1, &regVal, 1) != true)
+    {
+    	LOGE(TAG, "Error writing to the PMIC");
+    }
+    // VBAT_REG to 4.0V
+    regVal = 0x14;
+	if(PCA9420_WriteRegs(&pca9420Handle, PCA9420_CHG_CNTL5, &regVal, 1) != true)
+	{
+		LOGE(TAG, "Error writing to the PMIC");
+	}
+
+	// Relock Charge Lock
+	regVal = 0x03;
+	if(PCA9420_WriteRegs(&pca9420Handle, PCA9420_CHG_CNTL0, &regVal, 1) != true)
+	{
+		LOGE(TAG, "Error writing to the PMIC");
+	}
 }
 
 void pmic_enter_ship_mode(void)
@@ -267,7 +305,7 @@ void pmic_enter_ship_mode(void)
 	uint8_t val;
 
 	// Read mode 0 config 0 register
-	if(PCA9420_ReadRegs(&pca9420Handle, REG_ADDR_MODECFG_0_0, &val, 1) == true)
+	if(PCA9420_ReadRegs(&pca9420Handle, PCA9420_MODECFG_0_0, &val, 1) == true)
 	{
 		printf("PMIC Mode 0 control: 0x%2X\r\n", val);
 	}
@@ -280,7 +318,7 @@ void pmic_enter_ship_mode(void)
 	val |= 0x80;
 
 	// This will put device into the ship mode
-	PCA9420_WriteRegs(&pca9420Handle, REG_ADDR_MODECFG_0_0, &val, 1);
+	PCA9420_WriteRegs(&pca9420Handle, PCA9420_MODECFG_0_0, &val, 1);
 }
 
 bool BOARD_SetPmicVoltageForFreq(power_part_temp_range_t tempRange,
@@ -452,6 +490,7 @@ battery_charger_status_t battery_charger_get_status(void)
 status_t battery_charger_print_detailed_status(void)
 {
 	uint8_t charger_regs[4];
+	uint8_t charger_control_regs[7];
 	if(PCA9420_ReadRegs(&pca9420Handle, 0x18, charger_regs, 4) != true)
 	{
 		LOGE(TAG, "Error reading charger status registers");
@@ -464,11 +503,17 @@ status_t battery_charger_print_detailed_status(void)
 		printf("Charger Status %d: %02X\r\n", i, charger_regs[i]);
 	}
 
-//	printf("ONBATT:\r\n");
-//	for(uint8_t i=0;i<4;i++)
-//	{
-//		printf("Charger Status %d: %02X\r\n", i, charger_off_batt[i]);
-//	}
+	if(PCA9420_ReadRegs(&pca9420Handle, 0x10, charger_control_regs, 7) != true)
+	{
+		LOGE(TAG, "Error reading charger control registers");
+		return kStatus_Fail;
+	}
+
+	printf("ONREG:\r\n");
+	for(uint8_t i=0;i<7;i++)
+	{
+		printf("Charger Control %d: %02X\r\n", i, charger_control_regs[i]);
+	}
 
 	return kStatus_Success;
 }
