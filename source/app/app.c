@@ -457,7 +457,7 @@ stop_ble_off_timer(void)
 static void
 set_led_by_charger_status(void)
 {
-  battery_charger_status_t status = battery_charger_get_status();
+  battery_charger_status_t status = pmic_battery_charger_get_status();
 
   switch (status)
     {

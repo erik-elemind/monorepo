@@ -459,7 +459,7 @@ handle_battery_event(void)
 {
   static battery_charger_status_t prev_status = -1;
 
-  battery_charger_status_t battery_status = battery_charger_get_status();
+  battery_charger_status_t battery_status = pmic_battery_charger_get_status();
 
   //battery_level_get(); // ToDo: Need to bring up proper battery reading
 
@@ -686,10 +686,6 @@ task_init()
 
 //  restart_wwdt_feed_timer();
 #endif
-
-
-  // Initialize battery charger driver
-  battery_charger_init();
 
   // Initialize ADC for battery level reads
   adc_init();

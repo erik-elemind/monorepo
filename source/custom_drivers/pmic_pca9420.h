@@ -29,15 +29,12 @@ typedef enum {
   BATTERY_CHARGER_STATUS_FAULT ///< Problem with battery or input source
 } battery_charger_status_t;
 
-
-void battery_charger_init(void);
-battery_charger_status_t battery_charger_get_status(void);
-status_t battery_charger_print_detailed_status(void);
-
 void pmic_dump_modes(void);
 void pmic_test(void);
 void pmic_init(void);
 void pmic_enter_ship_mode(void);
+battery_charger_status_t pmic_battery_charger_get_status(void);
+status_t pmic_battery_charger_print_detailed_status(void);
 void BOARD_SetPmicVoltageBeforeDeepSleep(void);
 void BOARD_RestorePmicVoltageAfterDeepSleep(void);
 void BOARD_SetPmicVoltageBeforeDeepPowerDown(void);

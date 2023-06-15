@@ -182,8 +182,8 @@ void pmic_test(void)
 		printf("Read failed\r\n");
 	}
 
-    // Soft reset all register values
-    regVal = 0x05;
+	// Soft reset all register values
+	regVal = 0x05;
 	if(PCA9420_WriteRegs(&pca9420Handle, PCA9420_TOP_CNTL3, &regVal, 1) != true)
 	{
 		LOGE(TAG, "Error writing to the PMIC");
@@ -442,13 +442,7 @@ void BOARD_SetPmicVoltageBeforeDeepPowerDown(void)
     }
 }
 
-// Global function definitions
-void battery_charger_init(void)
-{
-  LOGV(TAG, "battery_charger_init");
-}
-
-battery_charger_status_t battery_charger_get_status(void)
+battery_charger_status_t pmic_battery_charger_get_status(void)
 {
 	uint8_t charger_status_0=0;
 	uint8_t charger_status_2=0;
@@ -487,7 +481,7 @@ battery_charger_status_t battery_charger_get_status(void)
 	return BATTERY_CHARGER_STATUS_FAULT;
 }
 
-status_t battery_charger_print_detailed_status(void)
+status_t pmic_battery_charger_print_detailed_status(void)
 {
 	uint8_t charger_regs[4];
 	uint8_t charger_control_regs[7];

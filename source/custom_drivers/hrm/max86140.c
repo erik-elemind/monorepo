@@ -10,6 +10,7 @@ static const char *TAG = "hrm";  // Logging prefix for this module
 
 static void rreg(uint8_t reg, uint8_t* val);
 static void wreg(uint8_t reg, uint8_t val);
+static void burst_sample_read(uint8_t* buff, uint8_t sampleCnt);
 static void max86140_print_all_regs(void);
 
 static void rreg(uint8_t reg, uint8_t* val)
