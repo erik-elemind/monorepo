@@ -5,10 +5,6 @@
 #include "nand_W25N04KW.h"
 #include "command_helpers.h"
 
-
-void memfault_save_eventlog_chunks_file(void);
-void memfault_save_coredump_chunks_file(void);
-
 // Test platform ports
 void memfault_test_logging_command(int argc, char *argv[]) {
   MEMFAULT_LOG_DEBUG("Debug log!");

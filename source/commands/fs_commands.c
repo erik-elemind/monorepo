@@ -294,6 +294,7 @@ fs_rm_datalogs_command(int argc, char **argv){
   char buf[MAX_PATH_LENGTH+2];
   const char *datalog_name = "/datalogs";
   const char *usermetrics_name = "/user_metrics";
+  const char *memfault_name = "/memfault";
   char *sub;
   int ret = 0;
 
@@ -340,6 +341,36 @@ fs_rm_datalogs_command(int argc, char **argv){
       buf[sizeof(buf)-1] = '\0';
       sub = buf;
       if (usermetrics_name[strlen(usermetrics_name)-1] != '/') {
+        sub = strcat(buf, "/");
+      }
+      sub = strcat(sub, finfo.fname);
+      ret = f_unlink(sub);
+      if (ret == 0) {
+        printf("Delete '%s' succ.\n", sub);
+      }
+      else {
+        printf("Delete '%s' fail!\n", sub);
+      }
+      // move to next entry
+      result = f_readdir(&dir, &finfo);
+    }
+
+    f_closedir(&dir);
+  }
+
+  // remove memfault files
+  result = f_opendir(&dir, memfault_name);
+  if (FR_OK != result) {
+    printf("Can't open '%s' directory\n", memfault_name);
+  }
+  else {
+    result = f_readdir(&dir, &finfo);
+    // FatFS indicates end of directory with a null name
+    while (FR_OK == result && 0 != finfo.fname[0]) {
+      strncpy(buf, memfault_name, sizeof(buf)-1);
+      buf[sizeof(buf)-1] = '\0';
+      sub = buf;
+      if (memfault_name[strlen(memfault_name)-1] != '/') {
         sub = strcat(buf, "/");
       }
       sub = strcat(sub, finfo.fname);
