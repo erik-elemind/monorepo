@@ -43,9 +43,9 @@ static void lpc_reset_isp(bool isp)
     // Set up LPC reset and ISP GPIOs (active-low)
     if (isp)
     {
-        nrf_gpio_cfg_input(ISP0N_PIN, NRF_GPIO_PIN_PULLDOWN);
-        nrf_gpio_cfg_input(ISP1N_PIN, NRF_GPIO_PIN_PULLDOWN);
-        nrf_gpio_cfg_input(ISP2N_PIN, NRF_GPIO_PIN_PULLDOWN);
+        nrf_gpio_pin_clear(ISP0N_PIN);
+        nrf_gpio_pin_set(ISP1N_PIN);
+        nrf_gpio_pin_set(ISP2N_PIN);
         nrf_gpio_cfg_output(LPC_ISPN_PIN);
     }
 
@@ -59,9 +59,9 @@ static void lpc_reset_isp(bool isp)
     {
         // Hold ISP enter flag low for a bit more
         nrf_delay_ms(LPC_ISPN_HOLD_TIME_MS);
-        nrf_gpio_cfg_input(ISP0N_PIN, NRF_GPIO_PIN_PULLUP);
-        nrf_gpio_cfg_input(ISP1N_PIN, NRF_GPIO_PIN_PULLUP);
-        nrf_gpio_cfg_input(ISP2N_PIN, NRF_GPIO_PIN_PULLUP);
+        nrf_gpio_pin_clear(ISP0N_PIN);
+        nrf_gpio_pin_set(ISP1N_PIN);
+        nrf_gpio_pin_clear(ISP2N_PIN);
     }
 }
 

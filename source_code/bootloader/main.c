@@ -122,6 +122,10 @@ int main(void)
 {
     uint32_t ret_val;
 
+    nrf_gpio_cfg_output(ISP0N_PIN);
+    nrf_gpio_cfg_output(ISP1N_PIN);
+    nrf_gpio_cfg_output(ISP2N_PIN);
+
     // Must happen before flash protection is applied, since it edits a protected page.
     nrf_bootloader_mbr_addrs_populate();
 
