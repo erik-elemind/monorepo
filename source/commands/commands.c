@@ -467,7 +467,8 @@ const shell_command_t commands[] = {
 	{P_SHELL, "memfault_check_coredump_nand", memfault_check_coredump_nand, "Memfault Check coredump NAND"},
 	{P_SHELL, "memfault_test_coredump_nand_write", memfault_test_coredump_nand_write, "Memfault Test coredump NAND write"},
 	{P_SHELL, "memfault_test_coredump_nand_erase", memfault_test_coredump_nand_erase, "Memfault Test coredump NAND erase"},
-
+	{P_SHELL, "memfault_save_eventlog_chunks", memfault_save_eventlog_chunks_command, "Memfault save event/log chunks to file"},
+	{P_SHELL, "memfault_save_coredump_chunks", memfault_save_coredump_chunks_command, "Memfault save coredump chunks to file"},
 
     // Misc low level tests
 #if (defined(ENABLE_STREAM_MEMORY_TEST_COMMANDS) && (ENABLE_STREAM_MEMORY_TEST_COMMANDS > 0U))

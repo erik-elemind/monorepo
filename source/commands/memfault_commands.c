@@ -5,6 +5,10 @@
 #include "nand_W25N04KW.h"
 #include "command_helpers.h"
 
+
+void memfault_save_eventlog_chunks_file(void);
+void memfault_save_coredump_chunks_file(void);
+
 // Test platform ports
 void memfault_test_logging_command(int argc, char *argv[]) {
   MEMFAULT_LOG_DEBUG("Debug log!");
@@ -97,8 +101,16 @@ void memfault_test_coredump_nand_erase(int argc, char *argv[]) {
 	memfault_platform_coredump_storage_erase(0, NAND_BLOCK_SIZE);
 }
 
-// Public use
-void memfault_export_chunks_file_command(void)
+void memfault_save_eventlog_chunks_command(int argc, char *argv[]) {
+	memfault_save_eventlog_chunks();
+}
+
+void memfault_save_coredump_chunks_command(int arg, char *argv[]) {
+	memfault_save_coredump_chunks();
+}
+
+// Private use
+void memfault_save_eventlog_chunks(void)
 {
 	  static int32_t chunk_num = 0;
 	  static FIL file;
@@ -112,6 +124,8 @@ void memfault_export_chunks_file_command(void)
 	  f_mkdir("memfault/");
 	  f_mkdir("memfault/chunks");
 
+	  // set active sources to events and logs
+	  memfault_packetizer_set_active_sources((kMfltDataSourceMask_Event | kMfltDataSourceMask_Log));
 	  while (memfault_packetizer_get_chunk(buf, &buf_len))
 	  {
       //save single chunk to memfault/chunks dir as single file
@@ -153,5 +167,75 @@ void memfault_export_chunks_file_command(void)
       chunk_num++;
 	  }
 	  printf("No data left to save\n");
+	  memfault_packetizer_set_active_sources(kMfltDataSourceMask_All);
+}
+
+void memfault_save_coredump_chunks(void)
+{
+	size_t total_size;
+	if(memfault_coredump_has_valid_coredump(&total_size)) {
+		  MEMFAULT_LOG_INFO("Valid coredump found!");
+
+		  static int32_t chunk_num = 0;
+		  static FIL file;
+		  static FRESULT result;
+
+		  // buffer to copy chunk data into
+		  static uint8_t buf[MEMFAULT_DATA_EXPORT_CHUNK_MAX_LEN];
+		  static size_t buf_len = sizeof(buf);
+
+		  // make sure dir exists
+		  f_mkdir("memfault/");
+		  f_mkdir("memfault/coredump");
+
+		  // set active sources to events and logs
+		  memfault_packetizer_set_active_sources(kMfltDataSourceMask_Coredump);
+		  while (memfault_packetizer_get_chunk(buf, &buf_len))
+		  {
+			  //save single chunk to memfault/chunks dir as single file
+			  char log_fnum_buf[15];
+			  snprintf ( log_fnum_buf, sizeof(log_fnum_buf), "%d", chunk_num );
+
+			  // create log file name
+			  char log_fname[128];
+			  size_t log_fsize = 0;
+			  log_fsize = str_append2(log_fname, log_fsize, "memfault/coredump"); // directory
+			  log_fsize = str_append2(log_fname, log_fsize, "/");               // path separator
+			  log_fsize = str_append2(log_fname, log_fsize, "chunk");           // file name
+			  log_fsize = str_append2(log_fname, log_fsize, log_fnum_buf);      // sequence number
+			  log_fsize = str_append2(log_fname, log_fsize, ".bin");            // suffix
+
+			  // create and write chunk file
+			  result = f_open(&file, log_fname, FA_CREATE_NEW | FA_WRITE);
+			  if (result != FR_OK)
+			  {
+				printf("Failed to open file %s! Error: %d\n", log_fname, result);
+				break;
+			  }
+
+			  UINT bytesWritten;
+			  result = f_write(&file, buf, buf_len, &bytesWritten);
+			  if (result != FR_OK)
+			  {
+				printf("Failed to write to file %s! Error: %d\n", log_fname, result);
+				break;
+			  }
+
+			  result = f_close(&file);
+			  if (result != FR_OK)
+			  {
+				printf("Failed to close file %s! Error: %d\n", log_fname, result);
+				break;
+			  }
+			  printf("Data saved to file %s successfully!\n", log_fname);
+			  chunk_num++;
+		  }
+		  printf("No data left to save\n");
+		  memfault_packetizer_set_active_sources(kMfltDataSourceMask_All);
+
+	}
+	else {
+		MEMFAULT_LOG_INFO("No valid coredump found :( ");
+	}
 }
 
