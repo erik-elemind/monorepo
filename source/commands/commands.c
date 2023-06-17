@@ -340,6 +340,7 @@ const shell_command_t commands[] = {
 
     { P_ALL, "audio_play_test", audio_play_test_command, "Play test sine wave, right channel has higher freq than left." },
     { P_ALL, "audio_stop_test", audio_stop_test_command, "Stop test sine wave" },
+	{ P_ALL, "audio_info",      audio_info_command, "Print detailed audio amplifier info" },
 
 //    audio_set_bg_volume
 

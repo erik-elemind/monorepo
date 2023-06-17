@@ -111,23 +111,31 @@ void BOARD_InitBootPins(void);
 /*! @name FC4_SCK (coord D11), SSM2518_BCLK
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_SSM2518_BCLK_PERIPHERAL FLEXCOMM4 /*!<@brief Peripheral name */
-#define BOARD_INITPINS_SSM2518_BCLK_SIGNAL SCK           /*!<@brief Signal name */
-                                                         /* @} */
+#define BOARD_INITPINS_SSM2518_BCLK_PERIPHERAL FLEXCOMM4               /*!<@brief Peripheral name */
+#define BOARD_INITPINS_SSM2518_BCLK_SIGNAL SCK                         /*!<@brief Signal name */
+                                                                       /* @} */
 
 /*! @name FC4_TXD_SCL_MISO_WS (coord B10), SSM2518_LRCLK
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_SSM2518_LRCLK_PERIPHERAL FLEXCOMM4         /*!<@brief Peripheral name */
-#define BOARD_INITPINS_SSM2518_LRCLK_SIGNAL TXD_SCL_MISO_WS       /*!<@brief Signal name */
-                                                                  /* @} */
+/*!
+ * @brief Peripheral name */
+#define BOARD_INITPINS_SSM2518_LRCLK_PERIPHERAL FLEXCOMM4
+/*!
+ * @brief Signal name */
+#define BOARD_INITPINS_SSM2518_LRCLK_SIGNAL TXD_SCL_MISO_WS
+/* @} */
 
 /*! @name FC4_RXD_SDA_MOSI_DATA (coord C11), SSM2518_SDATA
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_SSM2518_SDATA_PERIPHERAL FLEXCOMM4           /*!<@brief Peripheral name */
-#define BOARD_INITPINS_SSM2518_SDATA_SIGNAL RXD_SDA_MOSI_DATA       /*!<@brief Signal name */
-                                                                    /* @} */
+/*!
+ * @brief Peripheral name */
+#define BOARD_INITPINS_SSM2518_SDATA_PERIPHERAL FLEXCOMM4
+/*!
+ * @brief Signal name */
+#define BOARD_INITPINS_SSM2518_SDATA_SIGNAL RXD_SDA_MOSI_DATA
+/* @} */
 
 /*! @name PIO0_31 (coord A11), MEMS_WAKE
   @{ */

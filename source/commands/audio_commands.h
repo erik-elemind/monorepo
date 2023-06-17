@@ -54,6 +54,8 @@ void audio_pink_volume_command(int argc, char **argv);
 void audio_play_test_command(int argc, char **argv);
 void audio_stop_test_command(int argc, char **argv);
 
+void audio_info_command(int argc, char **argv);
+
 void erp_start_command(int argc, char **argv);
 void erp_stop_command(int argc, char **argv);
 

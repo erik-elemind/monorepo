@@ -635,11 +635,11 @@ instance:
       - i2s_mono_palcement: 'kSAI_Mono_Left'
       - positionM: '0'
       - secondary_channels_array: []
-      - frameLengthM: '128'
+      - frameLengthM: '32'
       - rightLow: 'false'
       - leftJust: 'false'
       - watermarkM_Tx: 'ki2s_TxFifo4'
-      - txEmptyZeroTx: 'true'
+      - txEmptyZeroTx: 'false'
       - pack48: 'false'
   - dmaCfg:
     - dma_channels:
@@ -663,13 +663,13 @@ const i2s_config_t FC4_AUDIO_I2S_config = {
   .leftJust = false,
   .sckPol = false,
   .wsPol = false,
-  .divider = 1,
+  .divider = 4,
   .oneChannel = false,
   .dataLength = 16,
-  .frameLength = 128,
+  .frameLength = 32,
   .position = 0,
   .watermark = 4,
-  .txEmptyZero = true,
+  .txEmptyZero = false,
   .pack48 = false
 };
 dma_handle_t FC4_AUDIO_I2S_TX_Handle;

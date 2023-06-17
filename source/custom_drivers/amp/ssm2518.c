@@ -58,7 +58,7 @@ static i2c_rtos_handle_t* g_i2c_handle;
 *
 * @return None.
 ******************************************************************************/
-void SSM2518_WriteReg(char regAddr, unsigned char data)
+status_t SSM2518_WriteReg(char regAddr, unsigned char data)
 {
   i2c_master_transfer_t masterXfer;
   status_t status;
@@ -76,6 +76,8 @@ void SSM2518_WriteReg(char regAddr, unsigned char data)
   if (status != kStatus_Success) {
     // TODO: Print Error Message
   }
+
+  return status;
 }
 
 /*****************************************************************************
@@ -85,10 +87,8 @@ void SSM2518_WriteReg(char regAddr, unsigned char data)
 *
 * @return rxBuffer[0] - data read from device.
 ******************************************************************************/
-unsigned char SSM2518_ReadReg(char regAddr)
+status_t SSM2518_ReadReg(char regAddr, unsigned char *data)
 {
-  unsigned char data;
-
 //  I2C_Read_axi(I2C_BASEADDR, SSM2518_I2C_ADDR, regAddr, 1, rxBuffer);
 
   i2c_master_transfer_t masterXfer;
@@ -98,7 +98,7 @@ unsigned char SSM2518_ReadReg(char regAddr)
   masterXfer.direction      = kI2C_Read;
   masterXfer.subaddress     = regAddr;
   masterXfer.subaddressSize = 1;
-  masterXfer.data           = &data;
+  masterXfer.data           = data;
   masterXfer.dataSize       = 1;
   masterXfer.flags          = kI2C_TransferDefaultFlag;
 
@@ -107,17 +107,28 @@ unsigned char SSM2518_ReadReg(char regAddr)
     // TODO: Print Error Message
   }
 
-  return data;
+  return status;
 }
 
 /*****************************************************************************
 * @brief Initialize SSM2518
 *
+* @param i2c_rtos_handle_t *i2c_handle
+*
+* @return None.
+******************************************************************************/
+void SSM2518_Init(i2c_rtos_handle_t *i2c_handle){
+	g_i2c_handle = i2c_handle;
+}
+
+/*****************************************************************************
+* @brief Configure SSM2518
+*
 * @param None.
 *
 * @return None.
 ******************************************************************************/
-void SSM2518_Init(i2c_rtos_handle_t *i2c_handle)
+void SSM2518_Config()
 {
 #if 0
   // Initializing SSM2518 via I2C.
@@ -199,9 +210,6 @@ void SSM2518_Init(i2c_rtos_handle_t *i2c_handle)
   // *******0 - Automatic Power-Down Enable, auto power-down disabled
   SSM2518_WriteReg(i2c_handle, SSM2518_Power_Fault_Control,                  0x80);
 #else
-  // Initializing SSM2518 via I2C.
-
-  g_i2c_handle = i2c_handle;
   // Reset Power Control Register (RegAddr 0):
   // 00100000
   // 0******* - Software Reset            , Normal operation (do not reset)
@@ -292,4 +300,11 @@ void SSM2518_SetVolume(uint8_t volume)
 	SSM2518_WriteReg(SSM2518_Left_Volume_Control, volume);
 	// Right Channel Volume Control Register (RegAddr 6):
 	SSM2518_WriteReg(SSM2518_Right_Volume_Control, volume);
+}
+
+/* Output detailed SSM2529 status. */
+int SSM2518_print_detailed_status()
+{
+  int status = kStatus_Success;
+  return status;
 }

@@ -131,11 +131,72 @@
 extern "C" {
 #endif
 
-void SSM2529_WriteReg(char regAddr, unsigned char data);
-unsigned char SSM2529_ReadReg(char regAddr);
+typedef union{
+	struct {
+		// lsb
+		uint8_t spwdn     : 1; // r/w
+		uint8_t mcs       : 3; // r/w
+		uint8_t lp_mode   : 1; // r/w
+		uint8_t apwdn_en  : 1; // r/w
+		uint8_t apwdn_ana : 1; // r/w
+		uint8_t sys_rst   : 1; // r/w
+		// msb
+	};
+	uint8_t init_all;
+}ssm2529_pwr_ctrl_t;
+
+typedef union{
+	struct {
+		// lsb
+		uint8_t ana_gain      : 1; // r/w
+		uint8_t dig_vol_force : 1; // r/w
+		uint8_t pdp_vol_force : 1; // r/w
+		uint8_t _na           : 1; // r/w
+		uint8_t sr_auto       : 3; // r
+		uint8_t clk_loss_det  : 1; // r/w
+		// msb
+	};
+	uint8_t init_all;
+}ssm2529_vol_and_mute_ctrl_t;
+
+
+typedef union{
+	struct {
+		// lsb
+		uint8_t coren        : 1; // r/w
+		uint8_t pllen        : 1; // r/w
+		uint8_t apll_lock    : 1; // r
+		uint8_t dpll_lock    : 1; // r
+		uint8_t apll_bypass  : 1; // r/w
+		uint8_t dpll_bypass  : 1; // r/w
+		uint8_t fsys_dpll    : 2; // r/w
+		// msb
+	};
+	uint8_t init_all;
+}ssm2529_apll_ctrl6_t;
+
+typedef union{
+	struct {
+		// lsb
+		uint8_t ot       : 1; // r
+		uint8_t oc       : 1; // r
+		uint8_t clk_loss : 1; // r
+		uint8_t pdb_zc   : 1; // r/w
+		uint8_t pdb_line : 1; // r/w
+		uint8_t _na      : 3; // r/w
+		// msb
+	};
+	uint8_t init_all;
+}ssm2529_fault_ctrl1_t;
+
+
+status_t SSM2529_WriteReg(char regAddr, unsigned char data);
+status_t SSM2529_ReadReg(char regAddr, unsigned char *data);
 void SSM2529_Init(i2c_rtos_handle_t *i2c_handle);
+void SSM2529_Config();
 void SSM2529_SetVolume(uint8_t volume);
 void SSM2529_Mute(bool mute);
+int SSM2529_print_detailed_status();
 
 // End: Tell C++ compiler to include this C header.
 #ifdef __cplusplus
