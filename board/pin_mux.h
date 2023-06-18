@@ -28,6 +28,7 @@ void BOARD_InitBootPins(void);
 #define IOPCTL_PIO_ANAMUX_DI 0x00u        /*!<@brief Analog mux is disabled */
 #define IOPCTL_PIO_ANAMUX_EN 0x0200u      /*!<@brief Analog mux is enabled */
 #define IOPCTL_PIO_FULLDRIVE_DI 0x00u     /*!<@brief Normal drive */
+#define IOPCTL_PIO_FULLDRIVE_EN 0x0100u   /*!<@brief Full drive enable */
 #define IOPCTL_PIO_FUNC0 0x00u            /*!<@brief Selects pin function 0 */
 #define IOPCTL_PIO_FUNC1 0x01u            /*!<@brief Selects pin function 1 */
 #define IOPCTL_PIO_FUNC2 0x02u            /*!<@brief Selects pin function 2 */
@@ -111,31 +112,23 @@ void BOARD_InitBootPins(void);
 /*! @name FC4_SCK (coord D11), SSM2518_BCLK
   @{ */
 /* Routed pin properties */
-#define BOARD_INITPINS_SSM2518_BCLK_PERIPHERAL FLEXCOMM4               /*!<@brief Peripheral name */
-#define BOARD_INITPINS_SSM2518_BCLK_SIGNAL SCK                         /*!<@brief Signal name */
-                                                                       /* @} */
+#define BOARD_INITPINS_SSM2518_BCLK_PERIPHERAL FLEXCOMM4 /*!<@brief Peripheral name */
+#define BOARD_INITPINS_SSM2518_BCLK_SIGNAL SCK           /*!<@brief Signal name */
+                                                         /* @} */
 
 /*! @name FC4_TXD_SCL_MISO_WS (coord B10), SSM2518_LRCLK
   @{ */
 /* Routed pin properties */
-/*!
- * @brief Peripheral name */
-#define BOARD_INITPINS_SSM2518_LRCLK_PERIPHERAL FLEXCOMM4
-/*!
- * @brief Signal name */
-#define BOARD_INITPINS_SSM2518_LRCLK_SIGNAL TXD_SCL_MISO_WS
-/* @} */
+#define BOARD_INITPINS_SSM2518_LRCLK_PERIPHERAL FLEXCOMM4         /*!<@brief Peripheral name */
+#define BOARD_INITPINS_SSM2518_LRCLK_SIGNAL TXD_SCL_MISO_WS       /*!<@brief Signal name */
+                                                                  /* @} */
 
 /*! @name FC4_RXD_SDA_MOSI_DATA (coord C11), SSM2518_SDATA
   @{ */
 /* Routed pin properties */
-/*!
- * @brief Peripheral name */
-#define BOARD_INITPINS_SSM2518_SDATA_PERIPHERAL FLEXCOMM4
-/*!
- * @brief Signal name */
-#define BOARD_INITPINS_SSM2518_SDATA_SIGNAL RXD_SDA_MOSI_DATA
-/* @} */
+#define BOARD_INITPINS_SSM2518_SDATA_PERIPHERAL FLEXCOMM4           /*!<@brief Peripheral name */
+#define BOARD_INITPINS_SSM2518_SDATA_SIGNAL RXD_SDA_MOSI_DATA       /*!<@brief Signal name */
+                                                                    /* @} */
 
 /*! @name PIO0_31 (coord A11), MEMS_WAKE
   @{ */

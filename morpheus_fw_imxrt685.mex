@@ -192,21 +192,21 @@
                   </pin>
                   <pin peripheral="FLEXCOMM4" signal="SCK" pin_num="D11" pin_signal="PIO0_28/FC4_SCK/CTIMER4_MAT0/I2S_BRIDGE_CLK_OUT/SEC_PIO0_28">
                      <pin_features>
-                        <pin_feature name="direction" value="OUTPUT"/>
                         <pin_feature name="ibena" value="enabled"/>
+                        <pin_feature name="drive" value="full"/>
                         <pin_feature name="iiena" value="disabled"/>
                      </pin_features>
                   </pin>
                   <pin peripheral="FLEXCOMM4" signal="TXD_SCL_MISO_WS" pin_num="B10" pin_signal="PIO0_29/FC4_TXD_SCL_MISO_WS/CTIMER4_MAT1/I2S_BRIDGE_WS_OUT/SEC_PIO0_29">
                      <pin_features>
-                        <pin_feature name="direction" value="OUTPUT"/>
                         <pin_feature name="ibena" value="enabled"/>
+                        <pin_feature name="drive" value="full"/>
                      </pin_features>
                   </pin>
                   <pin peripheral="FLEXCOMM4" signal="RXD_SDA_MOSI_DATA" pin_num="C11" pin_signal="PIO0_30/FC4_RXD_SDA_MOSI_DATA/CTIMER4_MAT2/I2S_BRIDGE_DATA_OUT/SEC_PIO0_30">
                      <pin_features>
-                        <pin_feature name="direction" value="OUTPUT"/>
                         <pin_feature name="ibena" value="enabled"/>
+                        <pin_feature name="drive" value="full"/>
                      </pin_features>
                   </pin>
                   <pin peripheral="GPIO" signal="PIO0, 31" pin_num="A11" pin_signal="PIO0_31/FC4_CTS_SDA_SSEL0/SCT0_GPI0/SCT0_OUT6/CTIMER4_MAT3/FC3_SSEL2/SEC_PIO0_31">
