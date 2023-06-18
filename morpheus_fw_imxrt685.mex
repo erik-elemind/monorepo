@@ -527,7 +527,7 @@
                   <clock_output id="FXCOM1_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM2_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM3_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
-                  <clock_output id="FXCOM4_clock.outFreq" value="3168/1121 MHz" locked="false" accuracy=""/>
+                  <clock_output id="FXCOM4_clock.outFreq" value="7.056 MHz" locked="false" accuracy=""/>
                   <clock_output id="FXCOM5_clock.outFreq" value="16 MHz" locked="false" accuracy=""/>
                   <clock_output id="LPOSC1M_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
                   <clock_output id="OSTIMER_clock.outFreq" value="1 MHz" locked="false" accuracy=""/>
@@ -540,9 +540,9 @@
                   <setting id="PLL0_PFD0_CLK_GATE" value="Enabled" locked="false"/>
                   <setting id="SYSCON.ADC0FCLKSEL0.sel" value="SYSCON.sfro" locked="false"/>
                   <setting id="SYSCON.ADC0FCLKSEL1.sel" value="SYSCON.ADC0FCLKSEL0" locked="false"/>
-                  <setting id="SYSCON.AUDIOPLL0CLKSEL.sel" value="SYSCON.sfro" locked="false"/>
-                  <setting id="SYSCON.AUDIOPLL0_PFD0_DIV.scale" value="30" locked="true"/>
-                  <setting id="SYSCON.AUDIOPLLCLKDIV.scale" value="220" locked="true"/>
+                  <setting id="SYSCON.AUDIOPLL0CLKSEL.sel" value="SYSCON.SYSOSCBYPASS" locked="false"/>
+                  <setting id="SYSCON.AUDIOPLL0_PFD0_DIV.scale" value="13" locked="true"/>
+                  <setting id="SYSCON.AUDIOPLLCLKDIV.scale" value="90" locked="true"/>
                   <setting id="SYSCON.AUDIO_PLL0_PFD0_MUL.scale" value="18" locked="true"/>
                   <setting id="SYSCON.CT32BIT0FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
                   <setting id="SYSCON.FC0FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
@@ -550,7 +550,7 @@
                   <setting id="SYSCON.FC1FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
                   <setting id="SYSCON.FC2FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
                   <setting id="SYSCON.FC3FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
-                  <setting id="SYSCON.FC4FCLKSEL.sel" value="SYSCON.FRG4" locked="false"/>
+                  <setting id="SYSCON.FC4FCLKSEL.sel" value="SYSCON.AUDIOPLLCLKDIV" locked="false"/>
                   <setting id="SYSCON.FC5FCLKSEL.sel" value="SYSCON.sfro" locked="false"/>
                   <setting id="SYSCON.FLEXSPIFCLKDIV.scale" value="8" locked="true"/>
                   <setting id="SYSCON.FLEXSPIFCLKSEL.sel" value="SYSCON.MAINCLKSELB" locked="false"/>
@@ -566,8 +566,8 @@
                   <setting id="SYSCON.PLL0_PFD0_DIV.scale" value="19" locked="true"/>
                   <setting id="SYSCON.PLL0_PFD0_MUL.scale" value="18" locked="true"/>
                   <setting id="SYSCON.PLL1.denom" value="100" locked="true"/>
-                  <setting id="SYSCON.PLL1.div" value="16" locked="true"/>
-                  <setting id="SYSCON.PLL1.num" value="17" locked="true"/>
+                  <setting id="SYSCON.PLL1.div" value="19" locked="true"/>
+                  <setting id="SYSCON.PLL1.num" value="11" locked="true"/>
                   <setting id="SYSCON.SYSCPUAHBCLKDIV.scale" value="2" locked="true"/>
                   <setting id="SYSCON.SYSPLL0CLKSEL.sel" value="SYSCON.SYSOSCBYPASS" locked="false"/>
                   <setting id="SYSCON.WAKECLK32KHZSEL.sel" value="RTC.rtc_osc_32k_clk" locked="false"/>

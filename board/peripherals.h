@@ -143,7 +143,7 @@ extern "C" {
 /* Definition of peripheral ID */
 #define FC4_AUDIO_I2S_PERIPHERAL ((I2S_Type *)FLEXCOMM4)
 /* Definition of the clock source frequency */
-#define FC4_AUDIO_I2S_CLOCK_SOURCE 2826048UL
+#define FC4_AUDIO_I2S_CLOCK_SOURCE 7056000UL
 /* Selected DMA channel number. */
 #define FC4_AUDIO_I2S_TX_DMA_CHANNEL 9
 /* Used DMA device. */
