@@ -19,6 +19,11 @@ void memfault_check_coredump(int argc, char *argv[]);
 void memfault_check_coredump_nand(int argc, char *argv[]);
 void memfault_test_coredump_nand_write(int argc, char *argv[]);
 void memfault_test_coredump_nand_erase(int argc, char *argv[]);
+void memfault_save_eventlog_chunks(void);
+void memfault_save_eventlog_chunks_command(int argc, char *argv[]);
+void memfault_clear_event_chunk_files_command(int argc, char *argv[]);
+void memfault_save_coredump_chunks_command(int argc, char *argv[]);
+void memfault_clear_coredump_chunk_files_command(int arg, char *argv[]);
 
 // End: Tell C++ compiler to include this C header.
 #ifdef __cplusplus

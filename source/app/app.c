@@ -45,6 +45,7 @@
 #include "pmic_pca9420.h"
 #include "../interpreter/interpreter.h"
 #include "memfault/metrics/metrics.h"
+#include "memfault_commands.h"
 
 #if (defined(ENABLE_APP_TASK) && (ENABLE_APP_TASK > 0U))
 
@@ -567,6 +568,8 @@ handle_state_on(app_event_t *event)
 		#if(ENABLE_POWER_MODE_TEST)
         set_state(APP_STATE_SLEEP);
 		#endif
+        // system is IDLE, flush memfault event logs to file system
+        memfault_save_eventlog_chunks();
         break;
 
       case APP_EVENT_CHARGER_PLUGGED:
@@ -616,6 +619,9 @@ handle_state_charger_attached(app_event_t *event)
 			#if(ENABLE_POWER_MODE_TEST)
 			set_state(APP_STATE_SLEEP);
 			#endif
+
+	        // system is IDLE, flush memfault event logs to file system
+	        memfault_save_eventlog_chunks();
 			break;
 
 		case APP_EVENT_CHARGER_UNPLUGGED:

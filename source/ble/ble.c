@@ -1305,6 +1305,9 @@ handle_ble_connected(ble_event_t *event)
 	ble_memory_level_request();
 
 	memfault_metrics_heartbeat_add(MEMFAULT_METRICS_KEY(ble_num_connections), 1);
+
+    // flush memfault event logs to file system on connection
+    memfault_save_eventlog_chunks();
 }
 
 static void
