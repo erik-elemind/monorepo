@@ -24,7 +24,7 @@
 								<option id="com.crt.advproject.cpp.hdrlib.1610967306" name="Library headers" superClass="com.crt.advproject.cpp.hdrlib" useByScannerDiscovery="false"/>
 								<option id="com.crt.advproject.cpp.fpu.1321490397" name="Floating point" superClass="com.crt.advproject.cpp.fpu" useByScannerDiscovery="true" value="com.crt.advproject.cpp.fpu.fpv5sp.hard" valueType="enumerated"/>
 								<option id="com.crt.advproject.cpp.arch.1097687567" name="Architecture" superClass="com.crt.advproject.cpp.arch" useByScannerDiscovery="true" value="com.crt.advproject.cpp.target.cm33" valueType="enumerated"/>
-								<option id="com.crt.advproject.cpp.misc.dialect.600982145" name="Language standard" superClass="com.crt.advproject.cpp.misc.dialect" useByScannerDiscovery="true"/>
+								<option id="com.crt.advproject.cpp.misc.dialect.600982145" name="Language standard" superClass="com.crt.advproject.cpp.misc.dialect" useByScannerDiscovery="true" value="com.crt.advproject.misc.dialect.cpp17" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.dialect.flags.1495161608" name="Other dialect flags" superClass="gnu.cpp.compiler.option.dialect.flags" useByScannerDiscovery="true"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.nostdinc.1078664963" name="Do not search system directories (-nostdinc)" superClass="gnu.cpp.compiler.option.preprocessor.nostdinc" useByScannerDiscovery="false"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.preprocess.1145014647" name="Preprocess only (-E)" superClass="gnu.cpp.compiler.option.preprocessor.preprocess" useByScannerDiscovery="false"/>
@@ -497,7 +497,7 @@
 								<option id="com.crt.advproject.link.cpp.lto.optmization.level.894912301" name="Link-time optimization level" superClass="com.crt.advproject.link.cpp.lto.optmization.level" useByScannerDiscovery="false"/>
 								<option id="com.crt.advproject.link.cpp.thumb.2098321736" name="Thumb mode" superClass="com.crt.advproject.link.cpp.thumb" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option id="com.crt.advproject.link.cpp.manage.597909117" name="Manage linker script" superClass="com.crt.advproject.link.cpp.manage" useByScannerDiscovery="false" value="true" valueType="boolean"/>
-								<option id="com.crt.advproject.link.cpp.script.820004460" name="Linker script" superClass="com.crt.advproject.link.cpp.script" useByScannerDiscovery="false" value="&quot;morpheus_fw_imxrt685_Debug.ld&quot;" valueType="string"/>
+								<option id="com.crt.advproject.link.cpp.script.820004460" name="Linker script" superClass="com.crt.advproject.link.cpp.script" useByScannerDiscovery="false" value="morpheus_fw_imxrt685_Debug.ld" valueType="string"/>
 								<option id="com.crt.advproject.link.cpp.scriptdir.2017627662" name="Script path" superClass="com.crt.advproject.link.cpp.scriptdir" useByScannerDiscovery="false" value="" valueType="string"/>
 								<option id="com.crt.advproject.link.cpp.crpenable.1830931203" name="Enable automatic placement of Code Read Protection field in image" superClass="com.crt.advproject.link.cpp.crpenable" useByScannerDiscovery="false"/>
 								<option id="com.crt.advproject.link.cpp.flashconfigenable.627255678" name="Enable automatic placement of Flash Configuration field in image" superClass="com.crt.advproject.link.cpp.flashconfigenable" useByScannerDiscovery="false" value="true" valueType="boolean"/>
@@ -1296,7 +1296,7 @@
 								<option id="com.crt.advproject.miscellaneous.pvHeapLimit.1289652221" name="Maximum extent of heap" superClass="com.crt.advproject.miscellaneous.pvHeapLimit"/>
 								<option id="com.crt.advproject.debugger.security.nonsecureimageenable.1308705797" name="Enable pre-programming of Non-Secure Image" superClass="com.crt.advproject.debugger.security.nonsecureimageenable"/>
 								<option id="com.crt.advproject.debugger.security.nonsecureimage.1160695972" name="Non-Secure Project" superClass="com.crt.advproject.debugger.security.nonsecureimage"/>
-								<option id="com.crt.advproject.linkserver.debug.prevent.release.1016542170" name="Prevent Debugging" superClass="com.crt.advproject.linkserver.debug.prevent.release"/>
+								<option id="com.crt.advproject.linkserver.debug.prevent.release.82352432" name="Prevent Debugging" superClass="com.crt.advproject.linkserver.debug.prevent.release"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
@@ -1390,7 +1390,7 @@
 &lt;memory can_program="true" id="Flash" is_ro="true" size="0" type="Flash"/&gt;&#13;
 &lt;memory id="RAM" size="4608" type="RAM"/&gt;&#13;
 &lt;memoryInstance derived_from="Flash" edited="true" id="QSPI_FLASH" location="0x8000000" size="0x800000"/&gt;&#13;
-&lt;memoryInstance derived_from="RAM" edited="true" id="SRAM" location="0x80000" size="0x200000"/&gt;&#13;
+&lt;memoryInstance derived_from="RAM" edited="true" id="SRAM" location="0x80000" size="0x400000"/&gt;&#13;
 &lt;memoryInstance derived_from="RAM" edited="true" id="USB_RAM" location="0x40140000" size="0x4000"/&gt;&#13;
 &lt;/chip&gt;&#13;
 &lt;processor&gt;&#13;

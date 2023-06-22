@@ -463,6 +463,14 @@ const shell_command_t commands[] = {
 	{P_SHELL, "memfault_test_assert", memfault_test_assert_command, "Memfault Assert Test"},
 	{P_SHELL, "memfault_test_fault", memfault_test_fault_command, "Memfault Fault Test"},
 	{P_SHELL, "memfault_test_hang", memfault_test_hang_command, "Memfault Hang Test"},
+	{P_SHELL, "memfault_check_coredump", memfault_check_coredump, "Memfault Check Coredump Validity"},
+	{P_SHELL, "memfault_check_coredump_nand", memfault_check_coredump_nand, "Memfault Check coredump NAND"},
+	{P_SHELL, "memfault_test_coredump_nand_write", memfault_test_coredump_nand_write, "Memfault Test coredump NAND write"},
+	{P_SHELL, "memfault_test_coredump_nand_erase", memfault_test_coredump_nand_erase, "Memfault Test coredump NAND erase"},
+	{P_SHELL, "memfault_save_eventlog_chunks", memfault_save_eventlog_chunks_command, "Memfault save event/log chunks to file"},
+	{P_SHELL, "memfault_clear_eventlog_files", memfault_clear_event_chunk_files_command, "Memfault clear event/log chunks files"},
+	{P_SHELL, "memfault_save_coredump_chunks", memfault_save_coredump_chunks_command, "Memfault save coredump chunks to file"},
+	{P_SHELL, "memfault_clear_coredump_files", memfault_clear_coredump_chunk_files_command, "Memfault clear coredump chunks files"},
 
 	// ADC Tests
 	{P_SHELL, "adc_read", adc_read_command, "ADC Read Test"},

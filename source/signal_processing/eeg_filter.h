@@ -9,12 +9,12 @@
 #include "ButterworthLowpassBiQuad.h"
 #include "loglevels.h"
 
-template<typename T, int MAX_FILT_ORDER>
+template<typename T, int MAX_EEG_FILT_ORDER>
 class eeg_filter {
 private:
 
-    ButterworthLowpassBiQuad<T,MAX_FILT_ORDER> lpfilter45;
-    ButterworthLowpassBiQuad<T,MAX_FILT_ORDER> hpfilter;
+    ButterworthLowpassBiQuad<T,MAX_EEG_FILT_ORDER> lpfilter45;
+    ButterworthLowpassBiQuad<T,MAX_EEG_FILT_ORDER> hpfilter;
 
 public:
 

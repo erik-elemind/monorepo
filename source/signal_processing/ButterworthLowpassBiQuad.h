@@ -43,6 +43,7 @@
 // end
 
 #include <cmath>
+#include "math_util.h"
 // #include <complex>
 
 template<typename T>

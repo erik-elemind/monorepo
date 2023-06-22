@@ -14,6 +14,10 @@
 #include "data_log_commands.h"
 #include "user_metrics.h"
 
+#include "ml_utils.h"
+
+// compile with iso c++17
+
 ///>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> TEMP Placeholder for final model implementation
 #include "sample_input.h" // For testing, will remove at some point
 
@@ -55,14 +59,48 @@ uint8_t *bundleOutAddr = GLOW_GET_ADDR(mutableWeight, TEST_MODEL_StatefulPartiti
 #define ACCEL_PREPROCESS_SIZE 750 	// 25 Hz  * 30 second epoch
 #define HR_PREPROCESS_SIZE 30  	    // 1 Hz   * 30 second epoch
 
+#define MAX_ACCEL_FILT_ORDER 2
+#define ACCEL_HPF_ORDER 2
+#define ACCEL_FS 25
+#define ACCEL_FH 0.1
+
+#define MAX_EEG_FILT_ORDER 4
+#define EEG_BPF_ORDER 4
+#define EEG_FS 250
+#define EEG_FL 0.5
+#define EEG_FH 50
+
+#define HR_FS 1
+
+#define FS_OUT 125
+
+#define SWITCH_THRESH 100 // will have to check actual units
+
 // Variables needed for double buffering method of ML data
-static float g_eeg_A[EEG_BUF_SIZE];
-static float g_eeg_B[EEG_BUF_SIZE];
-static float* g_eeg_fill_p = g_eeg_A;
-static float* g_eeg_ready_p = g_eeg_B;
+// need multiple eeg buffers to hold data for channel switching algorithm
+// static float g_eeg_A[EEG_BUF_SIZE];
+// static float g_eeg_B[EEG_BUF_SIZE];
+// static float* g_eeg_fill_p = g_eeg_A;
+// static float* g_eeg_ready_p = g_eeg_B;
+
+static float g_eegfp1_A[EEG_BUF_SIZE];
+static float g_eegfp1_B[EEG_BUF_SIZE];
+static float g_eegfp2_A[EEG_BUF_SIZE];
+static float g_eegfp2_B[EEG_BUF_SIZE];
+static float g_eegfpz_A[EEG_BUF_SIZE];
+static float g_eegfpz_B[EEG_BUF_SIZE];
+
+static float* g_eegfp1_fill_p = g_eegfp1_A;
+static float* g_eegfp1_ready_p = g_eegfp1_B;
+static float* g_eegfp2_fill_p = g_eegfp2_A;
+static float* g_eegfp2_ready_p = g_eegfp2_B;
+static float* g_eegfpz_fill_p = g_eegfpz_A;
+static float* g_eegfpz_ready_p = g_eegfpz_B;
 
 static size_t g_eeg_fill_idx = 0;
 static bool g_eeg_buf_ready = false;
+static bool g_eeg_filt_en = false;
+static bool g_eeg_process_done = false;
 
 static float g_accelx_A[ACCEL_BUF_SIZE];
 static float g_accelx_B[ACCEL_BUF_SIZE];
@@ -80,6 +118,8 @@ static float* g_accelz_ready_p = g_accelz_B;
 
 static size_t g_accel_fill_idx = 0;
 static bool g_accel_buf_ready = false;
+static bool g_accel_process_done = false;
+static bool g_accel_filt_en = false;
 
 static float g_hr_A[HR_BUF_SIZE];
 static float g_hr_B[HR_BUF_SIZE];
@@ -88,10 +128,13 @@ static float* g_hr_ready_p = g_hr_B;
 
 static size_t g_hr_fill_idx = 0;
 static bool g_hr_buf_ready = false;
+static bool g_hr_process_done = false;
 
-static SemaphoreHandle_t g_sem;
+static SemaphoreHandle_t g_sem = NULL;
+static StaticSemaphore_t g_ml_sem_buf;
 #define ML_EVENT_QUEUE_SIZE 10
 
+// Global memory
 static const char *TAG = "ml";	// Logging prefix for this module
 
 //
@@ -128,7 +171,8 @@ typedef struct
 {
   ml_state_t state;
   // TODO: Other "global" vars shared between events or states goes here.
-  uint8_t enabled;
+  uint8_t ml_enabled;
+  // move filter enables and such here too? pass the context around
 } ml_context_t;
 
 static ml_context_t g_context;
@@ -140,6 +184,18 @@ static QueueHandle_t g_event_queue;
 static void handle_event(ml_event_t *event);
 static void set_state(ml_state_t state);
 float output[OUTPUT_NUM_CLASS];
+
+static accel_filter<FILT_TYPE, MAX_ACCEL_FILT_ORDER> g_accel_filt;
+static eeg_filter<FILT_TYPE, MAX_EEG_FILT_ORDER> g_eeg_filt;
+
+void filter_init(){
+	// 2nd Order Butterworth HPF. 0.1 Hz cutoff. Use the same filter for all dimensions
+	g_accel_filt.designAccelFilter(ACCEL_HPF_ORDER, ACCEL_FS, ACCEL_FS, true); // reset cache by default
+	// 4th Order Butterwork BPF, 0.5/50Hz cutoffs.
+	g_eeg_filt.designEEGFilter(EEG_BPF_ORDER, EEG_FL, EEG_FH, EEG_FS, true);
+	g_accel_filt_en = true;
+	g_eeg_filt_en = true;
+}
 
 // For logging and debug:
 static const char * ml_state_name(ml_state_t state)
@@ -167,12 +223,12 @@ static const char * ml_event_type_name(ml_event_type_t event_type)
 
 void ml_enable(void)
 {
-	g_context.enabled = 1;
+	g_context.ml_enabled = 1;
 }
 
 void ml_disable(void)
 {
-	g_context.enabled = 0;
+	g_context.ml_enabled = 0;
 }
 
 void ml_event_eeg_input(ads129x_frontal_sample* f_sample)
@@ -182,22 +238,50 @@ void ml_event_eeg_input(ads129x_frontal_sample* f_sample)
 	{
 		if(!g_eeg_buf_ready)
 		{
-			g_eeg_fill_p[g_eeg_fill_idx] = f_sample->eeg_channels[EEG_FPZ]; // TODO: Implement smart channel switching
+			g_eegfp1_fill_p[g_eeg_fill_idx] = f_sample->eeg_channels[EEG_FP1];
+			g_eegfpz_fill_p[g_eeg_fill_idx] = f_sample->eeg_channels[EEG_FPZ]; // TODO: Implement smart channel switching
+			g_eegfp2_fill_p[g_eeg_fill_idx] = f_sample->eeg_channels[EEG_FP2];
+
+			// g_eeg_fill_p[g_eeg_fill_idx] = f_sample->eeg_channels[EEG_FPZ];
+
 			g_eeg_fill_idx++;
 			if(g_eeg_fill_idx == EEG_PREPROCESS_SIZE){
 				g_eeg_fill_idx = 0;
 				// flip double buffer
-				if(g_eeg_fill_p == g_eeg_A)
+				if(g_eegfp1_fill_p == g_eegfp1_A)
 				{
-					g_eeg_fill_p = g_eeg_B;
-					g_eeg_ready_p = g_eeg_A;
+					g_eegfp1_fill_p = g_eegfp1_B;
+					g_eegfp1_ready_p = g_eegfp1_A;
+
+					g_eegfpz_fill_p = g_eegfpz_B;
+					g_eegfpz_ready_p = g_eegfpz_A;
+
+					g_eegfp2_fill_p = g_eegfp2_B;
+					g_eegfp2_ready_p = g_eegfp2_A;
+
+					// g_eeg_fill_p = g_eeg_B;
+					// g_eeg_ready_p = g_eeg_A;
 				}
 				else
 				{
-					g_eeg_fill_p = g_eeg_A;
-					g_eeg_ready_p = g_eeg_B;
+					g_eegfp1_fill_p = g_eegfp1_A;
+					g_eegfp1_ready_p = g_eegfp1_B;
+
+					g_eegfpz_fill_p = g_eegfpz_A;
+					g_eegfpz_ready_p = g_eegfpz_B;
+
+					g_eegfp2_fill_p = g_eegfp2_A;
+					g_eegfp2_ready_p = g_eegfp2_B;
+
+					// g_eeg_fill_p = g_eeg_A;
+					// g_eeg_ready_p = g_eeg_B;
 				}
-				memset(g_eeg_fill_p, 0, sizeof(g_eeg_fill_p));
+				
+				// memset(g_eeg_fill_p, 0, sizeof(g_eeg_fill_p));
+				memset(g_eegfp1_fill_p, 0, sizeof(g_eegfp1_fill_p));
+				memset(g_eegfpz_fill_p, 0, sizeof(g_eegfpz_fill_p));
+				memset(g_eegfp2_fill_p, 0, sizeof(g_eegfp2_fill_p));
+
 				// update ready booleans
 				g_eeg_buf_ready = true;
 				// provide a synchronization point across all sensors
@@ -262,7 +346,9 @@ void ml_event_acc_input(lis2dtw12_sample_t* acc_sample)
 					memset(g_accelz_fill_p, 0, sizeof(g_accelz_fill_p));
 					// update ready booleans
 					g_accel_buf_ready = true;
-					// provide a synchronization point across all sensors
+
+					// TODO reimplement when multiple streams ready
+					// // provide a synchronization point across all sensors
 					if(g_eeg_buf_ready && g_accel_buf_ready && g_hr_buf_ready)
 					{
 						g_eeg_buf_ready = false;
@@ -380,7 +466,107 @@ static void handle_state_preprocess_data(ml_event_t *event)
   switch (event->type) {
     case ML_EVENT_ENTER:{
       // Todo: Implement pre-processing of all data for inference
-    	(g_context.enabled > 0) ? set_state(ML_STATE_INFERENCE) : set_state(ML_STATE_STANDBY);
+
+		// each if should be triggered if we're in the preprocess state anyway?
+
+		if (g_accel_filt_en && g_accel_buf_ready) {
+			g_accel_process_done = false;
+
+			// 2nd order Butterworth Filter
+			for (int i; i < ACCEL_BUF_SIZE; i++)
+			{ 
+				g_accelx_ready_p[i] = g_accel_filt.filter(g_accelx_ready_p[i]); // feed values in one at a time
+				g_accely_ready_p[i] = g_accel_filt.filter(g_accely_ready_p[i]);
+				g_accelz_ready_p[i] = g_accel_filt.filter(g_accelz_ready_p[i]);
+			}
+			
+			// Upsample to 125 Hz
+
+			std::vector<float, bufferAllocator<float>> accelx_vec(g_accelx_ready_p, g_accelx_ready_p + ACCEL_BUF_SIZE);
+			std::vector<float, bufferAllocator<float>> accely_vec(g_accely_ready_p, g_accely_ready_p + ACCEL_BUF_SIZE);
+			std::vector<float, bufferAllocator<float>> accelz_vec(g_accelz_ready_p, g_accelz_ready_p + ACCEL_BUF_SIZE);
+
+			std::vector<float, bufferAllocator<float>> accelx_vec_out;
+			std::vector<float, bufferAllocator<float>> accely_vec_out;
+			std::vector<float, bufferAllocator<float>> accelz_vec_out;
+
+			resample<float> (ACCEL_FS, FS_OUT, accelx_vec, accelx_vec_out);
+			resample<float> (ACCEL_FS, FS_OUT, accely_vec, accely_vec_out);
+			resample<float> (ACCEL_FS, FS_OUT, accelz_vec, accelz_vec_out);
+
+			// Z-score normalization
+
+			accelx_vec_out = z_score_normalize(accelx_vec_out);
+			accely_vec_out = z_score_normalize(accely_vec_out);
+			accelz_vec_out = z_score_normalize(accelz_vec_out);
+
+			g_accel_process_done = true;
+
+			// send semaphore to inference task that buffer is ready
+		} 
+
+		if (g_hr_buf_ready)
+		{
+			g_hr_process_done = false;
+
+			// Upsample
+			std::vector<float, bufferAllocator<float>> hr_vec(g_hr_ready_p, g_hr_ready_p + HR_BUF_SIZE);
+			std::vector<float, bufferAllocator<float>> hr_vec_out;
+			resample<float> (HR_FS, FS_OUT, hr_vec, hr_vec_out);
+
+			// Z score normalization
+			hr_vec_out = z_score_normalize(hr_vec_out);
+
+			g_hr_process_done = true;
+		}
+
+		if (g_eeg_filt_en && g_eeg_buf_ready)
+		{
+			g_eeg_process_done = false;
+
+			// Channel Switching
+
+			int eeg_select = EEG_FPZ; // FPZ
+			float* eeg_chns[] = {g_eegfp1_ready_p, g_eegfpz_ready_p, g_eegfp2_ready_p};	
+			float fp1_max = findAbsMax(g_eegfp1_ready_p, EEG_BUF_SIZE);
+			float fpz_max = findAbsMax(g_eegfpz_ready_p, EEG_BUF_SIZE);
+			float fp2_max = findAbsMax(g_eegfp2_ready_p, EEG_BUF_SIZE);
+
+			if (fpz_max < SWITCH_THRESH)
+			{
+				if (fp1_max > SWITCH_THRESH)
+				{
+					eeg_select = EEG_FP1;
+				}
+				else if (fp2_max > SWITCH_THRESH)
+				{
+					eeg_select = EEG_FP2;
+				}
+				
+			}
+
+			// 4th order butterworth BPF
+			for (int i; i < EEG_BUF_SIZE; i++)
+			{
+				// g_eeg_ready_p[i] = g_eeg_filt.filter(g_eeg_ready_p[i]);
+				eeg_chns[eeg_select][i] = g_eeg_filt.filter(eeg_chns[eeg_select][i]);
+			}
+
+			// // Downsampling to 125 Hz
+			// std::vector<float, bufferAllocator<float>> eeg_vec(g_eeg_ready_p, g_eeg_ready_p + EEG_BUF_SIZE);
+			std::vector<float, bufferAllocator<float>> eeg_vec(eeg_chns[eeg_select],eeg_chns[eeg_select]+EEG_BUF_SIZE);
+			std::vector<float, bufferAllocator<float>> eeg_vec_out;
+			resample<float> (EEG_FS, FS_OUT, eeg_vec, eeg_vec_out);
+
+			// Z score normalization
+			eeg_vec_out = z_score_normalize(eeg_vec_out);
+
+			g_eeg_process_done = true;
+		}
+
+    	(g_context.ml_enabled > 0) ? set_state(ML_STATE_INFERENCE) : set_state(ML_STATE_STANDBY);
+		// Assume no race condition since we have the whole double buffer thing anyway?
+
       break;
     }
 
@@ -396,7 +582,7 @@ static void handle_state_inference(ml_event_t *event)
 	uint16_t max_idx = 0;
 
 	switch (event->type) {
-		case ML_EVENT_ENTER:
+		case ML_EVENT_ENTER:{
 			// Generic code to always execute when entering this state goes here.
 
 			// Load up sample input data
@@ -432,7 +618,7 @@ static void handle_state_inference(ml_event_t *event)
 
 			set_state(ML_STATE_STANDBY);
 			break;
-
+		}
 		default:
 			log_event_ignored(event);
 			break;
@@ -446,8 +632,17 @@ static void handle_event(ml_event_t *event)
     case ML_EVENT_STOP:
       ml_disable();
 
-      g_eeg_fill_p = g_eeg_A;
-      g_eeg_ready_p = g_eeg_B;
+    //   g_eeg_fill_p = g_eeg_A; 
+    //   g_eeg_ready_p = g_eeg_B;
+
+	  g_eegfp1_fill_p = g_eegfp1_A;
+	  g_eegfp1_ready_p = g_eegfp1_B;
+
+	  g_eegfpz_fill_p = g_eegfpz_A;
+	  g_eegfpz_ready_p = g_eegfpz_B;
+
+	  g_eegfp2_fill_p = g_eegfp2_A;
+	  g_eegfp2_ready_p = g_eegfp2_B;
 
       g_eeg_fill_idx = 0;
       g_eeg_buf_ready = false;
@@ -495,10 +690,13 @@ void ml_pretask_init(void)
 {
   // Any pre-scheduler init goes here.
 
+  // Initialize custom allocator
+  mm_rtos_init(&alloc_mem, alloc_mem_buf, ALLOC_MEM*sizeof(float));
+
   // Load up constant weights for ML model
   memcpy(constantWeight, WEIGHT_DATA_START, TEST_MODEL_CONSTANT_MEM_SIZE);
 
-  g_sem = xSemaphoreCreateBinary();
+  g_sem = xSemaphoreCreateBinaryStatic(&g_ml_sem_buf);
 
   if (g_sem == NULL)
   {
@@ -513,6 +711,7 @@ void ml_pretask_init(void)
   // Create the event queue before the scheduler starts. Avoids race conditions.
   g_event_queue = xQueueCreateStatic(ML_EVENT_QUEUE_SIZE,sizeof(ml_event_t),g_event_queue_array,&g_event_queue_struct);
   vQueueAddToRegistry(g_event_queue, "ml_event_queue");
+  filter_init();
 
 }
 
