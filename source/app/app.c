@@ -45,6 +45,7 @@
 #include "pmic_pca9420.h"
 #include "../interpreter/interpreter.h"
 #include "memfault/metrics/metrics.h"
+#include "pmic_pca9420.h"
 #include "memfault_commands.h"
 
 #if (defined(ENABLE_APP_TASK) && (ENABLE_APP_TASK > 0U))
@@ -457,8 +458,7 @@ stop_ble_off_timer(void)
 static void
 set_led_by_charger_status(void)
 {
-  battery_charger_status_t status =
-    battery_charger_get_status(&g_battery_charger_handle);
+  battery_charger_status_t status = pmic_battery_charger_get_status();
 
   switch (status)
     {

@@ -2,9 +2,13 @@
 #ifndef ADC_H
 #define ADC_H
 
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <stdint.h>
 
 #define ADC_MICROPHONE 0
 #define ADC_VBAT 1

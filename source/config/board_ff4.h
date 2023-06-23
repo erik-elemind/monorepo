@@ -119,13 +119,9 @@ void BOARD_InitFlashSPI();
  *   Battery Charger
  *****************************************************************************/
 
-// This define redirects to a define from peripheral.h/c
-#define BATT_I2C_RTOS_HANDLE      FC2_BATT_I2C_rtosHandle
-
 /******************************************************************************
  * EEG
  *****************************************************************************/
-
 
 #define EEG_DRDY_GPIO  BOARD_INITPINS_EEG_DRDYn_GPIO
 #define EEG_DRDY_PORT  BOARD_INITPINS_EEG_DRDYn_PORT
@@ -211,11 +207,11 @@ void BOARD_InitFlashSPI();
  * Battery Charger
  *****************************************************************************/
 
-#define BATTERY_CHARGER_ENABLE_PORT BOARD_INITPINS_BAT_CD_PORT
-#define BATTERY_CHARGER_ENABLE_PIN BOARD_INITPINS_BAT_CD_PIN
+#define BATTERY_CHARGER_ENABLE_PORT 0 //ToDo: Remove for revD
+#define BATTERY_CHARGER_ENABLE_PIN 0 //ToDo: Remove for revD
 
-#define BATTERY_CHARGER_STATUS_PORT BOARD_INITPINS_BAT_STATn_PORT
-#define BATTERY_CHARGER_STATUS_PIN BOARD_INITPINS_BAT_STATn_PIN
+#define BATTERY_CHARGER_STATUS_PORT 0 //ToDo: Remove for revD
+#define BATTERY_CHARGER_STATUS_PIN 0 //ToDo: Remove for revD
 
 /******************************************************************************
  * RED/GREEN/BLUE LED PWM
@@ -237,7 +233,6 @@ void BOARD_InitFlashSPI();
 #define LED_SCT_GRN_INDEX          1
 #define LED_SCT_BLU_INDEX          2
 
-
 #define LED_PIO_PERIPHERAL        IOPCTL
 // MCUXpresso Config Tools configures the GPIO pin separately from the SCTimer
 // As of this writing, we do not have a good way to use the auto-generates
@@ -246,8 +241,8 @@ void BOARD_InitFlashSPI();
 #define LED_RED_PIN  (27U)
 #define LED_GRN_PORT (0U)
 #define LED_GRN_PIN  (26U)
-#define LED_BLU_PORT (0U)
-#define LED_BLU_PIN  (12U)
+#define LED_BLU_PORT (2U)
+#define LED_BLU_PIN  (14U)
 
 // duty_cycle values range from 1 to 100 precent.
 void led_set_rgb(uint8_t red_duty_cycle_percent, uint8_t grn_duty_cycle_percent, uint8_t blu_duty_cycle_percent, bool tristate);
@@ -265,9 +260,9 @@ void led_set_rgb(uint8_t red_duty_cycle_percent, uint8_t grn_duty_cycle_percent,
  * This define structure makes it easier to add BUTTON_3_*** defines in the future,
  * with minimal changes in button_config.c.
  */
-#define POWER_BUTTON_PORT     BOARD_INITPINS_POWER_BTNn_PORT
-#define POWER_BUTTON_PIN      BOARD_INITPINS_POWER_BTNn_PIN
-#define POWER_BUTTON_UP_LEVEL 1
+#define ACTIVITY_BUTTON_PORT     BOARD_INITPINS_ACTIVITY_BUTTON_PORT
+#define ACTIVITY_BUTTON_PIN      BOARD_INITPINS_ACTIVITY_BUTTON_PIN
+#define ACTIVITY_BUTTON_UP_LEVEL 0
 
 #define VOL_UP_BUTTON_PORT     BOARD_INITPINS_USER_BUTTON1_PORT
 #define VOL_UP_BUTTON_PIN      BOARD_INITPINS_USER_BUTTON1_PIN
@@ -275,7 +270,7 @@ void led_set_rgb(uint8_t red_duty_cycle_percent, uint8_t grn_duty_cycle_percent,
 
 #define VOL_DOWN_BUTTON_PORT     BOARD_INITPINS_USER_BUTTON2_PORT
 #define VOL_DOWN_BUTTON_PIN      BOARD_INITPINS_USER_BUTTON2_PIN
-#define VOL_DOWN_BUTTON_UP_LEVEL 1
+#define VOL_DOWN_BUTTON_UP_LEVEL 0
 
 /******************************************************************************
  * DEBUG LED

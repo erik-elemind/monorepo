@@ -109,9 +109,11 @@ static void button_handler(button_param_t *bparam)
     bs->level = bparam->up_level;
     call_button_cb(bparam->cb_up);
 
-    g_context.button_timers--;
-    if (g_context.button_timers == 0) {
-      xTimerStop(g_context.button_timer_handle, 0);
+    if (bparam->cb_held) {
+		g_context.button_timers--;
+		if (g_context.button_timers == 0) {
+		  xTimerStop(g_context.button_timer_handle, 0);
+		}
     }
 
     TickType_t button_down_delta_ticks =
@@ -199,6 +201,21 @@ void button_task(void *button_params)
 						     &(g_context.button_timer_struct));
   
   while(1) {
+#if 0
+      button_param_t* bparam;
+
+	  bparam = &(bparams->buttons[0]); // 0
+	  int sampled_button_level0 = GPIO_PinRead(GPIO, bparam->port, bparam->pin);
+
+	  bparam = &(bparams->buttons[1]); // 1 - right
+	  int sampled_button_level1 = GPIO_PinRead(GPIO, bparam->port, bparam->pin);
+
+	  bparam = &(bparams->buttons[2]); // 0 - left
+	  int sampled_button_level2 = GPIO_PinRead(GPIO, bparam->port, bparam->pin);
+
+	  LOGV("BUTTONS","%d %d %d", sampled_button_level0, sampled_button_level1, sampled_button_level2);
+
+#endif
     // Wait for an interrupt
     xTaskNotifyWait( pdFALSE,        /* Clear bits on entry. */
                      UINT32_MAX,     /* Clear all bits on exit. */

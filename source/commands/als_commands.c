@@ -3,6 +3,7 @@
 
 #include "als_commands.h"
 #include "als.h"
+#include "als-veml7700.h"
 #include "system_monitor.h"
 #include "command_helpers.h"
 
@@ -32,3 +33,7 @@ als_stop_command(int argc, char **argv){
   system_monitor_event_als_stop();
 }
 
+void
+als_test_command(int argc, char **argv){
+	als_veml7700_print_debug();
+}

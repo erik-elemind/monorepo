@@ -888,24 +888,14 @@ handle_state_off(audio_event_t *event)
       xTimerStop(ag_context.audio_power_off_timer_handle, portMAX_DELAY);
 
       audio_stream_end();
-      // pull shutdown pin low - power down
-      GPIO_PinWrite(
-          BOARD_INITPINS_SSM2518_SHTDNn_GPIO,
-          BOARD_INITPINS_SSM2518_SHTDNn_PORT,
-          BOARD_INITPINS_SSM2518_SHTDNn_PIN,
-          0);
+      amp_power(false);
       break;
 
     case AUDIO_EVENT_POWER_ON:
-      // pull shutdown pin high - power up
-      GPIO_PinWrite(
-          BOARD_INITPINS_SSM2518_SHTDNn_GPIO,
-          BOARD_INITPINS_SSM2518_SHTDNn_PORT,
-          BOARD_INITPINS_SSM2518_SHTDNn_PIN,
-          1);
+      amp_power(true);
       vTaskDelay(pdMS_TO_TICKS(10));
-      // initialize the SSM2518
-      amp_init(&AUDIO_I2C_RTOS_HANDLE);
+      amp_config();
+
       set_state(AUDIO_STATE_STANDBY);
 
       // Restore settings
@@ -1244,16 +1234,9 @@ void
 audio_pretask_init(void)
 {
   // Any pre-scheduler init goes here.
-  // setup shutdown pin
-  gpio_pin_config_t SSM2518_SHTDNn_config = {
-      .pinDirection = kGPIO_DigitalOutput,
-      .outputLogic = 0U
-  };
-  GPIO_PinInit(
-      BOARD_INITPINS_SSM2518_SHTDNn_GPIO,
-      BOARD_INITPINS_SSM2518_SHTDNn_PORT,
-      BOARD_INITPINS_SSM2518_SHTDNn_PIN,
-      &SSM2518_SHTDNn_config);
+
+  // initialize the SSM2518
+  amp_init(&AUDIO_I2C_RTOS_HANDLE);
 
   // Create the event queue before the scheduler starts. Avoids race conditions.
   g_event_queue = xQueueCreateStatic(AUDIO_EVENT_QUEUE_SIZE,sizeof(audio_event_t),g_event_queue_array,&g_event_queue_struct);

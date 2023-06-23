@@ -381,6 +381,10 @@ void audio_stop_test_command(int argc, char **argv)
   audio_sine_stop();
 }
 
+void audio_info_command(int argc, char **argv)
+{
+	amp_print_detailed_status();
+}
 
 void erp_start_command(int argc, char **argv)
 {

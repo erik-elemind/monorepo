@@ -31,7 +31,6 @@
 #include "led_commands.h"
 #include "command_helpers.h"
 #include "hrm_commands.h"
-#include "charger_commands.h"
 #include "accel_commands.h"
 #include "dhara_ppstress.h"
 #include "settings_commands.h"
@@ -44,8 +43,7 @@
 #include "pmic_commands.h"
 #include "ml.h"
 #include "memfault_commands.h"
-
-//static const char *TAG = "commands";  // Logging prefix for this module
+#include "adc_commands.h"
 
 // This one needs to be defined after the declaration of shell_commands:
 static void shell_list(int argc, char **argv);
@@ -139,6 +137,9 @@ const shell_command_t commands[] = {
 #endif // FLASH_COMMANDS_H
 
 	{ P_ALL, "pmic_status", pmic_status_command, "" },
+	{ P_ALL, "pmic_test", pmic_test_command, "" },
+	{ P_ALL, "pmic_enter_ship_mode", pmic_enter_ship_mode_command, "" },
+	{ P_ALL, "pmic_batt_status", pmic_batt_status, "Get battery charging status from PCA9420 charge controller" },
 
 #ifdef NAND_COMMANDS_H
     { P_ALL, "nand_id", nand_id_command, "Read SPI Flash ID register" },
@@ -187,8 +188,11 @@ const shell_command_t commands[] = {
     { P_ALL, "eeg_gain?", eeg_get_gain_command, "Prints the EEG gain." },
 
     // Heart rate monitor commands:
-    { P_ALL, "hrm_off", hrm_off, "Turn off heart rate monitor" },
-    { P_ALL, "hrm_on", hrm_on, "Turn on heart rate monitor" },
+	{ P_ALL, "hrm_off", hrm_off, "Turn on heart rate monitor" },
+	{ P_ALL, "hrm_on", hrm_on, "Turn off heart rate monitor" },
+	{ P_ALL, "hrm_test", hrm_test, "" },
+	{ P_ALL, "hrm_read", hrm_test_read, "" },
+	{ P_ALL, "hrm_write", hrm_test_write, "" },
 
 	// ML commands
 	{ P_ALL, "ml_enable", ml_enable, "Enables ML inference" },
@@ -204,6 +208,8 @@ const shell_command_t commands[] = {
     { P_ALL, "als", als_read_once_command, "Read Ambient light sensor lux" },
     { P_ALL, "als_start_sample", als_start_sample_command, ""},
     { P_ALL, "als_stop", als_stop_command, ""},
+	{ P_ALL, "als_test", als_test_command, ""},
+
 
     // MEMS commands
     { P_ALL, "mic", mic_read_once_command, "Read mems microphone" },
@@ -337,6 +343,7 @@ const shell_command_t commands[] = {
 
     { P_ALL, "audio_play_test", audio_play_test_command, "Play test sine wave, right channel has higher freq than left." },
     { P_ALL, "audio_stop_test", audio_stop_test_command, "Stop test sine wave" },
+	{ P_ALL, "audio_info",      audio_info_command, "Print detailed audio amplifier info" },
 
 //    audio_set_bg_volume
 
@@ -356,17 +363,8 @@ const shell_command_t commands[] = {
     // Platform commands
     { P_ALL, "memfree", memfree, "Display free memory" },
     { P_ALL, "i2c_sensor_scan", i2c_sensor_scan, "Scan the Flexcomm (accel, als, audio, hrm) I2C bus. Prints address and state code of active devices." },
-    { P_ALL, "i2c_batt_scan", i2c_batt_scan, "Scan the Flexcomm (batt) I2C bus. Prints address and state code of active devices." },
     { P_ALL, "i2c_sensor_read_byte", i2c_sensor_read_byte, "Read byte from I2C device on Flexcomm (accel, als, audio, hrm) bus " },
     { P_ALL, "i2c_sensor_write_byte", i2c_sensor_write_byte, "Write byte to I2C device on Flexcomm (accel, als, audio, hrm) bus" },
-    { P_ALL, "i2c_batt_read_byte", i2c_batt_read_byte, "Read byte from I2C device on Flexcomm (batt) bus" },
-    { P_ALL, "i2c_batt_write_byte", i2c_batt_write_byte, "Write byte to I2C device on Flexcomm (batt) bus" },
-    { P_ALL, "bq_charge_enable", bq_charge_enable, "Enable battery charging on BQ25887 charge controller" },
-    { P_ALL, "bq_charge_disable", bq_charge_disable, "Disable battery charging on BQ25887 charge controller" },
-    { P_ALL, "bq_status", bq_status, "Get battery charging status from BQ25887 charge controller" },
-	{ P_ALL, "bq_adc_enable", bq_adc_enable, "Set BQ25887 ADC on or off, used to read voltages in bq_status" },
-    { P_ALL, "hrm_off", hrm_off, "Turn on heart rate monitor" },
-    { P_ALL, "hrm_on", hrm_on, "Turn off heart rate monitor" },
     { P_ALL, "gpio_read", gpio_read, "Read GPIO pin (pin must already be configured as input)" },
     { P_ALL, "gpio_write", gpio_write, "Write GPIO pin (pin must already be configured as output)" },
     { P_ALL, "power_off", power_off_command, "Power off the LPC55S69 processor." },
@@ -472,6 +470,8 @@ const shell_command_t commands[] = {
 	{P_SHELL, "memfault_save_coredump_chunks", memfault_save_coredump_chunks_command, "Memfault save coredump chunks to file"},
 	{P_SHELL, "memfault_clear_coredump_files", memfault_clear_coredump_chunk_files_command, "Memfault clear coredump chunks files"},
 
+	// ADC Tests
+	{P_SHELL, "adc_read", adc_read_command, "ADC Read Test"},
 
     // Misc low level tests
 #if (defined(ENABLE_STREAM_MEMORY_TEST_COMMANDS) && (ENABLE_STREAM_MEMORY_TEST_COMMANDS > 0U))

@@ -84,6 +84,7 @@ void BOARD_InitBootClocks(void)
 name: BOARD_BootClockRUN
 called_from_default_init: true
 outputs:
+- {id: ADC_clock.outFreq, value: 16 MHz}
 - {id: CTIMER0_clock.outFreq, value: 16 MHz}
 - {id: FLEXSPI_clock.outFreq, value: 1188/19 MHz}
 - {id: FXCOM0_clock.outFreq, value: 16 MHz}
@@ -91,7 +92,7 @@ outputs:
 - {id: FXCOM1_clock.outFreq, value: 16 MHz}
 - {id: FXCOM2_clock.outFreq, value: 16 MHz}
 - {id: FXCOM3_clock.outFreq, value: 16 MHz}
-- {id: FXCOM4_clock.outFreq, value: 3168/1121 MHz}
+- {id: FXCOM4_clock.outFreq, value: 7.056 MHz}
 - {id: FXCOM5_clock.outFreq, value: 16 MHz}
 - {id: LPOSC1M_clock.outFreq, value: 1 MHz}
 - {id: OSTIMER_clock.outFreq, value: 1 MHz}
@@ -99,9 +100,13 @@ outputs:
 - {id: System_clock.outFreq, value: 4752/19 MHz}
 - {id: WAKE_32K_clock.outFreq, value: 32.768 kHz}
 settings:
+- {id: AUDIOPLL0_PFD0_CLK_GATE, value: Enabled}
 - {id: PLL0_PFD0_CLK_GATE, value: Enabled}
-- {id: SYSCON.AUDIOPLL0CLKSEL.sel, value: SYSCON.sfro}
-- {id: SYSCON.AUDIOPLL0_PFD0_DIV.scale, value: '23', locked: true}
+- {id: SYSCON.ADC0FCLKSEL0.sel, value: SYSCON.sfro}
+- {id: SYSCON.ADC0FCLKSEL1.sel, value: SYSCON.ADC0FCLKSEL0}
+- {id: SYSCON.AUDIOPLL0CLKSEL.sel, value: SYSCON.SYSOSCBYPASS}
+- {id: SYSCON.AUDIOPLL0_PFD0_DIV.scale, value: '13', locked: true}
+- {id: SYSCON.AUDIOPLLCLKDIV.scale, value: '90', locked: true}
 - {id: SYSCON.AUDIO_PLL0_PFD0_MUL.scale, value: '18', locked: true}
 - {id: SYSCON.CT32BIT0FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC0FCLKSEL.sel, value: SYSCON.sfro}
@@ -109,7 +114,7 @@ settings:
 - {id: SYSCON.FC1FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC2FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FC3FCLKSEL.sel, value: SYSCON.sfro}
-- {id: SYSCON.FC4FCLKSEL.sel, value: SYSCON.FRG4}
+- {id: SYSCON.FC4FCLKSEL.sel, value: SYSCON.AUDIOPLLCLKDIV}
 - {id: SYSCON.FC5FCLKSEL.sel, value: SYSCON.sfro}
 - {id: SYSCON.FLEXSPIFCLKDIV.scale, value: '8', locked: true}
 - {id: SYSCON.FLEXSPIFCLKSEL.sel, value: SYSCON.MAINCLKSELB}
@@ -124,12 +129,13 @@ settings:
 - {id: SYSCON.PLL0.num, value: '0'}
 - {id: SYSCON.PLL0_PFD0_DIV.scale, value: '19', locked: true}
 - {id: SYSCON.PLL0_PFD0_MUL.scale, value: '18', locked: true}
-- {id: SYSCON.PLL1.denom, value: '1', locked: true}
-- {id: SYSCON.PLL1.div, value: '16', locked: true}
-- {id: SYSCON.PLL1.num, value: '0', locked: true}
+- {id: SYSCON.PLL1.denom, value: '100', locked: true}
+- {id: SYSCON.PLL1.div, value: '19', locked: true}
+- {id: SYSCON.PLL1.num, value: '11', locked: true}
 - {id: SYSCON.SYSCPUAHBCLKDIV.scale, value: '2', locked: true}
 - {id: SYSCON.SYSPLL0CLKSEL.sel, value: SYSCON.SYSOSCBYPASS}
 - {id: SYSCON.WAKECLK32KHZSEL.sel, value: RTC.rtc_osc_32k_clk}
+- {id: SYSCTL_PDRUNCFG_AUDIOPLL_CFG, value: 'No'}
 - {id: SYSCTL_PDRUNCFG_SYSPLL_CFG, value: 'No'}
 - {id: SYSCTL_PDRUNCFG_SYSXTAL_CFG, value: Power_up}
 - {id: XTAL32K_EN_CFG, value: Enable}
@@ -149,6 +155,13 @@ const clock_sys_pll_config_t g_sysPllConfig_BOARD_BootClockRUN =
         .numerator = 0,                           /* Numerator of the SYSPLL0 fractional loop divider isnull */
         .denominator = 1,                         /* Denominator of the SYSPLL0 fractional loop divider isnull */
         .sys_pll_mult = kCLOCK_SysPllMult22       /* Divide by 22 */
+    };
+const clock_audio_pll_config_t g_audioPllConfig_BOARD_BootClockRUN =
+    {
+        .audio_pll_src = kCLOCK_AudioPllXtalIn,   /* OSC clock */
+        .numerator = 11,                          /* Numerator of the Audio PLL fractional loop divider is null */
+        .denominator = 100,                       /* Denominator of the Audio PLL fractional loop divider is null */
+        .audio_pll_mult = kCLOCK_AudioPllMult19   /* Divide by 19 */
     };
 const clock_frg_clk_config_t g_frg4Config_BOARD_BootClockRUN =
     {
@@ -188,6 +201,9 @@ void BOARD_BootClockRUN(void)
     CLOCK_InitSysPll(&g_sysPllConfig_BOARD_BootClockRUN);
     CLOCK_InitSysPfd(kCLOCK_Pfd0, 19);                /* Enable MAIN PLL clock */
 
+    /* Configure Audio PLL clock source */
+    CLOCK_InitAudioPll(&g_audioPllConfig_BOARD_BootClockRUN);
+    CLOCK_InitAudioPfd(kCLOCK_Pfd0, 13);              /* Enable Audio PLL clock */
 
     /* Configure 32K OSC clock */
     CLOCK_EnableOsc32K(true);                         /* Enable 32KHz Oscillator clock */
@@ -207,12 +223,15 @@ void BOARD_BootClockRUN(void)
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM1);                 /* Switch FLEXCOMM1 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM2);                 /* Switch FLEXCOMM2 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM3);                 /* Switch FLEXCOMM3 to SFRO */
-    CLOCK_AttachClk(kFRG_to_FLEXCOMM4);                 /* Switch FLEXCOMM4 to FRG */
+    CLOCK_AttachClk(kAUDIO_PLL_to_FLEXCOMM4);                 /* Switch FLEXCOMM4 to AUDIO_PLL */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM5);                 /* Switch FLEXCOMM5 to SFRO */
     CLOCK_AttachClk(kSFRO_to_FLEXCOMM15);                 /* Switch FLEXCOMM15 to SFRO */
+    CLOCK_AttachClk(kSFRO_to_ADC_CLK);                 /* Switch ADC_CLK to SFRO */
 
     /* Set up dividers */
+    CLOCK_SetClkDiv(kCLOCK_DivAudioPllClk, 90U);         /* Set AUDIOPLLCLKDIV divider to value 90 */
     CLOCK_SetClkDiv(kCLOCK_DivPllFrgClk, 177U);         /* Set FRGPLLCLKDIV divider to value 177 */
+    CLOCK_SetClkDiv(kCLOCK_DivAdcClk, 1U);         /* Set ADC0FCLKDIV divider to value 1 */
 
     /* Call weak function BOARD_SetFlexspiClock() to set user configured clock source/divider for FLEXSPI. */
     BOARD_SetFlexspiClock(0U, 8U);

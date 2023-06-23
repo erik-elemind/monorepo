@@ -18,8 +18,10 @@ extern "C" {
 #endif
 
 void amp_init(i2c_rtos_handle_t *i2c_handle);
+void amp_config();
 void amp_mute(bool mute);
 void amp_set_volume(uint8_t volume);
+void amp_power(bool on);
 
 #ifdef __cplusplus
 }

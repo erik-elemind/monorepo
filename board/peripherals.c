@@ -156,7 +156,6 @@ instance:
       - 12: []
       - 13: []
       - 14: []
-      - 15: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -164,52 +163,6 @@ instance:
 /* Empty initialization function (commented out)
 static void NVIC_init(void) {
 } */
-
-/***********************************************************************************************************************
- * FC2_BATT_I2C initialization code
- **********************************************************************************************************************/
-/* clang-format off */
-/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
-instance:
-- name: 'FC2_BATT_I2C'
-- type: 'flexcomm_i2c'
-- mode: 'freertos'
-- custom_name_enabled: 'true'
-- type_id: 'flexcomm_i2c_c8597948f61bd571ab263ea4330b9dd6'
-- functional_group: 'BOARD_InitPeripherals'
-- peripheral: 'FLEXCOMM2'
-- config_sets:
-  - fsl_i2c:
-    - i2c_mode: 'kI2C_Master'
-    - clockSource: 'FXCOMFunctionClock'
-    - clockSourceFreq: 'BOARD_BootClockRUN'
-    - rtos_handle:
-      - enable_custom_name: 'false'
-    - i2c_master_config:
-      - enableMaster: 'true'
-      - baudRate_Bps: '100000'
-      - enableTimeout: 'false'
-      - timeout_Ms: '35'
-    - interrupt_priority:
-      - IRQn: 'FLEXCOMM2_IRQn'
-      - enable_priority: 'true'
-      - priority: '5'
- * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
-/* clang-format on */
-i2c_rtos_handle_t FC2_BATT_I2C_rtosHandle;
-const i2c_master_config_t FC2_BATT_I2C_config = {
-  .enableMaster = true,
-  .baudRate_Bps = 100000UL,
-  .enableTimeout = false,
-  .timeout_Ms = 35U
-};
-
-static void FC2_BATT_I2C_init(void) {
-  /* Initialization function */
-  I2C_RTOS_Init(&FC2_BATT_I2C_rtosHandle, FC2_BATT_I2C_PERIPHERAL, &FC2_BATT_I2C_config, FC2_BATT_I2C_CLOCK_SOURCE);
-  /* Interrupt vector FLEXCOMM2_IRQn priority settings in the NVIC. */
-  NVIC_SetPriority(FC2_BATT_I2C_FLEXCOMM_IRQN, FC2_BATT_I2C_FLEXCOMM_IRQ_PRIORITY);
-}
 
 /***********************************************************************************************************************
  * FC3_SENSOR_I2C initialization code
@@ -323,17 +276,7 @@ instance:
   - general:
     - interrupt_array:
       - 0:
-        - interrupt_id: 'INT_1'
-        - interrupt_selection: 'PINT.1'
-        - interrupt_type: 'kPINT_PinIntEnableNone'
-        - callback_function: 'charger_pint_isr'
-        - enable_callback: 'true'
-        - interrupt:
-          - IRQn: 'PIN_INT1_IRQn'
-          - enable_priority: 'true'
-          - priority: '5'
-      - 1:
-        - interrupt_id: 'INT_3'
+        - interrupt_id: 'INT_3_HRM'
         - interrupt_selection: 'PINT.3'
         - interrupt_type: 'kPINT_PinIntEnableFallEdge'
         - callback_function: 'hrm_pint_isr'
@@ -342,8 +285,8 @@ instance:
           - IRQn: 'PIN_INT3_IRQn'
           - enable_priority: 'true'
           - priority: '5'
-      - 2:
-        - interrupt_id: 'INT_4'
+      - 1:
+        - interrupt_id: 'INT_4_ACCEL'
         - interrupt_selection: 'PINT.4'
         - interrupt_type: 'kPINT_PinIntEnableRiseEdge'
         - callback_function: 'accel_pint_isr'
@@ -352,18 +295,18 @@ instance:
           - IRQn: 'PIN_INT4_IRQn'
           - enable_priority: 'true'
           - priority: '5'
-      - 3:
-        - interrupt_id: 'INT_5'
-        - interrupt_selection: 'PINT.5'
+      - 2:
+        - interrupt_id: 'INT_1_UB1'
+        - interrupt_selection: 'PINT.1'
         - interrupt_type: 'kPINT_PinIntEnableBothEdges'
         - callback_function: 'user_button1_isr'
         - enable_callback: 'true'
         - interrupt:
-          - IRQn: 'PIN_INT5_IRQn'
+          - IRQn: 'PIN_INT1_IRQn'
           - enable_priority: 'true'
           - priority: '5'
-      - 4:
-        - interrupt_id: 'INT_6'
+      - 3:
+        - interrupt_id: 'INT_6_UB2'
         - interrupt_selection: 'PINT.6'
         - interrupt_type: 'kPINT_PinIntEnableBothEdges'
         - callback_function: 'user_button2_isr'
@@ -372,20 +315,20 @@ instance:
           - IRQn: 'PIN_INT6_IRQn'
           - enable_priority: 'true'
           - priority: '5'
-      - 5:
-        - interrupt_id: 'INT_0'
-        - interrupt_selection: 'PINT.0'
+      - 4:
+        - interrupt_id: 'INT_2_EEG_DRDY'
+        - interrupt_selection: 'PINT.2'
         - interrupt_type: 'kPINT_PinIntEnableFallEdge'
         - callback_function: 'eeg_drdy_pint_isr'
         - enable_callback: 'true'
         - interrupt:
-          - IRQn: 'PIN_INT0_IRQn'
+          - IRQn: 'PIN_INT2_IRQn'
           - enable_priority: 'true'
           - priority: '3'
-      - 6:
-        - interrupt_id: 'INT_7'
+      - 5:
+        - interrupt_id: 'INT_7_ACTB'
         - interrupt_selection: 'PINT.7'
-        - interrupt_type: 'kPINT_PinIntEnableFallEdge'
+        - interrupt_type: 'kPINT_PinIntEnableBothEdges'
         - callback_function: 'power_button_isr'
         - enable_callback: 'true'
         - interrupt:
@@ -398,46 +341,40 @@ instance:
 static void PINT_init(void) {
   /* PINT initiation  */
   PINT_Init(PINT_PERIPHERAL);
-  /* Interrupt vector PIN_INT1_IRQn priority settings in the NVIC. */
-  NVIC_SetPriority(PINT_PINT_1_IRQN, PINT_PINT_1_IRQ_PRIORITY);
   /* Interrupt vector PIN_INT3_IRQn priority settings in the NVIC. */
   NVIC_SetPriority(PINT_PINT_3_IRQN, PINT_PINT_3_IRQ_PRIORITY);
   /* Interrupt vector PIN_INT4_IRQn priority settings in the NVIC. */
   NVIC_SetPriority(PINT_PINT_4_IRQN, PINT_PINT_4_IRQ_PRIORITY);
-  /* Interrupt vector PIN_INT5_IRQn priority settings in the NVIC. */
-  NVIC_SetPriority(PINT_PINT_5_IRQN, PINT_PINT_5_IRQ_PRIORITY);
+  /* Interrupt vector PIN_INT1_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(PINT_PINT_1_IRQN, PINT_PINT_1_IRQ_PRIORITY);
   /* Interrupt vector PIN_INT6_IRQn priority settings in the NVIC. */
   NVIC_SetPriority(PINT_PINT_6_IRQN, PINT_PINT_6_IRQ_PRIORITY);
-  /* Interrupt vector PIN_INT0_IRQn priority settings in the NVIC. */
-  NVIC_SetPriority(PINT_PINT_0_IRQN, PINT_PINT_0_IRQ_PRIORITY);
+  /* Interrupt vector PIN_INT2_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(PINT_PINT_2_IRQN, PINT_PINT_2_IRQ_PRIORITY);
   /* Interrupt vector PIN_INT7_IRQn priority settings in the NVIC. */
   NVIC_SetPriority(PINT_PINT_7_IRQN, PINT_PINT_7_IRQ_PRIORITY);
-  /* PINT PINT.1 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_1, kPINT_PinIntEnableNone, charger_pint_isr);
   /* PINT PINT.3 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_3, kPINT_PinIntEnableFallEdge, hrm_pint_isr);
+  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_3_HRM, kPINT_PinIntEnableFallEdge, hrm_pint_isr);
   /* PINT PINT.4 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_4, kPINT_PinIntEnableRiseEdge, accel_pint_isr);
-  /* PINT PINT.5 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_5, kPINT_PinIntEnableBothEdges, user_button1_isr);
+  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_4_ACCEL, kPINT_PinIntEnableRiseEdge, accel_pint_isr);
+  /* PINT PINT.1 configuration */
+  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_1_UB1, kPINT_PinIntEnableBothEdges, user_button1_isr);
   /* PINT PINT.6 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_6, kPINT_PinIntEnableBothEdges, user_button2_isr);
-  /* PINT PINT.0 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_0, kPINT_PinIntEnableFallEdge, eeg_drdy_pint_isr);
+  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_6_UB2, kPINT_PinIntEnableBothEdges, user_button2_isr);
+  /* PINT PINT.2 configuration */
+  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_2_EEG_DRDY, kPINT_PinIntEnableFallEdge, eeg_drdy_pint_isr);
   /* PINT PINT.7 configuration */
-  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_7, kPINT_PinIntEnableFallEdge, power_button_isr);
-  /* Enable PINT PINT.1 callback */
-  PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt1);
+  PINT_PinInterruptConfig(PINT_PERIPHERAL, PINT_INT_7_ACTB, kPINT_PinIntEnableBothEdges, power_button_isr);
   /* Enable PINT PINT.3 callback */
   PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt3);
   /* Enable PINT PINT.4 callback */
   PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt4);
-  /* Enable PINT PINT.5 callback */
-  PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt5);
+  /* Enable PINT PINT.1 callback */
+  PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt1);
   /* Enable PINT PINT.6 callback */
   PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt6);
-  /* Enable PINT PINT.0 callback */
-  PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt0);
+  /* Enable PINT PINT.2 callback */
+  PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt2);
   /* Enable PINT PINT.7 callback */
   PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt7);
 }
@@ -614,7 +551,7 @@ instance:
         - level: 'kSCTIMER_LowTrue'
         - dutyCyclePercent: '1'
       - 2:
-        - output: 'kSCTIMER_Out_2'
+        - output: 'kSCTIMER_Out_8'
         - level: 'kSCTIMER_LowTrue'
         - dutyCyclePercent: '1'
     - pwmMode: 'kSCTIMER_EdgeAlignedPwm'
@@ -648,7 +585,7 @@ const sctimer_pwm_signal_param_t SCT0_pwmSignalsConfig[3] = {
     .dutyCyclePercent = 1U
   },
   {
-    .output = kSCTIMER_Out_2,
+    .output = kSCTIMER_Out_8,
     .level = kSCTIMER_LowTrue,
     .dutyCyclePercent = 1U
   }
@@ -698,11 +635,11 @@ instance:
       - i2s_mono_palcement: 'kSAI_Mono_Left'
       - positionM: '0'
       - secondary_channels_array: []
-      - frameLengthM: '128'
+      - frameLengthM: '32'
       - rightLow: 'false'
       - leftJust: 'false'
       - watermarkM_Tx: 'ki2s_TxFifo4'
-      - txEmptyZeroTx: 'true'
+      - txEmptyZeroTx: 'false'
       - pack48: 'false'
   - dmaCfg:
     - dma_channels:
@@ -726,13 +663,13 @@ const i2s_config_t FC4_AUDIO_I2S_config = {
   .leftJust = false,
   .sckPol = false,
   .wsPol = false,
-  .divider = 1,
+  .divider = 10,
   .oneChannel = false,
   .dataLength = 16,
-  .frameLength = 128,
+  .frameLength = 32,
   .position = 0,
   .watermark = 4,
-  .txEmptyZero = true,
+  .txEmptyZero = false,
   .pack48 = false
 };
 dma_handle_t FC4_AUDIO_I2S_TX_Handle;
@@ -1096,6 +1033,88 @@ static void FC15_PMIC_init(void) {
 }
 
 /***********************************************************************************************************************
+ * FC2_HRM_SPI initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'FC2_HRM_SPI'
+- type: 'flexcomm_spi'
+- mode: 'SPI_Transfer'
+- custom_name_enabled: 'true'
+- type_id: 'flexcomm_spi_481dadba00035f986f31ed9ac95af181'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'FLEXCOMM2'
+- config_sets:
+  - transferCfg:
+    - transfer:
+      - init_transfer: 'true'
+      - transfer_cfg:
+        - halfDuplex: 'false'
+        - txDataBufferEnable: 'true'
+        - rxDataBufferEnable: 'true'
+        - dataSize: '10'
+      - init_callback: 'false'
+      - callback_fcn: ''
+      - user_data: ''
+    - quick_selection: 'QuickSelection1'
+  - fsl_spi:
+    - spi_mode: 'kSPI_Master'
+    - clockSource: 'FXCOMFunctionClock'
+    - clockSourceFreq: 'BOARD_BootClockRUN'
+    - spi_master_config:
+      - enableLoopback: 'false'
+      - enableMaster: 'true'
+      - polarity: 'kSPI_ClockPolarityActiveHigh'
+      - phase: 'kSPI_ClockPhaseFirstEdge'
+      - direction: 'kSPI_MsbFirst'
+      - baudRate_Bps: '2000000'
+      - dataWidth: 'kSPI_Data8Bits'
+      - sselNum: 'kSPI_Ssel0'
+      - sselPol_set: ''
+      - txWatermark: 'kSPI_TxFifo0'
+      - rxWatermark: 'kSPI_RxFifo1'
+      - delayConfig:
+        - preDelay: '0'
+        - postDelay: '0'
+        - frameDelay: '0'
+        - transferDelay: '0'
+    - interrupt_priority:
+      - IRQn: 'FLEXCOMM2_IRQn'
+      - enable_priority: 'false'
+      - priority: '0'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const spi_master_config_t FC2_HRM_SPI_config = {
+  .enableLoopback = false,
+  .enableMaster = true,
+  .polarity = kSPI_ClockPolarityActiveHigh,
+  .phase = kSPI_ClockPhaseFirstEdge,
+  .direction = kSPI_MsbFirst,
+  .baudRate_Bps = 2000000UL,
+  .dataWidth = kSPI_Data8Bits,
+  .sselNum = kSPI_Ssel0,
+  .sselPol = kSPI_SpolActiveAllLow,
+  .txWatermark = kSPI_TxFifo0,
+  .rxWatermark = kSPI_RxFifo1,
+  .delayConfig = {
+    .preDelay = 0U,
+    .postDelay = 0U,
+    .frameDelay = 0U,
+    .transferDelay = 0U
+  }
+};
+spi_master_handle_t FC2_HRM_SPI_handle;
+uint8_t FC2_HRM_SPI_txBuffer[FC2_HRM_SPI_BUFFER_SIZE];
+uint8_t FC2_HRM_SPI_rxBuffer[FC2_HRM_SPI_BUFFER_SIZE];
+
+static void FC2_HRM_SPI_init(void) {
+  /* Initialization function */
+  SPI_MasterInit(FC2_HRM_SPI_PERIPHERAL, &FC2_HRM_SPI_config, FC2_HRM_SPI_CLOCK_SOURCE);
+  SPI_MasterTransferCreateHandle(FC2_HRM_SPI_PERIPHERAL, &FC2_HRM_SPI_handle, NULL, NULL);
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 void BOARD_InitPeripherals(void)
@@ -1107,7 +1126,6 @@ void BOARD_InitPeripherals(void)
   /* Initialize components */
   DMA0_init();
   DMA1_init();
-  FC2_BATT_I2C_init();
   FC3_SENSOR_I2C_init();
   FC5_DEBUG_UART_init();
   PINT_init();
@@ -1118,6 +1136,7 @@ void BOARD_InitPeripherals(void)
   NAND_FLEXSPI_init();
   RTC_init();
   FC15_PMIC_init();
+  FC2_HRM_SPI_init();
 }
 
 /***********************************************************************************************************************

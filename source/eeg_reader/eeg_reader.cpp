@@ -354,7 +354,7 @@ static void stop_spi_transaction(){
 #if defined(VARIANT_FF2) || defined(VARIANT_FF3)
   PINT_DisableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt4);
 #elif defined(VARIANT_FF4)
-  PINT_DisableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt0);
+  PINT_DisableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt2);
 #endif
 
   vTaskDelay(pdMS_TO_TICKS(8)); // delay twice the period of the 250Hz sampling rate.
@@ -365,7 +365,7 @@ static void start_spi_transaction(){
 #if defined(VARIANT_FF2) || defined(VARIANT_FF3)
 	PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt4);
 #elif defined(VARIANT_FF4)
-	PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt0);
+	PINT_EnableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt2);
 #endif
 }
 
@@ -514,17 +514,17 @@ task_init()
   // Any post-scheduler init goes here.
   g_eeg_reader_task_handle = xTaskGetCurrentTaskHandle();
 
-  // Initialize ADS1298 charge pump and LDO.
+  // Initialize ADS1299 charge pump and LDO.
   ads_init(&(g_eeg_reader_context.ads));
   g_eeg_reader_context.ads_gain = ADS_GAIN_DEFAULT; // TODO get this gain from the device
 
   set_state(EEG_READER_STATE_OFF);
 
   // disable eeg data ready interrupt, which is automatically enabled in peripherals.c
-#if defined(VARIANT_FF2) || defined(VARIANT_FF3) 
+#if defined(VARIANT_FF2) || defined(VARIANT_FF3)
   PINT_DisableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt4);
 #elif defined(VARIANT_FF4)
-  PINT_DisableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt0);
+  PINT_DisableCallbackByIndex(PINT_PERIPHERAL, kPINT_PinInt2);
 #endif
 
   // power up (high on power down pin)

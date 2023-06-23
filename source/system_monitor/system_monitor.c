@@ -132,9 +132,6 @@ static StaticQueue_t g_event_queue_struct;
 static QueueHandle_t g_event_queue;
 static void handle_event(system_monitor_event_t *event);
 
-/// Battery charger handle
-battery_charger_handle_t g_battery_charger_handle;
-
 // For logging and debug:
 static const char *
 system_monitor_state_name(system_monitor_state_t state)
@@ -191,23 +188,6 @@ system_monitor_event_battery(void)
   xQueueSend(g_event_queue, &event, portMAX_DELAY);
 }
 
-void
-system_monitor_event_battery_from_isr(void)
-{
-#if (defined(ENABLE_TRACEALYZER) && (ENABLE_TRACEALYZER > 0U))
-    vTraceStoreISRBegin(SYSTEM_MONITOR_CHARGER_TIMEOUT_ISR_TRACE);
-#endif
-
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    system_monitor_event_t event = {
-      .type = SYSTEM_MONITOR_EVENT_BATTERY
-    };
-    xQueueSendFromISR(g_event_queue, &event, &xHigherPriorityTaskWoken);
-//    portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
-#if (defined(ENABLE_TRACEALYZER) && (ENABLE_TRACEALYZER > 0U))
-    vTraceStoreISREnd( xHigherPriorityTaskWoken );
-#endif
-}
 
 void
 system_monitor_event_power_off()
@@ -479,8 +459,7 @@ handle_battery_event(void)
 {
   static battery_charger_status_t prev_status = -1;
 
-  battery_charger_status_t battery_status = battery_charger_get_status(
-    &g_battery_charger_handle);
+  battery_charger_status_t battery_status = pmic_battery_charger_get_status();
 
   //battery_level_get(); // ToDo: Need to bring up proper battery reading
 
@@ -708,17 +687,8 @@ task_init()
 //  restart_wwdt_feed_timer();
 #endif
 
-
-  // Initialize battery charger driver
-  battery_charger_init(&g_battery_charger_handle, &BATT_I2C_RTOS_HANDLE,
-    BATTERY_CHARGER_ENABLE_PORT, BATTERY_CHARGER_ENABLE_PIN,
-    BATTERY_CHARGER_STATUS_PORT, BATTERY_CHARGER_STATUS_PIN);
-
-  // Enable battery charging whenever USB is plugged in
-  battery_charger_enable(&g_battery_charger_handle, true);
-
   // Initialize ADC for battery level reads
-  //adc_init(); // ToDo: Need to bring up ADC for battery and sensors
+  adc_init();
 
   // Force a battery event to get power-on battery state
   handle_battery_event();

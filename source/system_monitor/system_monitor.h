@@ -1,7 +1,7 @@
 #ifndef SYSTEM_MONITOR_H
 #define SYSTEM_MONITOR_H
 
-#include "battery_charger.h"
+#include "pmic_pca9420.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,9 +13,6 @@ extern "C" {
 // Samples before sleeping, waiting for mems-wake interrupt.  Setting
 // to 0 will never sleep, and always sample at MIC_TIMER_MS.
 #define MIC_SAMPLES_BEFORE_SLEEP 1
-
-/// Battery charger handle
-extern battery_charger_handle_t g_battery_charger_handle;
 
 // Init called before vTaskStartScheduler() launches our Task in main():
 void system_monitor_pretask_init(void);
