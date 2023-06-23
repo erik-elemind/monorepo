@@ -146,6 +146,9 @@ $(APP_WITH_SETTINGS_HEX): nrf52832_xxaa
 		$(APP_HEX) \
 		$(BL_SETTINGS_HEX) \
 		--output $(APP_WITH_SETTINGS_HEX) > /dev/null
+	$(Q) rm -f $(APP_HEX)
+	$(Q) rm -f $(BL_SETTINGS_HEX)
+
 
 # Flash app and bootloader settings (required if secure bootloader installed)
 flash: $(APP_WITH_SETTINGS_HEX)
