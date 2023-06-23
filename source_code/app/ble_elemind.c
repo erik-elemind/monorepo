@@ -95,10 +95,9 @@ lpc_ispn_disable_timeout_handler(void * p_context)
   UNUSED_PARAMETER(p_context);
 
   // Reset ISP lines
-  nrf_gpio_cfg_input(ISP0N_PIN, NRF_GPIO_PIN_PULLDOWN);
-  nrf_gpio_cfg_input(ISP1N_PIN, NRF_GPIO_PIN_NOPULL);
-  nrf_gpio_cfg_input(ISP2N_PIN, NRF_GPIO_PIN_PULLDOWN);
-
+  nrf_gpio_pin_clear(ISP0N_PIN);
+  nrf_gpio_pin_set(ISP1N_PIN);
+  nrf_gpio_pin_clear(ISP2N_PIN);
 }
 
 /** Handle the DFU Reset Delay timer timeout.
@@ -825,17 +824,13 @@ ble_elemind_init(
   nrf_gpio_cfg_input(LPC_RESETN_PIN, NRF_GPIO_PIN_PULLUP);
   
   // Setup ISP GPIOs
-  nrf_gpio_cfg_input(ISP0N_PIN, NRF_GPIO_PIN_PULLDOWN);
-  nrf_gpio_cfg_input(ISP1N_PIN, NRF_GPIO_PIN_NOPULL);
-  nrf_gpio_cfg_input(ISP2N_PIN, NRF_GPIO_PIN_PULLDOWN);
+  nrf_gpio_pin_clear(ISP0N_PIN);
+  nrf_gpio_pin_set(ISP1N_PIN);
+  nrf_gpio_pin_clear(ISP2N_PIN);
 
-  // Reset the NXP chip on bootup, the ISP pins need to be initialized for it to boot ok
-  nrf_delay_us(LPC_RESETN_HOLD_US);
-  nrf_gpio_pin_clear(LPC_RESETN_PIN);
-  nrf_gpio_cfg_output(LPC_RESETN_PIN);
-  nrf_delay_us(LPC_RESETN_HOLD_US); // Hold reset low for a little bit
-  nrf_gpio_cfg_input(LPC_RESETN_PIN, NRF_GPIO_PIN_PULLUP);
-
+  nrf_gpio_cfg_output(ISP0N_PIN);
+  nrf_gpio_cfg_output(ISP1N_PIN);
+  nrf_gpio_cfg_output(ISP2N_PIN);
 
   // Create LPC ISP disable timer (used to disable ISP after an ISP reset)
   err_code = app_timer_create(&m_lpc_ispn_disable_timer_id,
@@ -969,9 +964,9 @@ static void
 on_write_lpc_reset(const ble_gatts_evt_write_t* p_evt_write)
 {
   if (p_evt_write->data[0] == LPC_RESET_ISP_REQUESTED) {
-    nrf_gpio_cfg_input(ISP0N_PIN, NRF_GPIO_PIN_PULLDOWN);
-    nrf_gpio_cfg_input(ISP1N_PIN, NRF_GPIO_PIN_PULLDOWN);
-    nrf_gpio_cfg_input(ISP2N_PIN, NRF_GPIO_PIN_PULLDOWN);
+    nrf_gpio_pin_clear(ISP0N_PIN);
+    nrf_gpio_pin_set(ISP1N_PIN);
+    nrf_gpio_pin_set(ISP2N_PIN);
   }
   nrf_gpio_pin_clear(LPC_RESETN_PIN);
   nrf_gpio_cfg_output(LPC_RESETN_PIN);
@@ -1455,6 +1450,7 @@ ble_elemind_dfu(ble_elemind_t* p_elemind)
 
   // Notify NXP that OTA has started
   lpc_uart_sendline("ble_ota_start\n");
+  lpc_uart_sendline("flash_mux_select 1\n");
   
   // Schedule reset after BLE connection has had time to update
   err_code = app_timer_start(m_dfu_reset_delay_timer_id,

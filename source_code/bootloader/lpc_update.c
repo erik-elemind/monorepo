@@ -12,6 +12,7 @@
 #include "lpc_protocol.h"
 #include "ext_fstorage.h"
 #include "lpc_reset_timing.h"
+#include "ext_flash.h"
 
 // nordic sdk
 #include "nrf_dfu_validation.h"
@@ -42,9 +43,9 @@ static void lpc_reset_isp(bool isp)
     // Set up LPC reset and ISP GPIOs (active-low)
     if (isp)
     {
-        nrf_gpio_cfg_input(ISP0N_PIN, NRF_GPIO_PIN_PULLDOWN);
-        nrf_gpio_cfg_input(ISP1N_PIN, NRF_GPIO_PIN_PULLDOWN);
-        nrf_gpio_cfg_input(ISP2N_PIN, NRF_GPIO_PIN_PULLDOWN);
+        nrf_gpio_pin_clear(ISP0N_PIN);
+        nrf_gpio_pin_set(ISP1N_PIN);
+        nrf_gpio_pin_set(ISP2N_PIN);
         nrf_gpio_cfg_output(LPC_ISPN_PIN);
     }
 
@@ -58,9 +59,9 @@ static void lpc_reset_isp(bool isp)
     {
         // Hold ISP enter flag low for a bit more
         nrf_delay_ms(LPC_ISPN_HOLD_TIME_MS);
-        nrf_gpio_cfg_input(ISP0N_PIN, NRF_GPIO_PIN_PULLDOWN);
-        nrf_gpio_cfg_input(ISP1N_PIN, NRF_GPIO_PIN_NOPULL);
-        nrf_gpio_cfg_input(ISP2N_PIN, NRF_GPIO_PIN_PULLDOWN);
+        nrf_gpio_pin_clear(ISP0N_PIN);
+        nrf_gpio_pin_set(ISP1N_PIN);
+        nrf_gpio_pin_clear(ISP2N_PIN);
     }
 }
 
@@ -100,12 +101,16 @@ nrf_dfu_result_t nrf_dfu_validation_post_external_app_execute(dfu_init_command_t
         // Init the lower layer
         if (0 == lpc_protocol_init())
         {
+            // NRF_LOG_INFO("reading properties");
+            // lpc_property_read();
+
             // Finally, apply the update to the LPC
             NRF_LOG_WARNING("apply lpc app. size=%d", p_init->app_size);
             if (0 == lpc_protocol_apply_fw(p_init->app_size))
             {
                 // Success! LPC reboot initiated.
-                NRF_LOG_WARNING("lpc firmware applied successfully!")
+                NRF_LOG_WARNING("lpc firmware applied successfully!");
+                //lpc_reset_isp(false);
                 return NRF_DFU_RES_CODE_SUCCESS;
             }
         }
@@ -128,7 +133,32 @@ nrf_dfu_result_t nrf_dfu_validation_post_external_app_execute(dfu_init_command_t
 // Implementation of the function needed by lpc interface code
 int lpc_fw_file_read(uint32_t offset, uint8_t* p_buf, uint32_t len)
 {
-    return (int)ext_fstorage_read(offset, p_buf, len);
+    ret_code_t err_code;
+    // TODO: NEED TO ADJUST FOR PAGE READS....
+    static uint8_t read_buf[SPI_FLASH_PAGE_LEN];
+    static uint8_t *read_ptr = read_buf;
+    static uint8_t running_read = 0;
+
+    uint32_t num_pages = offset / SPI_FLASH_PAGE_LEN;
+    uint32_t adjusted_dest = EXT_STORAGE_ADDR_NEW_BASE + num_pages;
+
+    // 4 chunks in page
+    if (((offset % SPI_FLASH_PAGE_LEN) == 0) || (offset == 0))
+    {
+        err_code = ext_fstorage_read(adjusted_dest, read_buf, SPI_FLASH_PAGE_LEN);
+        if (NRF_SUCCESS != err_code)
+        {
+            return -1;
+        }
+        read_ptr = &read_buf[0];
+        running_read = 0;      
+    }
+
+    memcpy(p_buf, read_ptr, len);
+    read_ptr += len;
+    running_read += len;
+
+    return (int)err_code;
 }
 
 // Implementation of the function needed by lpc interface code

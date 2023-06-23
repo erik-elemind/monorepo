@@ -80,7 +80,9 @@ int lpc_send_ack(void);
  * 
  * @retval  0 on success. Non-zero on failure.
  */
-int lpc_send_flash_erase_region(void);
+int lpc_send_flash_erase_all(void);
+int lpc_send_flash_erase_region1(void);
+int lpc_send_flash_erase_region2(void);
 
 /**@brief   Send a GetProperty packet over UART.
  *
@@ -103,6 +105,21 @@ int lpc_send_reset(void);
  * @retval  0 on success. Non-zero on failure.
  */
 int lpc_send_write_mem(uint32_t len);
+
+/**@brief   Send a FillMemory packet over UART.
+ *
+ * 
+ * @retval  0 on success. Non-zero on failure.
+ */
+int lpc_send_fill_mem1(void);
+int lpc_send_fill_mem2(void);
+
+/**@brief   Send a ConfigureMemory packet over UART.
+ *
+ * 
+ * @retval  0 on success. Non-zero on failure.
+ */
+int lpc_send_config_mem(void);
 
 /**@brief   Send a Data packet over UART.
  *

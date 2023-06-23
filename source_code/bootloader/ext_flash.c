@@ -159,11 +159,11 @@ ret_code_t ext_flash_cmd_read_mem(const uint32_t addr, uint32_t* len, uint8_t* d
         return NRF_ERROR_INTERNAL;
     }
 
-    // NRF_LOG_INFO("read mem. addr=0x%06X, len=%d/%d, data=0x%02X", 
-    //     addr,
-    //     len_cmd,
-    //     *len,
-    //     data[0]);
+    NRF_LOG_INFO("read mem. addr=0x%06X, len=%d/%d, data=0x%02X", 
+        addr,
+        len_cmd,
+        *len,
+        data[0]);
 
     *len = len_cmd;
 
