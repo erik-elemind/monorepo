@@ -188,8 +188,11 @@ const shell_command_t commands[] = {
     { P_ALL, "eeg_gain?", eeg_get_gain_command, "Prints the EEG gain." },
 
     // Heart rate monitor commands:
-    { P_ALL, "hrm_off", hrm_off, "Turn off heart rate monitor" },
-    { P_ALL, "hrm_on", hrm_on, "Turn on heart rate monitor" },
+	{ P_ALL, "hrm_off", hrm_off, "Turn on heart rate monitor" },
+	{ P_ALL, "hrm_on", hrm_on, "Turn off heart rate monitor" },
+	{ P_ALL, "hrm_test", hrm_test, "" },
+	{ P_ALL, "hrm_read", hrm_test_read, "" },
+	{ P_ALL, "hrm_write", hrm_test_write, "" },
 
 	// ML commands
 	{ P_ALL, "ml_enable", ml_enable, "Enables ML inference" },
@@ -362,11 +365,6 @@ const shell_command_t commands[] = {
     { P_ALL, "i2c_sensor_scan", i2c_sensor_scan, "Scan the Flexcomm (accel, als, audio, hrm) I2C bus. Prints address and state code of active devices." },
     { P_ALL, "i2c_sensor_read_byte", i2c_sensor_read_byte, "Read byte from I2C device on Flexcomm (accel, als, audio, hrm) bus " },
     { P_ALL, "i2c_sensor_write_byte", i2c_sensor_write_byte, "Write byte to I2C device on Flexcomm (accel, als, audio, hrm) bus" },
-    { P_ALL, "hrm_off", hrm_off, "Turn on heart rate monitor" },
-    { P_ALL, "hrm_on", hrm_on, "Turn off heart rate monitor" },
-	{ P_ALL, "hrm_test", hrm_test, "" },
-	{ P_ALL, "hrm_read", hrm_test_read, "" },
-	{ P_ALL, "hrm_write", hrm_test_write, "" },
     { P_ALL, "gpio_read", gpio_read, "Read GPIO pin (pin must already be configured as input)" },
     { P_ALL, "gpio_write", gpio_write, "Write GPIO pin (pin must already be configured as output)" },
     { P_ALL, "power_off", power_off_command, "Power off the LPC55S69 processor." },
