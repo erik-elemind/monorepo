@@ -5,7 +5,7 @@ therapy_config_alpha_switch 5 10 1 2 6
 eeg_start
 accel_start_sample
 hrm_on
-als_start_sample
+
 skin_temp_start_sample
 ml_enable
 
@@ -36,7 +36,7 @@ echt_stop
 therapy_delay 5399000
 
 skin_temp_stop
-als_stop
+
 hrm_off
 accel_stop
 eeg_stop
