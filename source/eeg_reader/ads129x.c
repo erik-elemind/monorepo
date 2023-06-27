@@ -330,10 +330,10 @@ static ads_status ads_setup(ads129x* ads)
 
   // All GPIO set to output 0x0000: (floating CMOS inputs can flicker on and off, creating noise)
   ads_wreg(adsGPIO, 0);
-  ads_wreg(CONFIG3,PD_REFBUF | CONFIG3_const);
+  ads_wreg(CONFIG3, PD_REFBUF | CONFIG3_const | PD_BIASn | BIAS_LOFF_SENS);
 
   // Set to max gain
-  ads_set_gain(ads, 12);
+  ads_set_gain(ads, 24);
 
 #if defined(VARIANT_FF4)
   // Connect Reference Electrodes - enabling SRB1

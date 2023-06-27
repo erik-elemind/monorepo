@@ -189,12 +189,12 @@ enum CONFIG2_bits {
 
 enum CONFIG3_bits {
     PD_REFBUF = 0x80,
-    VREF_4V = 0x20,
-    RLD_MEAS = 0x10,
-    RLDREF_INT = 0x08,
-    PD_RLD = 0x04,
-    RLD_LOFF_SENS = 0x02,
-    RLD_STAT = 0x01,
+    //VREF_4V = 0x20, // does not exist on ADS1299
+    BIAS_MEAS = 0x10,
+    BIASREF_INT = 0x08,
+    PD_BIASn = 0x04,
+    BIAS_LOFF_SENS = 0x02,
+    BIAS_STAT = 0x01,
 
     // ADS1298
     //CONFIG3_const = 0x40
