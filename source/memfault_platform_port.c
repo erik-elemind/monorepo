@@ -121,13 +121,16 @@ void memfault_platform_get_device_info(sMemfaultDeviceInfo *info) {
 
   // IMPORTANT: All strings returned in info must be constant
   // or static as they will be used _after_ the function returns
+   static char sn_buffer[20];
+   snprintf(sn_buffer, sizeof(sn_buffer), "%lu%lu%lu%lu", \
+		   SYSCTL0->UUID[0], SYSCTL0->UUID[1], SYSCTL0->UUID[2], SYSCTL0->UUID[3]);
 
   // See https://mflt.io/version-nomenclature for more context
   *info = (sMemfaultDeviceInfo) {
     // An ID that uniquely identifies the device in your fleet
     // (i.e serial number, mac addr, chip id, etc)
     // Regular expression defining valid device serials: ^[-a-zA-Z0-9_]+$
-    .device_serial = "1234567890",
+    .device_serial = sn_buffer,
      // A name to represent the firmware running on the MCU.
     // (i.e "ble-fw", "main-fw", or a codename for your project)
     .software_type = "imxrt685-fw",
