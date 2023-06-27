@@ -190,8 +190,8 @@ const shell_command_t commands[] = {
     { P_ALL, "eeg_gain?", eeg_get_gain_command, "Prints the EEG gain." },
 
     // Heart rate monitor commands:
-	{ P_ALL, "hrm_off", hrm_off, "Turn on heart rate monitor" },
-	{ P_ALL, "hrm_on", hrm_on, "Turn off heart rate monitor" },
+	{ P_ALL, "hrm_on", hrm_on, "Turn on heart rate monitor" },
+	{ P_ALL, "hrm_off", hrm_off, "Turn off heart rate monitor" },
 	{ P_ALL, "hrm_test", hrm_test, "" },
 	{ P_ALL, "hrm_read", hrm_test_read, "" },
 	{ P_ALL, "hrm_write", hrm_test_write, "" },
