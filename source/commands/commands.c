@@ -17,7 +17,6 @@
 #include "ble_debug_commands.h"
 #include "ble_uart_commands.h"
 #include "ble_fs_commands.h"
-#include "flash_commands.h"
 #include "nand_commands.h"
 #include "dhara_commands.h"
 #include "fs_commands.h"
@@ -119,31 +118,6 @@ const shell_command_t commands[] = {
     { P_ALL, "app_event", app_event_command, "Send event to app task"},
 	{ P_ALL, "app_enter_isp_mode", app_enter_isp_mode, "Put device into ISP mode"},
 
-#ifdef FLASH_COMMANDS_H
-    // Flash test commands
-    { P_ALL, "flash_hello", flash_hello, "Simple single-register read to test SPI Flash" },
-    { P_ALL, "flash_id", flash_id, "Read SPI Flash ID register" },
-    { P_ALL, "flash_status", flash_status, "Read SPI Flash ID status registers" },
-
-    { P_ALL, "flash_unlock", flash_unlock, "Unlock SPI Flash ID for writes" },
-    { P_ALL, "flash_mux_select", flash_mux_select, "Flash MUX select"},
-    { P_ALL, "flash_read_page", flash_read_page, "Read SPI Flash page" },
-    { P_ALL, "flash_write_page", flash_write_page, "Write SPI Flash page with test data" },
-    { P_ALL, "flash_check_block", flash_check_block, "Check flash for a specific bad blocks" },
-    { P_ALL, "flash_check_blocks", flash_check_blocks, "Check flash for bad blocks" },
-    { P_ALL, "flash_check_blocks_ecc", flash_check_blocks_ecc, "Check flash for bad blocks using ECC readback. Optionally erase and re-write the Bad Block Mark" },
-    { P_ALL, "flash_erase_block", flash_erase_block, "Erase flash block" },
-    { P_ALL, "flash_erase_blocks", flash_erase_blocks, "Erase flash block" },
-    { P_ALL, "flash_mark_bad_block", flash_mark_bad_block, "Marks flash block as bad" },
-    { P_ALL, "flash_test_complete", flash_test_complete, "Run continuous flash test" },
-    { P_ALL, "flash_test_speed", flash_test_speed, "Run flash speed test" },
-    { P_ALL, "flash_test_spi", flash_test_spi, "Run continuous flash SPI-only test" },
-#if (defined(ENABLE_NOISE_TEST) && (ENABLE_NOISE_TEST > 0U))
-    { P_ALL, "noise_test_flash_start", noise_test_flash_start_command, "Run periodic flash test. Takes 1 argument string of characters: 'r'/'w' cache read/writes, 'R'/'W' uffs read/writes" },
-    { P_ALL, "noise_test_flash_stop", noise_test_flash_stop_command, "Stop flash test" },
-#endif // (defined(ENABLE_NOISE_TEST) && (ENABLE_NOISE_TEST > 0U))
-#endif // FLASH_COMMANDS_H
-
 	{ P_ALL, "pmic_status", pmic_status_command, "" },
 	{ P_ALL, "pmic_test", pmic_test_command, "" },
 	{ P_ALL, "pmic_enter_ship_mode", pmic_enter_ship_mode_command, "" },
@@ -151,11 +125,31 @@ const shell_command_t commands[] = {
 
 #ifdef NAND_COMMANDS_H
     { P_ALL, "nand_id", nand_id_command, "Read SPI Flash ID register" },
-    { P_ALL, "nand_info", nand_info_command, "Read SPI Flash ID status registers" },
+    { P_ALL, "nand_hello", nand_hello_command, "Simple single-register read to test SPI Flash" },
+    { P_ALL, "nand_status", nand_info_command, "Read SPI Flash ID status registers" },
+
     { P_ALL, "nand_safe_wipe_all_blocks", nand_safe_wipe_all_blocks_command, "" },
     { P_ALL, "nand_read_all_blocks", nand_read_all_blocks_command, "" },
     { P_ALL, "nand_write_read", nand_write_read_command, "" },
     { P_ALL, "nand_copy_pages", nand_copy_pages_command, "" },
+
+    { P_ALL, "nand_unlock", nand_unlock_command, "Unlock SPI Flash ID for writes" },
+    { P_ALL, "nand_mux_select", nand_mux_select_command, "Flash MUX select"},
+    { P_ALL, "nand_read_page", nand_read_page_command, "Read SPI Flash page" },
+    { P_ALL, "nand_write_page", nand_write_page_command, "Write SPI Flash page with test data" },
+    { P_ALL, "nand_check_block", nand_check_block_command, "Check flash for a specific bad blocks" },
+    { P_ALL, "nand_check_blocks", nand_check_blocks_command, "Check flash for bad blocks" },
+    { P_ALL, "nand_check_blocks_ecc", nand_check_blocks_ecc_command, "Check flash for bad blocks using ECC readback. Optionally erase and re-write the Bad Block Mark" },
+    { P_ALL, "nand_erase_block", nand_erase_block_command, "Erase flash block" },
+    { P_ALL, "nand_erase_blocks", nand_erase_blocks_command, "Erase flash block" },
+    { P_ALL, "nand_mark_bad_block", nand_mark_bad_block_command, "Marks flash block as bad" },
+    { P_ALL, "nand_test_complete", nand_test_complete_command, "Run continuous flash test" },
+    { P_ALL, "nand_test_speed", nand_test_speed_command, "Run flash speed test" },
+    { P_ALL, "nand_test_spi", nand_test_spi_command, "Run continuous flash SPI-only test" },
+#if (defined(ENABLE_NOISE_TEST) && (ENABLE_NOISE_TEST > 0U))
+    { P_ALL, "noise_test_flash_start", noise_test_flash_start_command, "Run periodic flash test. Takes 1 argument string of characters: 'r'/'w' cache read/writes, 'R'/'W' uffs read/writes" },
+    { P_ALL, "noise_test_flash_stop", noise_test_flash_stop_command, "Stop flash test" },
+#endif // (defined(ENABLE_NOISE_TEST) && (ENABLE_NOISE_TEST > 0U))
 #endif // NAND_COMMANDS_H
 
 #ifdef DHARA_COMMANDS_H
@@ -217,7 +211,6 @@ const shell_command_t commands[] = {
     { P_ALL, "als_start_sample", als_start_sample_command, ""},
     { P_ALL, "als_stop", als_stop_command, ""},
 	{ P_ALL, "als_test", als_test_command, ""},
-
 
     // MEMS commands
     { P_ALL, "mic", mic_read_once_command, "Read mems microphone" },
