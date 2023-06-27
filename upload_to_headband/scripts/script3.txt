@@ -3,7 +3,6 @@ therapy_enable_alpha_switch 1
 therapy_config_alpha_switch 5 10 1 2 6
 eeg_start
 accel_start_sample
-hrm_on
 
 skin_temp_start_sample
 
@@ -35,7 +34,6 @@ therapy_delay 5399000
 
 skin_temp_stop
 
-hrm_off
 accel_stop
 eeg_stop
 user_metrics_log_close
