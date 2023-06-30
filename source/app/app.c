@@ -47,6 +47,7 @@
 #include "memfault/metrics/metrics.h"
 #include "pmic_pca9420.h"
 #include "memfault_commands.h"
+#include "ymodem.h"
 
 #if (defined(ENABLE_APP_TASK) && (ENABLE_APP_TASK > 0U))
 
@@ -542,7 +543,8 @@ handle_state_sleep(app_event_t *event)
 
   switch (event->type) {
     case APP_EVENT_ENTER_STATE:
-      if (interpreter_get_state() == INTERPRETER_STATE_STANDBY)
+      if ((interpreter_get_state() == INTERPRETER_STATE_STANDBY) &&
+    		  (!ymodem_is_running()))
       {
         stop_sleep_timer();
         stop_ble_off_timer();
