@@ -49,7 +49,13 @@
 // 0U - disable the timer
 // 1U - enable the timer
 // (Used in system_monitor.h)
-#define ENABLE_SYSTEM_WATCHDOG (0U)
+#define ENABLE_SYSTEM_WATCHDOG (1U)
+
+// Enable Memfault commands
+// 0U - disable memfault commands
+// 1U - enable memfault commands
+//
+#define MEMFAULT_TEST_COMMANDS (1U)
 
 // Monitor the battery charger temperature sensor.
 // 0U - ignore temp sensor.
