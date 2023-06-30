@@ -43,6 +43,9 @@ int32_t system_monitor_event_mic_read_once(void);
 // mic sound event (triggered by interrupt)
 void system_monitor_event_mic_from_isr(void);
 
+// test function to simulate hangs
+void stop_wwdt_feed_timer(void);
+
 #ifdef __cplusplus
 }
 #endif

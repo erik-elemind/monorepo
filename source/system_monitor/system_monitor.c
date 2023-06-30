@@ -595,9 +595,8 @@ handle_state_standby(system_monitor_event_t *event)
 //  }
 //}
 
-#if 0
-static void
-stop_wwdt_feed_timer(void)
+#if (defined(MEMFAULT_TEST_COMMANDS) && (MEMFAULT_TEST_COMMANDS > 0U))
+void stop_wwdt_feed_timer(void)
 {
   if (xTimerStop(g_context.wwdt_feed_timer_handle, 0) == pdFAIL) {
     LOGE(TAG, "Unable to stop WWDT feed timer!");

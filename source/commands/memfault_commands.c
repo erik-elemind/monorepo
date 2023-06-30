@@ -5,6 +5,7 @@
 #include "nand_W25N04KW.h"
 #include "command_helpers.h"
 #include "fs_commands.h"
+#include "system_monitor.h"
 
 // Mock declarations
 static void memfault_clear_event_chunk_files(void);
@@ -71,6 +72,7 @@ void memfault_test_fault_command(int argc, char *argv[]) {
 }
 
 void memfault_test_hang_command(int argc, char *argv[]) {
+  stop_wwdt_feed_timer();
   while (1) {}
   MEMFAULT_LOG_ERROR("test hang failed!"); // should never get here
 }

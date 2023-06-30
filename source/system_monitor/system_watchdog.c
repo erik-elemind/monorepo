@@ -63,7 +63,7 @@ void system_watchdog_init(){
    * Set watchdog warning time to 512 ticks after feed time constant
    * Set watchdog window time to 1s
    */
-  config.timeoutValue = wdtFreq * 120;
+  config.timeoutValue = wdtFreq * 30; //TODO: adjust accordingly 
   config.warningValue = 512;
 //  config.windowValue  = wdtFreq * 1;
   config.windowValue  = 0xFFFFFF; // disable reset on early feed
