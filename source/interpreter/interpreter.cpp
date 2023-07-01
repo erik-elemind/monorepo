@@ -979,7 +979,6 @@ void
 rtc_alarm_isr_cb(void) 
 {
   alarm_triggered = true;
-
 }
 
 static void

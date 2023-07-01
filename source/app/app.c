@@ -587,10 +587,8 @@ handle_state_boot_up(app_event_t *event)
 
   switch (event->type) {
     case APP_EVENT_ENTER_STATE:
-      // For some reason this initial delay is needed for the BLE IC to be reset properly when the system first powers on (i.e. after reprogramming firmware).
-      vTaskDelay(100);
+      // TODO: add proper bootup/wakeup LED anim
       set_led_state(LED_OFF);
-      //ble_power_on();
       vTaskDelay(100);
       set_led_state(LED_BLUE);
       vTaskDelay(200);

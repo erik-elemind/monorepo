@@ -104,7 +104,8 @@ typedef enum
   BLE_EVENT_ADDR_COMMAND,
   BLE_EVENT_CONNECTED,
   BLE_EVENT_DISCONNECTED,
-  BLE_EVENT_OTA,
+  BLE_EVENT_OTA_START,
+  BLE_EVENT_OTA_END,
 } ble_event_type_t;
 
 // Events are passed to the g_event_queue with an optional
@@ -305,8 +306,10 @@ ble_event_type_name(ble_event_type_t event_type)
       return "BLE_EVENT_CONNECTED";
     case BLE_EVENT_DISCONNECTED:
       return "BLE_EVENT_DISCONNECTED";
-    case BLE_EVENT_OTA:
-    	return "BLE_EVENT_OTA";
+    case BLE_EVENT_OTA_START:
+    	return "BLE_EVENT_OTA_START";
+    case BLE_EVENT_OTA_END:
+    	return "BLE_EVENT_OTA_END";
     default:
       break;
   }
@@ -325,9 +328,15 @@ void ble_disconnected_event(void)
 	xQueueSend(g_event_queue, &event, 0);
 }
 
-void ble_ota_event(void)
+void ble_ota_start_event(void)
 {
-	ble_event_t event = {.type = BLE_EVENT_OTA };
+	ble_event_t event = {.type = BLE_EVENT_OTA_START };
+	xQueueSend(g_event_queue, &event, 0);
+}
+
+void ble_ota_end_event(void)
+{
+	ble_event_t event = {.type = BLE_EVENT_OTA_END };
 	xQueueSend(g_event_queue, &event, 0);
 }
 
@@ -1334,6 +1343,17 @@ handle_ble_ota_started(ble_event_t *event)
 
 	// set OTA flag to true to prevent Sleeping
 	g_ble_context.ota = true;
+
+	// TODO: add Memfault metric and flush to FS
+}
+
+static void
+handle_ble_ota_ended(ble_event_t *event)
+{
+	// set OTA flag to false
+	g_ble_context.ota = false;
+
+	// TODO: add Memfault metric and flush to FS
 }
 
 static void
@@ -1353,8 +1373,12 @@ handle_state_standby(ble_event_t *event)
     	handle_ble_disconnected(event);
     	break;
 
-    case BLE_EVENT_OTA:
+    case BLE_EVENT_OTA_START:
     	handle_ble_ota_started(event);
+    	break;
+
+    case BLE_EVENT_OTA_END:
+    	handle_ble_ota_ended(event);
     	break;
 
     case BLE_EVENT_BATTERY_LEVEL_REQUEST:

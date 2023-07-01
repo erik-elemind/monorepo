@@ -449,6 +449,7 @@ const shell_command_t commands[] = {
 	{ P_BLE, "ble_connected", ble_connected, ""},
 	{ P_BLE, "ble_disconnected", ble_disconnected, ""},
 	{ P_BLE, "ble_ota_start", ble_ota_started, ""},
+	{ P_BLE, "ble_ota_end", ble_ota_ended, ""},
 
 #if (defined(MEMFAULT_TEST_COMMANDS) && (MEMFAULT_TEST_COMMANDS > 0U))
 	// Memfault Tests
