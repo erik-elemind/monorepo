@@ -750,6 +750,7 @@ void ymodem_end_session(void) {
   // This is checked by the main loop for tx and rx.
   // It is cleared upon starting a new transfer.
   g_cancel_flag = true;
+  ymodem_running = false;
 }
 
 

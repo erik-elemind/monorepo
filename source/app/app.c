@@ -530,6 +530,9 @@ postsleep_tasks(void)
 
   xTaskResumeAll();
 
+  // clean tasks when waking up
+  interpreter_event_stop_script(false);
+
   LOGV(TAG, "Waking up!");
   set_state(APP_STATE_BOOT_UP);
 }
@@ -543,8 +546,12 @@ handle_state_sleep(app_event_t *event)
 
   switch (event->type) {
     case APP_EVENT_ENTER_STATE:
+
+    	// if therapy is not running AND if sync is not running AND if OTA is not signaled..
+    	// go to sleep
       if ((interpreter_get_state() == INTERPRETER_STATE_STANDBY) &&
-    		  (!ymodem_is_running()))
+    		  (!ymodem_is_running()) &&
+			  (!ble_is_ota_running()))
       {
         stop_sleep_timer();
         stop_ble_off_timer();
@@ -582,9 +589,11 @@ handle_state_boot_up(app_event_t *event)
     case APP_EVENT_ENTER_STATE:
       // For some reason this initial delay is needed for the BLE IC to be reset properly when the system first powers on (i.e. after reprogramming firmware).
       vTaskDelay(100);
+      set_led_state(LED_OFF);
       //ble_power_on();
+      vTaskDelay(100);
       set_led_state(LED_BLUE);
-      vTaskDelay(500);
+      vTaskDelay(200);
 
       // Advance to the next state.
       set_state(APP_STATE_ON);

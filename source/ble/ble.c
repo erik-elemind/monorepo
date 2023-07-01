@@ -150,6 +150,7 @@ typedef struct
   factory_reset_t factory_reset;
   uint8_t sound_control;
   uint8_t addr[ADDR_NUM];
+  bool ota;
 } ble_context_t;
 
 ///@todo BH Get real values at task startup?
@@ -174,6 +175,7 @@ static ble_context_t g_ble_context = {
   .factory_reset = FACTORY_RESET_IDLE,
   .sound_control = 0,
   .addr = {0,0,0,0,0,0},
+  .ota = false,
 };
 
 static void init_g_ble_context(){
@@ -691,6 +693,10 @@ ble_power_on(void)
     ble_reset();
   }
 };
+
+bool ble_is_ota_running(void) {
+	return g_ble_context.ota;
+}
 
 static void
 log_event(ble_event_t *event)
@@ -1321,8 +1327,13 @@ static void
 handle_ble_ota_started(ble_event_t *event)
 {
 	// tell interpreter to stop
-	// TODO: consider turning off IRQs too?
 	interpreter_event_stop_script(false);
+
+	// tell syncs to stop
+	ymodem_end_session();
+
+	// set OTA flag to true to prevent Sleeping
+	g_ble_context.ota = true;
 }
 
 static void
@@ -1545,8 +1556,8 @@ handle_event(ble_event_t *event)
 {
   switch (g_ble_context.state) {
     case BLE_STATE_STANDBY:
-      handle_state_standby(event);
       app_event_ble_activity();
+      handle_state_standby(event);
       break;
 
     default:
