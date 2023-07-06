@@ -143,7 +143,7 @@ void memfault_platform_get_device_info(sMemfaultDeviceInfo *info) {
     // the same for a unique device.
     // (i.e evt, dvt, pvt, or rev1, rev2, etc)
     // Regular expression defining valid hardware versions: ^[-a-zA-Z0-9_\.\+]+$
-    .hardware_version = "alpha1",
+    .hardware_version = "revD",
   };
 }
 
