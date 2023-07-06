@@ -626,6 +626,14 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_PMIC_IRQ_N_SIGNAL PMIC_IRQ     /*!<@brief Signal name */
                                                       /* @} */
 
+/*! @name ADC0_8 (coord E1), ADC_NTC0
+  @{ */
+/* Routed pin properties */
+#define BOARD_INITPINS_ADC_NTC0_PERIPHERAL ADC0  /*!<@brief Peripheral name */
+#define BOARD_INITPINS_ADC_NTC0_SIGNAL CH        /*!<@brief Signal name */
+#define BOARD_INITPINS_ADC_NTC0_CHANNEL 8        /*!<@brief Signal channel */
+                                                 /* @} */
+
 /*! @name FC2_RXD_SDA_MOSI_DATA (coord D6), MAX86140_SDI
   @{ */
 /* Routed pin properties */
