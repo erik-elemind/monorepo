@@ -41,6 +41,12 @@
 // By setting this define, we avoid the inclusion of those conflicting functions.
 //#define CONFIG_USE_SEMIHOSTING 1
 
+// Enable the DEBUG build settings
+// 0U - disable the DEBUG settings
+// 1U - enable the DEBUG settings
+#define DEBUG_BUILD 1
+#define DEBUG_LED_DELAY 1000000
+
 // Shell output device (only define one)
 #define CONFIG_SHELL_USB
 //#define CONFIG_SHELL_UART
