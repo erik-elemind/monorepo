@@ -80,11 +80,6 @@
 // 1U - enable timer-based auto power-off (production default)
 #define ENABLE_BLE_POWER_OFF_TIMER (0U)
 
-// Enable Power Modes Testing for Alpha boards powered by USB
-// 0U - disable power mode testing
-// 1U - enable power mode testing
-#define ENABLE_POWER_MODE_TEST (0U)
-
 #define ENABLE_FS_WRITER_TASK      (1U)
 #define ENABLE_DATA_LOG_TASK       (1U)
 #define ENABLE_BUTTON_TASK         (1U)

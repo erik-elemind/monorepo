@@ -47,6 +47,7 @@
 #include "memfault/metrics/metrics.h"
 #include "pmic_pca9420.h"
 #include "memfault_commands.h"
+#include "ymodem.h"
 
 #if (defined(ENABLE_APP_TASK) && (ENABLE_APP_TASK > 0U))
 
@@ -54,6 +55,8 @@
 #define POWER_GOOD_BATT_THRESHOLD 15
 
 static const char *TAG = "app";	// Logging prefix for this module
+
+static uint32_t systemTickControl;
 
 //
 // Application events (high-level events for business logic):
@@ -463,7 +466,7 @@ set_led_by_charger_status(void)
   switch (status)
     {
     case BATTERY_CHARGER_STATUS_ON_BATTERY:
-      set_led_state(LED_OFF);
+      set_led_state(LED_RED);
       break;
     case BATTERY_CHARGER_STATUS_CHARGING:
       set_led_state(LED_CHARGING);
@@ -479,17 +482,57 @@ set_led_by_charger_status(void)
     }
 }
 
+static void USB_ControllerSuspended(void)
+{
+    while (SYSCTL0->USBCLKSTAT & (SYSCTL0_USBCLKSTAT_HOST_NEED_CLKST_MASK))
+    {
+        __ASM("nop");
+    }
+    SYSCTL0->USBCLKCTRL |= SYSCTL0_USBCLKCTRL_POL_HOST_CLK_MASK;
+}
+
 static void 
 presleep_tasks(void)
 {
   LOGV(TAG, "Sleeping...");
-  //BOARD_SetPmicVoltageBeforeDeepSleep();
+
+  // flush memfault event logs to file system before Sleeping
+  memfault_save_eventlog_chunks();
+
+  // USB PreLowpowerMode
+  USB_ControllerSuspended();
+
+  if (SysTick->CTRL & SysTick_CTRL_ENABLE_Msk)
+  {
+      systemTickControl = SysTick->CTRL;
+      SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
+  }
+
+  __disable_irq();
+  NVIC_ClearPendingIRQ(USB_WAKEUP_IRQn);
+  EnableIRQ(USB_WAKEUP_IRQn);
+  SYSCTL0->STARTEN1 |= (SYSCTL0_STARTEN1_USB_IRQ(1) | SYSCTL0_STARTEN1_USB_NEEDCLK(1));
+
+  BOARD_SetPmicVoltageBeforeDeepSleep();
+  vTaskSuspendAll();
 }
 
 static void 
 postsleep_tasks(void)
 {
-  //BOARD_RestorePmicVoltageAfterDeepSleep();
+  BOARD_RestorePmicVoltageAfterDeepSleep();
+
+  // USB PostLowpowerMode
+  __enable_irq();
+  SysTick->CTRL = systemTickControl;
+  SYSCTL0->STARTEN1 &= ~(SYSCTL0_STARTEN1_USB_IRQ(1) | SYSCTL0_STARTEN1_USB_NEEDCLK(1));
+  DisableIRQ(USB_WAKEUP_IRQn);
+
+  xTaskResumeAll();
+
+  // clean tasks when waking up
+  interpreter_event_stop_script(false);
+
   LOGV(TAG, "Waking up!");
   set_state(APP_STATE_BOOT_UP);
 }
@@ -503,15 +546,19 @@ handle_state_sleep(app_event_t *event)
 
   switch (event->type) {
     case APP_EVENT_ENTER_STATE:
-      if (interpreter_get_state() == INTERPRETER_STATE_STANDBY)
+
+    	// if therapy is not running AND if sync is not running AND if OTA is not signaled..
+    	// go to sleep
+      if ((interpreter_get_state() == INTERPRETER_STATE_STANDBY) &&
+    		  (!ymodem_is_running()) &&
+			  (!ble_is_ota_running()))
       {
         stop_sleep_timer();
         stop_ble_off_timer();
         set_led_state(LED_OFF);
-        // TODO: enable presleep_tasks, sleep, postsleep_tasks
-        //presleep_tasks();
-        //BOARD_EnterDeepSleep(APP_EXCLUDE_FROM_DEEPSLEEP);
-        //postsleep_tasks();
+        presleep_tasks();
+        BOARD_EnterDeepSleep(APP_EXCLUDE_FROM_DEEPSLEEP);
+        postsleep_tasks();
       }
       else // Therapy is on-going, set back to ON state
       {
@@ -540,9 +587,11 @@ handle_state_boot_up(app_event_t *event)
 
   switch (event->type) {
     case APP_EVENT_ENTER_STATE:
-      // For some reason this initial delay is needed for the BLE IC to be reset properly when the system first powers on (i.e. after reprogramming firmware).
+      // TODO: add proper bootup/wakeup LED anim
+      set_led_state(LED_OFF);
       vTaskDelay(100);
-      //ble_power_on();
+      set_led_state(LED_BLUE);
+      vTaskDelay(200);
 
       // Advance to the next state.
       set_state(APP_STATE_ON);
@@ -565,11 +614,7 @@ handle_state_on(app_event_t *event)
         break;
 
       case APP_EVENT_SLEEP_TIMEOUT:
-		#if(ENABLE_POWER_MODE_TEST)
         set_state(APP_STATE_SLEEP);
-		#endif
-        // system is IDLE, flush memfault event logs to file system
-        memfault_save_eventlog_chunks();
         break;
 
       case APP_EVENT_CHARGER_PLUGGED:
@@ -579,9 +624,7 @@ handle_state_on(app_event_t *event)
     	  break;
 
       case APP_EVENT_POWER_BUTTON_LONG_CLICK:
-		  #if(ENABLE_POWER_MODE_TEST)
     	  set_state(APP_STATE_SLEEP);
-		  #endif
     	  break;
 
       case APP_EVENT_BUTTON_ACTIVITY:
@@ -604,24 +647,8 @@ handle_state_charger_attached(app_event_t *event)
 {
 	switch (event->type) {
 		case APP_EVENT_ENTER_STATE:
-			#if(ENABLE_POWER_MODE_TEST)
-			//stop_sleep_timer(); //TODO: reenable when new boards
-			restart_sleep_timer(); //TODO: remove when new boards arrive
-			#else
 			stop_sleep_timer();
-			#endif
-
 			stop_ble_off_timer();
-			break;
-
-		//TODO: remove when reworked boards arrive
-		case APP_EVENT_SLEEP_TIMEOUT:
-			#if(ENABLE_POWER_MODE_TEST)
-			set_state(APP_STATE_SLEEP);
-			#endif
-
-	        // system is IDLE, flush memfault event logs to file system
-	        memfault_save_eventlog_chunks();
 			break;
 
 		case APP_EVENT_CHARGER_UNPLUGGED:
@@ -639,42 +666,43 @@ handle_event(app_event_t *event)
 {
   // handle stateless events
     switch(event->type){
-    case APP_EVENT_VOLUP_BUTTON_CLICK:
-      audio_volume_up();
-      memfault_metrics_heartbeat_add(MEMFAULT_METRICS_KEY(vol_up_button_presses), 1);
-      return;
-    case APP_EVENT_VOLDN_BUTTON_CLICK:
-      audio_volume_down();
-      memfault_metrics_heartbeat_add(MEMFAULT_METRICS_KEY(vol_down_button_presses), 1);
-      return;
-    case APP_EVENT_BLE_ACTIVITY:
-      restart_ble_off_timer();
-      restart_sleep_timer();
-      break;
-    case APP_EVENT_BUTTON_ACTIVITY:
-      restart_sleep_timer();
-      break;
-    case APP_EVENT_SHELL_ACTIVITY:
-    case APP_EVENT_RTC_ACTIVITY:
-      restart_sleep_timer();
-      break;     
-    case APP_EVENT_BLE_OFF_TIMEOUT:
-      stop_ble_off_timer();
-      ble_power_off();
-      return;
+		case APP_EVENT_VOLUP_BUTTON_CLICK:
+		  audio_volume_up();
+		  memfault_metrics_heartbeat_add(MEMFAULT_METRICS_KEY(vol_up_button_presses), 1);
+		  break;
+		case APP_EVENT_VOLDN_BUTTON_CLICK:
+		  audio_volume_down();
+		  memfault_metrics_heartbeat_add(MEMFAULT_METRICS_KEY(vol_down_button_presses), 1);
+		  break;
+		case APP_EVENT_BLE_ACTIVITY:
+		  restart_ble_off_timer();
+		  restart_sleep_timer();
+		  break;
+		case APP_EVENT_BUTTON_ACTIVITY:
+		  restart_sleep_timer();
+		  break;
+		case APP_EVENT_SHELL_ACTIVITY:
+		case APP_EVENT_RTC_ACTIVITY:
+		  restart_sleep_timer();
+		  break;
+		case APP_EVENT_BLE_OFF_TIMEOUT:
+		  stop_ble_off_timer();
+		  ble_power_off();
+		  break;
 
-    case APP_EVENT_CHARGER_PLUGGED:
-    case APP_EVENT_CHARGER_UNPLUGGED:
-    case APP_EVENT_CHARGE_COMPLETE:
-    case APP_EVENT_CHARGE_FAULT:
-      // update LED state
-      set_led_by_charger_status();
-      break;
+		case APP_EVENT_CHARGER_PLUGGED:
+		case APP_EVENT_CHARGER_UNPLUGGED:
+		case APP_EVENT_CHARGE_COMPLETE:
+		case APP_EVENT_CHARGE_FAULT:
+		  // update LED state
+		  set_led_by_charger_status();
+		  break;
 
-    default:
-      // try handlers below
-      break;
+		default:
+		  // try handlers below
+		  break;
     }
+    set_led_by_charger_status();
 
   switch (g_app_context.state) {
       case APP_STATE_SLEEP:
@@ -710,6 +738,11 @@ static void
 ble_off_timeout(TimerHandle_t timer_handle)
 {
   app_event_ble_off_timeout();
+}
+
+void USB_WAKEUP_IRQHandler(void)
+{
+    NVIC_ClearPendingIRQ(USB_WAKEUP_IRQn);
 }
 
 void

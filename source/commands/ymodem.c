@@ -126,6 +126,7 @@ const ymodem_interface uart_interface = {
 #endif
 
 static bool g_cancel_flag = false;
+static bool ymodem_running = false;
 
 /* The argument types differ */
 static int _ble_shell_getchar(int timeout) {
@@ -355,6 +356,7 @@ unsigned long ymodem_receive_file(const ymodem_interface* interface)
   /* Print it */
   printf("%lu total bytes on drive. %lu bytes available.\n", fs_total_bytes, fs_free_bytes);
 
+  ymodem_running = true;
 
   file_name[0] = 0;
 
@@ -382,6 +384,7 @@ unsigned long ymodem_receive_file(const ymodem_interface* interface)
                 f_sync_wait(&file);
                 f_close(&file);
               }
+              ymodem_running = false;
               return 0;
             case 0:   /* end of transmission */
               interface->putchar(ACK);
@@ -432,6 +435,7 @@ unsigned long ymodem_receive_file(const ymodem_interface* interface)
                         f_sync_wait(&file);
                         f_close(&file);
                       }
+                      ymodem_running = false;
                       return 0;
                     }
                     // If the file exists already, delete it!
@@ -471,6 +475,7 @@ unsigned long ymodem_receive_file(const ymodem_interface* interface)
                       f_sync_wait(&file);
                       f_close(&file);
                     }
+                    ymodem_running = false;
                     return 0;
                   }
 
@@ -492,6 +497,7 @@ unsigned long ymodem_receive_file(const ymodem_interface* interface)
                       f_sync_wait(&file);
                       f_close(&file);
                     }
+                    ymodem_running = false;
                     return 0;
                   }
 
@@ -515,6 +521,7 @@ unsigned long ymodem_receive_file(const ymodem_interface* interface)
                 f_sync_wait(&file);
                 f_close(&file);
               }
+              ymodem_running = false;
               return 0;
             }
 //          }
@@ -546,6 +553,7 @@ unsigned long ymodem_receive_file(const ymodem_interface* interface)
     printf("len:0x%08x\n", (int)size);
 #endif
   }
+  ymodem_running = false;
   return size;
 }
 
@@ -742,6 +750,7 @@ void ymodem_end_session(void) {
   // This is checked by the main loop for tx and rx.
   // It is cleared upon starting a new transfer.
   g_cancel_flag = true;
+  ymodem_running = false;
 }
 
 
@@ -780,6 +789,7 @@ int ymodem_send_file(const ymodem_interface* interface, const char *filename)
     // Couldn't launch.
     return -1;
   }
+  ymodem_running = true;
 
   if (ch == YMODEM_CRC) {
     do {
@@ -799,7 +809,8 @@ int ymodem_send_file(const ymodem_interface* interface, const char *filename)
         if (ch == YMODEM_CRC) {
           //send_data_packets(buf, size);
           int ret = send_file_packets(interface, fs_filename, size);
-          //printf("\nsent:%s\n", fs_filename);
+          printf("\nsent:%s\n", fs_filename);
+          ymodem_running = false;
 #ifdef WITH_CRC32
 //          printf("crc32:0x%08x, len:0x%08x\n", crc32(buf, size), size);
 #else
@@ -818,6 +829,12 @@ int ymodem_send_file(const ymodem_interface* interface, const char *filename)
   interface->putchar(YMODEM_CAN);
   interface->putchar(YMODEM_CAN);
   _sleep(1);
+  ymodem_running = false;
   //printf("\naborted.\n");
   return -1;
+}
+
+bool ymodem_is_running(void)
+{
+	return ymodem_running;
 }

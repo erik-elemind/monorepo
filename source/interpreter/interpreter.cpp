@@ -978,13 +978,7 @@ interpreter_handle_rtc_alarm(void)
 void
 rtc_alarm_isr_cb(void) 
 {
-	// turn off therapy
-	interpreter_event_stop_script(false);
-
-	// set flag to indicate alarm has triggered
-	alarm_triggered = true;
-
-
+  alarm_triggered = true;
 }
 
 static void
