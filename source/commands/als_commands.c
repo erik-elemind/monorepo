@@ -6,12 +6,14 @@
 #include "als-veml7700.h"
 #include "system_monitor.h"
 #include "command_helpers.h"
+#include "util_delay.h"
 
 
 void
 als_read_once_command(int argc, char **argv) {
   float lux;
   als_start();
+  util_delay_ms(1000); // Delay for 1 second to ensure settling time
   als_get_lux(&lux);
   printf("ALS lux: %f\n\r", lux);
   als_stop();
