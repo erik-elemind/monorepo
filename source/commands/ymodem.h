@@ -73,6 +73,8 @@ int ymodem_send_file(const ymodem_interface* interface, const char *filename);
 // It may take several seconds to cancel if no further characters are received
 // due to the getchar() timeout.
 void ymodem_end_session(void);
+bool ymodem_is_running(void);
+
 
 #ifdef __cplusplus
 }

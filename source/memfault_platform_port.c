@@ -27,6 +27,7 @@
 #include "memfault/ports/freertos.h"
 #include "nand_W25N04KW.h"
 #include "fs_commands.h"
+#include "system_watchdog.h"
 
 #include <stdbool.h>
 
@@ -212,6 +213,12 @@ size_t memfault_platform_sanitize_address_range(void *start_addr, size_t desired
   }
 
   return 0;
+}
+
+bool memfault_platform_coredump_save_begin(void) {
+  // pet dog prior to coredump save
+  system_watchdog_pet();
+  return true;
 }
 
 // MEMFAULT_PLATFORM_COREDUMP_STORAGE_USE_FLASH = 1

@@ -49,7 +49,13 @@
 // 0U - disable the timer
 // 1U - enable the timer
 // (Used in system_monitor.h)
-#define ENABLE_SYSTEM_WATCHDOG (0U)
+#define ENABLE_SYSTEM_WATCHDOG (1U)
+
+// Enable Memfault commands
+// 0U - disable memfault commands
+// 1U - enable memfault commands
+//
+#define MEMFAULT_TEST_COMMANDS (1U)
 
 // Monitor the battery charger temperature sensor.
 // 0U - ignore temp sensor.
@@ -73,11 +79,6 @@
 // 0U - disable timer-based auto power-off
 // 1U - enable timer-based auto power-off (production default)
 #define ENABLE_BLE_POWER_OFF_TIMER (0U)
-
-// Enable Power Modes Testing for Alpha boards powered by USB
-// 0U - disable power mode testing
-// 1U - enable power mode testing
-#define ENABLE_POWER_MODE_TEST (0U)
 
 #define ENABLE_FS_WRITER_TASK      (1U)
 #define ENABLE_DATA_LOG_TASK       (1U)

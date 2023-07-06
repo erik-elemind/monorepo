@@ -28,7 +28,7 @@ adc_init() {
 	// Set battery voltage measurement
 	/* Set conversion CMD configuration. */
 	LPADC_GetDefaultConvCommandConfig(&mLpadcCommandConfigStruct);
-	mLpadcCommandConfigStruct.sampleChannelMode = kLPADC_SampleChannelSingleEndSideA;
+	mLpadcCommandConfigStruct.sampleChannelMode = kLPADC_SampleChannelSingleEndSideB;
 	mLpadcCommandConfigStruct.channelNumber = DEMO_LPADC_USER_CHANNEL;
 	LPADC_SetConvCommandConfig(DEMO_LPADC_BASE, DEMO_LPADC_USER_CMDID, &mLpadcCommandConfigStruct);
 
@@ -48,6 +48,13 @@ adc_init() {
 int32_t adc_read(int channel) {
 
 	lpadc_conv_result_t mLpadcResultConfigStruct;
+	lpadc_conv_command_config_t mLpadcCommandConfigStruct;
+
+	/* Set conversion CMD configuration. */
+	LPADC_GetDefaultConvCommandConfig(&mLpadcCommandConfigStruct);
+	mLpadcCommandConfigStruct.sampleChannelMode = kLPADC_SampleChannelSingleEndSideB;
+	mLpadcCommandConfigStruct.channelNumber = channel;
+	LPADC_SetConvCommandConfig(DEMO_LPADC_BASE, DEMO_LPADC_USER_CMDID, &mLpadcCommandConfigStruct);
 
 	LPADC_DoSoftwareTrigger(DEMO_LPADC_BASE, 1U); /* 1U is trigger0 mask. */
 

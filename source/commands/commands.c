@@ -458,7 +458,9 @@ const shell_command_t commands[] = {
 	{ P_BLE, "ble_connected", ble_connected, ""},
 	{ P_BLE, "ble_disconnected", ble_disconnected, ""},
 	{ P_BLE, "ble_ota_start", ble_ota_started, ""},
+	{ P_BLE, "ble_ota_end", ble_ota_ended, ""},
 
+#if (defined(MEMFAULT_TEST_COMMANDS) && (MEMFAULT_TEST_COMMANDS > 0U))
 	// Memfault Tests
 	{P_SHELL, "memfault_test_logging", memfault_test_logging_command, "Memfault Logging Test"},
     {P_SHELL, "memfault_info_dump", memfault_info_dump_command, "Memfault Build and Device Info Dump"},
@@ -478,7 +480,7 @@ const shell_command_t commands[] = {
 	{P_SHELL, "memfault_clear_eventlog_files", memfault_clear_event_chunk_files_command, "Memfault clear event/log chunks files"},
 	{P_SHELL, "memfault_save_coredump_chunks", memfault_save_coredump_chunks_command, "Memfault save coredump chunks to file"},
 	{P_SHELL, "memfault_clear_coredump_files", memfault_clear_coredump_chunk_files_command, "Memfault clear coredump chunks files"},
-
+#endif
 	// ADC Tests
 	{P_SHELL, "adc_read", adc_read_command, "ADC Read Test"},
 

@@ -392,7 +392,6 @@
                   <pin peripheral="PMC" signal="PMIC_IRQ" pin_num="A15" pin_signal="PMIC_IRQ_N"/>
                   <pin peripheral="ADC0" signal="CH, 8" pin_num="E1" pin_signal="PIO0_6/FC0_SSEL3/SCT0_GPI1/SCT0_OUT1/CTIMER0_MAT0/SEC_PIO0_6/ADC0_8">
                      <pin_features>
-                        <pin_feature name="identifier" value=""/>
                         <pin_feature name="ibena" value="enabled"/>
                      </pin_features>
                   </pin>

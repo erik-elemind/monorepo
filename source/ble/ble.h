@@ -103,6 +103,7 @@ void ble_connected_event(void);
 void ble_disconnected_event(void);
 
 uint8_t* ble_get_addr();
+bool ble_is_ota_running(void);
 
 // Convenience methods for power off/on
 void ble_power_off(void);

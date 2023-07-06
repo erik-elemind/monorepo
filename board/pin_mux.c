@@ -191,7 +191,7 @@ BOARD_InitPins:
   - {pin_num: A16, peripheral: PMC, signal: PMIC_LDO_ENABLE, pin_signal: LDO_ENABLE}
   - {pin_num: C15, peripheral: PMC, signal: 'PMIC_MODE, 0', pin_signal: PMIC_MODE0}
   - {pin_num: A15, peripheral: PMC, signal: PMIC_IRQ, pin_signal: PMIC_IRQ_N}
-  - {pin_num: E1, peripheral: ADC0, signal: 'CH, 8', pin_signal: PIO0_6/FC0_SSEL3/SCT0_GPI1/SCT0_OUT1/CTIMER0_MAT0/SEC_PIO0_6/ADC0_8, identifier: '', ibena: enabled}
+  - {pin_num: E1, peripheral: ADC0, signal: 'CH, 8', pin_signal: PIO0_6/FC0_SSEL3/SCT0_GPI1/SCT0_OUT1/CTIMER0_MAT0/SEC_PIO0_6/ADC0_8, ibena: enabled}
   - {pin_num: D6, peripheral: FLEXCOMM2, signal: RXD_SDA_MOSI_DATA, pin_signal: PIO0_16/FC2_RXD_SDA_MOSI_DATA/SCT0_GPI2/SCT0_OUT2/CTIMER2_MAT2/I2S_BRIDGE_DATA_IN/SEC_PIO0_16,
     ibena: enabled}
   - {pin_num: A5, peripheral: FLEXCOMM2, signal: TXD_SCL_MISO_WS, pin_signal: PIO0_15/FC2_TXD_SCL_MISO_WS/SCT0_GPI1/SCT0_OUT1/CTIMER2_MAT1/I2S_BRIDGE_WS_IN/SEC_PIO0_15,

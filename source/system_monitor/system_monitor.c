@@ -539,8 +539,8 @@ handle_state_standby(system_monitor_event_t *event)
 
 	case SYSTEM_MONITOR_EVENT_WWDT_FEED_TIMEOUT:
 	#if (defined(ENABLE_SYSTEM_WATCHDOG) && (ENABLE_SYSTEM_WATCHDOG > 0U))
-	  // feed watchdog
-	  system_watchdog_feed();
+	  // pet the dog
+	  system_watchdog_pet();
 	  // restart timer
 	//    restart_wwdt_feed_timer();
 	#endif
@@ -584,20 +584,8 @@ handle_state_standby(system_monitor_event_t *event)
 }
 
 #if (defined(ENABLE_SYSTEM_WATCHDOG) && (ENABLE_SYSTEM_WATCHDOG > 0U))
-
-//static void
-//restart_wwdt_feed_timer(void)
-//{
-//  // xTimerChangePeriod will start timer if it's not running already
-//  if (xTimerChangePeriod(g_context.wwdt_feed_timer_handle,
-//      pdMS_TO_TICKS(system_watchdog_reset_ms()), 0) == pdFAIL) {
-//    LOGE(TAG, "Unable to start WWDT feed timer!");
-//  }
-//}
-
-#if 0
-static void
-stop_wwdt_feed_timer(void)
+#if (defined(MEMFAULT_TEST_COMMANDS) && (MEMFAULT_TEST_COMMANDS > 0U))
+void stop_wwdt_feed_timer(void)
 {
   if (xTimerStop(g_context.wwdt_feed_timer_handle, 0) == pdFAIL) {
     LOGE(TAG, "Unable to stop WWDT feed timer!");
@@ -680,7 +668,7 @@ task_init()
   system_watchdog_init();
 
   g_context.wwdt_feed_timer_handle = xTimerCreateStatic("WWDT_FEED",
-    pdMS_TO_TICKS(system_watchdog_reset_ms()), pdTRUE, NULL,
+    pdMS_TO_TICKS(SYS_WATCHDOG_PET_MS), pdTRUE, NULL,
     wwdt_feed_timeout, &(g_context.wwdt_feed_timer_struct));
   xTimerStart(g_context.wwdt_feed_timer_handle, portMAX_DELAY);
 

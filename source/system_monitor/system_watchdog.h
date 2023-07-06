@@ -9,9 +9,9 @@
 extern "C" {
 #endif
 
+#define SYS_WATCHDOG_PET_MS 5000
 void system_watchdog_init();
-void system_watchdog_feed();
-uint32_t system_watchdog_reset_ms();
+void system_watchdog_pet();
 
 #ifdef __cplusplus
 }
