@@ -34,6 +34,8 @@
 #include <stdio.h>
 
 #include "fsl_debug_console.h"
+#include "board_config.h"
+#include "led.h"
 
 static void memfault_clear_event_chunk_files(void);
 static void memfault_clear_coredump_chunk_files(void);
@@ -148,14 +150,19 @@ void memfault_platform_get_device_info(sMemfaultDeviceInfo *info) {
 //! any final cleanup and then reset the device
 void memfault_platform_reboot(void) {
   // !FIXME: Perform any final system cleanup here
-//  size_t total_size = 0;
-//  if (memfault_coredump_has_valid_coredump(&total_size)) {
-//    MEMFAULT_LOG_INFO("reboot: coredump present!");
-//    memfault_data_export_dump_chunks();
-//  } else {MEMFAULT_LOG_INFO("reboot: coredump NOT present!");}
 
-  // !FIXME: Reset System
-  NVIC_SystemReset();
+// on DEBUG builds, we do not reset and set DEBUG led to blinking
+#if (defined(DEBUG_BUILD) && (DEBUG_BUILD > 0U))
+	portDISABLE_INTERRUPTS();
+	led_set_rgb32(0x000000, true);
+    while (1) {
+      BOARD_ToggleDebugLED();
+      for(int i = 0; i < DEBUG_LED_DELAY; i++) {}
+    }
+#else
+	NVIC_SystemReset();
+#endif
+
   while (1) { } // unreachable
 }
 
