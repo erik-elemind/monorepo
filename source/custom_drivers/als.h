@@ -11,9 +11,7 @@ extern "C" {
 
 void als_init(void);
 void als_start(void);
-void als_wait(void);
 void als_stop(void);
-int als_wait_time(void);
 int als_get_lux(float* lux);
   
 

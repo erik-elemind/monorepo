@@ -11,4 +11,4 @@ SECTIONS
         KEEP(*(.note.gnu.build-id))
     } > SRAM AT>QSPI_FLASH
 }
-INSERT AFTER .text;
+INSERT AFTER .text
