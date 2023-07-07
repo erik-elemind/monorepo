@@ -12,7 +12,12 @@ A JLink is needed for wired flashing (optional). Please download and install the
 Please run `git submodule update --init`, clean and refresh project prior to building.
 
 ## Build process
-Use MCUXPresso
+Use MCUXPresso 
+
+# Batch Script
+You can also use the `build_imxrt685_image.bat` script to build the project in MCUXpresso headless state.
+However, you will have to locally change the IDE path and WORKSPACE to match your local setup.
+In the future, we aim to Dockerize this completely for uniform development
 
 <!-- ## Generating LPC OTA packages -->
 <!-- To generate an LPC firmware package, run the `lpcpkg.sh` script
