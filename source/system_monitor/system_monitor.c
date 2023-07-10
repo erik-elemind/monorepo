@@ -44,6 +44,9 @@
 
 static const char *TAG = "system_monitor";	// Logging prefix for this module
 
+// Any changes to this require changes to the ALS driver initialization function
+#define ALS_SAMPLE_RATE_MS 600
+
 //
 // State machine states:
 //
@@ -202,10 +205,10 @@ system_monitor_event_power_off()
 /********************************/
 // ALS
 
-void system_monitor_event_als_start_sample(unsigned int sample_period_ms){
+void system_monitor_event_als_start_sample(void){
   system_monitor_event_t event = {
     .type = SYSTEM_MONITOR_EVENT_ALS_START_SAMPLE,
-    .data = { .sensor = {.sample_period_ms = sample_period_ms } }
+    .data = { .sensor = {.sample_period_ms = ALS_SAMPLE_RATE_MS } }
   };
   xQueueSend(g_event_queue, &event, portMAX_DELAY);
 }
@@ -224,6 +227,7 @@ static void sample_and_log_als(void) {
   float lux;
   // Finished a sample.
   err = als_get_lux(&lux);
+
   if (!err) {
     data_log_als(g_context.als_num_samples, lux);
   }

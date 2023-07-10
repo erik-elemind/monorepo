@@ -29,7 +29,7 @@ void system_monitor_event_battery_from_isr(void);
 void system_monitor_event_power_off(void);
 
 // ALS
-void system_monitor_event_als_start_sample(unsigned int sample_period_ms);
+void system_monitor_event_als_start_sample(void);
 void system_monitor_event_als_stop(void);
 
 // MIC
