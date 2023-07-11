@@ -1,23 +1,34 @@
 #include "hrm.h"
 #include "max86140.h"
 #include <stdio.h>
+#include "loglevels.h"
+
+static const char *TAG = "hrm_commands";	// Logging prefix for this module
 
 void hrm_off(int argc, char **argv){
+	// TODO: Complete HRM driver and implementation of this command.
+	LOGW(TAG, "%s command is not yet implemented.", argv[0]);
+#if 0
   if (argc != 1) {
     printf("Error: %s takes no arguments\n", argv[0]);
     return;
   }
 
   max86140_stop();
+#endif
 }
 
 void hrm_on(int argc, char **argv){
+	// TODO: Complete HRM driver and implementation of this command.
+	LOGW(TAG, "%s command is not yet implemented.", argv[0]);
+#if 0
   if (argc != 1) {
     printf("Error: %s takes no arguments\n", argv[0]);
     return;
   }
 
   max86140_start();
+#endif
 }
 
 void hrm_test(int argc, char **argv){

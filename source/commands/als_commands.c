@@ -7,7 +7,9 @@
 #include "system_monitor.h"
 #include "command_helpers.h"
 #include "util_delay.h"
+#include "loglevels.h"
 
+static const char *TAG = "als_commands";	// Logging prefix for this module
 
 void
 als_read_once_command(int argc, char **argv) {
@@ -21,7 +23,6 @@ als_read_once_command(int argc, char **argv) {
 
 void
 als_start_sample_command(int argc, char **argv){
-
 	system_monitor_event_als_start_sample();
 }
 
