@@ -1450,7 +1450,7 @@ ble_elemind_dfu(ble_elemind_t* p_elemind)
 
   // Notify NXP that OTA has started
   lpc_uart_sendline("ble_ota_start\n");
-  lpc_uart_sendline("flash_mux_select 1\n");
+  lpc_uart_sendline("nand_mux_select 1\n");
   
   // Schedule reset after BLE connection has had time to update
   err_code = app_timer_start(m_dfu_reset_delay_timer_id,
