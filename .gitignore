@@ -1,0 +1,13 @@
+# Never check in unencrypted private key
+private-key.pem
+
+# any build folders
+_build
+
+# external folder
+dist
+
+# python virtual environment and modules
+.venv
+
+version.h

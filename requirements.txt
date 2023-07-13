@@ -1,0 +1,2 @@
+#nrfutil>=6.1.0 not able to build with current docker image, TODO to resolve
+nrfutil

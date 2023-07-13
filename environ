@@ -1,0 +1,21 @@
+# This script sets up some helper commands and paths
+# Run it like this: source environ
+# Or simply: . environ
+
+# Add nrfjprog to path
+if ! command -v nrfjprog &> /dev/null; then
+  export PATH=$PWD/dist/nrftools/nrfjprog:$PATH
+fi
+
+# Add merghex to path
+if ! command -v mergehex &> /dev/null; then
+  export PATH=$PWD/dist/nrftools/mergehex:$PATH
+fi
+
+# Alias for programming
+alias nj='nrfjprog -f nrf52'
+alias njp='nrfjprog -r -f nrf52 --sectorerase --program'
+
+# Alias for debugging
+alias je='JLinkExe -autoconnect 1 -if SWD -speed 4000 -device NRF52811_XXAA'
+alias jr='JLinkRTTClient'
